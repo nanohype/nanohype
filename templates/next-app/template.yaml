@@ -1,0 +1,97 @@
+apiVersion: nanohype/v1
+
+name: next-app
+displayName: "Next.js AI Application"
+description: >
+  Scaffolds a Next.js 15 application with App Router, streaming AI chat,
+  and a pluggable provider registry. Includes Tailwind CSS styling, a
+  chat UI with message streaming, server-side AI calls via route handlers,
+  structured JSON logging, and optional auth, database (Drizzle + Postgres),
+  and Docker configurations.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, nextjs, react, ai, chat, tailwind]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "An AI-powered web application"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "Default LLM provider for AI features (anthropic, openai, or custom)"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeAuth
+    type: bool
+    placeholder: "__INCLUDE_AUTH__"
+    description: "Include authentication setup with NextAuth.js"
+    prompt: "Include auth?"
+    default: true
+
+  - name: IncludeDatabase
+    type: bool
+    placeholder: "__INCLUDE_DATABASE__"
+    description: "Include database setup with Drizzle ORM and Postgres"
+    prompt: "Include database?"
+    default: true
+
+  - name: IncludeDocker
+    type: bool
+    placeholder: "__INCLUDE_DOCKER__"
+    description: "Include Dockerfile and docker-compose.yml"
+    prompt: "Include Docker files?"
+    default: true
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include Vitest test suite and example tests"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/lib/auth"
+    when: IncludeAuth
+  - path: "src/lib/db"
+    when: IncludeDatabase
+  - path: "Dockerfile"
+    when: IncludeDocker
+  - path: "docker-compose.yml"
+    when: IncludeDocker
+  - path: "vitest.config.ts"
+    when: IncludeTests
+  - path: "src/__tests__"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [module-auth, module-database, infra-vercel, infra-aws]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the Next.js application"
+    optional: false

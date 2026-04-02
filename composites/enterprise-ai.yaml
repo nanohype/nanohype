@@ -1,0 +1,136 @@
+apiVersion: nanohype/v1
+kind: composite
+name: enterprise-ai
+displayName: "Enterprise AI Infrastructure"
+description: >
+  Full enterprise AI stack with agents, tool servers, safety
+  guardrails, evaluation, prompt management, observability,
+  and Kubernetes deployment.
+version: "0.1.0"
+tags: [enterprise, ai, kubernetes, agents, guardrails]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeRag
+    type: bool
+    placeholder: "__INCLUDE_RAG__"
+    description: "Include RAG pipeline"
+    default: true
+
+  - name: IncludeA2a
+    type: bool
+    placeholder: "__INCLUDE_A2A__"
+    description: "Include multi-agent coordination"
+    default: false
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: agentic-loop
+    path: packages/agent
+    variables:
+      ProjectName: "${ProjectName}-agent"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+
+  - template: mcp-server-ts
+    path: packages/tools
+    variables:
+      ProjectName: "${ProjectName}-tools"
+      ServerName: "${ProjectName} Tools"
+
+  - template: guardrails
+    path: packages/guardrails
+    variables:
+      ProjectName: "${ProjectName}-guardrails"
+      IncludePii: true
+      IncludeContentPolicy: true
+
+  - template: rag-pipeline
+    path: packages/rag
+    condition: IncludeRag
+    variables:
+      ProjectName: "${ProjectName}-rag"
+      LlmProvider: "${LlmProvider}"
+      VectorStore: "pgvector"
+
+  - template: a2a-agent
+    path: packages/orchestrator
+    condition: IncludeA2a
+    variables:
+      ProjectName: "${ProjectName}-orchestrator"
+      LlmProvider: "${LlmProvider}"
+
+  - template: eval-harness
+    path: packages/evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+
+  - template: prompt-library
+    path: packages/prompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"
+
+  - template: ts-service
+    path: apps/api
+    variables:
+      ProjectName: "${ProjectName}-api"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: module-auth
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+
+  - template: module-database
+    path: packages/db
+    variables:
+      ProjectName: "${ProjectName}-db"
+      DatabaseDriver: "postgres"
+
+  - template: module-observability
+    path: packages/observability
+    variables:
+      ProjectName: "${ProjectName}-otel"
+      Exporter: "otlp"
+
+  - template: module-queue
+    path: packages/queue
+    variables:
+      ProjectName: "${ProjectName}-queue"
+      QueueProvider: "bullmq"
+
+  - template: module-storage
+    path: packages/storage
+    variables:
+      ProjectName: "${ProjectName}-storage"
+      StorageProvider: "s3"
+
+  - template: k8s-deploy
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeHelm: true
+      IncludeHpa: true
+      IncludeIngress: true
+      IncludeCi: true

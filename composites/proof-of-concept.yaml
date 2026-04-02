@@ -1,0 +1,40 @@
+apiVersion: nanohype/v1
+kind: composite
+name: proof-of-concept
+displayName: "AI Proof of Concept"
+description: >
+  Minimal AI agent with evaluation harness. The fastest
+  path to a working prototype with quality gates.
+version: "0.1.0"
+tags: [ai, poc, agent, eval]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider"
+    default: "anthropic"
+
+templates:
+  - template: agentic-loop
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+      IncludeEval: false
+
+  - template: eval-harness
+    path: evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"

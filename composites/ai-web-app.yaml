@@ -1,0 +1,96 @@
+apiVersion: nanohype/v1
+kind: composite
+name: ai-web-app
+displayName: "AI Web Application"
+description: >
+  Full-stack web application with Next.js frontend, RAG pipeline,
+  authentication, database, and deployment.
+version: "0.1.0"
+tags: [ai, nextjs, fullstack, rag, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for AI features"
+    default: "anthropic"
+
+  - name: IncludeRag
+    type: bool
+    placeholder: "__INCLUDE_RAG__"
+    description: "Include RAG pipeline for document search"
+    default: true
+
+  - name: IncludeEvals
+    type: bool
+    placeholder: "__INCLUDE_EVALS__"
+    description: "Include evaluation harness"
+    default: true
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+      IncludeSharedUi: true
+
+  - template: next-app
+    path: apps/web
+    variables:
+      ProjectName: "${ProjectName}-web"
+      LlmProvider: "${LlmProvider}"
+      IncludeAuth: true
+      IncludeDatabase: true
+      IncludeDocker: false
+
+  - template: rag-pipeline
+    path: packages/rag
+    condition: IncludeRag
+    variables:
+      ProjectName: "${ProjectName}-rag"
+      LlmProvider: "${LlmProvider}"
+      VectorStore: "pgvector"
+
+  - template: module-auth
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+      AuthProvider: "clerk"
+
+  - template: module-database
+    path: packages/db
+    variables:
+      ProjectName: "${ProjectName}-db"
+      DatabaseDriver: "postgres"
+
+  - template: module-observability
+    path: packages/observability
+    variables:
+      ProjectName: "${ProjectName}-otel"
+      Exporter: "otlp"
+
+  - template: eval-harness
+    path: packages/evals
+    condition: IncludeEvals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+
+  - template: infra-aws
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      ComputeTarget: "ecs"
+      IncludeVpc: true
+      IncludeRds: true
+      IncludeMonitoring: true

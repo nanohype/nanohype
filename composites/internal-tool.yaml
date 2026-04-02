@@ -1,0 +1,59 @@
+apiVersion: nanohype/v1
+kind: composite
+name: internal-tool
+displayName: "Internal Tool"
+description: >
+  CLI tool or browser extension backed by MCP servers
+  for internal team use.
+version: "0.1.0"
+tags: [cli, mcp, tools, internal]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: Interface
+    type: string
+    placeholder: "__INTERFACE__"
+    description: "User interface type (cli or chrome-ext)"
+    default: "cli"
+
+  - name: IncludeEvals
+    type: bool
+    placeholder: "__INCLUDE_EVALS__"
+    description: "Include evaluation harness"
+    default: true
+
+templates:
+  - template: go-cli
+    path: "."
+    condition: InterfaceIsCli
+    variables:
+      ProjectName: "${ProjectName}"
+      Org: "${ProjectName}"
+      GoModule: "github.com/${ProjectName}/${ProjectName}"
+
+  - template: mcp-server-ts
+    path: mcp-server
+    variables:
+      ProjectName: "${ProjectName}-mcp"
+      ServerName: "${ProjectName} Tools"
+      Transport: "stdio"
+
+  - template: eval-harness
+    path: evals
+    condition: IncludeEvals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+
+  - template: infra-fly
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      AppName: "${ProjectName}"

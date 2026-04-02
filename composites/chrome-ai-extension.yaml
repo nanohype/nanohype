@@ -1,0 +1,60 @@
+apiVersion: nanohype/v1
+kind: composite
+name: chrome-ai-extension
+displayName: "Chrome AI Extension"
+description: >
+  Chrome extension with AI sidepanel backed by MCP tool
+  servers and optional prompt library.
+version: "0.1.0"
+tags: [chrome, extension, ai, mcp]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: ExtensionName
+    type: string
+    placeholder: "__EXTENSION_NAME__"
+    description: "Display name in Chrome"
+    required: true
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludePrompts
+    type: bool
+    placeholder: "__INCLUDE_PROMPTS__"
+    description: "Include versioned prompt library"
+    default: true
+
+templates:
+  - template: chrome-ext
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      ExtensionName: "${ExtensionName}"
+      LlmProvider: "${LlmProvider}"
+      IncludeContentScript: true
+      IncludeOptions: true
+
+  - template: mcp-server-ts
+    path: mcp-server
+    variables:
+      ProjectName: "${ProjectName}-mcp"
+      ServerName: "${ExtensionName} Tools"
+      Transport: "stdio"
+
+  - template: prompt-library
+    path: prompts
+    condition: IncludePrompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"

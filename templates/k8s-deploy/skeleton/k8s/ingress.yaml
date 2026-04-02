@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: __PROJECT_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: __PROJECT_NAME__
+    app.kubernetes.io/part-of: __PROJECT_NAME__
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: __PROJECT_NAME__.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: __PROJECT_NAME__
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - __PROJECT_NAME__.example.com
+      secretName: __PROJECT_NAME__-tls

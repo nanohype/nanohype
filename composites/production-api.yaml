@@ -1,0 +1,103 @@
+apiVersion: nanohype/v1
+kind: composite
+name: production-api
+displayName: "Production API Service"
+description: >
+  Production-grade TypeScript API service with auth, database,
+  caching, rate limiting, background jobs, observability,
+  and deployment.
+version: "0.1.0"
+tags: [api, service, production, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: DatabaseDriver
+    type: string
+    placeholder: "__DATABASE_DRIVER__"
+    description: "Database driver"
+    default: "postgres"
+
+  - name: DeployTarget
+    type: string
+    placeholder: "__DEPLOY_TARGET__"
+    description: "Deployment target (infra-fly, infra-aws, infra-gcp, k8s-deploy)"
+    default: "infra-fly"
+
+  - name: IncludeQueue
+    type: bool
+    placeholder: "__INCLUDE_QUEUE__"
+    description: "Include background job processing"
+    default: true
+
+  - name: IncludeCache
+    type: bool
+    placeholder: "__INCLUDE_CACHE__"
+    description: "Include caching layer"
+    default: true
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: ts-service
+    path: apps/api
+    variables:
+      ProjectName: "${ProjectName}-api"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: module-auth
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+      AuthProvider: "jwt"
+
+  - template: module-database
+    path: packages/db
+    variables:
+      ProjectName: "${ProjectName}-db"
+      DatabaseDriver: "${DatabaseDriver}"
+
+  - template: module-observability
+    path: packages/observability
+    variables:
+      ProjectName: "${ProjectName}-otel"
+      Exporter: "otlp"
+
+  - template: module-queue
+    path: packages/queue
+    condition: IncludeQueue
+    variables:
+      ProjectName: "${ProjectName}-queue"
+      QueueProvider: "bullmq"
+
+  - template: module-cache
+    path: packages/cache
+    condition: IncludeCache
+    variables:
+      ProjectName: "${ProjectName}-cache"
+      CacheProvider: "memory"
+
+  - template: module-rate-limit
+    path: packages/rate-limit
+    variables:
+      ProjectName: "${ProjectName}-rate-limit"
+      Algorithm: "token-bucket"
+
+  - template: infra-fly
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      AppName: "${ProjectName}"
+      IncludeCi: true

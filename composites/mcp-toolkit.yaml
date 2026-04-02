@@ -1,0 +1,61 @@
+apiVersion: nanohype/v1
+kind: composite
+name: mcp-toolkit
+displayName: "MCP Toolkit"
+description: >
+  MCP server with evaluation harness, prompt library,
+  and deployment. The standard stack for building
+  tool servers for AI systems.
+version: "0.1.0"
+tags: [mcp, tools, ai, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: ServerName
+    type: string
+    placeholder: "__SERVER_NAME__"
+    description: "Human-readable MCP server name"
+    required: true
+
+  - name: IncludePrompts
+    type: bool
+    placeholder: "__INCLUDE_PROMPTS__"
+    description: "Include versioned prompt library"
+    default: true
+
+  - name: IncludeEvals
+    type: bool
+    placeholder: "__INCLUDE_EVALS__"
+    description: "Include evaluation harness"
+    default: true
+
+templates:
+  - template: mcp-server-ts
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      ServerName: "${ServerName}"
+      Transport: "stdio"
+      IncludeResources: true
+
+  - template: prompt-library
+    path: prompts
+    condition: IncludePrompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"
+      IncludeSdk: true
+      IncludeTests: true
+
+  - template: eval-harness
+    path: evals
+    condition: IncludeEvals
+    variables:
+      ProjectName: "${ProjectName}-evals"

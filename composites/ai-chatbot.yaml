@@ -1,0 +1,74 @@
+apiVersion: nanohype/v1
+kind: composite
+name: ai-chatbot
+displayName: "AI Chatbot"
+description: >
+  Full-stack AI chatbot with agentic loop, HTTP service,
+  authentication, evaluation harness, and deployment.
+version: "0.1.0"
+tags: [ai, chatbot, fullstack, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for AI features"
+    default: "anthropic"
+
+  - name: IncludeEvals
+    type: bool
+    placeholder: "__INCLUDE_EVALS__"
+    description: "Include evaluation harness"
+    default: true
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+      IncludeSharedUi: false
+
+  - template: agentic-loop
+    path: packages/ai
+    variables:
+      ProjectName: "${ProjectName}-ai"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+      IncludeEval: false
+
+  - template: ts-service
+    path: apps/api
+    variables:
+      ProjectName: "${ProjectName}-api"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: module-auth
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+      AuthProvider: "jwt"
+
+  - template: eval-harness
+    path: packages/evals
+    condition: IncludeEvals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+
+  - template: infra-fly
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      AppName: "${ProjectName}"
+      IncludeCi: true

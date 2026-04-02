@@ -1,0 +1,90 @@
+apiVersion: nanohype/v1
+
+name: a2a-agent
+displayName: "A2A Agent"
+description: >
+  Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript. A2A is
+  the open protocol for multi-agent interoperability — the agent-level
+  equivalent of MCP (which operates at the tool level). The generated
+  project can expose skills to other agents via an A2A server, discover
+  and invoke capabilities on remote agents via an A2A client, and use an
+  LLM provider for reasoning about which skill to execute. Supports HTTP
+  and WebSocket transports, optional agent discovery with an Agent Card
+  served at /.well-known/agent.json, and a pluggable provider registry
+  for LLM backends.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, agent, a2a, multi-agent, protocol, ai]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "An A2A protocol agent"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for agent reasoning"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: Transport
+    type: string
+    placeholder: "__TRANSPORT__"
+    description: "A2A transport protocol (http or websocket)"
+    prompt: "Transport"
+    default: "http"
+
+  - name: IncludeDiscovery
+    type: bool
+    placeholder: "__INCLUDE_DISCOVERY__"
+    description: "Include agent discovery registry and Agent Card at /.well-known/agent.json"
+    prompt: "Include agent discovery?"
+    default: true
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test suite with Vitest"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/discovery/registry.ts"
+    when: IncludeDiscovery
+  - path: "src/discovery/card.ts"
+    when: IncludeDiscovery
+  - path: "src/__tests__/skills.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/protocol.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [mcp-server-ts, agentic-loop, eval-harness]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false

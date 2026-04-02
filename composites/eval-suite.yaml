@@ -1,0 +1,58 @@
+apiVersion: nanohype/v1
+kind: composite
+name: eval-suite
+displayName: "AI Evaluation Suite"
+description: >
+  Standalone evaluation infrastructure with test harness,
+  versioned prompts, and guardrails validation. For teams
+  that need to test AI systems without building them.
+version: "0.1.0"
+tags: [eval, testing, prompts, ai, quality]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for eval targets"
+    default: "anthropic"
+
+  - name: IncludeGuardrails
+    type: bool
+    placeholder: "__INCLUDE_GUARDRAILS__"
+    description: "Include safety filter testing"
+    default: true
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: eval-harness
+    path: packages/evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+      IncludeCi: true
+
+  - template: prompt-library
+    path: packages/prompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"
+      IncludeSdk: true
+
+  - template: guardrails
+    path: packages/guardrails
+    condition: IncludeGuardrails
+    variables:
+      ProjectName: "${ProjectName}-guardrails"

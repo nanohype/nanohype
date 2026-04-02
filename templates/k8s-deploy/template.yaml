@@ -1,0 +1,104 @@
+apiVersion: nanohype/v1
+
+name: k8s-deploy
+displayName: "Kubernetes Deployment"
+description: >
+  Scaffolds a Kubernetes deployment with raw manifests and an optional
+  Helm chart. Includes Deployment, Service, and ConfigMap resources with
+  production-grade defaults: resource limits, liveness and readiness
+  probes, non-root security context, configurable replicas, and
+  namespace awareness. Optionally adds Ingress, HorizontalPodAutoscaler,
+  a Helm chart for parameterized deploys, and a GitHub Actions CI/CD
+  workflow.
+version: "0.1.0"
+license: Apache-2.0
+tags: [kubernetes, k8s, deployment, helm, infrastructure]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as resource names and labels"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README and chart metadata"
+    prompt: "Project description"
+    default: "Kubernetes deployment"
+
+  - name: Namespace
+    type: string
+    placeholder: "__NAMESPACE__"
+    description: "Kubernetes namespace for all resources"
+    prompt: "Namespace"
+    default: "default"
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be a valid Kubernetes namespace (lowercase kebab-case)"
+
+  - name: Replicas
+    type: string
+    placeholder: "__REPLICAS__"
+    description: "Number of pod replicas"
+    prompt: "Replica count"
+    default: "2"
+    validation:
+      pattern: "^[1-9][0-9]*$"
+      message: "Must be a positive integer"
+
+  - name: IncludeIngress
+    type: bool
+    placeholder: "__INCLUDE_INGRESS__"
+    description: "Include Ingress resource for external HTTP routing"
+    prompt: "Include Ingress?"
+    default: true
+
+  - name: IncludeHpa
+    type: bool
+    placeholder: "__INCLUDE_HPA__"
+    description: "Include HorizontalPodAutoscaler for auto-scaling"
+    prompt: "Include HPA?"
+    default: true
+
+  - name: IncludeHelm
+    type: bool
+    placeholder: "__INCLUDE_HELM__"
+    description: "Include Helm chart for parameterized deployments"
+    prompt: "Include Helm chart?"
+    default: true
+
+  - name: IncludeCi
+    type: bool
+    placeholder: "__INCLUDE_CI__"
+    description: "Include GitHub Actions deploy workflow"
+    prompt: "Include CI/CD?"
+    default: true
+
+conditionals:
+  - path: "k8s/ingress.yaml"
+    when: IncludeIngress
+  - path: "k8s/hpa.yaml"
+    when: IncludeHpa
+  - path: "chart"
+    when: IncludeHelm
+  - path: ".github/workflows/deploy.yml"
+    when: IncludeCi
+
+composition:
+  pairsWith: [go-service, ts-service, go-cli]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: kubectl
+    purpose: "Kubernetes CLI for applying manifests and managing clusters"
+    optional: false
+  - name: helm
+    version: ">=3.0"
+    purpose: "Helm CLI for chart-based deployments (only needed if Helm chart is included)"
+    optional: true

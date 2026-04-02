@@ -1,0 +1,59 @@
+apiVersion: nanohype/v1
+kind: composite
+name: go-microservice
+displayName: "Go Microservice"
+description: >
+  Go HTTP service with observability and deployment.
+  Lightweight, single-binary, production-ready.
+version: "0.1.0"
+tags: [go, microservice, api, deployment]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: GoModule
+    type: string
+    placeholder: "__GO_MODULE__"
+    description: "Go module path"
+    required: true
+
+  - name: Org
+    type: string
+    placeholder: "__ORG__"
+    description: "GitHub org or username"
+    required: true
+
+  - name: DeployTarget
+    type: string
+    placeholder: "__DEPLOY_TARGET__"
+    description: "Deployment target"
+    default: "fly"
+
+templates:
+  - template: go-service
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      GoModule: "${GoModule}"
+      Org: "${Org}"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: eval-harness
+    path: evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+
+  - template: infra-fly
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      AppName: "${ProjectName}"
+      IncludeCi: true

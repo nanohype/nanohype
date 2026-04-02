@@ -1,0 +1,72 @@
+apiVersion: nanohype/v1
+kind: composite
+name: background-processor
+displayName: "Background Processor"
+description: >
+  Async job processing service with queue, database,
+  storage, observability, and deployment. For workloads
+  that don't need synchronous responses.
+version: "0.1.0"
+tags: [queue, worker, async, service]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: QueueProvider
+    type: string
+    placeholder: "__QUEUE_PROVIDER__"
+    description: "Queue backend"
+    default: "bullmq"
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: ts-service
+    path: apps/worker
+    variables:
+      ProjectName: "${ProjectName}-worker"
+      IncludeAuth: false
+      IncludeDocker: true
+
+  - template: module-queue
+    path: packages/queue
+    variables:
+      ProjectName: "${ProjectName}-queue"
+      QueueProvider: "${QueueProvider}"
+
+  - template: module-database
+    path: packages/db
+    variables:
+      ProjectName: "${ProjectName}-db"
+      DatabaseDriver: "postgres"
+
+  - template: module-storage
+    path: packages/storage
+    variables:
+      ProjectName: "${ProjectName}-storage"
+      StorageProvider: "s3"
+
+  - template: module-observability
+    path: packages/observability
+    variables:
+      ProjectName: "${ProjectName}-otel"
+      Exporter: "otlp"
+
+  - template: infra-fly
+    path: infra
+    variables:
+      ProjectName: "${ProjectName}"
+      AppName: "${ProjectName}"
+      IncludeRedis: true
+      IncludeCi: true

@@ -1,0 +1,96 @@
+apiVersion: nanohype/v1
+
+name: infra-gcp
+displayName: "GCP Cloud Run Deployment"
+description: >
+  Scaffolds a GCP deployment configuration using gcloud CLI. Deploys to
+  Cloud Run with a multi-stage Dockerfile, deploy scripts, and optional
+  Cloud SQL PostgreSQL, Cloud Monitoring dashboards, and GitHub Actions
+  CI/CD workflow. Designed to pair with service templates for a complete
+  deploy pipeline.
+version: "0.1.0"
+license: Apache-2.0
+tags: [gcp, cloud-run, deployment, infrastructure, docker]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory name and identifiers"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README"
+    prompt: "Project description"
+    default: "GCP infrastructure"
+
+  - name: GcpProject
+    type: string
+    placeholder: "__GCP_PROJECT__"
+    description: "GCP project ID"
+    prompt: "GCP project ID"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]{4,28}[a-z0-9]$"
+      message: "Must be a valid GCP project ID (6-30 chars, lowercase, hyphens allowed)"
+
+  - name: GcpRegion
+    type: string
+    placeholder: "__GCP_REGION__"
+    description: "GCP region for deployment"
+    prompt: "GCP region"
+    default: "us-central1"
+    validation:
+      pattern: "^[a-z]+-[a-z]+[0-9]+$"
+      message: "Must be a valid GCP region (e.g. us-central1, europe-west1)"
+
+  - name: IncludeCloudSql
+    type: bool
+    placeholder: "__INCLUDE_CLOUD_SQL__"
+    description: "Include Cloud SQL PostgreSQL instance and connection script"
+    prompt: "Include Cloud SQL?"
+    default: false
+
+  - name: IncludeMonitoring
+    type: bool
+    placeholder: "__INCLUDE_MONITORING__"
+    description: "Include Cloud Monitoring dashboard and alert policies"
+    prompt: "Include monitoring?"
+    default: true
+
+  - name: IncludeCi
+    type: bool
+    placeholder: "__INCLUDE_CI__"
+    description: "Include GitHub Actions deploy workflow"
+    prompt: "Include CI/CD?"
+    default: true
+
+conditionals:
+  - path: "scripts/setup-db.sh"
+    when: IncludeCloudSql
+  - path: "monitoring/dashboard.json"
+    when: IncludeMonitoring
+  - path: "monitoring/alerts.json"
+    when: IncludeMonitoring
+  - path: "scripts/setup-monitoring.sh"
+    when: IncludeMonitoring
+  - path: ".github/workflows/deploy.yml"
+    when: IncludeCi
+
+composition:
+  pairsWith: [go-service, ts-service, go-cli]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: gcloud
+    purpose: "Google Cloud CLI for deploying and managing GCP resources"
+    optional: false
+  - name: docker
+    purpose: "Container runtime for building images"
+    optional: true

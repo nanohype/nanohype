@@ -1,0 +1,58 @@
+apiVersion: nanohype/v1
+kind: composite
+name: safe-ai-agent
+displayName: "Safe AI Agent"
+description: >
+  AI agent with safety guardrails, evaluation harness,
+  and prompt management. The responsible AI stack —
+  filter inputs, validate outputs, test everything.
+version: "0.1.0"
+tags: [ai, safety, guardrails, agent, eval]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider"
+    default: "anthropic"
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: agentic-loop
+    path: packages/agent
+    variables:
+      ProjectName: "${ProjectName}-agent"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+
+  - template: guardrails
+    path: packages/guardrails
+    variables:
+      ProjectName: "${ProjectName}-guardrails"
+      IncludePii: true
+      IncludeContentPolicy: true
+
+  - template: eval-harness
+    path: packages/evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+
+  - template: prompt-library
+    path: packages/prompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"

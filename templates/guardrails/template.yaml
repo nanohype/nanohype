@@ -1,0 +1,78 @@
+apiVersion: nanohype/v1
+
+name: guardrails
+displayName: "AI Safety Guardrails"
+description: >
+  Input/output safety filters for AI systems. Pluggable filter pipeline
+  that sits between user and LLM boundaries, inspecting and filtering
+  both directions. Ships with prompt-injection detection, PII redaction,
+  content-policy enforcement, and token-limit guards. The filter registry
+  pattern makes it trivial to add custom safety filters.
+version: "0.1.0"
+license: Apache-2.0
+tags: [ai, safety, guardrails, filters, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "AI safety guardrails"
+
+  - name: IncludePii
+    type: bool
+    placeholder: "__INCLUDE_PII__"
+    description: "Include PII detection filter"
+    default: true
+
+  - name: IncludeContentPolicy
+    type: bool
+    placeholder: "__INCLUDE_CONTENT_POLICY__"
+    description: "Include content policy filter"
+    default: true
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test suite"
+    default: true
+
+conditionals:
+  - path: "src/guardrails/filters/pii.ts"
+    when: IncludePii
+  - path: "src/guardrails/filters/__tests__/pii.test.ts"
+    when: IncludePii
+  - path: "src/guardrails/filters/content-policy.ts"
+    when: IncludeContentPolicy
+  - path: "src/guardrails/filters/__tests__/pipeline.test.ts"
+    when: IncludeTests
+  - path: "src/guardrails/filters/__tests__/prompt-injection.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [agentic-loop, mcp-server-ts, ts-service, rag-pipeline]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the guardrails module"
+    optional: false

@@ -1,0 +1,59 @@
+apiVersion: nanohype/v1
+kind: composite
+name: vscode-ai-extension
+displayName: "VS Code AI Extension"
+description: >
+  VS Code extension with AI provider integration, MCP tool
+  servers, and versioned prompt management.
+version: "0.1.0"
+tags: [vscode, extension, ai, mcp]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: ExtensionName
+    type: string
+    placeholder: "__EXTENSION_NAME__"
+    description: "Display name in VS Code"
+    required: true
+
+  - name: Publisher
+    type: string
+    placeholder: "__PUBLISHER__"
+    description: "VS Code marketplace publisher ID"
+    required: true
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider"
+    default: "anthropic"
+
+templates:
+  - template: vscode-ext
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      ExtensionName: "${ExtensionName}"
+      Publisher: "${Publisher}"
+      IncludeWebview: true
+      IncludeAi: true
+
+  - template: mcp-server-ts
+    path: mcp-server
+    variables:
+      ProjectName: "${ProjectName}-mcp"
+      ServerName: "${ExtensionName} Tools"
+      Transport: "stdio"
+
+  - template: prompt-library
+    path: prompts
+    variables:
+      ProjectName: "${ProjectName}-prompts"
