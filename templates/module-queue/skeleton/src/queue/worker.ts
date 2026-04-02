@@ -1,5 +1,6 @@
 import type { Job, HandlerMap } from "./types.js";
 import type { QueueProvider } from "./providers/types.js";
+import { queueJobTotal, queueJobDuration } from "./metrics.js";
 
 // ── Worker Runner ───────────────────────────────────────────────────
 //
@@ -37,7 +38,7 @@ export function createWorker(
   provider: QueueProvider,
   handlers: HandlerMap,
   opts?: WorkerOptions
-): { stop: () => void } {
+): { stop: () => Promise<void> } {
   const pollInterval = opts?.pollInterval ?? WORKER_DEFAULTS.pollInterval;
   const concurrency = opts?.concurrency ?? WORKER_DEFAULTS.concurrency;
   let running = true;
@@ -58,6 +59,7 @@ export function createWorker(
 
     if (!handler) {
       console.error(`[worker] No handler registered for job "${job.name}"`);
+      queueJobTotal.add(1, { job_name: job.name, status: "unhandled" });
       await provider.fail(
         job.id,
         new Error(`No handler registered for job "${job.name}"`)
@@ -65,14 +67,25 @@ export function createWorker(
       return;
     }
 
+    const start = performance.now();
+
     try {
       await handler(job);
       await provider.acknowledge(job.id);
+
+      const durationMs = performance.now() - start;
+      queueJobTotal.add(1, { job_name: job.name, status: "success" });
+      queueJobDuration.record(durationMs, { job_name: job.name });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error(
         `[worker] Job "${job.name}" (${job.id}) failed: ${error.message}`
       );
+
+      const durationMs = performance.now() - start;
+      queueJobTotal.add(1, { job_name: job.name, status: "error" });
+      queueJobDuration.record(durationMs, { job_name: job.name });
+
       await provider.fail(job.id, error);
     }
   }
@@ -110,9 +123,15 @@ export function createWorker(
   poll();
 
   return {
-    stop() {
+    async stop(): Promise<void> {
       running = false;
       controller.abort();
+
+      // Wait for in-flight jobs to finish (30s deadline)
+      const deadline = Date.now() + 30_000;
+      while (activeJobs > 0 && Date.now() < deadline) {
+        await sleep(100);
+      }
     },
   };
 }

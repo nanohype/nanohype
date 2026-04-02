@@ -9,10 +9,12 @@ import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.
 import type { VectorStoreConfig } from "../config.js";
 import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class PineconeVectorStore implements VectorStoreProvider {
   private readonly index: ReturnType<Pinecone["index"]>;
   private readonly namespace: string;
+  private readonly cb = createCircuitBreaker();
 
   constructor(config: VectorStoreConfig) {
     if (!config.pineconeApiKey) {
@@ -40,7 +42,9 @@ class PineconeVectorStore implements VectorStoreProvider {
     const batchSize = 100;
     for (let i = 0; i < vectors.length; i += batchSize) {
       const batch = vectors.slice(i, i + batchSize);
-      await this.index.namespace(this.namespace).upsert(batch);
+      await this.cb.execute(() =>
+        this.index.namespace(this.namespace).upsert(batch)
+      );
     }
   }
 
@@ -66,7 +70,9 @@ class PineconeVectorStore implements VectorStoreProvider {
       );
     }
 
-    const response = await this.index.namespace(this.namespace).query(queryParams);
+    const response = await this.cb.execute(() =>
+      this.index.namespace(this.namespace).query(queryParams)
+    );
 
     return (response.matches ?? []).map((match) => {
       const metadata = { ...(match.metadata ?? {}) } as Record<string, unknown>;
@@ -83,7 +89,9 @@ class PineconeVectorStore implements VectorStoreProvider {
   }
 
   async delete(ids: string[]): Promise<void> {
-    await this.index.namespace(this.namespace).deleteMany(ids);
+    await this.cb.execute(() =>
+      this.index.namespace(this.namespace).deleteMany(ids)
+    );
   }
 }
 

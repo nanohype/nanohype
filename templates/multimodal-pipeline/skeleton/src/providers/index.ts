@@ -16,3 +16,4 @@ export {
 // Import provider modules to trigger registration
 import "./anthropic.js";
 import "./openai.js";
+import "./mock.js";

@@ -15,6 +15,10 @@ import * as jose from "jose";
 import type { AuthResult } from "../types.js";
 import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+
+// Circuit breaker for JWKS remote key fetches
+const jwksCb = createCircuitBreaker();
 
 /**
  * Extract a Bearer token from the Authorization header.
@@ -123,11 +127,15 @@ const jwtProvider: AuthProvider = {
 
       if (jwksUrl) {
         // ── JWKS verification (cached key set) ─────────────────────
+        // Wrap the JWKS-based verification in the circuit breaker so
+        // that repeated JWKS endpoint failures trip the breaker.
         const jwks = getCachedJWKS(jwksUrl);
-        const result = await jose.jwtVerify(token, jwks, {
-          issuer,
-          audience,
-        });
+        const result = await jwksCb.execute(() =>
+          jose.jwtVerify(token, jwks, {
+            issuer,
+            audience,
+          })
+        );
         payload = result.payload;
       } else {
         // ── Shared secret verification ─────────────────────────────

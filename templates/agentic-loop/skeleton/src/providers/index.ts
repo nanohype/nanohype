@@ -10,6 +10,7 @@
 // Side-effect imports: each module calls registerProvider() at load time
 import "./anthropic.js";
 import "./openai.js";
+import "./mock.js";
 
 // Re-export the public API
 export { registerProvider, getProvider, listProviders } from "./registry.js";
@@ -20,5 +21,6 @@ export type {
   ToolCall,
   ToolCallMessage,
   LlmResponse,
+  TokenUsage,
   StreamChat,
 } from "./types.js";

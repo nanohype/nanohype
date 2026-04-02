@@ -10,6 +10,7 @@ import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.
 import type { VectorStoreConfig } from "../config.js";
 import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 /**
  * Generate a deterministic UUID v5-style hash from a document ID.
@@ -29,6 +30,7 @@ class QdrantVectorStore implements VectorStoreProvider {
   private readonly client: QdrantClient;
   private readonly collectionName: string;
   private readonly dimensions: number;
+  private readonly cb = createCircuitBreaker();
 
   constructor(config: VectorStoreConfig, dimensions: number) {
     this.client = new QdrantClient({
@@ -40,13 +42,17 @@ class QdrantVectorStore implements VectorStoreProvider {
   }
 
   async init(): Promise<void> {
-    const collections = await this.client.getCollections();
+    const collections = await this.cb.execute(() =>
+      this.client.getCollections()
+    );
     const exists = collections.collections.some((c) => c.name === this.collectionName);
 
     if (!exists) {
-      await this.client.createCollection(this.collectionName, {
-        vectors: { size: this.dimensions, distance: "Cosine" },
-      });
+      await this.cb.execute(() =>
+        this.client.createCollection(this.collectionName, {
+          vectors: { size: this.dimensions, distance: "Cosine" },
+        })
+      );
     }
 
     logger.info("Qdrant initialized", { collection: this.collectionName });
@@ -61,7 +67,9 @@ class QdrantVectorStore implements VectorStoreProvider {
       payload: { content: doc.content, doc_id: doc.id, ...doc.metadata },
     }));
 
-    await this.client.upsert(this.collectionName, { points });
+    await this.cb.execute(() =>
+      this.client.upsert(this.collectionName, { points })
+    );
   }
 
   async search(
@@ -78,11 +86,13 @@ class QdrantVectorStore implements VectorStoreProvider {
         }
       : undefined;
 
-    const hits = await this.client.search(this.collectionName, {
-      vector: queryEmbedding,
-      limit: topK,
-      filter: searchFilter,
-    });
+    const hits = await this.cb.execute(() =>
+      this.client.search(this.collectionName, {
+        vector: queryEmbedding,
+        limit: topK,
+        filter: searchFilter,
+      })
+    );
 
     return hits.map((hit) => {
       const payload = (hit.payload ?? {}) as Record<string, unknown>;
@@ -99,7 +109,9 @@ class QdrantVectorStore implements VectorStoreProvider {
 
   async delete(ids: string[]): Promise<void> {
     const pointIds = ids.map(deterministicId);
-    await this.client.delete(this.collectionName, { points: pointIds });
+    await this.cb.execute(() =>
+      this.client.delete(this.collectionName, { points: pointIds })
+    );
   }
 }
 

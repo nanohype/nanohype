@@ -8,9 +8,11 @@
 import OpenAI from "openai";
 import type { LlmProvider, EmbeddingProvider } from "./types.js";
 import { registerLlmProvider, registerEmbeddingProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class OpenAILlm implements LlmProvider {
   private readonly client: OpenAI;
+  private readonly cb = createCircuitBreaker();
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.OPENAI_API_KEY;
@@ -29,15 +31,17 @@ class OpenAILlm implements LlmProvider {
     temperature: number,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
-    const response = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userMessage },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      })
+    );
 
     const answer = response.choices[0]?.message?.content ?? "";
 
@@ -57,6 +61,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
   private readonly model: string;
   private readonly dims: number;
   private readonly batchSize: number;
+  private readonly cb = createCircuitBreaker();
 
   constructor(model = "text-embedding-3-small", dims = 1536, batchSize = 128, apiKey?: string) {
     const key = apiKey || process.env.OPENAI_API_KEY;
@@ -76,11 +81,13 @@ class OpenAIEmbedder implements EmbeddingProvider {
   }
 
   async embed(text: string): Promise<number[]> {
-    const response = await this.client.embeddings.create({
-      input: [text],
-      model: this.model,
-      dimensions: this.dims,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.embeddings.create({
+        input: [text],
+        model: this.model,
+        dimensions: this.dims,
+      })
+    );
     return response.data[0].embedding;
   }
 
@@ -89,11 +96,13 @@ class OpenAIEmbedder implements EmbeddingProvider {
 
     for (let i = 0; i < texts.length; i += this.batchSize) {
       const batch = texts.slice(i, i + this.batchSize);
-      const response = await this.client.embeddings.create({
-        input: batch,
-        model: this.model,
-        dimensions: this.dims,
-      });
+      const response = await this.cb.execute(() =>
+        this.client.embeddings.create({
+          input: batch,
+          model: this.model,
+          dimensions: this.dims,
+        })
+      );
       const sorted = [...response.data].sort((a, b) => a.index - b.index);
       allEmbeddings.push(...sorted.map((item) => item.embedding));
     }

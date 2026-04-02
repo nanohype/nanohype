@@ -56,12 +56,36 @@ npm run db:generate
 # Apply migrations
 npm run db:migrate
 
+# Push schema directly (dev convenience, no migration files)
+npm run db:push
+
 # Open Drizzle Studio
 npm run db:studio
 
 # Build
 npm run build
 ```
+
+## Migration Workflow
+
+Migration files are stored in the `drizzle/` directory and should be committed to version control. Each migration is timestamped and applied in order.
+
+```bash
+# 1. Edit src/db/schema.ts with your table changes
+
+# 2. Generate SQL migration files into drizzle/
+npm run db:generate
+
+# 3. Review the generated SQL in drizzle/*.sql
+
+# 4. Apply migrations to the database
+npm run db:migrate
+
+# 5. (Dev shortcut) Push schema directly without migration files
+npm run db:push
+```
+
+Never edit a migration that has already been applied to a shared environment -- create a new one instead.
 
 ## Usage
 

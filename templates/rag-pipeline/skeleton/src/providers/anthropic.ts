@@ -7,9 +7,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { LlmProvider } from "./types.js";
 import { registerLlmProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class AnthropicLlm implements LlmProvider {
   private readonly client: Anthropic;
+  private readonly cb = createCircuitBreaker();
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.ANTHROPIC_API_KEY;
@@ -28,13 +30,15 @@ class AnthropicLlm implements LlmProvider {
     temperature: number,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
-    const response = await this.client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userMessage }],
-      temperature,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.messages.create({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMessage }],
+        temperature,
+      })
+    );
 
     const textBlock = response.content.find((block) => block.type === "text");
     const answer = textBlock && "text" in textBlock ? textBlock.text : "";

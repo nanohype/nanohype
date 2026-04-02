@@ -7,12 +7,14 @@
 import { CohereClient } from "cohere-ai";
 import type { EmbeddingProvider } from "./types.js";
 import { registerEmbeddingProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class CohereEmbedder implements EmbeddingProvider {
   private readonly client: CohereClient;
   private readonly model: string;
   private readonly dims: number;
   private readonly batchSize: number;
+  private readonly cb = createCircuitBreaker();
 
   constructor(model = "embed-english-v3.0", dims = 1024, batchSize = 96, apiKey?: string) {
     const key = apiKey || process.env.COHERE_API_KEY;
@@ -32,11 +34,13 @@ class CohereEmbedder implements EmbeddingProvider {
   }
 
   async embed(text: string): Promise<number[]> {
-    const response = await this.client.embed({
-      texts: [text],
-      model: this.model,
-      inputType: "search_document",
-    });
+    const response = await this.cb.execute(() =>
+      this.client.embed({
+        texts: [text],
+        model: this.model,
+        inputType: "search_document",
+      })
+    );
 
     const embeddings = response.embeddings;
     if (Array.isArray(embeddings) && Array.isArray(embeddings[0])) {
@@ -50,11 +54,13 @@ class CohereEmbedder implements EmbeddingProvider {
 
     for (let i = 0; i < texts.length; i += this.batchSize) {
       const batch = texts.slice(i, i + this.batchSize);
-      const response = await this.client.embed({
-        texts: batch,
-        model: this.model,
-        inputType: "search_document",
-      });
+      const response = await this.cb.execute(() =>
+        this.client.embed({
+          texts: batch,
+          model: this.model,
+          inputType: "search_document",
+        })
+      );
 
       const embeddings = response.embeddings;
       if (Array.isArray(embeddings)) {

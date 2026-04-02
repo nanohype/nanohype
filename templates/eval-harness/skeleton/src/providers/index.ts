@@ -9,6 +9,7 @@
 // Side-effect imports — each module registers itself on load
 import "./anthropic.js";
 import "./openai.js";
+import "./mock.js";
 
 // Re-export the registry API and shared types
 export { registerProvider, getProvider, listProviders } from "./registry.js";

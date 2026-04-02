@@ -7,6 +7,7 @@
 
 import "./hmac-sha256.js";
 import "./hmac-sha1.js";
+import "./mock.js";
 
 export {
   registerSignatureProvider,

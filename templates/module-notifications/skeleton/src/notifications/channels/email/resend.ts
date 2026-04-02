@@ -1,6 +1,7 @@
 import type { Notification, NotificationResult } from "../../types.js";
 import type { ChannelProvider } from "../types.js";
 import { registerChannel } from "../registry.js";
+import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
 
 // ── Resend Email Provider ───────────────────────────────────────────
 //
@@ -10,6 +11,8 @@ import { registerChannel } from "../registry.js";
 //
 // Self-registers as "email:resend" on import.
 //
+
+const cb = createCircuitBreaker();
 
 const resendProvider: ChannelProvider = {
   name: "resend",
@@ -25,12 +28,14 @@ const resendProvider: ChannelProvider = {
       const { Resend } = await import("resend");
       const client = new Resend(apiKey);
 
-      const result = await client.emails.send({
-        from: notification.from ?? "noreply@example.com",
-        to: notification.to,
-        subject: notification.subject ?? "",
-        text: notification.body,
-      });
+      const result = await cb.execute(() =>
+        client.emails.send({
+          from: notification.from ?? "noreply@example.com",
+          to: notification.to,
+          subject: notification.subject ?? "",
+          text: notification.body,
+        })
+      );
 
       if (result.error) {
         return { success: false, error: result.error.message };

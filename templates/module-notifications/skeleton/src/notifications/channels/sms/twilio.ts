@@ -1,6 +1,7 @@
 import type { Notification, NotificationResult } from "../../types.js";
 import type { ChannelProvider } from "../types.js";
 import { registerChannel } from "../registry.js";
+import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
 
 // ── Twilio SMS Provider ─────────────────────────────────────────────
 //
@@ -12,6 +13,8 @@ import { registerChannel } from "../registry.js";
 //
 // Self-registers as "sms:twilio" on import.
 //
+
+const cb = createCircuitBreaker();
 
 const twilioProvider: ChannelProvider = {
   name: "twilio",
@@ -40,11 +43,13 @@ const twilioProvider: ChannelProvider = {
       const twilio = await import("twilio");
       const client = twilio.default(accountSid, authToken);
 
-      const message = await client.messages.create({
-        from: fromNumber,
-        to: notification.to,
-        body: notification.body,
-      });
+      const message = await cb.execute(() =>
+        client.messages.create({
+          from: fromNumber,
+          to: notification.to,
+          body: notification.body,
+        })
+      );
 
       return { success: true, messageId: message.sid };
     } catch (err) {

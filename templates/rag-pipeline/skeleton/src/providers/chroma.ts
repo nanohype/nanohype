@@ -9,11 +9,13 @@ import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.
 import type { VectorStoreConfig } from "../config.js";
 import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class ChromaVectorStore implements VectorStoreProvider {
   private readonly client: ChromaClient;
   private readonly collectionName: string;
   private collection: Awaited<ReturnType<ChromaClient["getOrCreateCollection"]>> | null = null;
+  private readonly cb = createCircuitBreaker();
 
   constructor(config: VectorStoreConfig) {
     this.client = new ChromaClient({ path: config.chromaPersistDir });
@@ -21,22 +23,27 @@ class ChromaVectorStore implements VectorStoreProvider {
   }
 
   async init(): Promise<void> {
-    this.collection = await this.client.getOrCreateCollection({
-      name: this.collectionName,
-      metadata: { "hnsw:space": "cosine" },
-    });
+    this.collection = await this.cb.execute(() =>
+      this.client.getOrCreateCollection({
+        name: this.collectionName,
+        metadata: { "hnsw:space": "cosine" },
+      })
+    );
     logger.info("ChromaDB initialized", { collection: this.collectionName });
   }
 
   async addDocuments(documents: VectorDocument[]): Promise<void> {
     if (!documents.length || !this.collection) return;
 
-    await this.collection.upsert({
-      ids: documents.map((d) => d.id),
-      embeddings: documents.map((d) => d.embedding),
-      documents: documents.map((d) => d.content),
-      metadatas: documents.map((d) => d.metadata as Record<string, string>),
-    });
+    const col = this.collection;
+    await this.cb.execute(() =>
+      col.upsert({
+        ids: documents.map((d) => d.id),
+        embeddings: documents.map((d) => d.embedding),
+        documents: documents.map((d) => d.content),
+        metadatas: documents.map((d) => d.metadata as Record<string, string>),
+      })
+    );
   }
 
   async search(
@@ -46,11 +53,14 @@ class ChromaVectorStore implements VectorStoreProvider {
   ): Promise<SearchResult[]> {
     if (!this.collection) return [];
 
-    const results = await this.collection.query({
-      queryEmbeddings: [queryEmbedding],
-      nResults: topK,
-      where: filter as Record<string, string> | undefined,
-    });
+    const col = this.collection;
+    const results = await this.cb.execute(() =>
+      col.query({
+        queryEmbeddings: [queryEmbedding],
+        nResults: topK,
+        where: filter as Record<string, string> | undefined,
+      })
+    );
 
     const searchResults: SearchResult[] = [];
     if (results.ids?.[0]) {
@@ -70,7 +80,8 @@ class ChromaVectorStore implements VectorStoreProvider {
 
   async delete(ids: string[]): Promise<void> {
     if (!this.collection) return;
-    await this.collection.delete({ ids });
+    const col = this.collection;
+    await this.cb.execute(() => col.delete({ ids }));
   }
 }
 

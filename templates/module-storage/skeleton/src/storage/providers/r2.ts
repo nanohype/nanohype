@@ -18,6 +18,7 @@ import type {
 import type { ProviderConfig, StorageProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { toBuffer, withRetry } from "./helpers.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 // -- Cloudflare R2 Provider ----------------------------------------------
 //
@@ -44,6 +45,7 @@ class R2StorageProvider implements StorageProvider {
   readonly name = "r2";
   private client!: S3Client;
   private bucket!: string;
+  private readonly cb = createCircuitBreaker();
 
   async init(config: R2Config): Promise<void> {
     this.bucket = config.bucket;
@@ -70,26 +72,30 @@ class R2StorageProvider implements StorageProvider {
   ): Promise<void> {
     const body = await toBuffer(data);
 
-    await withRetry(() =>
-      this.client.send(
-        new PutObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-          Body: body,
-          ContentType: opts?.contentType,
-          Metadata: opts?.metadata,
-        })
+    await this.cb.execute(() =>
+      withRetry(() =>
+        this.client.send(
+          new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            Body: body,
+            ContentType: opts?.contentType,
+            Metadata: opts?.metadata,
+          })
+        )
       )
     );
   }
 
   async download(key: string): Promise<Buffer> {
-    const response = await withRetry(() =>
-      this.client.send(
-        new GetObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        })
+    const response = await this.cb.execute(() =>
+      withRetry(() =>
+        this.client.send(
+          new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+          })
+        )
       )
     );
 
@@ -106,24 +112,30 @@ class R2StorageProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    await withRetry(() =>
-      this.client.send(
-        new DeleteObjectCommand({
-          Bucket: this.bucket,
-          Key: key,
-        })
+    await this.cb.execute(() =>
+      withRetry(() =>
+        this.client.send(
+          new DeleteObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+          })
+        )
       )
     );
   }
 
   async list(prefix?: string, opts?: ListOptions): Promise<ListResult> {
-    const response = await this.client.send(
-      new ListObjectsV2Command({
-        Bucket: this.bucket,
-        Prefix: prefix ?? undefined,
-        MaxKeys: opts?.maxKeys,
-        ContinuationToken: opts?.cursor,
-      })
+    const response = await this.cb.execute(() =>
+      withRetry(() =>
+        this.client.send(
+          new ListObjectsV2Command({
+            Bucket: this.bucket,
+            Prefix: prefix ?? undefined,
+            MaxKeys: opts?.maxKeys,
+            ContinuationToken: opts?.cursor,
+          })
+        )
+      )
     );
 
     const objects: StorageObject[] = (response.Contents ?? []).map((item) => ({

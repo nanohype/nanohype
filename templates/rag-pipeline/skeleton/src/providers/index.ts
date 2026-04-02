@@ -33,3 +33,5 @@ import "./chroma.js";
 import "./pgvector.js";
 import "./qdrant.js";
 import "./pinecone.js";
+import "./mock.js";
+import "./mock-vectorstore.js";

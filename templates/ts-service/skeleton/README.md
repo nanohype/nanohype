@@ -49,13 +49,18 @@ docker compose up
 src/
   index.ts                  # Entrypoint — create app, start server
   app.ts                    # Hono app setup, mount routes and middleware
+  openapi.ts                # OpenAPI 3.1 spec generator from Zod schemas
   routes/
     health.ts               # GET /health
     example.ts              # Example CRUD routes
+    openapi.ts              # GET /openapi.json — serves the OpenAPI spec
   middleware/
     logger.ts               # Request logging middleware
     error-handler.ts        # Error handling middleware
+    idempotency.ts          # Idempotency-Key middleware for POST/PUT/PATCH
     auth.ts                 # Auth middleware (conditional)
+  schemas/
+    example.ts              # Zod request validation schemas
   db/
     client.ts               # Database client (registry pattern)
     schema.ts               # Example schema (Drizzle ORM)
@@ -67,6 +72,13 @@ src/
       types.ts              # DatabaseDriver interface
   telemetry/
     index.ts                # OpenTelemetry setup (traces + metrics)
+drizzle/                    # Generated migration files (committed to VCS)
+drizzle.config.ts           # Drizzle Kit configuration
+load-test/
+  k6/
+    script.js               # K6 load test script
+    config.json             # Stages and threshold configuration
+  README.md                 # Load testing instructions
 ```
 
 ## Adding Routes
@@ -99,6 +111,30 @@ Edit `src/db/schema.ts` to define tables, then generate and run migrations:
 npm run db:generate
 npm run db:migrate
 ```
+
+### Migration Workflow
+
+The migration lifecycle uses [drizzle-kit](https://orm.drizzle.team/kit-docs/overview) powered by `drizzle.config.ts` at the project root.
+
+```bash
+# 1. Edit src/db/schema.ts with your table changes
+
+# 2. Generate SQL migration files into drizzle/
+npm run db:generate
+
+# 3. Review the generated SQL in drizzle/*.sql
+
+# 4. Apply migrations to the database
+npm run db:migrate
+
+# 5. (Dev shortcut) Push schema directly without generating migration files
+npm run db:push
+
+# 6. Browse data visually
+npm run db:studio
+```
+
+Migration files are stored in the `drizzle/` directory and should be committed to version control. Each migration is timestamped and applied in order. Never edit a migration that has already been applied to a shared environment -- create a new one instead.
 
 ### Adding a Driver
 

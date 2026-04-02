@@ -1,6 +1,7 @@
 import type { Notification, NotificationResult } from "../../types.js";
 import type { ChannelProvider } from "../types.js";
 import { registerChannel } from "../registry.js";
+import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
 
 // ── SendGrid Email Provider ─────────────────────────────────────────
 //
@@ -10,6 +11,8 @@ import { registerChannel } from "../registry.js";
 //
 // Self-registers as "email:sendgrid" on import.
 //
+
+const cb = createCircuitBreaker();
 
 const sendgridProvider: ChannelProvider = {
   name: "sendgrid",
@@ -26,12 +29,14 @@ const sendgridProvider: ChannelProvider = {
       const client = sgMail.default;
       client.setApiKey(apiKey);
 
-      const [response] = await client.send({
-        from: notification.from ?? "noreply@example.com",
-        to: notification.to,
-        subject: notification.subject ?? "",
-        text: notification.body,
-      });
+      const [response] = await cb.execute(() =>
+        client.send({
+          from: notification.from ?? "noreply@example.com",
+          to: notification.to,
+          subject: notification.subject ?? "",
+          text: notification.body,
+        })
+      );
 
       return {
         success: response.statusCode >= 200 && response.statusCode < 300,

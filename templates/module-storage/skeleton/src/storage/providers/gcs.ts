@@ -10,6 +10,7 @@ import type {
 import type { ProviderConfig, StorageProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { toBuffer, withRetry } from "./helpers.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 // -- Google Cloud Storage Provider ---------------------------------------
 //
@@ -34,6 +35,7 @@ class GcsStorageProvider implements StorageProvider {
   readonly name = "gcs";
   private storage!: Storage;
   private bucketName!: string;
+  private readonly cb = createCircuitBreaker();
 
   async init(config: GcsConfig): Promise<void> {
     this.bucketName = config.bucket;
@@ -52,35 +54,45 @@ class GcsStorageProvider implements StorageProvider {
     const file = bucket.file(key);
     const buffer = await toBuffer(data);
 
-    await withRetry(() =>
-      file.save(buffer, {
-        contentType: opts?.contentType,
-        metadata: opts?.metadata ? { metadata: opts.metadata } : undefined,
-      })
+    await this.cb.execute(() =>
+      withRetry(() =>
+        file.save(buffer, {
+          contentType: opts?.contentType,
+          metadata: opts?.metadata ? { metadata: opts.metadata } : undefined,
+        })
+      )
     );
   }
 
   async download(key: string): Promise<Buffer> {
     const bucket = this.storage.bucket(this.bucketName);
     const file = bucket.file(key);
-    const [contents] = await withRetry(() => file.download());
+    const [contents] = await this.cb.execute(() =>
+      withRetry(() => file.download())
+    );
     return contents;
   }
 
   async delete(key: string): Promise<void> {
     const bucket = this.storage.bucket(this.bucketName);
     const file = bucket.file(key);
-    await withRetry(() => file.delete({ ignoreNotFound: true }));
+    await this.cb.execute(() =>
+      withRetry(() => file.delete({ ignoreNotFound: true }))
+    );
   }
 
   async list(prefix?: string, opts?: ListOptions): Promise<ListResult> {
     const bucket = this.storage.bucket(this.bucketName);
 
-    const [files, , apiResponse] = await bucket.getFiles({
-      prefix: prefix ?? undefined,
-      maxResults: opts?.maxKeys,
-      pageToken: opts?.cursor,
-    });
+    const [files, , apiResponse] = await this.cb.execute(() =>
+      withRetry(() =>
+        bucket.getFiles({
+          prefix: prefix ?? undefined,
+          maxResults: opts?.maxKeys,
+          pageToken: opts?.cursor,
+        })
+      )
+    );
 
     const objects: StorageObject[] = files.map((file) => ({
       key: file.name,

@@ -13,3 +13,4 @@ export { clerkProvider } from "./clerk.js";
 export { auth0Provider } from "./auth0.js";
 export { supabaseProvider } from "./supabase.js";
 export { apikeyProvider } from "./apikey.js";
+export { mockProvider } from "./mock.js";

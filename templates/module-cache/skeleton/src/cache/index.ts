@@ -7,6 +7,7 @@
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { getProvider, listProviders } from "./providers/index.js";
+import { cacheGetTotal, cacheOperationDuration } from "./metrics.js";
 import type { CacheProvider } from "./providers/types.js";
 import type { CacheConfig, SetOptions } from "./types.js";
 
@@ -97,26 +98,45 @@ export async function createCache(
     provider,
 
     async get<T = unknown>(key: string): Promise<T | undefined> {
+      const start = performance.now();
       const raw = await provider.get(nsKey(key));
-      if (raw === undefined) return undefined;
+      const durationMs = performance.now() - start;
+
+      cacheOperationDuration.record(durationMs, { operation: "get" });
+
+      if (raw === undefined) {
+        cacheGetTotal.add(1, { result: "miss" });
+        return undefined;
+      }
+
+      cacheGetTotal.add(1, { result: "hit" });
       return JSON.parse(raw) as T;
     },
 
     async set<T = unknown>(key: string, value: T, opts?: SetOptions): Promise<void> {
+      const start = performance.now();
       const serialized = JSON.stringify(value);
       await provider.set(nsKey(key), serialized, opts?.ttl);
+      cacheOperationDuration.record(performance.now() - start, { operation: "set" });
     },
 
     async delete(key: string): Promise<void> {
+      const start = performance.now();
       await provider.delete(nsKey(key));
+      cacheOperationDuration.record(performance.now() - start, { operation: "delete" });
     },
 
     async has(key: string): Promise<boolean> {
-      return provider.has(nsKey(key));
+      const start = performance.now();
+      const exists = await provider.has(nsKey(key));
+      cacheOperationDuration.record(performance.now() - start, { operation: "has" });
+      return exists;
     },
 
     async clear(): Promise<void> {
+      const start = performance.now();
       await provider.clear();
+      cacheOperationDuration.record(performance.now() - start, { operation: "clear" });
     },
 
     async getOrSet<T = unknown>(
@@ -124,11 +144,16 @@ export async function createCache(
       factory: () => Promise<T>,
       opts?: SetOptions,
     ): Promise<T> {
+      const start = performance.now();
       const existing = await this.get<T>(key);
-      if (existing !== undefined) return existing;
+      if (existing !== undefined) {
+        cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
+        return existing;
+      }
 
       const value = await factory();
       await this.set(key, value, opts);
+      cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
       return value;
     },
 

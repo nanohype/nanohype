@@ -6,10 +6,48 @@ import {
 } from "./providers/index.js";
 import { registry } from "./tools/index.js";
 import { logger } from "./logger.js";
+import {
+  llmRequestTotal,
+  llmRequestDuration,
+  llmTokenUsage,
+} from "./metrics.js";
 import type { ConversationStore } from "./memory/conversation.js";
 
 const MAX_ITERATIONS = __MAX_ITERATIONS__;
-const provider = getProvider("__LLM_PROVIDER__");
+const PROVIDER_NAME = "__LLM_PROVIDER__";
+
+/** Lazily resolved provider — avoids calling getProvider() at module scope
+ *  which would throw before scaffolding replaces the placeholder. */
+let _provider: ReturnType<typeof getProvider> | null = null;
+function resolveProvider() {
+  if (!_provider) _provider = getProvider(PROVIDER_NAME);
+  return _provider;
+}
+
+/**
+ * Record OTel metrics after an LLM call completes. Tracks request count,
+ * latency, and token usage when the provider reports it.
+ */
+function recordLlmMetrics(response: LlmResponse, durationMs: number): void {
+  const labels = { provider: PROVIDER_NAME, model: "default" };
+  llmRequestTotal.add(1, labels);
+  llmRequestDuration.record(durationMs, { provider: PROVIDER_NAME });
+
+  if (response.usage) {
+    if (response.usage.inputTokens != null) {
+      llmTokenUsage.add(response.usage.inputTokens, {
+        provider: PROVIDER_NAME,
+        direction: "input",
+      });
+    }
+    if (response.usage.outputTokens != null) {
+      llmTokenUsage.add(response.usage.outputTokens, {
+        provider: PROVIDER_NAME,
+        direction: "output",
+      });
+    }
+  }
+}
 
 const SYSTEM_PROMPT = `You are a helpful assistant with access to tools.
 
@@ -80,18 +118,20 @@ export async function runAgent(
   let iterations = 0;
   let finalResponse = "";
 
-  logger.info("agent.start", { provider: "__LLM_PROVIDER__", maxIterations: MAX_ITERATIONS });
+  logger.info("agent.start", { provider: PROVIDER_NAME, maxIterations: MAX_ITERATIONS });
 
   while (iterations < MAX_ITERATIONS) {
     iterations++;
     logger.debug("agent.iteration", { iteration: iterations, messageCount: messages.length });
 
     // Send the current conversation to the LLM
-    const llmResponse: LlmResponse = await provider.sendMessage(
+    const llmStart = performance.now();
+    const llmResponse: LlmResponse = await resolveProvider().sendMessage(
       SYSTEM_PROMPT,
       messages,
       registry.list(),
     );
+    recordLlmMetrics(llmResponse, performance.now() - llmStart);
 
     // Append the raw assistant message to preserve provider-specific fields
     // (e.g. OpenAI's tool_calls array, which is required for tool result messages)
@@ -117,7 +157,7 @@ export async function runAgent(
         result = `Tool execution failed: ${errorMsg}`;
       }
 
-      const toolResultMessage = provider.makeToolResultMessage(toolCall.id, result);
+      const toolResultMessage = resolveProvider().makeToolResultMessage(toolCall.id, result);
       messages.push(toolResultMessage);
     }
 
@@ -192,13 +232,14 @@ export async function* runStream(
   let iterations = 0;
   let finalResponse = "";
 
-  logger.info("agent.stream_start", { provider: "__LLM_PROVIDER__", maxIterations: MAX_ITERATIONS });
+  logger.info("agent.stream_start", { provider: PROVIDER_NAME, maxIterations: MAX_ITERATIONS });
 
   while (iterations < MAX_ITERATIONS) {
     iterations++;
     logger.debug("agent.stream_iteration", { iteration: iterations, messageCount: messages.length });
 
-    const stream = provider.streamChat(SYSTEM_PROMPT, messages, registry.list());
+    const streamStart = performance.now();
+    const stream = resolveProvider().streamChat(SYSTEM_PROMPT, messages, registry.list());
 
     // Yield text chunks as they arrive
     let iterationText = "";
@@ -209,6 +250,7 @@ export async function* runStream(
 
     // Get the full response (tool calls, stop reason, etc.)
     const llmResponse = await stream.response;
+    recordLlmMetrics(llmResponse, performance.now() - streamStart);
     messages.push(llmResponse.rawAssistantMessage);
 
     // If no tool calls, we're done
@@ -235,7 +277,7 @@ export async function* runStream(
 
       yield { type: "tool_result", toolName: toolCall.name, toolResult: result };
 
-      const toolResultMessage = provider.makeToolResultMessage(toolCall.id, result);
+      const toolResultMessage = resolveProvider().makeToolResultMessage(toolCall.id, result);
       messages.push(toolResultMessage);
     }
 

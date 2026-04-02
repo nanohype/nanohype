@@ -10,8 +10,10 @@ import type {
   StreamChat,
 } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 const client = new OpenAI();
+const cb = createCircuitBreaker();
 
 function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   if (zodType instanceof z.ZodNumber) return "number";
@@ -56,12 +58,14 @@ class OpenAIProvider implements LlmProvider {
       ...(messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[]),
     ];
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 4096,
-      messages: openaiMessages,
-      tools: formatTools(tools),
-    });
+    const response = await cb.execute(() =>
+      client.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 4096,
+        messages: openaiMessages,
+        tools: formatTools(tools),
+      })
+    );
 
     const choice = response.choices[0];
     if (!choice) {
@@ -112,6 +116,12 @@ class OpenAIProvider implements LlmProvider {
       toolCalls,
       stopReason: choice.finish_reason ?? "stop",
       rawAssistantMessage,
+      usage: response.usage
+        ? {
+            inputTokens: response.usage.prompt_tokens,
+            outputTokens: response.usage.completion_tokens,
+          }
+        : undefined,
     };
   }
 
@@ -126,20 +136,32 @@ class OpenAIProvider implements LlmProvider {
     ];
 
     let resolveResponse!: (value: LlmResponse) => void;
-    const response = new Promise<LlmResponse>((resolve) => {
+    let rejectResponse!: (reason: unknown) => void;
+    const response = new Promise<LlmResponse>((resolve, reject) => {
       resolveResponse = resolve;
+      rejectResponse = reject;
     });
 
-    const streamPromise = client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 4096,
-      messages: openaiMessages,
-      tools: formatTools(tools),
-      stream: true,
-    });
+    // Use cb.execute to guard the stream creation — if the breaker is
+    // open, the returned promise rejects with CircuitBreakerOpenError.
+    const streamPromise = cb.execute(() =>
+      client.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 4096,
+        messages: openaiMessages,
+        tools: formatTools(tools),
+        stream: true,
+      })
+    );
 
     async function* chunks(): AsyncGenerator<string> {
-      const stream = await streamPromise;
+      let stream: Awaited<typeof streamPromise>;
+      try {
+        stream = await streamPromise;
+      } catch (err) {
+        rejectResponse(err);
+        throw err;
+      }
 
       let contentText = "";
       const toolCallAccumulators = new Map<

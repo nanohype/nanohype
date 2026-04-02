@@ -41,11 +41,19 @@ export interface ToolCall {
   input: Record<string, unknown>;
 }
 
+/** Token usage returned by the provider, when available. */
+export interface TokenUsage {
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 export interface LlmResponse {
   content: ContentBlock[];
   toolCalls: ToolCall[];
   stopReason: string;
   rawAssistantMessage: Message;
+  /** Token usage for this request, if the provider reports it. */
+  usage?: TokenUsage;
 }
 
 /**

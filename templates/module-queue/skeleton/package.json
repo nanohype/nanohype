@@ -20,6 +20,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
     "bullmq": "^5.0.0",
     "@aws-sdk/client-sqs": "^3.750.0",
     "zod": "^3.24.0"

@@ -9,11 +9,13 @@ import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.
 import type { VectorStoreConfig } from "../config.js";
 import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class PgVectorStore implements VectorStoreProvider {
   private readonly pool: pg.Pool;
   private readonly table: string;
   private readonly dimensions: number;
+  private readonly cb = createCircuitBreaker();
 
   constructor(config: VectorStoreConfig, dimensions: number) {
     this.pool = new pg.Pool({ connectionString: config.pgConnectionString });
@@ -51,14 +53,16 @@ class PgVectorStore implements VectorStoreProvider {
     const client = await this.pool.connect();
     try {
       for (const doc of documents) {
-        await client.query(
-          `INSERT INTO ${this.escapeId(this.table)} (id, content, metadata, embedding)
-           VALUES ($1, $2, $3::jsonb, $4::vector)
-           ON CONFLICT (id) DO UPDATE SET
-             content = EXCLUDED.content,
-             metadata = EXCLUDED.metadata,
-             embedding = EXCLUDED.embedding`,
-          [doc.id, doc.content, JSON.stringify(doc.metadata), `[${doc.embedding.join(",")}]`],
+        await this.cb.execute(() =>
+          client.query(
+            `INSERT INTO ${this.escapeId(this.table)} (id, content, metadata, embedding)
+             VALUES ($1, $2, $3::jsonb, $4::vector)
+             ON CONFLICT (id) DO UPDATE SET
+               content = EXCLUDED.content,
+               metadata = EXCLUDED.metadata,
+               embedding = EXCLUDED.embedding`,
+            [doc.id, doc.content, JSON.stringify(doc.metadata), `[${doc.embedding.join(",")}]`],
+          )
         );
       }
     } finally {
@@ -98,7 +102,9 @@ class PgVectorStore implements VectorStoreProvider {
 
     query += ` ORDER BY embedding <=> $${params.length - 1}::vector LIMIT $${params.length}`;
 
-    const result = await this.pool.query(query, params);
+    const result = await this.cb.execute(() =>
+      this.pool.query(query, params)
+    );
 
     return result.rows.map((row) => ({
       id: row.id as string,
@@ -109,9 +115,11 @@ class PgVectorStore implements VectorStoreProvider {
   }
 
   async delete(ids: string[]): Promise<void> {
-    await this.pool.query(
-      `DELETE FROM ${this.escapeId(this.table)} WHERE id = ANY($1)`,
-      [ids],
+    await this.cb.execute(() =>
+      this.pool.query(
+        `DELETE FROM ${this.escapeId(this.table)} WHERE id = ANY($1)`,
+        [ids],
+      )
     );
   }
 

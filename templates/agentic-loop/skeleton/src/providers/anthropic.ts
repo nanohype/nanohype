@@ -10,8 +10,10 @@ import type {
   StreamChat,
 } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 const client = new Anthropic();
+const cb = createCircuitBreaker();
 
 function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   if (zodType instanceof z.ZodNumber) return "number";
@@ -48,13 +50,15 @@ class AnthropicProvider implements LlmProvider {
     messages: Message[],
     tools: Tool[],
   ): Promise<LlmResponse> {
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: messages as Anthropic.Messages.MessageParam[],
-      tools: formatTools(tools),
-    });
+    const response = await cb.execute(() =>
+      client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: messages as Anthropic.Messages.MessageParam[],
+        tools: formatTools(tools),
+      })
+    );
 
     const toolCalls: ToolCall[] = [];
     for (const block of response.content) {
@@ -77,6 +81,10 @@ class AnthropicProvider implements LlmProvider {
       toolCalls,
       stopReason: response.stop_reason ?? "end_turn",
       rawAssistantMessage,
+      usage: {
+        inputTokens: response.usage?.input_tokens,
+        outputTokens: response.usage?.output_tokens,
+      },
     };
   }
 
@@ -85,20 +93,35 @@ class AnthropicProvider implements LlmProvider {
     messages: Message[],
     tools: Tool[],
   ): StreamChat {
-    const stream = client.messages.stream({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      system: systemPrompt,
-      messages: messages as Anthropic.Messages.MessageParam[],
-      tools: formatTools(tools),
-    });
+    // Use cb.execute to guard the stream creation — if the breaker is
+    // open, the returned promise rejects with CircuitBreakerOpenError
+    // before any network I/O occurs.
+    const streamPromise = cb.execute(async () =>
+      client.messages.stream({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: messages as Anthropic.Messages.MessageParam[],
+        tools: formatTools(tools),
+      })
+    );
 
     let resolveResponse!: (value: LlmResponse) => void;
-    const response = new Promise<LlmResponse>((resolve) => {
+    let rejectResponse!: (reason: unknown) => void;
+    const response = new Promise<LlmResponse>((resolve, reject) => {
       resolveResponse = resolve;
+      rejectResponse = reject;
     });
 
     async function* chunks(): AsyncGenerator<string> {
+      let stream: Awaited<typeof streamPromise>;
+      try {
+        stream = await streamPromise;
+      } catch (err) {
+        rejectResponse(err);
+        throw err;
+      }
+
       for await (const event of stream) {
         if (
           event.type === "content_block_delta" &&
@@ -132,6 +155,10 @@ class AnthropicProvider implements LlmProvider {
         toolCalls,
         stopReason: finalMessage.stop_reason ?? "end_turn",
         rawAssistantMessage,
+        usage: {
+          inputTokens: finalMessage.usage?.input_tokens,
+          outputTokens: finalMessage.usage?.output_tokens,
+        },
       });
     }
 
