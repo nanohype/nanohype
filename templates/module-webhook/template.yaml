@@ -1,0 +1,54 @@
+apiVersion: nanohype/v1
+
+name: module-webhook
+displayName: "Module: Webhooks"
+description: >
+  Composable webhook infrastructure. Receive webhooks with pluggable
+  signature verification, send webhooks with exponential backoff retry,
+  and log all events for debugging. Ships with HMAC-SHA256 and
+  HMAC-SHA1 signature providers.
+version: "0.1.0"
+license: Apache-2.0
+tags: [webhook, events, http, retry, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Webhook receiver and sender with retry"
+
+  - name: SignatureMethod
+    type: string
+    placeholder: "__SIGNATURE_METHOD__"
+    description: "Default signature method (hmac-sha256, hmac-sha1, or a custom name)"
+    prompt: "Signature method"
+    default: "hmac-sha256"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, module-queue]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the webhook module"
+    optional: false

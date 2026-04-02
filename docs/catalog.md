@@ -164,6 +164,14 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-queue** — Add this when the service needs background job processing. In-memory for dev, BullMQ for Redis-backed production, SQS for AWS-native. Priority, retries, delays, graceful shutdown.
 
+**module-cache** — Add this when the service needs caching. In-memory for dev, Redis for distributed, Memcached for legacy. TTL, namespacing, and cache-aside (getOrSet) helper.
+
+**module-rate-limit** — Add this when the service needs request throttling. Token bucket, sliding window, and fixed window algorithms with in-memory or Redis state stores. Ships with Hono and Express middleware factories.
+
+**module-webhook** — Add this when the service sends or receives webhooks. Pluggable signature verification (HMAC-SHA256, HMAC-SHA1), sender with exponential backoff retry, and event logging for debugging.
+
+**module-notifications** — Add this when the service sends user notifications. Email (Resend, SendGrid), optional SMS (Twilio), optional push (web-push). Template rendering with variable substitution and batch sending.
+
 ---
 
 ## Module Layering Guide

@@ -1,0 +1,40 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "description": "__DESCRIPTION__",
+  "type": "module",
+  "main": "dist/rate-limit/index.js",
+  "types": "dist/rate-limit/index.d.ts",
+  "exports": {
+    ".": "./dist/rate-limit/index.js",
+    "./algorithms": "./dist/rate-limit/algorithms/index.js",
+    "./stores": "./dist/rate-limit/stores/index.js",
+    "./middleware": "./dist/rate-limit/middleware.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch src/rate-limit/index.ts",
+    "start": "node dist/rate-limit/index.js",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
