@@ -1,13 +1,12 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { ComputeConstruct } from "./constructs/compute";
-import { ApiConstruct } from "./constructs/api";
+import { ComputeConstruct } from "./constructs/compute/__COMPUTE_TARGET__";
+import { ApiConstruct } from "./constructs/api/__COMPUTE_TARGET__";
 import { VpcConstruct } from "./constructs/vpc";
 import { DatabaseConstruct } from "./constructs/database";
 import { MonitoringConstruct } from "./constructs/monitoring";
 
 export interface ServiceStackProps extends cdk.StackProps {
-  readonly computeTarget: "lambda" | "ecs";
   readonly includeVpc: boolean;
   readonly includeRds: boolean;
   readonly includeMonitoring: boolean;
@@ -25,15 +24,12 @@ export class ServiceStack extends cdk.Stack {
 
     // Compute — Lambda function or ECS Fargate service
     const compute = new ComputeConstruct(this, "Compute", {
-      computeTarget: props.computeTarget,
       vpc: vpc?.vpc,
     });
 
     // API — API Gateway (Lambda) or ALB (ECS)
     const api = new ApiConstruct(this, "Api", {
-      computeTarget: props.computeTarget,
-      lambdaFunction: compute.lambdaFunction,
-      fargateService: compute.fargateService,
+      compute,
       vpc: vpc?.vpc,
     });
 
@@ -41,17 +37,15 @@ export class ServiceStack extends cdk.Stack {
     if (props.includeRds && vpc) {
       new DatabaseConstruct(this, "Database", {
         vpc: vpc.vpc,
-        computeSecurityGroup: compute.securityGroup,
+        computeSecurityGroup: "securityGroup" in compute ? compute.securityGroup : undefined,
       });
     }
 
     // Monitoring — CloudWatch dashboard and alarms when includeMonitoring is true
     if (props.includeMonitoring) {
       new MonitoringConstruct(this, "Monitoring", {
-        computeTarget: props.computeTarget,
-        lambdaFunction: compute.lambdaFunction,
-        fargateService: compute.fargateService,
-        api: api,
+        compute,
+        api,
       });
     }
 

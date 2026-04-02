@@ -73,8 +73,11 @@ Generate a greeting message for a given name.
 
 ```
 src/
-  index.ts              # Entrypoint — transport setup
+  index.ts              # Entrypoint — delegates to the chosen transport
   server.ts             # Server creation and registration
+  transports/
+    stdio.ts            # stdio transport (stdin/stdout subprocess)
+    streamable-http.ts  # HTTP transport (express server on /mcp)
   tools/
     example.ts          # Example tool implementation
   resources/

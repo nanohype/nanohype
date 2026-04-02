@@ -1,4 +1,5 @@
 import type { Message } from "../providers/index.js";
+import { countTokens } from "../tokens.js";
 import { MessageStore } from "./store.js";
 
 /**
@@ -57,8 +58,8 @@ export class ContextManager {
   assembleMessages(currentInput: string): {
     messages: Message[];
   } {
-    // Estimate tokens for the current input
-    const inputTokens = Math.ceil(currentInput.length / 4);
+    // Count tokens for the current input using tiktoken
+    const inputTokens = countTokens(currentInput);
     const availableForHistory = this.historyBudget - inputTokens;
 
     // Truncate stored history to fit

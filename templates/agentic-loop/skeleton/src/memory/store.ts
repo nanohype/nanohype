@@ -1,11 +1,11 @@
 import type { Message } from "../providers/index.js";
+import { countTokens } from "../tokens.js";
 
 /**
- * Approximate token count for a message. Uses a rough heuristic of
- * ~4 characters per token, which is reasonable for English text across
- * both Anthropic and OpenAI tokenizers.
+ * Extract the text content from a message and count its tokens using
+ * tiktoken's BPE tokenizer (cl100k_base).
  */
-function estimateTokens(message: Message): number {
+function messageTokens(message: Message): number {
   let text: string;
   if (typeof message.content === "string") {
     text = message.content;
@@ -22,7 +22,7 @@ function estimateTokens(message: Message): number {
     text = "";
   }
 
-  return Math.ceil(text.length / 4);
+  return countTokens(text);
 }
 
 /**
@@ -66,7 +66,7 @@ export class MessageStore {
    * Estimate the total token count of all stored messages.
    */
   estimateTotalTokens(): number {
-    return this.messages.reduce((sum, msg) => sum + estimateTokens(msg), 0);
+    return this.messages.reduce((sum, msg) => sum + messageTokens(msg), 0);
   }
 
   /**
@@ -81,7 +81,7 @@ export class MessageStore {
 
     while (totalTokens > maxTokens && this.messages.length > 1) {
       const removed = this.messages.shift()!;
-      totalTokens -= estimateTokens(removed);
+      totalTokens -= messageTokens(removed);
     }
   }
 }

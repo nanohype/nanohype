@@ -4,6 +4,7 @@ import type {
   LlmProvider,
   LlmResponse,
   Message,
+  StreamChat,
 } from "../providers/types.js";
 import { registerProvider, getProvider } from "../providers/registry.js";
 import { ToolRegistry, type Tool } from "../tools/registry.js";
@@ -55,6 +56,9 @@ describe("agent loop integration", () => {
 
     const mockProvider: LlmProvider = {
       sendMessage: mockSendMessage,
+      streamChat(): StreamChat {
+        throw new Error("streamChat not implemented in mock");
+      },
       makeToolResultMessage(toolCallId: string, result: string): Message {
         return {
           role: "tool",

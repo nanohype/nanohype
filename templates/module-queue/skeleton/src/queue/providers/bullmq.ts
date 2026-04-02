@@ -8,16 +8,24 @@ import { registerProvider } from "./registry.js";
 // Redis-backed queue using BullMQ. Supports delayed jobs, priorities,
 // retries, and all BullMQ features. Requires a running Redis instance.
 //
+// A single Worker is created during init() and continuously feeds jobs
+// into a local buffer. dequeue() reads from that buffer — no new Redis
+// connections are opened per call.
+//
 // Config:
 //   connection: { host: string, port: number, password?: string }
 //   queueName?: string  (defaults to "__PROJECT_NAME__")
 //
 
 let queue: Queue | null = null;
+let worker: Worker | null = null;
 let connection: ConnectionOptions | null = null;
 let queueName = "__PROJECT_NAME__";
 
-/** Jobs dequeued but not yet acknowledged, keyed by job ID. */
+/** Local buffer of jobs received from the Worker processor callback. */
+const buffer: Job[] = [];
+
+/** BullMQ Job instances keyed by job ID, needed for acknowledge/fail. */
 const pending = new Map<string, BullJob>();
 
 const bullmqProvider: QueueProvider = {
@@ -30,7 +38,46 @@ const bullmqProvider: QueueProvider = {
     };
     queueName =
       (config.queueName as string) ?? process.env.QUEUE_NAME ?? "__PROJECT_NAME__";
+
     queue = new Queue(queueName, { connection });
+
+    // Single long-lived Worker — its processor callback feeds the local
+    // buffer. We return a never-resolving promise from the processor so
+    // BullMQ keeps the job "active" until we explicitly acknowledge or
+    // fail it via the pending Map.
+    worker = new Worker(
+      queueName,
+      async (bullJob: BullJob) => {
+        const job: Job = {
+          id: bullJob.id ?? "",
+          name: bullJob.name,
+          data: bullJob.data as unknown,
+          attempts: bullJob.attemptsMade,
+          maxRetries: (bullJob.opts.attempts ?? 3) - 1,
+          delay: bullJob.opts.delay ?? 0,
+          priority: bullJob.opts.priority ?? 0,
+          createdAt: new Date(bullJob.timestamp).toISOString(),
+        };
+
+        pending.set(job.id, bullJob);
+        buffer.push(job);
+
+        // Block the processor until the job is acknowledged or failed.
+        // This prevents BullMQ from auto-completing the job.
+        return new Promise<void>((resolve, reject) => {
+          const check = setInterval(() => {
+            if (!pending.has(job.id)) {
+              clearInterval(check);
+              // If the job was moved to failed externally, reject so
+              // BullMQ records the failure. Otherwise resolve normally.
+              resolve();
+            }
+          }, 50);
+        });
+      },
+      { connection, concurrency: 64 }
+    );
+
     console.log(`[queue] BullMQ connected to queue "${queueName}"`);
   },
 
@@ -54,30 +101,7 @@ const bullmqProvider: QueueProvider = {
   async dequeue(): Promise<Job | null> {
     if (!queue) throw new Error("BullMQ provider not initialized");
 
-    // Use getNextJob with a token to obtain the next waiting job
-    const token = crypto.randomUUID();
-    const worker = new Worker(queueName, undefined, {
-      connection: connection!,
-      autorun: false,
-    });
-
-    const bullJob = await worker.getNextJob(token);
-    await worker.close();
-
-    if (!bullJob) return null;
-
-    pending.set(bullJob.id ?? "", bullJob);
-
-    return {
-      id: bullJob.id ?? "",
-      name: bullJob.name,
-      data: bullJob.data as unknown,
-      attempts: bullJob.attemptsMade,
-      maxRetries: (bullJob.opts.attempts ?? 3) - 1,
-      delay: bullJob.opts.delay ?? 0,
-      priority: bullJob.opts.priority ?? 0,
-      createdAt: new Date(bullJob.timestamp).toISOString(),
-    };
+    return buffer.shift() ?? null;
   },
 
   async acknowledge(jobId: string): Promise<void> {
@@ -97,12 +121,17 @@ const bullmqProvider: QueueProvider = {
   },
 
   async close(): Promise<void> {
+    if (worker) {
+      await worker.close();
+      worker = null;
+    }
     if (queue) {
       await queue.close();
       queue = null;
-      console.log("[queue] BullMQ connection closed");
     }
+    buffer.length = 0;
     pending.clear();
+    console.log("[queue] BullMQ connection closed");
   },
 };
 

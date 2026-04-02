@@ -51,8 +51,12 @@ bin/
 lib/
   stack.ts                # Main stack — composes all constructs
   constructs/
-    compute.ts            # Lambda or ECS Fargate compute
-    api.ts                # API Gateway or ALB
+    compute/
+      lambda.ts           # Lambda function compute
+      ecs.ts              # ECS Fargate compute
+    api/
+      lambda.ts           # API Gateway
+      ecs.ts              # Application Load Balancer
     vpc.ts                # VPC with subnets and endpoints
     database.ts           # RDS PostgreSQL
     monitoring.ts         # CloudWatch dashboard and alarms
@@ -62,13 +66,12 @@ test/
 
 ## Customization
 
-### Switching Compute Targets
+### Compute Target
 
-The template supports both Lambda and ECS Fargate. The active compute target is set to `__COMPUTE_TARGET__`. To switch:
+This project was generated with the `__COMPUTE_TARGET__` compute target. The active target's constructs are imported via `lib/constructs/compute/__COMPUTE_TARGET__` and `lib/constructs/api/__COMPUTE_TARGET__`. To use the alternate target, update the import paths in `lib/stack.ts` and `lib/constructs/monitoring.ts`.
 
-1. Update the `computeTarget` prop in `bin/app.ts`
-2. For ECS, add a `Dockerfile` at the project root
-3. For Lambda, implement your handler in `lambda/handler.ts`
+- For ECS, add a `Dockerfile` at the project root
+- For Lambda, implement your handler in `lambda/handler.ts`
 
 ### Adding Resources
 

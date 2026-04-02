@@ -12,4 +12,16 @@ describe("GET /health", () => {
     expect(body).toHaveProperty("timestamp");
     expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
   });
+
+  it("returns exactly three fields", async () => {
+    const res = await app.request("/health");
+    const body = await res.json();
+    expect(Object.keys(body)).toHaveLength(3);
+    expect(Object.keys(body).sort()).toEqual(["service", "status", "timestamp"]);
+  });
+
+  it("returns application/json content type", async () => {
+    const res = await app.request("/health");
+    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+  });
 });

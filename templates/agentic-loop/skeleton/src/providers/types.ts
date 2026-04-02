@@ -63,9 +63,34 @@ export interface LlmProvider {
   ): Promise<LlmResponse>;
 
   /**
+   * Stream a conversation to the LLM, yielding text chunks as they
+   * arrive. Returns an async iterable of string fragments. The full
+   * LlmResponse (including any tool calls) is available after the
+   * stream completes via the `response` property on the returned object.
+   */
+  streamChat(
+    systemPrompt: string,
+    messages: Message[],
+    tools: Tool[],
+  ): StreamChat;
+
+  /**
    * Build a tool-result message in the format the provider expects.
    * Anthropic uses role "user" with a tool_result content block;
    * OpenAI uses role "tool" with a tool_call_id field.
    */
   makeToolResultMessage(toolCallId: string, result: string): Message;
+}
+
+/**
+ * Streaming chat response. Implements AsyncIterable<string> to yield
+ * text chunks as they arrive. Once the stream is consumed, the full
+ * LlmResponse is available via the `response` promise.
+ */
+export interface StreamChat extends AsyncIterable<string> {
+  /**
+   * Resolves to the complete LlmResponse after the stream finishes.
+   * Contains the aggregated content blocks, tool calls, and stop reason.
+   */
+  response: Promise<LlmResponse>;
 }

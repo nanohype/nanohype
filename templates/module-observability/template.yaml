@@ -54,6 +54,8 @@ variables:
 conditionals:
   - path: "src/telemetry/metrics.ts"
     when: IncludeMetrics
+  - path: "src/telemetry/tracer.ts"
+    when: IncludeTracing
 
 hooks:
   post:

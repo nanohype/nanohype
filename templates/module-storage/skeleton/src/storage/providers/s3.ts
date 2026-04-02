@@ -17,6 +17,7 @@ import type {
 } from "../types.js";
 import type { ProviderConfig, StorageProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { toBuffer, withRetry } from "./helpers.js";
 
 // -- AWS S3 Provider -----------------------------------------------------
 //
@@ -60,25 +61,29 @@ class S3StorageProvider implements StorageProvider {
     data: UploadData,
     opts?: UploadOptions
   ): Promise<void> {
-    const body = await this.toBuffer(data);
+    const body = await toBuffer(data);
 
-    await this.client.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: body,
-        ContentType: opts?.contentType,
-        Metadata: opts?.metadata,
-      })
+    await withRetry(() =>
+      this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: body,
+          ContentType: opts?.contentType,
+          Metadata: opts?.metadata,
+        })
+      )
     );
   }
 
   async download(key: string): Promise<Buffer> {
-    const response = await this.client.send(
-      new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-      })
+    const response = await withRetry(() =>
+      this.client.send(
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        })
+      )
     );
 
     if (!response.Body) {
@@ -95,11 +100,13 @@ class S3StorageProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.send(
-      new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-      })
+    await withRetry(() =>
+      this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        })
+      )
     );
   }
 
@@ -137,20 +144,6 @@ class S3StorageProvider implements StorageProvider {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────
-
-  private async toBuffer(data: UploadData): Promise<Buffer> {
-    if (Buffer.isBuffer(data)) return data;
-    if (typeof data === "string") return Buffer.from(data, "utf-8");
-    if (data instanceof Uint8Array) return Buffer.from(data);
-
-    // Readable stream
-    const chunks: Buffer[] = [];
-    for await (const chunk of data) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    return Buffer.concat(chunks);
-  }
 }
 
 // Self-register

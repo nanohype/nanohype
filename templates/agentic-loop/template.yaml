@@ -65,6 +65,8 @@ conditionals:
     when: IncludeMemory
   - path: "src/memory/context.ts"
     when: IncludeMemory
+  - path: "src/memory/conversation.ts"
+    when: IncludeMemory
   - path: "src/eval/runner.ts"
     when: IncludeEval
   - path: "src/eval/assertions.ts"

@@ -23,6 +23,50 @@ function getAuthHeader(request: AuthRequest): string | undefined {
   return value ?? undefined;
 }
 
+// ── User Cache ─────────────────────────────────────────────────────
+// TTL cache for Clerk user objects to avoid a users.getUser() API call
+// on every request. Entries expire after USER_CACHE_TTL_MS (60 seconds).
+// A max-size cap prevents unbounded memory growth.
+
+const USER_CACHE_TTL_MS = 60 * 1000;
+const USER_CACHE_MAX_SIZE = 1000;
+
+interface CachedUser {
+  data: {
+    id: string;
+    email: string | undefined;
+    name: string | undefined;
+    roles: string[];
+  };
+  cachedAt: number;
+}
+
+const userCache = new Map<string, CachedUser>();
+
+function getCachedUser(userId: string): CachedUser["data"] | null {
+  const entry = userCache.get(userId);
+  if (!entry) return null;
+  if (Date.now() - entry.cachedAt >= USER_CACHE_TTL_MS) {
+    userCache.delete(userId);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCachedUser(userId: string, data: CachedUser["data"]): void {
+  // Evict oldest entries when cache exceeds max size
+  if (userCache.size >= USER_CACHE_MAX_SIZE) {
+    const firstKey = userCache.keys().next().value as string;
+    userCache.delete(firstKey);
+  }
+  userCache.set(userId, { data, cachedAt: Date.now() });
+}
+
+/** Clear the user cache (useful for testing or forced refresh). */
+export function clearUserCache(): void {
+  userCache.clear();
+}
+
 const clerkProvider: AuthProvider = {
   name: "clerk",
 
@@ -48,18 +92,30 @@ const clerkProvider: AuthProvider = {
       const token = authHeader.replace(/^Bearer\s+/i, "");
       const verifiedToken = await clerk.verifyToken(token);
 
-      // Resolve user details from Clerk
-      const user = await clerk.users.getUser(verifiedToken.sub);
+      // Resolve user details — check cache first to avoid redundant API calls
+      const userId = verifiedToken.sub;
+      let userData = getCachedUser(userId);
 
-      return {
-        authenticated: true,
-        user: {
+      if (!userData) {
+        const user = await clerk.users.getUser(userId);
+        userData = {
           id: user.id,
           email: user.emailAddresses[0]?.emailAddress,
           name: [user.firstName, user.lastName].filter(Boolean).join(" ") || undefined,
           roles: (user.publicMetadata?.roles as string[]) ?? [],
+        };
+        setCachedUser(userId, userData);
+      }
+
+      return {
+        authenticated: true,
+        user: {
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          roles: userData.roles,
           metadata: {
-            clerkUserId: user.id,
+            clerkUserId: userData.id,
             sessionClaims: verifiedToken,
           },
         },

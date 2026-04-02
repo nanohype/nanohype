@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { Readable } from "node:stream";
 
 import type {
   ListOptions,
@@ -10,6 +9,7 @@ import type {
 } from "../types.js";
 import type { ProviderConfig, StorageProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { toBuffer, withRetry } from "./helpers.js";
 
 // -- Google Cloud Storage Provider ---------------------------------------
 //
@@ -50,25 +50,27 @@ class GcsStorageProvider implements StorageProvider {
   ): Promise<void> {
     const bucket = this.storage.bucket(this.bucketName);
     const file = bucket.file(key);
-    const buffer = await this.toBuffer(data);
+    const buffer = await toBuffer(data);
 
-    await file.save(buffer, {
-      contentType: opts?.contentType,
-      metadata: opts?.metadata ? { metadata: opts.metadata } : undefined,
-    });
+    await withRetry(() =>
+      file.save(buffer, {
+        contentType: opts?.contentType,
+        metadata: opts?.metadata ? { metadata: opts.metadata } : undefined,
+      })
+    );
   }
 
   async download(key: string): Promise<Buffer> {
     const bucket = this.storage.bucket(this.bucketName);
     const file = bucket.file(key);
-    const [contents] = await file.download();
+    const [contents] = await withRetry(() => file.download());
     return contents;
   }
 
   async delete(key: string): Promise<void> {
     const bucket = this.storage.bucket(this.bucketName);
     const file = bucket.file(key);
-    await file.delete({ ignoreNotFound: true });
+    await withRetry(() => file.delete({ ignoreNotFound: true }));
   }
 
   async list(prefix?: string, opts?: ListOptions): Promise<ListResult> {
@@ -108,19 +110,6 @@ class GcsStorageProvider implements StorageProvider {
     return url;
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────
-
-  private async toBuffer(data: UploadData): Promise<Buffer> {
-    if (Buffer.isBuffer(data)) return data;
-    if (typeof data === "string") return Buffer.from(data, "utf-8");
-    if (data instanceof Uint8Array) return Buffer.from(data);
-
-    const chunks: Buffer[] = [];
-    for await (const chunk of data as Readable) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    return Buffer.concat(chunks);
-  }
 }
 
 // Self-register

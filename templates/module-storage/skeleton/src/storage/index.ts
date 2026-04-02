@@ -21,3 +21,4 @@ export {
   getProvider,
   listProviders,
 } from "./providers/registry.js";
+export { toBuffer, withRetry } from "./providers/helpers.js";

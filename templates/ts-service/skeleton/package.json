@@ -27,6 +27,7 @@
     "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.57.0",
     "jose": "^6.0.0",
+    "zod": "^3.24.0",
     "dotenv": "^16.4.0"
   },
   "devDependencies": {

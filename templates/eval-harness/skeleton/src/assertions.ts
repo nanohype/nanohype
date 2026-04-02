@@ -164,26 +164,99 @@ export function satisfies(
 }
 
 /**
- * Embedding-based semantic similarity between the output and a reference string.
+ * Semantic similarity between the output and a reference string using
+ * TF-IDF weighted cosine similarity.
  *
- * NOTE: This is a stub implementation. To use this assertion in production,
- * integrate an embedding provider (e.g. OpenAI text-embedding-3-small or
- * Anthropic Voyage) and compute cosine similarity between the embeddings
- * of `reference` and the LLM output. The `threshold` parameter sets the
- * minimum cosine similarity score (0-1) required to pass.
+ * This is a bag-of-words approximation that works without external embedding
+ * APIs. It tokenizes both strings, builds TF-IDF vectors from the combined
+ * vocabulary, and computes cosine similarity. For production use with higher
+ * accuracy, replace with an embedding provider (e.g. OpenAI text-embedding-3-small
+ * or Anthropic Voyage).
+ *
+ * The `threshold` parameter sets the minimum cosine similarity score (0-1)
+ * required to pass.
  */
 export function semanticSimilarity(reference: string, threshold = 0.8): AssertionFn {
-  return (_output: string): AssertionResult => {
-    // Stub: always returns a warning that this needs a real embedding provider
-    console.warn(
-      "[semanticSimilarity] Stub implementation — integrate an embedding provider for real similarity scoring",
-    );
+  return (output: string): AssertionResult => {
+    const score = tfidfCosineSimilarity(reference, output);
+    const pass = score >= threshold;
     return {
-      pass: false,
-      score: 0,
-      message: `semanticSimilarity is a stub. Reference: "${reference.slice(0, 50)}...", threshold: ${threshold}. Integrate an embedding provider to enable this assertion.`,
+      pass,
+      score,
+      message: pass
+        ? `Semantic similarity ${score.toFixed(3)} >= threshold ${threshold}`
+        : `Semantic similarity ${score.toFixed(3)} < threshold ${threshold}`,
     };
   };
+}
+
+/**
+ * Tokenize a string into lowercase word tokens, splitting on whitespace
+ * and punctuation boundaries. Filters out empty strings.
+ */
+function tokenizeText(text: string): string[] {
+  return text
+    .toLowerCase()
+    .split(/[\s\p{P}]+/u)
+    .filter((t) => t.length > 0);
+}
+
+/**
+ * Compute term frequency map for a list of tokens.
+ * Returns a Map of token -> frequency count.
+ */
+function termFrequency(tokens: string[]): Map<string, number> {
+  const tf = new Map<string, number>();
+  for (const token of tokens) {
+    tf.set(token, (tf.get(token) ?? 0) + 1);
+  }
+  return tf;
+}
+
+/**
+ * Compute TF-IDF weighted cosine similarity between two strings.
+ *
+ * Treats the two strings as a two-document corpus for IDF calculation.
+ * Each string's TF-IDF vector is computed over the union vocabulary,
+ * then cosine similarity is computed between the two vectors.
+ */
+function tfidfCosineSimilarity(a: string, b: string): number {
+  const tokensA = tokenizeText(a);
+  const tokensB = tokenizeText(b);
+
+  if (tokensA.length === 0 && tokensB.length === 0) return 1;
+  if (tokensA.length === 0 || tokensB.length === 0) return 0;
+
+  const tfA = termFrequency(tokensA);
+  const tfB = termFrequency(tokensB);
+
+  // Build vocabulary (union of both token sets)
+  const vocab = new Set<string>([...tfA.keys(), ...tfB.keys()]);
+
+  // IDF: log(N / df) where N = 2 (two documents), df = number of docs containing the term
+  const idf = new Map<string, number>();
+  for (const term of vocab) {
+    const df = (tfA.has(term) ? 1 : 0) + (tfB.has(term) ? 1 : 0);
+    idf.set(term, Math.log(2 / df));
+  }
+
+  // Build TF-IDF vectors and compute cosine similarity in one pass
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (const term of vocab) {
+    const tfidfA = (tfA.get(term) ?? 0) * (idf.get(term) ?? 0);
+    const tfidfB = (tfB.get(term) ?? 0) * (idf.get(term) ?? 0);
+    dotProduct += tfidfA * tfidfB;
+    normA += tfidfA * tfidfA;
+    normB += tfidfB * tfidfB;
+  }
+
+  const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
+  if (magnitude === 0) return 0;
+
+  return dotProduct / magnitude;
 }
 
 /**

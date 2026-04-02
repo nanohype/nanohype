@@ -5,12 +5,11 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
-import type { ApiConstruct } from "./api";
+import type { ComputeConstruct } from "./compute/__COMPUTE_TARGET__";
+import type { ApiConstruct } from "./api/__COMPUTE_TARGET__";
 
 export interface MonitoringConstructProps {
-  readonly computeTarget: "lambda" | "ecs";
-  readonly lambdaFunction?: lambda.IFunction;
-  readonly fargateService?: ecs.FargateService;
+  readonly compute: ComputeConstruct;
   readonly api: ApiConstruct;
 }
 
@@ -43,14 +42,18 @@ export class MonitoringConstruct extends Construct {
       dashboardName: "__PROJECT_NAME__-dashboard",
     });
 
-    if (props.computeTarget === "lambda" && props.lambdaFunction) {
-      this.addLambdaMonitoring(props.lambdaFunction);
-    } else if (props.computeTarget === "ecs" && props.fargateService) {
-      this.addEcsMonitoring(props.fargateService);
+    const { compute, api } = props;
+
+    if ("lambdaFunction" in compute && compute.lambdaFunction) {
+      this.addLambdaMonitoring(compute.lambdaFunction as lambda.IFunction);
     }
 
-    if (props.api.apiGateway) {
-      this.addApiGatewayMonitoring(props.api.apiGateway);
+    if ("fargateService" in compute && compute.fargateService) {
+      this.addEcsMonitoring(compute.fargateService as ecs.FargateService);
+    }
+
+    if ("apiGateway" in api && api.apiGateway) {
+      this.addApiGatewayMonitoring(api.apiGateway as cdk.aws_apigateway.RestApi);
     }
   }
 

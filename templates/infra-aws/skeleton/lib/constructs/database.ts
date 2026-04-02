@@ -57,8 +57,9 @@ export class DatabaseConstruct extends Construct {
         secretName: "__PROJECT_NAME__/db-credentials",
       }),
       databaseName: "__PROJECT_NAME__".replace(/-/g, "_"),
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      deletionProtection: false,
+      storageEncrypted: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      deletionProtection: true,
     });
 
     new cdk.CfnOutput(this, "DbEndpoint", {

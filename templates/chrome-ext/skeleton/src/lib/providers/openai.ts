@@ -10,11 +10,7 @@ class OpenAIProvider implements AiProvider {
     apiKey: string,
     model?: string,
   ): Promise<string> {
-    const client = new OpenAI({
-      apiKey,
-      // Required for use in service worker (no Node.js APIs)
-      dangerouslyAllowBrowser: true,
-    });
+    const client = new OpenAI({ apiKey });
 
     const response = await client.chat.completions.create({
       model: model ?? this.defaultModel,

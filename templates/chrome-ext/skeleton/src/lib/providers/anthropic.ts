@@ -10,11 +10,7 @@ class AnthropicProvider implements AiProvider {
     apiKey: string,
     model?: string,
   ): Promise<string> {
-    const client = new Anthropic({
-      apiKey,
-      // Required for use in service worker (no Node.js APIs)
-      dangerouslyAllowBrowser: true,
-    });
+    const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
       model: model ?? this.defaultModel,

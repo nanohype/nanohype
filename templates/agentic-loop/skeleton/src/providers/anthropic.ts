@@ -7,6 +7,7 @@ import type {
   ContentBlock,
   ToolCall,
   LlmResponse,
+  StreamChat,
 } from "./types.js";
 import { registerProvider } from "./registry.js";
 
@@ -76,6 +77,67 @@ class AnthropicProvider implements LlmProvider {
       toolCalls,
       stopReason: response.stop_reason ?? "end_turn",
       rawAssistantMessage,
+    };
+  }
+
+  streamChat(
+    systemPrompt: string,
+    messages: Message[],
+    tools: Tool[],
+  ): StreamChat {
+    const stream = client.messages.stream({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: messages as Anthropic.Messages.MessageParam[],
+      tools: formatTools(tools),
+    });
+
+    let resolveResponse!: (value: LlmResponse) => void;
+    const response = new Promise<LlmResponse>((resolve) => {
+      resolveResponse = resolve;
+    });
+
+    async function* chunks(): AsyncGenerator<string> {
+      for await (const event of stream) {
+        if (
+          event.type === "content_block_delta" &&
+          event.delta.type === "text_delta"
+        ) {
+          yield event.delta.text;
+        }
+      }
+
+      // Stream consumed -- build the final response from the accumulated message
+      const finalMessage = await stream.finalMessage();
+
+      const toolCalls: ToolCall[] = [];
+      for (const block of finalMessage.content) {
+        if (block.type === "tool_use") {
+          toolCalls.push({
+            id: block.id,
+            name: block.name,
+            input: block.input as Record<string, unknown>,
+          });
+        }
+      }
+
+      const rawAssistantMessage: Message = {
+        role: "assistant",
+        content: finalMessage.content as ContentBlock[],
+      };
+
+      resolveResponse({
+        content: finalMessage.content as ContentBlock[],
+        toolCalls,
+        stopReason: finalMessage.stop_reason ?? "end_turn",
+        rawAssistantMessage,
+      });
+    }
+
+    return {
+      [Symbol.asyncIterator]: () => chunks(),
+      response,
     };
   }
 

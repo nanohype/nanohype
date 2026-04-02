@@ -39,12 +39,14 @@ gcloud builds submit \
 # ── Deploy to Cloud Run ──────────────────────────────────────────────
 
 echo "Deploying $SERVICE_NAME to Cloud Run in $GCP_REGION..."
+# NOTE: By default, the service requires authentication (IAM invoker permission).
+# To allow public access during development, add: --allow-unauthenticated
 gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE" \
   --region "$GCP_REGION" \
   --platform managed \
   --port 8080 \
-  --allow-unauthenticated \
+  --no-allow-unauthenticated \
   --set-env-vars="PROJECT_NAME=$PROJECT_NAME" \
   --min-instances=0 \
   --max-instances=10 \

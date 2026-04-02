@@ -41,13 +41,14 @@ jobs:
             --project "$GCP_PROJECT"
 
       - name: Deploy to Cloud Run
+        # NOTE: Requires authentication by default. To allow public access, add --allow-unauthenticated
         run: |
           gcloud run deploy "$SERVICE_NAME" \
             --image "gcr.io/$GCP_PROJECT/$SERVICE_NAME" \
             --region "$GCP_REGION" \
             --platform managed \
             --port 8080 \
-            --allow-unauthenticated \
+            --no-allow-unauthenticated \
             --min-instances=0 \
             --max-instances=10 \
             --memory=512Mi \

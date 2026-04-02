@@ -34,8 +34,12 @@ AWS CDK (TypeScript) infrastructure for deploying AI services. Supports Lambda o
   lib/
     stack.ts               # Main stack composing constructs
     constructs/
-      compute.ts           # Lambda or ECS Fargate
-      api.ts               # API Gateway or ALB
+      compute/
+        lambda.ts          # Lambda function
+        ecs.ts             # ECS Fargate service
+      api/
+        lambda.ts          # API Gateway
+        ecs.ts             # ALB
       vpc.ts               # (optional) VPC
       database.ts          # (optional) RDS PostgreSQL
       monitoring.ts        # (optional) CloudWatch

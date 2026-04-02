@@ -30,6 +30,33 @@ function extractBearerToken(request: AuthRequest): string | null {
   return match?.[1] ?? null;
 }
 
+// ── JWKS Cache ─────────────────────────────────────────────────────
+// Cache the remote JWKS key set per URL to avoid fetching on every
+// request. Entries expire after JWKS_CACHE_TTL_MS (5 minutes).
+
+const JWKS_CACHE_TTL_MS = 5 * 60 * 1000;
+
+let jwksCache: {
+  url: string;
+  keySet: ReturnType<typeof jose.createRemoteJWKSet>;
+  cachedAt: number;
+} | null = null;
+
+function getCachedJWKS(url: string): ReturnType<typeof jose.createRemoteJWKSet> {
+  const now = Date.now();
+  if (jwksCache && jwksCache.url === url && now - jwksCache.cachedAt < JWKS_CACHE_TTL_MS) {
+    return jwksCache.keySet;
+  }
+  const keySet = jose.createRemoteJWKSet(new URL(url));
+  jwksCache = { url, keySet, cachedAt: now };
+  return keySet;
+}
+
+/** Clear the cached JWKS key set (useful for testing or rotation). */
+export function clearJwksCache(): void {
+  jwksCache = null;
+}
+
 const jwtProvider: AuthProvider = {
   name: "jwt",
 
@@ -56,8 +83,8 @@ const jwtProvider: AuthProvider = {
       let payload: jose.JWTPayload;
 
       if (jwksUrl) {
-        // ── JWKS verification ──────────────────────────────────────
-        const jwks = jose.createRemoteJWKSet(new URL(jwksUrl));
+        // ── JWKS verification (cached key set) ─────────────────────
+        const jwks = getCachedJWKS(jwksUrl);
         const result = await jose.jwtVerify(token, jwks, {
           issuer,
           audience,

@@ -20,4 +20,5 @@ export type {
   ToolCall,
   ToolCallMessage,
   LlmResponse,
+  StreamChat,
 } from "./types.js";
