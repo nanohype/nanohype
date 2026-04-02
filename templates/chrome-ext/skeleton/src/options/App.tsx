@@ -37,10 +37,13 @@ export function App() {
     width: "100%",
     padding: "8px 12px",
     borderRadius: "6px",
-    border: "1px solid #d0d0d0",
+    border: "1px solid var(--input-border)",
+    background: "var(--input)",
+    color: "var(--foreground)",
     fontSize: "13px",
     outline: "none",
     marginTop: "4px",
+    transition: "border-color 0.15s var(--ease-out)",
   };
 
   const labelStyle: React.CSSProperties = {
@@ -48,11 +51,20 @@ export function App() {
     marginBottom: "16px",
     fontSize: "13px",
     fontWeight: 500,
+    color: "var(--muted-foreground)",
   };
 
   return (
     <div>
-      <h1 style={{ fontSize: "18px", marginBottom: "20px" }}>
+      <h1
+        style={{
+          fontSize: "18px",
+          marginBottom: "20px",
+          color: "var(--foreground)",
+          fontWeight: 600,
+          letterSpacing: "-0.02em",
+        }}
+      >
         __EXTENSION_NAME__ Settings
       </h1>
 
@@ -108,12 +120,27 @@ export function App() {
           padding: "8px 24px",
           borderRadius: "6px",
           border: "none",
-          background: "#4A90D9",
-          color: "#fff",
+          background: saved ? "var(--success)" : "var(--accent)",
+          color: "var(--accent-foreground)",
           fontSize: "13px",
-          fontWeight: 500,
+          fontWeight: 600,
           cursor: "pointer",
+          transition:
+            "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
         }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.filter = "brightness(1.15)")
+        }
+        onMouseLeave={(e) => {
+          e.currentTarget.style.filter = "brightness(1)";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+        onMouseDown={(e) =>
+          (e.currentTarget.style.transform = "scale(0.96)")
+        }
+        onMouseUp={(e) =>
+          (e.currentTarget.style.transform = "scale(1)")
+        }
       >
         {saved ? "Saved!" : "Save Settings"}
       </button>

@@ -97,6 +97,27 @@ const myProvider: AuthProvider = {
 registerProvider(myProvider);
 ```
 
+## Architecture
+
+- **Middleware factory pattern** -- `createAuthMiddleware({ provider: "jwt" })` returns a single middleware function that works with both Hono and Express. The middleware detects the calling convention (argument count and shape) and adapts automatically.
+- **Provider registry with self-registration** -- each provider module (jwt, clerk, auth0, supabase, apikey) calls `registerProvider()` at import time. The barrel import ensures all built-in providers are available. Adding a custom provider is one `registerProvider()` call.
+- **Framework detection** -- the middleware inspects whether the first argument has a `.req` property (Hono context) or a `.headers` object with a function third argument (Express). This avoids requiring separate middleware exports per framework.
+- **JWKS caching** -- the JWT provider caches the remote JWKS key set per URL with a 5-minute TTL, avoiding a network round-trip on every request. Cache can be cleared programmatically for key rotation.
+- **Guard composition** -- `requireAuth` and `requireRole("admin")` are standalone middleware that layer after the auth middleware. The auth middleware always runs and attaches the result; guards decide whether to block the request.
+- **Weak-secret rejection** -- the JWT provider detects placeholder secrets (`"change-me"`, `"secret"`, etc.) and refuses to verify tokens in production, logging a warning in development.
+- **Auth result propagation** -- the authenticated user and full auth result are attached to the request via Symbols (`AUTH_USER_KEY`, `AUTH_RESULT_KEY`), avoiding key collisions with other middleware. Convenience accessors (`getAuthUser`, `getAuthResult`) retrieve them downstream.
+
+## Production Readiness
+
+- [ ] Set provider-specific environment variables (see Providers table above)
+- [ ] Replace default JWT secret -- the provider rejects weak defaults in production
+- [ ] Configure `AUTH_JWT_JWKS_URL` for asymmetric key verification (preferred over shared secrets)
+- [ ] Set `AUTH_JWT_ISSUER` and `AUTH_JWT_AUDIENCE` to validate token claims
+- [ ] Set `LOG_LEVEL=warn` for production
+- [ ] Monitor authentication failure rate for anomaly detection
+- [ ] Test token expiration and refresh flows end-to-end
+- [ ] Review role assignments -- use least-privilege for `requireRole` guards
+
 ## Project Structure
 
 ```

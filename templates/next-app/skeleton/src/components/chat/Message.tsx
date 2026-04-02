@@ -8,11 +8,26 @@ export function Message({ message }: MessageProps) {
   const isUser = message.role === "user";
 
   return (
-    <div className={`mb-4 flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div
+      className="animate-fade-in"
+      style={{
+        display: "flex",
+        marginBottom: "1rem",
+        justifyContent: isUser ? "flex-end" : "flex-start",
+      }}
+    >
       <div
-        className={`max-w-[80%] rounded-lg px-4 py-2 text-sm whitespace-pre-wrap ${
-          isUser ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
-        }`}
+        className="shadow-surface"
+        style={{
+          maxWidth: "80%",
+          borderRadius: "6px",
+          padding: "0.5rem 1rem",
+          fontSize: "0.875rem",
+          whiteSpace: "pre-wrap",
+          backgroundColor: isUser ? "var(--accent)" : "var(--card)",
+          color: isUser ? "var(--accent-foreground)" : "var(--card-foreground)",
+          border: isUser ? "none" : "1px solid var(--border)",
+        }}
       >
         {message.content}
       </div>

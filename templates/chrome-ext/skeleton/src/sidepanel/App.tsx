@@ -59,15 +59,18 @@ export function App() {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#ffffff",
+        background: "var(--background)",
       }}
     >
       <header
         style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid #e5e5e5",
+          padding: "10px 16px",
+          borderBottom: "1px solid var(--border)",
           fontWeight: 600,
-          fontSize: "14px",
+          fontSize: "13px",
+          letterSpacing: "-0.015em",
+          color: "var(--foreground)",
+          background: "var(--card)",
         }}
       >
         __EXTENSION_NAME__

@@ -1,1 +1,187 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #F8F9FC;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --border: rgba(55, 65, 120, 0.08);
+  --input: #F5F5F5;
+  --input-border: rgba(55, 65, 120, 0.10);
+  --hover: rgba(0, 0, 0, 0.03);
+  --muted: #EEF0F6;
+  --muted-foreground: #6B6B6B;
+  --dim: #8A8FA0;
+  --accent: #34D399;
+  --accent-foreground: #022C22;
+  --success: #2DA44E;
+  --warning: #D4A72C;
+  --danger: #CF222E;
+  --card-gradient: none;
+
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --background: #08090D;
+  --foreground: #E8E9ED;
+  --card: #0F1015;
+  --card-foreground: #E8E9ED;
+  --border: rgba(148, 163, 224, 0.08);
+  --input: #13141A;
+  --input-border: rgba(148, 163, 224, 0.10);
+  --hover: rgba(148, 163, 224, 0.05);
+  --muted: #161821;
+  --muted-foreground: #787D8E;
+  --dim: #4D5266;
+  --accent: #34D399;
+  --accent-foreground: #022C22;
+  --success: #2DA44E;
+  --warning: #D4A72C;
+  --danger: #CF222E;
+  --card-gradient: linear-gradient(145deg, rgba(52, 211, 153, 0.02) 0%, transparent 60%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-border: var(--input-border);
+  --color-hover: var(--hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-dim: var(--dim);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+}
+
+/* ── Focus: suppress browser focus rings ────────────────────── */
+
+*:focus, *:focus-visible { outline: none; }
+
+/* ── Base typography ────────────────────────────────────────── */
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Surface layers ─────────────────────────────────────────── */
+
+.card-surface {
+  background-image: var(--card-gradient, none);
+}
+
+.bg-frosted {
+  background-color: color-mix(in srgb, var(--background) 85%, transparent);
+}
+
+.glass {
+  background: color-mix(in srgb, var(--card) 85%, transparent);
+  backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--border);
+}
+
+/* ── Elevation shadows ──────────────────────────────────────── */
+
+.shadow-surface {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--border);
+}
+
+.shadow-raised {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 0 0 1px var(--border);
+}
+
+.shadow-overlay {
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 0 1px var(--border);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+::selection { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+
+/* ── Animations ─────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s var(--ease-out) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.25s var(--ease-spring) both;
+}
+
+/* ── Interactive polish ─────────────────────────────────────── */
+
+.interactive {
+  transition: color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+}
+
+.interactive:hover {
+  color: var(--accent);
+}
+
+.interactive:active {
+  transform: scale(0.98);
+}
+
+/* ── Button variants ────────────────────────────────────────── */
+
+.btn-accent {
+  display: inline-block;
+  border-radius: 6px;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.btn-accent:hover {
+  filter: brightness(1.1);
+}
+
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+.btn-accent:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -99,6 +99,28 @@ Then use it by name:
 const storage = await createStorageClient("my-provider", { /* config */ });
 ```
 
+## Architecture
+
+- **StorageClient wrapper** -- `createStorageClient()` initializes a provider by name and returns a `StorageClient` that delegates all operations (upload, download, delete, list, getSignedUrl) to the underlying provider. Application code never touches provider internals.
+- **Provider registry with self-registration** -- each provider module (local, s3, r2, gcs) calls `registerProvider()` at import time. The barrel import ensures all built-in providers are available. Adding a custom provider is one class + one `registerProvider()` call.
+- **`toBuffer` with size limits** -- the shared `toBuffer()` helper collects `UploadData` (Buffer, Uint8Array, string, or Readable stream) into a single Buffer with a configurable maximum size (default 100 MB). Streams are checked incrementally -- if the limit is exceeded mid-stream, the stream is destroyed immediately.
+- **`withRetry` exponential backoff** -- cloud operations use `withRetry()` which retries on transient network errors (ECONNRESET, ETIMEDOUT, 429, 5xx) with exponential backoff and jitter. Non-retryable errors propagate immediately.
+- **Zod input validation** -- `createStorageClient()` validates its arguments against a schema before resolving the provider, catching configuration errors at construction time.
+- **Bootstrap guard** -- detects unresolved scaffolding placeholders and halts with a diagnostic message before any provider initialization.
+- **Credential resolution per provider** -- S3 uses the standard AWS credential chain, GCS uses Application Default Credentials or a service account key file, R2 uses explicit access keys. Each provider handles its own auth.
+
+## Production Readiness
+
+- [ ] Set provider-specific environment variables or credentials (AWS, GCS, R2)
+- [ ] Choose a cloud provider (s3, r2, gcs) -- local provider is for development only
+- [ ] Configure bucket names and regions for your environment
+- [ ] Review and tune `toBuffer` size limit for your upload workloads
+- [ ] Set `LOG_LEVEL=warn` for production
+- [ ] Enable signed URL expiration appropriate for your use case
+- [ ] Monitor upload/download error rates and latency
+- [ ] Configure bucket lifecycle policies (expiration, storage class transitions)
+- [ ] Restrict IAM / service account permissions to the minimum required operations
+
 ## Requirements
 
 - Node.js >= 22

@@ -28,12 +28,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         style={{
           maxWidth: "85%",
           padding: "8px 12px",
-          borderRadius: "12px",
-          background: isUser ? "#4A90D9" : "#f0f0f0",
-          color: isUser ? "#ffffff" : "#1a1a1a",
+          borderRadius: "6px",
+          background: isUser
+            ? "rgba(52, 211, 153, 0.10)"
+            : "var(--card)",
+          color: "var(--foreground)",
           fontSize: "13px",
           lineHeight: "1.5",
           wordBreak: "break-word",
+          border: isUser
+            ? "1px solid rgba(52, 211, 153, 0.15)"
+            : "1px solid var(--border)",
         }}
       >
         {renderContent(message.content)}
@@ -41,7 +46,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <span
         style={{
           fontSize: "10px",
-          color: "#aaa",
+          color: "var(--dim)",
           marginTop: "2px",
           padding: "0 4px",
         }}
@@ -73,14 +78,16 @@ function renderContent(content: string) {
       <pre
         key={`code-${parts.length}`}
         style={{
-          background: "rgba(0,0,0,0.06)",
+          background: "var(--muted)",
           padding: "8px",
           borderRadius: "4px",
           fontSize: "12px",
-          fontFamily: "monospace",
+          fontFamily: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace",
           overflowX: "auto",
           margin: "4px 0",
           whiteSpace: "pre-wrap",
+          border: "1px solid var(--border)",
+          color: "var(--foreground)",
         }}
       >
         <code>{match[1]}</code>

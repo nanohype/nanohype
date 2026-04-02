@@ -4,9 +4,19 @@ import { ChatWindow } from "@/components/chat/ChatWindow";
 
 export default function ChatPage() {
   return (
-    <main className="flex min-h-screen flex-col">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
-        <h1 className="text-lg font-semibold">Chat</h1>
+    <main style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
+      <header
+        className="bg-frosted"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          borderBottom: "1px solid var(--border)",
+          padding: "0.875rem 1.5rem",
+          backdropFilter: "blur(20px) saturate(1.3)",
+        }}
+      >
+        <h1 className="text-foreground" style={{ fontSize: "1.0625rem", fontWeight: 600 }}>Chat</h1>
       </header>
       <ChatWindow />
     </main>

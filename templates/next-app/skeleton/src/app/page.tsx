@@ -2,13 +2,26 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="max-w-2xl text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">__PROJECT_NAME__</h1>
-        <p className="mb-8 text-lg text-gray-600">__DESCRIPTION__</p>
+    <main
+      className="animate-fade-in"
+      style={{ display: "flex", minHeight: "100vh", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem" }}
+    >
+      <div style={{ maxWidth: "40rem", textAlign: "center" }}>
+        <h1
+          className="text-foreground"
+          style={{ marginBottom: "1rem", fontSize: "2rem", fontWeight: 700, letterSpacing: "-0.025em" }}
+        >
+          __PROJECT_NAME__
+        </h1>
+        <p
+          className="text-muted-foreground"
+          style={{ marginBottom: "2rem", fontSize: "1.125rem" }}
+        >
+          __DESCRIPTION__
+        </p>
         <Link
           href="/chat"
-          className="rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+          className="btn-accent shadow-surface"
         >
           Open Chat
         </Link>

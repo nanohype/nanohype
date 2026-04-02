@@ -118,6 +118,30 @@ app.use("/api/*", authMiddleware);
 
 The verifier is pluggable. Replace the `verifyToken` function in `auth.ts` to integrate with your auth provider (JWKS, asymmetric keys, external service).
 
+## Architecture
+
+- **Middleware stack executes in declaration order** -- request-id, CORS, body-limit, logger, then the error handler as an `onError` catch-all. Each middleware is a standalone Hono handler; add or remove by editing `app.ts`.
+- **Three-layer domain separation**: routes parse HTTP and delegate to services, services contain business logic and depend on a repository interface, repositories handle persistence. Services never import Hono -- they are framework-agnostic.
+- **Typed error hierarchy** (`AppError` subclasses) maps domain errors to HTTP status codes. The error-handler middleware catches `AppError` instances and returns structured JSON; unknown errors produce a generic 500 with no leaked internals.
+- **Zod config validation at startup** -- `loadConfig()` parses `process.env` against a schema and exits immediately on invalid or missing values. No silent misconfiguration at runtime.
+- **Bootstrap guard** detects unresolved `__PLACEHOLDER__` patterns left from incomplete scaffolding and halts the process with a diagnostic message.
+- **Database driver registry** -- drivers self-register on import. `client.ts` resolves the driver by `DATABASE_URL` scheme, so adding a new backend is one file plus one import.
+- **Graceful shutdown** -- SIGTERM/SIGINT stop accepting connections, drain in-flight requests, and force-exit after 10 seconds to prevent zombie pods.
+- **Readiness probe** (`/readyz`) starts unhealthy and flips to ready only after the server is listening, giving load balancers a safe promotion signal.
+
+## Production Readiness
+
+- [ ] Set all environment variables (see `.env.example`)
+- [ ] Replace default `JWT_SECRET` -- the config schema rejects the placeholder value
+- [ ] Configure `CORS_ORIGIN` for your domain (defaults to `*`)
+- [ ] Set `LOG_LEVEL=warn` for production
+- [ ] Set up health check monitoring on `/health` and `/readyz`
+- [ ] Configure alerting on error rate and p99 latency
+- [ ] Run load test to establish baseline performance
+- [ ] Review and restrict body-limit size (defaults to 1 MB)
+- [ ] Confirm graceful-shutdown timeout matches your load balancer drain period
+- [ ] Enable OpenTelemetry export (`OTEL_EXPORTER_OTLP_ENDPOINT`) for distributed tracing
+
 ## Pairs With
 
 - **infra-aws** — Deploy to AWS with ECS, ALB, and RDS
