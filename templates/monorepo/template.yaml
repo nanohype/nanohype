@@ -1,0 +1,86 @@
+apiVersion: nanohype/v1
+
+name: monorepo
+displayName: "Turborepo Monorepo"
+description: >
+  Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared
+  TypeScript base config, ESLint setup, Turborepo pipeline definitions for
+  build/test/lint/dev, and GitHub Actions CI. Optionally includes shared
+  utility and UI library packages under packages/.
+version: "0.1.0"
+license: Apache-2.0
+tags: [monorepo, turborepo, pnpm, typescript, workspace]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as the root workspace name"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for the root package.json and README"
+    prompt: "Project description"
+    default: "A Turborepo monorepo workspace"
+
+  - name: PackageManager
+    type: string
+    placeholder: "__PACKAGE_MANAGER__"
+    description: "Package manager used for the workspace"
+    prompt: "Package manager"
+    default: "pnpm"
+
+  - name: IncludeSharedUi
+    type: bool
+    placeholder: "__INCLUDE_SHARED_UI__"
+    description: "Include a shared UI component library package"
+    prompt: "Include shared-ui package?"
+    default: false
+
+  - name: IncludeSharedUtils
+    type: bool
+    placeholder: "__INCLUDE_SHARED_UTILS__"
+    description: "Include a shared utilities library package"
+    prompt: "Include shared-utils package?"
+    default: true
+
+conditionals:
+  - path: "packages/shared-utils/package.json"
+    when: IncludeSharedUtils
+  - path: "packages/shared-utils/src/index.ts"
+    when: IncludeSharedUtils
+  - path: "packages/shared-utils/tsconfig.json"
+    when: IncludeSharedUtils
+  - path: "packages/shared-ui/package.json"
+    when: IncludeSharedUi
+  - path: "packages/shared-ui/src/index.ts"
+    when: IncludeSharedUi
+  - path: "packages/shared-ui/tsconfig.json"
+    when: IncludeSharedUi
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install workspace dependencies with pnpm"
+      run: "pnpm install"
+      workdir: "."
+
+composition:
+  pairsWith: []
+  nestsInside: []
+
+prerequisites:
+  - name: pnpm
+    version: ">=9"
+    purpose: "Workspace-aware package manager for the monorepo"
+    optional: false
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript tooling and Turborepo"
+    optional: false

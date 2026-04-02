@@ -1,0 +1,20 @@
+name: basic-completions
+description: Smoke tests for LLM output quality
+cases:
+  - name: greeting-response
+    input: "Say hello in exactly 3 words"
+    assertions:
+      - type: maxTokens
+        value: 10
+      - type: matchesPattern
+        value: "^\\S+ \\S+ \\S+$"
+  - name: json-output
+    input: "Return a JSON object with keys 'name' and 'age'"
+    assertions:
+      - type: matchesJsonSchema
+        value:
+          type: object
+          required: [name, age]
+          properties:
+            name: { type: string }
+            age: { type: number }

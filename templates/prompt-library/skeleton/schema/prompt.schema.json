@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prompt.schema.json",
+  "title": "Prompt YAML Frontmatter",
+  "description": "Schema for validating prompt YAML frontmatter in a prompt library.",
+  "type": "object",
+  "required": ["name", "version"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Kebab-case prompt identifier."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "description": "Semantic version string."
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Model identifier (e.g. claude-sonnet-4-5-20250514)."
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2,
+      "description": "Sampling temperature (0-2)."
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum number of tokens in the response."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for categorization and discovery."
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/variable"
+      },
+      "description": "Prompt template variables."
+    }
+  },
+  "$defs": {
+    "variable": {
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Variable name, used in {{name}} placeholders."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What this variable represents."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the variable must be provided at render time."
+        },
+        "default": {
+          "type": "string",
+          "description": "Default value if not provided."
+        }
+      }
+    }
+  }
+}

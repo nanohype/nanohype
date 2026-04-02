@@ -1,0 +1,90 @@
+apiVersion: nanohype/v1
+
+name: agentic-loop
+displayName: "Agentic Loop"
+description: >
+  Scaffolds a TypeScript agentic loop that sends messages to an LLM,
+  detects tool-call requests in the response, executes them via a typed
+  tool registry, appends results, and repeats until the model stops
+  calling tools or an iteration limit is reached. Supports Anthropic and
+  OpenAI as LLM providers, an optional conversation memory subsystem
+  with token-aware truncation, and an optional eval harness for
+  assertion-based testing against fixture files.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, agent, llm, tools, agentic, ai]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "An agentic loop powered by LLM tool-calling"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider to use for the agent"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeMemory
+    type: bool
+    placeholder: "__INCLUDE_MEMORY__"
+    description: "Include the conversation memory subsystem with token-aware truncation"
+    prompt: "Include memory subsystem?"
+    default: true
+
+  - name: IncludeEval
+    type: bool
+    placeholder: "__INCLUDE_EVAL__"
+    description: "Include the eval harness for assertion-based agent testing"
+    prompt: "Include eval harness?"
+    default: true
+
+  - name: MaxIterations
+    type: int
+    placeholder: "__MAX_ITERATIONS__"
+    description: "Maximum number of tool-calling loop iterations before the agent stops"
+    prompt: "Max loop iterations"
+    default: 10
+
+conditionals:
+  - path: "src/memory/store.ts"
+    when: IncludeMemory
+  - path: "src/memory/context.ts"
+    when: IncludeMemory
+  - path: "src/eval/runner.ts"
+    when: IncludeEval
+  - path: "src/eval/assertions.ts"
+    when: IncludeEval
+  - path: "src/eval/fixtures/.gitkeep"
+    when: IncludeEval
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [mcp-server-ts, eval-harness, rag-pipeline]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false

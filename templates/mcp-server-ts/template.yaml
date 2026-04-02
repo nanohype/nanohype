@@ -1,0 +1,77 @@
+apiVersion: nanohype/v1
+
+name: mcp-server-ts
+displayName: "MCP Server (TypeScript)"
+description: >
+  Scaffolds a Model Context Protocol server in TypeScript using the
+  official @modelcontextprotocol/sdk. Produces a working server with
+  example tools and optional resource endpoints, configurable for stdio
+  or streamable-http transport. Includes MCP Inspector integration for
+  interactive debugging during development.
+version: "0.1.0"
+license: Apache-2.0
+tags: [mcp, typescript, ai, tools, server]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ServerName
+    type: string
+    placeholder: "__SERVER_NAME__"
+    description: "Human-readable server name displayed in MCP client UIs"
+    prompt: "Server display name"
+    required: true
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "An MCP server"
+
+  - name: Transport
+    type: enum
+    placeholder: "__TRANSPORT__"
+    description: "Server transport protocol"
+    prompt: "Transport"
+    default: "stdio"
+    options: ["stdio", "streamable-http"]
+
+  - name: IncludeResources
+    type: bool
+    placeholder: "__INCLUDE_RESOURCES__"
+    description: "Include example MCP resource endpoints"
+    prompt: "Include resource examples?"
+    default: true
+
+conditionals:
+  - path: "src/resources/example.ts"
+    when: IncludeResources
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [agentic-loop, eval-harness]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the MCP server"
+    optional: false
+  - name: npm
+    purpose: "Package management and script execution"
+    optional: false

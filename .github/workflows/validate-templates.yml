@@ -1,0 +1,55 @@
+name: Validate Templates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate template catalog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install yq
+        uses: mikefarah/yq@master
+
+      - name: Find and validate templates
+        run: |
+          failed=0
+          templates=$(find templates -name "template.yaml" -mindepth 2 -maxdepth 2 2>/dev/null | sort)
+
+          if [ -z "$templates" ]; then
+            echo "No templates found — skipping validation"
+            exit 0
+          fi
+
+          for yaml in $templates; do
+            dir=$(dirname "$yaml")
+            echo "──────────────────────────────────────"
+            echo "Validating: $dir"
+            echo "──────────────────────────────────────"
+
+            if ! ./scripts/validate.sh "$dir"; then
+              failed=1
+            fi
+
+            echo ""
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more templates failed validation"
+            exit 1
+          fi

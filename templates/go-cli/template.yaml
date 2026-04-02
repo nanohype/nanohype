@@ -1,0 +1,94 @@
+apiVersion: nanohype/v1
+
+name: go-cli
+displayName: "Go CLI Application"
+description: >
+  Scaffolds a Go CLI application using Cobra for command structure,
+  Viper for configuration management, and log/slog for structured logging.
+  Produces a buildable binary with a root command, version subcommand,
+  config file support, and a Makefile. Optionally includes GoReleaser
+  configuration and a GitHub Actions release workflow.
+version: "0.1.0"
+license: Apache-2.0
+tags: [go, cli, cobra, viper, slog]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as binary name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Org
+    type: string
+    placeholder: "__ORG__"
+    description: "GitHub organization or username"
+    prompt: "GitHub org/username"
+    required: true
+    validation:
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
+      message: "Must be a valid GitHub org or username"
+
+  - name: GoModule
+    type: string
+    placeholder: "__GO_MODULE__"
+    description: "Full Go module path"
+    prompt: "Go module path"
+    default: "github.com/${Org}/${ProjectName}"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9./-]*$"
+      message: "Must be a valid Go module path"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for help text and README"
+    prompt: "Project description"
+    default: "A CLI application"
+
+  - name: IncludeRelease
+    type: bool
+    placeholder: "__INCLUDE_RELEASE__"
+    description: "Include GoReleaser configuration and GitHub Actions release workflow"
+    prompt: "Include release automation?"
+    default: true
+
+  - name: LogFormat
+    type: enum
+    placeholder: "__LOG_FORMAT__"
+    description: "Default structured log output format"
+    prompt: "Log format"
+    default: "json"
+    options: ["json", "text", "pretty"]
+
+conditionals:
+  - path: ".goreleaser.yaml"
+    when: IncludeRelease
+  - path: ".github/workflows/release.yml"
+    when: IncludeRelease
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Initialize Go module and tidy dependencies"
+      run: "go mod tidy"
+      workdir: "."
+
+composition:
+  pairsWith: [eval-harness, infra-fly]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: go
+    version: ">=1.24"
+    purpose: "Go compilation and module management"
+    optional: false
+  - name: goreleaser
+    version: ">=2.0"
+    purpose: "Automated release builds (only needed if release config is included)"
+    optional: true

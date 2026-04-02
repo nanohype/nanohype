@@ -1,0 +1,55 @@
+apiVersion: nanohype/v1
+
+name: module-auth
+displayName: "Auth Middleware Module"
+description: >
+  Composable authentication middleware module with pluggable providers.
+  Ships with reference implementations for JWT, Clerk, Auth0, Supabase,
+  and API key validation. The provider registry pattern makes it trivial
+  to add custom auth strategies. Middleware is compatible with both Hono
+  and Express request handlers.
+version: "0.1.0"
+license: Apache-2.0
+tags: [auth, middleware, jwt, typescript, security]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Composable authentication middleware with pluggable providers"
+
+  - name: AuthProvider
+    type: string
+    placeholder: "__AUTH_PROVIDER__"
+    description: "Default auth provider to use (jwt, clerk, auth0, supabase, apikey, or a custom name)"
+    prompt: "Default auth provider"
+    default: "jwt"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, mcp-server-ts]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the auth module"
+    optional: false

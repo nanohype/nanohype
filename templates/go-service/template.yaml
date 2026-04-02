@@ -1,0 +1,98 @@
+apiVersion: nanohype/v1
+
+name: go-service
+displayName: "Go HTTP Service"
+description: >
+  Scaffolds a Go HTTP service using chi v5 for routing, structured middleware
+  (logging, panic recovery, optional auth), a repository-pattern database layer
+  with PostgreSQL and SQLite implementations, Viper-based configuration, and
+  OpenTelemetry instrumentation. Includes graceful shutdown with signal handling,
+  a Makefile, GitHub Actions CI, and optional Docker support.
+version: "0.1.0"
+license: Apache-2.0
+tags: [go, chi, api, service, rest]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as binary name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: GoModule
+    type: string
+    placeholder: "__GO_MODULE__"
+    description: "Full Go module path"
+    prompt: "Go module path"
+    default: "github.com/${Org}/${ProjectName}"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9./-]*$"
+      message: "Must be a valid Go module path"
+
+  - name: Org
+    type: string
+    placeholder: "__ORG__"
+    description: "GitHub organization or username"
+    prompt: "GitHub org/username"
+    required: true
+    validation:
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
+      message: "Must be a valid GitHub org or username"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for help text and README"
+    prompt: "Project description"
+    default: "A Go HTTP service"
+
+  - name: Database
+    type: string
+    placeholder: "__DATABASE__"
+    description: "Default database backend"
+    prompt: "Database backend"
+    default: "postgres"
+
+  - name: IncludeAuth
+    type: bool
+    placeholder: "__INCLUDE_AUTH__"
+    description: "Include auth middleware"
+    prompt: "Include auth middleware?"
+    default: true
+
+  - name: IncludeDocker
+    type: bool
+    placeholder: "__INCLUDE_DOCKER__"
+    description: "Include Dockerfile and docker-compose.yml"
+    prompt: "Include Docker support?"
+    default: true
+
+conditionals:
+  - path: "internal/middleware/auth.go"
+    when: IncludeAuth
+  - path: "Dockerfile"
+    when: IncludeDocker
+  - path: "docker-compose.yml"
+    when: IncludeDocker
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Tidy Go module dependencies"
+      run: "go mod tidy"
+      workdir: "."
+
+composition:
+  pairsWith: [infra-aws, infra-fly, eval-harness]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: go
+    version: ">=1.24"
+    purpose: "Go compilation and module management"
+    optional: false

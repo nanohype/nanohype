@@ -1,0 +1,26 @@
+---
+name: summarize-document
+version: "1.2.0"
+model: claude-sonnet-4-5-20250514
+temperature: 0.3
+tags: [summarization, documents]
+variables:
+  - name: document
+    description: The document text to summarize
+    required: true
+  - name: max_length
+    description: Maximum summary length in words
+    default: "200"
+  - name: focus_areas
+    description: Comma-separated list of topics to emphasize
+    required: false
+---
+Summarize the following document in no more than {{max_length}} words.
+Focus on key findings, decisions, and action items.
+
+{{#focus_areas}}
+Pay special attention to these topics: {{focus_areas}}
+{{/focus_areas}}
+
+Document:
+{{document}}

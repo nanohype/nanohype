@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" style="background: #ffffff;">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .title { font-size: 22px; font-weight: 700; fill: #343a40; }
+      .host-label { font-size: 18px; font-weight: 700; fill: #364fc7; }
+      .client-label { font-size: 14px; font-weight: 600; fill: #5f3dc4; }
+      .server-label { font-size: 14px; font-weight: 700; fill: #1e1e1e; }
+      .capability { font-size: 13px; font-weight: 600; }
+      .transport { font-size: 11px; fill: #868e96; font-weight: 600; }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="ah-up" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="500" y="35" text-anchor="middle" class="title">MCP Topology</text>
+
+  <!-- Host Application container -->
+  <rect x="100" y="55" width="800" height="150" rx="16" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" opacity="0.3"/>
+  <rect x="100" y="55" width="800" height="150" rx="16" fill="none" stroke="#4263eb" stroke-width="2"/>
+  <text x="500" y="82" text-anchor="middle" class="host-label">Host Application</text>
+
+  <!-- MCP Client 1 -->
+  <rect x="145" y="100" width="180" height="80" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="235" y="145" text-anchor="middle" class="client-label">MCP Client</text>
+
+  <!-- MCP Client 2 -->
+  <rect x="410" y="100" width="180" height="80" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="500" y="145" text-anchor="middle" class="client-label">MCP Client</text>
+
+  <!-- MCP Client 3 -->
+  <rect x="675" y="100" width="180" height="80" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="765" y="145" text-anchor="middle" class="client-label">MCP Client</text>
+
+  <!-- Transport lines (bidirectional) -->
+  <!-- Client 1 to Server A -->
+  <line x1="235" y1="180" x2="200" y2="285" stroke="#495057" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah)"/>
+  <text x="178" y="240" class="transport" transform="rotate(-15, 178, 240)">stdio</text>
+
+  <!-- Client 2 to Server B -->
+  <line x1="500" y1="180" x2="500" y2="285" stroke="#495057" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah)"/>
+  <text x="512" y="240" class="transport">HTTP/SSE</text>
+
+  <!-- Client 3 to Server C -->
+  <line x1="765" y1="180" x2="800" y2="285" stroke="#495057" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah)"/>
+  <text x="808" y="240" class="transport" transform="rotate(15, 808, 240)">stdio</text>
+
+  <!-- Client 1 to Server B (cross-connection) -->
+  <line x1="280" y1="180" x2="450" y2="285" stroke="#adb5bd" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#ah)"/>
+
+  <!-- MCP Server A -->
+  <rect x="80" y="290" width="240" height="280" rx="14" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="2" opacity="0.2"/>
+  <rect x="80" y="290" width="240" height="280" rx="14" fill="none" stroke="#2b8a3e" stroke-width="2"/>
+  <text x="200" y="318" text-anchor="middle" class="server-label" fill="#2b8a3e">MCP Server A</text>
+
+  <!-- Server A capabilities -->
+  <rect x="110" y="340" width="180" height="44" rx="8" fill="#fff3bf" stroke="#e67700" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="200" y="367" text-anchor="middle" class="capability" fill="#e67700">Tools</text>
+
+  <rect x="110" y="400" width="180" height="44" rx="8" fill="#d0bfff" stroke="#7048e8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="200" y="427" text-anchor="middle" class="capability" fill="#6741d9">Resources</text>
+
+  <rect x="110" y="460" width="180" height="44" rx="8" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="200" y="487" text-anchor="middle" class="capability" fill="#1864ab">Prompts</text>
+
+  <!-- MCP Server B -->
+  <rect x="380" y="290" width="240" height="280" rx="14" fill="#ffe8cc" stroke="#d9480f" stroke-width="2" opacity="0.2"/>
+  <rect x="380" y="290" width="240" height="280" rx="14" fill="none" stroke="#d9480f" stroke-width="2"/>
+  <text x="500" y="318" text-anchor="middle" class="server-label" fill="#d9480f">MCP Server B</text>
+
+  <!-- Server B capabilities -->
+  <rect x="410" y="340" width="180" height="44" rx="8" fill="#fff3bf" stroke="#e67700" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="500" y="367" text-anchor="middle" class="capability" fill="#e67700">Tools</text>
+
+  <rect x="410" y="400" width="180" height="44" rx="8" fill="#d0bfff" stroke="#7048e8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="500" y="427" text-anchor="middle" class="capability" fill="#6741d9">Resources</text>
+
+  <!-- MCP Server C -->
+  <rect x="680" y="290" width="240" height="280" rx="14" fill="#fff3bf" stroke="#e67700" stroke-width="2" opacity="0.2"/>
+  <rect x="680" y="290" width="240" height="280" rx="14" fill="none" stroke="#e67700" stroke-width="2"/>
+  <text x="800" y="318" text-anchor="middle" class="server-label" fill="#e67700">MCP Server C</text>
+
+  <!-- Server C capabilities -->
+  <rect x="710" y="340" width="180" height="44" rx="8" fill="#fff3bf" stroke="#e67700" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="800" y="367" text-anchor="middle" class="capability" fill="#e67700">Tools</text>
+
+  <rect x="710" y="400" width="180" height="44" rx="8" fill="#a5d8ff" stroke="#1971c2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="800" y="427" text-anchor="middle" class="capability" fill="#1864ab">Prompts</text>
+
+  <!-- Legend -->
+  <rect x="110" y="530" width="14" height="14" rx="3" fill="#fff3bf" stroke="#e67700" stroke-width="1"/>
+  <text x="132" y="542" font-size="11" fill="#495057" font-family="sans-serif">Tools</text>
+  <rect x="180" y="530" width="14" height="14" rx="3" fill="#d0bfff" stroke="#7048e8" stroke-width="1"/>
+  <text x="202" y="542" font-size="11" fill="#495057" font-family="sans-serif">Resources</text>
+  <rect x="270" y="530" width="14" height="14" rx="3" fill="#a5d8ff" stroke="#1971c2" stroke-width="1"/>
+  <text x="292" y="542" font-size="11" fill="#495057" font-family="sans-serif">Prompts</text>
+</svg>

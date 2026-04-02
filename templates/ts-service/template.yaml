@@ -1,0 +1,85 @@
+apiVersion: nanohype/v1
+
+name: ts-service
+displayName: "TypeScript HTTP Service"
+description: >
+  Scaffolds a production-ready TypeScript HTTP service using the Hono
+  framework. Includes pluggable database adapters (Postgres, SQLite) via
+  a registry pattern, Drizzle ORM for schema and migrations, JWT-based
+  auth middleware, structured request logging, error handling, and
+  OpenTelemetry instrumentation with traces and metrics. Ships with
+  optional Docker and Docker Compose configurations.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, hono, api, service, rest]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "A TypeScript HTTP service"
+
+  - name: Framework
+    type: string
+    placeholder: "__FRAMEWORK__"
+    description: "HTTP framework (hono is default; extensible to express, fastify)"
+    prompt: "HTTP framework"
+    default: "hono"
+
+  - name: Database
+    type: string
+    placeholder: "__DATABASE__"
+    description: "Database backend (postgres, sqlite, or none)"
+    prompt: "Database"
+    default: "postgres"
+
+  - name: IncludeAuth
+    type: bool
+    placeholder: "__INCLUDE_AUTH__"
+    description: "Include JWT authentication middleware"
+    prompt: "Include auth middleware?"
+    default: true
+
+  - name: IncludeDocker
+    type: bool
+    placeholder: "__INCLUDE_DOCKER__"
+    description: "Include Dockerfile and docker-compose.yml"
+    prompt: "Include Docker files?"
+    default: true
+
+conditionals:
+  - path: "src/middleware/auth.ts"
+    when: IncludeAuth
+  - path: "Dockerfile"
+    when: IncludeDocker
+  - path: "docker-compose.yml"
+    when: IncludeDocker
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [infra-aws, infra-fly, module-database, module-auth]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the HTTP service"
+    optional: false

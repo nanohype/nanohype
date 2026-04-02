@@ -1,0 +1,94 @@
+apiVersion: nanohype/v1
+
+name: rag-pipeline
+displayName: "RAG Pipeline"
+description: >
+  Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript.
+  Implements document ingestion, configurable chunking strategies,
+  embedding generation, vector storage, similarity retrieval, and
+  LLM-powered answer generation with source citations. No LangChain —
+  all components are built from first principles using the provider
+  SDKs directly. Supports multiple vector stores (pgvector, Chroma,
+  Qdrant, Pinecone), embedding providers (OpenAI, Cohere), and LLM
+  providers (Anthropic, OpenAI) for generation.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, rag, embeddings, vector-search, llm, retrieval, ai]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory names"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "A retrieval-augmented generation pipeline"
+
+  - name: VectorStore
+    type: string
+    placeholder: "__VECTOR_STORE__"
+    description: "Vector database backend for storing and querying embeddings (e.g. chroma, pgvector, qdrant, pinecone)"
+    prompt: "Vector store"
+    default: "chroma"
+
+  - name: EmbeddingProvider
+    type: string
+    placeholder: "__EMBEDDING_PROVIDER__"
+    description: "Provider for generating text embeddings (e.g. openai, cohere)"
+    prompt: "Embedding provider"
+    default: "openai"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for answer generation (e.g. anthropic, openai)"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: ChunkStrategy
+    type: string
+    placeholder: "__CHUNK_STRATEGY__"
+    description: "Text chunking strategy for splitting documents"
+    prompt: "Chunking strategy"
+    default: "recursive"
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include vitest test suite with chunking, retrieval, and registry tests"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/__tests__/chunking.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/retrieval.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/registry.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [agentic-loop, eval-harness, go-service]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false

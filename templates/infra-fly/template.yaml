@@ -1,0 +1,96 @@
+apiVersion: nanohype/v1
+
+name: infra-fly
+displayName: "Fly.io Deployment"
+description: >
+  Scaffolds a Fly.io deployment configuration with fly.toml, multi-stage
+  Dockerfile, deploy scripts, and optional Postgres and Redis provisioning.
+  Includes a GitHub Actions CI/CD workflow for automatic deploys on push
+  to main. Designed to pair with service templates for a complete deploy
+  pipeline.
+version: "0.1.0"
+license: Apache-2.0
+tags: [fly, deployment, infrastructure, docker]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory name and identifiers"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README"
+    prompt: "Project description"
+    default: "Fly.io deployment configuration"
+
+  - name: AppName
+    type: string
+    placeholder: "__APP_NAME__"
+    description: "Fly app name (must be globally unique on Fly.io)"
+    prompt: "Fly app name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Region
+    type: string
+    placeholder: "__REGION__"
+    description: "Fly.io deployment region"
+    prompt: "Primary region"
+    default: "iad"
+    validation:
+      pattern: "^[a-z]{3}$"
+      message: "Must be a three-letter Fly.io region code (e.g. iad, ord, lhr)"
+
+  - name: MachineSize
+    type: string
+    placeholder: "__MACHINE_SIZE__"
+    description: "Fly machine VM size"
+    prompt: "Machine size"
+    default: "shared-cpu-1x"
+
+  - name: IncludePostgres
+    type: bool
+    placeholder: "__INCLUDE_POSTGRES__"
+    description: "Include Fly Postgres database setup script"
+    prompt: "Include Postgres?"
+    default: false
+
+  - name: IncludeRedis
+    type: bool
+    placeholder: "__INCLUDE_REDIS__"
+    description: "Include Fly Redis (Upstash) setup script"
+    prompt: "Include Redis?"
+    default: false
+
+  - name: IncludeCi
+    type: bool
+    placeholder: "__INCLUDE_CI__"
+    description: "Include GitHub Actions deploy workflow"
+    prompt: "Include CI/CD?"
+    default: true
+
+conditionals:
+  - path: "scripts/setup-db.sh"
+    when: IncludePostgres
+  - path: "scripts/setup-redis.sh"
+    when: IncludeRedis
+  - path: ".github/workflows/deploy.yml"
+    when: IncludeCi
+
+composition:
+  pairsWith: [go-service, ts-service, go-cli]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: flyctl
+    purpose: "Fly.io CLI for deploying and managing apps"
+    optional: true

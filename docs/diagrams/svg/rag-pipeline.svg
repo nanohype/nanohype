@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" style="background: #ffffff;">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .title { font-size: 22px; font-weight: 700; fill: #343a40; }
+      .label { font-size: 15px; font-weight: 600; fill: #1e1e1e; }
+      .sublabel { font-size: 12px; font-weight: 400; fill: #495057; }
+      .section-title { font-size: 13px; font-weight: 700; fill: #868e96; letter-spacing: 1px; }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="ah-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4263eb"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="540" y="35" text-anchor="middle" class="title">RAG Pipeline</text>
+
+  <!-- Section labels -->
+  <text x="260" y="65" text-anchor="middle" class="section-title">INDEXING</text>
+  <line x1="100" y1="70" x2="420" y2="70" stroke="#dee2e6" stroke-width="1"/>
+
+  <text x="750" y="65" text-anchor="middle" class="section-title">RETRIEVAL &amp; GENERATION</text>
+  <line x1="580" y1="70" x2="1020" y2="70" stroke="#dee2e6" stroke-width="1"/>
+
+  <!-- === INDEXING PIPELINE (top row) === -->
+
+  <!-- Documents -->
+  <rect x="30" y="90" width="120" height="60" rx="12" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="90" y="125" text-anchor="middle" class="label" fill="#364fc7">Documents</text>
+
+  <!-- Arrow -->
+  <line x1="150" y1="120" x2="194" y2="120" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Chunking -->
+  <rect x="200" y="90" width="110" height="60" rx="12" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="2" filter="url(#shadow)"/>
+  <text x="255" y="125" text-anchor="middle" class="label" fill="#2b8a3e">Chunking</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="120" x2="354" y2="120" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Embedding -->
+  <rect x="360" y="90" width="120" height="60" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="420" y="125" text-anchor="middle" class="label" fill="#6741d9">Embedding</text>
+
+  <!-- Arrow down to Vector Store -->
+  <line x1="420" y1="150" x2="420" y2="194" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- === VECTOR STORE (center, connecting both pipelines) === -->
+  <rect x="350" y="200" width="160" height="80" rx="14" fill="#fff3bf" stroke="#e67700" stroke-width="2.5" filter="url(#shadow)"/>
+  <text x="430" y="237" text-anchor="middle" font-size="16" font-weight="700" fill="#e67700" font-family="sans-serif">Vector Store</text>
+  <text x="430" y="258" text-anchor="middle" class="sublabel">(index)</text>
+
+  <!-- === QUERY PATH (enters from left-bottom) === -->
+  <rect x="30" y="310" width="120" height="60" rx="12" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="90" y="345" text-anchor="middle" class="label" fill="#364fc7">Query</text>
+
+  <!-- Query arrow up to Vector Store -->
+  <path d="M 150 340 Q 300 340 350 270" fill="none" stroke="#4263eb" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah-blue)"/>
+  <text x="220" y="320" font-size="11" fill="#4263eb" font-weight="600" font-family="sans-serif">similarity search</text>
+
+  <!-- Arrow from Vector Store right to Retrieval -->
+  <line x1="510" y1="240" x2="584" y2="240" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- === RETRIEVAL + GENERATION PIPELINE === -->
+
+  <!-- Retrieval -->
+  <rect x="590" y="210" width="110" height="60" rx="12" fill="#ffe8cc" stroke="#d9480f" stroke-width="2" filter="url(#shadow)"/>
+  <text x="645" y="245" text-anchor="middle" class="label" fill="#d9480f">Retrieval</text>
+
+  <!-- Arrow -->
+  <line x1="700" y1="240" x2="744" y2="240" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Reranking -->
+  <rect x="750" y="210" width="110" height="60" rx="12" fill="#ffe3e3" stroke="#e03131" stroke-width="2" filter="url(#shadow)"/>
+  <text x="805" y="245" text-anchor="middle" class="label" fill="#c92a2a">Reranking</text>
+
+  <!-- Arrow down -->
+  <line x1="805" y1="270" x2="805" y2="314" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Context Assembly -->
+  <rect x="735" y="320" width="140" height="64" rx="12" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="2" filter="url(#shadow)"/>
+  <text x="805" y="347" text-anchor="middle" class="label" fill="#2b8a3e">Context</text>
+  <text x="805" y="367" text-anchor="middle" class="label" fill="#2b8a3e">Assembly</text>
+
+  <!-- Query also feeds into Context Assembly -->
+  <path d="M 90 370 Q 90 420 500 420 Q 735 420 770 384" fill="none" stroke="#4263eb" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah-blue)"/>
+  <text x="400" y="438" font-size="11" fill="#4263eb" font-weight="600" font-family="sans-serif">original query</text>
+
+  <!-- Arrow down -->
+  <line x1="805" y1="384" x2="805" y2="426" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- LLM Generation -->
+  <rect x="730" y="432" width="150" height="64" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2.5" filter="url(#shadow)"/>
+  <text x="805" y="458" text-anchor="middle" font-size="15" font-weight="700" fill="#6741d9" font-family="sans-serif">LLM</text>
+  <text x="805" y="478" text-anchor="middle" font-size="15" font-weight="700" fill="#6741d9" font-family="sans-serif">Generation</text>
+
+  <!-- Arrow right -->
+  <line x1="880" y1="464" x2="934" y2="464" stroke="#495057" stroke-width="2" marker-end="url(#ah)"/>
+
+  <!-- Response -->
+  <rect x="940" y="434" width="120" height="60" rx="12" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1000" y="469" text-anchor="middle" class="label" fill="#364fc7">Response</text>
+</svg>

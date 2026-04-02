@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 470" width="1020" height="470" style="background: #ffffff;">
+  <defs>
+    <style>
+      text { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .title { font-size: 22px; font-weight: 700; fill: #343a40; }
+      .label { font-size: 15px; font-weight: 600; fill: #1e1e1e; }
+      .sublabel { font-size: 12px; font-weight: 400; fill: #495057; }
+      .arrow-label { font-size: 11px; fill: #868e96; font-style: italic; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="arrowhead-down" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="510" y="35" text-anchor="middle" class="title">Template Lifecycle</text>
+
+  <!-- Row 1: User -> Select Template -> Read template.yaml -> Collect Variables -> Validate Inputs -->
+
+  <!-- User -->
+  <rect x="20" y="70" width="100" height="56" rx="12" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="70" y="103" text-anchor="middle" class="label" fill="#364fc7">User</text>
+
+  <!-- Arrow 1 -->
+  <line x1="120" y1="98" x2="164" y2="98" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Select Template -->
+  <rect x="170" y="70" width="130" height="56" rx="12" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="2" filter="url(#shadow)"/>
+  <text x="235" y="95" text-anchor="middle" class="label" fill="#2b8a3e">Select</text>
+  <text x="235" y="113" text-anchor="middle" class="label" fill="#2b8a3e">Template</text>
+
+  <!-- Arrow 2 -->
+  <line x1="300" y1="98" x2="344" y2="98" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Read template.yaml -->
+  <rect x="350" y="60" width="160" height="76" rx="12" fill="#fff3bf" stroke="#e67700" stroke-width="2" filter="url(#shadow)"/>
+  <text x="430" y="88" text-anchor="middle" class="label" fill="#e67700">Scaffolding Tool</text>
+  <text x="430" y="106" text-anchor="middle" class="sublabel">reads template.yaml</text>
+
+  <!-- Arrow 3 -->
+  <line x1="510" y1="98" x2="554" y2="98" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Collect Variables -->
+  <rect x="560" y="70" width="130" height="56" rx="12" fill="#e5dbff" stroke="#7048e8" stroke-width="2" filter="url(#shadow)"/>
+  <text x="625" y="95" text-anchor="middle" class="label" fill="#6741d9">Collect</text>
+  <text x="625" y="113" text-anchor="middle" class="label" fill="#6741d9">Variables</text>
+
+  <!-- Arrow 4 -->
+  <line x1="690" y1="98" x2="734" y2="98" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Validate Inputs -->
+  <rect x="740" y="70" width="130" height="56" rx="12" fill="#ffe3e3" stroke="#e03131" stroke-width="2" filter="url(#shadow)"/>
+  <text x="805" y="95" text-anchor="middle" class="label" fill="#c92a2a">Validate</text>
+  <text x="805" y="113" text-anchor="middle" class="label" fill="#c92a2a">Inputs</text>
+
+  <!-- Curved arrow down from Validate to row 2 -->
+  <path d="M 870 98 Q 940 98 940 185 Q 940 260 860 260" fill="none" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Row 2: Evaluate Conditionals -> Render Skeleton -> Execute Hooks -> Output Project -->
+
+  <!-- Evaluate Conditionals -->
+  <rect x="150" y="230" width="160" height="56" rx="12" fill="#ffe8cc" stroke="#d9480f" stroke-width="2" filter="url(#shadow)"/>
+  <text x="230" y="255" text-anchor="middle" class="label" fill="#d9480f">Evaluate</text>
+  <text x="230" y="273" text-anchor="middle" class="label" fill="#d9480f">Conditionals</text>
+
+  <!-- Arrow down-left from Validate row to Eval -->
+  <path d="M 740 126 Q 740 185 540 185 Q 316 185 316 224" fill="none" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Arrow 6 -->
+  <line x1="310" y1="258" x2="364" y2="258" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Render Skeleton -->
+  <rect x="370" y="222" width="170" height="72" rx="12" fill="#dbe4ff" stroke="#4263eb" stroke-width="2" filter="url(#shadow)"/>
+  <text x="455" y="250" text-anchor="middle" class="label" fill="#364fc7">Render Skeleton</text>
+  <text x="455" y="270" text-anchor="middle" class="sublabel">(placeholder substitution)</text>
+
+  <!-- Arrow 7 -->
+  <line x1="540" y1="258" x2="594" y2="258" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Execute Hooks -->
+  <rect x="600" y="230" width="130" height="56" rx="12" fill="#d3f9d8" stroke="#2b8a3e" stroke-width="2" filter="url(#shadow)"/>
+  <text x="665" y="255" text-anchor="middle" class="label" fill="#2b8a3e">Execute</text>
+  <text x="665" y="273" text-anchor="middle" class="label" fill="#2b8a3e">Hooks</text>
+
+  <!-- Arrow 8 -->
+  <line x1="730" y1="258" x2="774" y2="258" stroke="#495057" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Output Project -->
+  <rect x="780" y="230" width="130" height="56" rx="12" fill="#fff3bf" stroke="#e67700" stroke-width="2" filter="url(#shadow)"/>
+  <text x="845" y="255" text-anchor="middle" class="label" fill="#e67700">Output</text>
+  <text x="845" y="273" text-anchor="middle" class="label" fill="#e67700">Project</text>
+
+  <!-- Step numbers -->
+  <circle cx="40" cy="70" r="11" fill="#4263eb" stroke="none"/>
+  <text x="40" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">1</text>
+
+  <circle cx="190" cy="70" r="11" fill="#2b8a3e" stroke="none"/>
+  <text x="190" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">2</text>
+
+  <circle cx="370" cy="60" r="11" fill="#e67700" stroke="none"/>
+  <text x="370" y="64" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">3</text>
+
+  <circle cx="580" cy="70" r="11" fill="#7048e8" stroke="none"/>
+  <text x="580" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">4</text>
+
+  <circle cx="760" cy="70" r="11" fill="#e03131" stroke="none"/>
+  <text x="760" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">5</text>
+
+  <circle cx="170" cy="230" r="11" fill="#d9480f" stroke="none"/>
+  <text x="170" y="234" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">6</text>
+
+  <circle cx="390" cy="222" r="11" fill="#4263eb" stroke="none"/>
+  <text x="390" y="226" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">7</text>
+
+  <circle cx="620" cy="230" r="11" fill="#2b8a3e" stroke="none"/>
+  <text x="620" y="234" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">8</text>
+
+  <circle cx="800" cy="230" r="11" fill="#e67700" stroke="none"/>
+  <text x="800" y="234" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="sans-serif">9</text>
+</svg>

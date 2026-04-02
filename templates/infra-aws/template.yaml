@@ -1,0 +1,101 @@
+apiVersion: nanohype/v1
+
+name: infra-aws
+displayName: "AWS CDK Infrastructure"
+description: >
+  Scaffolds an AWS CDK (TypeScript) infrastructure project for deploying
+  AI services. Supports Lambda or ECS Fargate compute targets with API
+  Gateway or Application Load Balancer, optional VPC networking, RDS
+  PostgreSQL database, and CloudWatch monitoring with alarms. Produces
+  a deployable CDK app with modular constructs, snapshot tests, and
+  standard CDK toolchain scripts.
+version: "0.1.0"
+license: Apache-2.0
+tags: [aws, cdk, infrastructure, typescript, iac]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as stack name and package name"
+    prompt: "Project name"
+    default: "infra"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README and package.json"
+    prompt: "Project description"
+    default: "AWS CDK infrastructure for AI services"
+
+  - name: AwsRegion
+    type: string
+    placeholder: "__AWS_REGION__"
+    description: "AWS region for deployment"
+    prompt: "AWS region"
+    default: "us-east-1"
+    validation:
+      pattern: "^[a-z]{2}-[a-z]+-[0-9]+$"
+      message: "Must be a valid AWS region (e.g. us-east-1, eu-west-2)"
+
+  - name: ComputeTarget
+    type: enum
+    placeholder: "__COMPUTE_TARGET__"
+    description: "Compute platform for the service"
+    prompt: "Compute target"
+    default: "lambda"
+    options: ["lambda", "ecs"]
+
+  - name: IncludeVpc
+    type: bool
+    placeholder: "__INCLUDE_VPC__"
+    description: "Include VPC with public and private subnets"
+    prompt: "Include VPC?"
+    default: false
+
+  - name: IncludeRds
+    type: bool
+    placeholder: "__INCLUDE_RDS__"
+    description: "Include RDS PostgreSQL database with Secrets Manager credentials"
+    prompt: "Include RDS database?"
+    default: false
+
+  - name: IncludeMonitoring
+    type: bool
+    placeholder: "__INCLUDE_MONITORING__"
+    description: "Include CloudWatch dashboard, alarms, and SNS notifications"
+    prompt: "Include monitoring?"
+    default: true
+
+conditionals:
+  - path: "lib/constructs/vpc.ts"
+    when: IncludeVpc
+  - path: "lib/constructs/database.ts"
+    when: IncludeRds
+  - path: "lib/constructs/monitoring.ts"
+    when: IncludeMonitoring
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [go-service, ts-service, go-cli]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for CDK and TypeScript"
+    optional: false
+  - name: aws-cdk
+    version: ">=2.170"
+    purpose: "AWS CDK CLI for synthesizing and deploying stacks"
+    optional: true

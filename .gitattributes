@@ -1,0 +1,22 @@
+# Normalize line endings
+* text=auto
+
+# Explicitly declare text files
+*.md text
+*.yml text
+*.yaml text
+*.json text
+*.ts text
+*.tsx text
+*.js text
+*.go text
+*.py text
+*.sh text eol=lf
+*.css text
+*.html text
+
+# Declare binary files
+*.png binary
+*.jpg binary
+*.svg text
+*.excalidraw text linguist-language=JSON

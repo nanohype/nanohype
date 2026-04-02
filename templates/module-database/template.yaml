@@ -1,0 +1,57 @@
+apiVersion: nanohype/v1
+
+name: module-database
+displayName: "Database Module (Drizzle ORM)"
+description: >
+  Composable database connection and query layer built on Drizzle ORM with
+  pluggable drivers. Ships with PostgreSQL (node-postgres), SQLite
+  (better-sqlite3), and Turso (libSQL) drivers that self-register through a
+  driver registry. Provides a singleton database client with lazy
+  initialization, typed Drizzle schema definitions, and a migration runner
+  powered by drizzle-kit. Designed to be dropped into any TypeScript service
+  as a standalone data-access module.
+version: "0.1.0"
+license: Apache-2.0
+tags: [database, drizzle, orm, typescript, sql]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Database module with Drizzle ORM and pluggable drivers"
+
+  - name: DatabaseDriver
+    type: string
+    placeholder: "__DATABASE_DRIVER__"
+    description: "Default database driver (postgres, sqlite, turso, or a custom name)"
+    prompt: "Default database driver"
+    default: "postgres"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, agentic-loop, rag-pipeline]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for Drizzle ORM and database drivers"
+    optional: false

@@ -1,0 +1,36 @@
+{
+  "name": "nanohype",
+  "private": true,
+  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nanohype/nanohype.git"
+  },
+  "homepage": "https://github.com/nanohype/nanohype",
+  "bugs": {
+    "url": "https://github.com/nanohype/nanohype/issues"
+  },
+  "keywords": [
+    "ai",
+    "templates",
+    "scaffolding",
+    "mcp",
+    "agents",
+    "rag",
+    "llm",
+    "cli",
+    "infrastructure"
+  ],
+  "scripts": {
+    "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
+    "validate:schema": "ajv validate -s schemas/template.schema.json -d 'templates/*/template.yaml' --spec=draft2020 --strict=false",
+    "validate:all": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
+    "lint:docs": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!templates/*/skeleton/**'"
+  },
+  "devDependencies": {
+    "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.1",
+    "markdownlint-cli2": "^0.17.0"
+  }
+}
