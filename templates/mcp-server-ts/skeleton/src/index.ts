@@ -1,5 +1,8 @@
+import { validateBootstrap } from "./bootstrap.js";
 import { createServer } from "./server.js";
 import { start } from "./transports/__TRANSPORT__.js";
+
+validateBootstrap();
 
 const server = createServer();
 

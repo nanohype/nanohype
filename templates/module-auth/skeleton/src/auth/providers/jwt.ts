@@ -57,6 +57,37 @@ export function clearJwksCache(): void {
   jwksCache = null;
 }
 
+// ── Secret Validation ─────────────────────────────────────────────
+//
+// Weak defaults that must never be used in production. In development
+// a warning is logged; in production the provider refuses to verify.
+
+const WEAK_SECRETS = new Set([
+  "change-me",
+  "change-me-in-production",
+  "secret",
+  "test",
+]);
+
+function validateSecret(secret: string): { ok: boolean; warning?: string } {
+  if (!WEAK_SECRETS.has(secret)) {
+    return { ok: true };
+  }
+
+  const isProd = process.env.NODE_ENV === "production";
+  if (isProd) {
+    return {
+      ok: false,
+      warning: `AUTH_JWT_SECRET is set to a weak default ("${secret}") — refusing to verify tokens in production`,
+    };
+  }
+
+  console.warn(
+    `[auth] WARNING: AUTH_JWT_SECRET is set to a weak default ("${secret}"). Do not use this in production.`
+  );
+  return { ok: true };
+}
+
 const jwtProvider: AuthProvider = {
   name: "jwt",
 
@@ -77,6 +108,14 @@ const jwtProvider: AuthProvider = {
         error:
           "JWT provider not configured: set AUTH_JWT_SECRET or AUTH_JWT_JWKS_URL",
       };
+    }
+
+    // Reject weak secrets in production, warn in development
+    if (secret && !jwksUrl) {
+      const check = validateSecret(secret);
+      if (!check.ok) {
+        return { authenticated: false, error: check.warning! };
+      }
     }
 
     try {

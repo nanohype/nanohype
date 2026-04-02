@@ -42,6 +42,16 @@ const redisProvider: CacheProvider = {
       client = new Redis({ host, port, password });
     }
 
+    // Verify connectivity — fail fast if Redis is unreachable
+    try {
+      await client.ping();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await client.quit().catch(() => {});
+      client = null;
+      throw new Error(`Redis connection failed: ${message}`);
+    }
+
     console.log(`[cache] Redis provider connected to ${url ?? `${host}:${port}`}`);
   },
 

@@ -1,3 +1,4 @@
+import { validateBootstrap } from "./bootstrap.js";
 import {
   getProvider,
   type Message,
@@ -275,6 +276,8 @@ function extractText(response: LlmResponse): string {
  * runs an interactive prompt.
  */
 async function main(): Promise<void> {
+  validateBootstrap();
+
   const input = process.argv.slice(2).join(" ");
 
   if (!input) {

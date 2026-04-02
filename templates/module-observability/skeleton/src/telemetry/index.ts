@@ -1,3 +1,4 @@
+import { validateBootstrap } from "./bootstrap.js";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { Resource } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
@@ -47,6 +48,8 @@ let sdk: NodeSDK | undefined;
  * ```
  */
 export function initTelemetry(config: TelemetryConfig): () => Promise<void> {
+  validateBootstrap();
+
   if (sdk) {
     logger.warn("Telemetry SDK already initialized — skipping re-initialization");
     return () => shutdownTelemetry();

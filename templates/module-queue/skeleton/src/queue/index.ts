@@ -5,6 +5,8 @@
 // primary entry points.
 //
 
+import { z } from "zod";
+import { validateBootstrap } from "./bootstrap.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { QueueProvider } from "./providers/types.js";
 import type { QueueConfig, HandlerMap } from "./types.js";
@@ -52,10 +54,30 @@ export interface Queue {
  *   await queue.enqueue("send-email", { to: "a@b.com" });
  *   queue.startWorker({ "send-email": async (job) => { ... } });
  */
+/** Zod schema for validating createQueue arguments. */
+const CreateQueueSchema = z.object({
+  providerName: z.string().min(1, "providerName must be a non-empty string"),
+  config: z.object({
+    connection: z.object({
+      host: z.string(),
+      port: z.number(),
+    }).optional(),
+    queueName: z.string().optional(),
+  }).passthrough(),
+});
+
 export async function createQueue(
   providerName: string = "__QUEUE_PROVIDER__",
   config: QueueConfig = {}
 ): Promise<Queue> {
+  const parsed = CreateQueueSchema.safeParse({ providerName, config });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid queue config: ${issues}`);
+  }
+
+  validateBootstrap();
+
   const provider = getProvider(providerName);
   await provider.init(config);
 

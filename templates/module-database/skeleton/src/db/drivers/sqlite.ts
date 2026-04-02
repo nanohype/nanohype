@@ -25,6 +25,16 @@ const sqliteDriver: DatabaseDriver = {
     db = new Database(path);
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
+
+    // Verify connectivity with a test query
+    try {
+      db.prepare("SELECT 1").get();
+    } catch (err) {
+      db.close();
+      db = null;
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`SQLite connection test failed: ${message}`);
+    }
     console.log(`[db] Connected to SQLite at ${path}`);
 
     return drizzle(db);

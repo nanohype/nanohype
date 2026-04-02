@@ -41,6 +41,17 @@ const bullmqProvider: QueueProvider = {
 
     queue = new Queue(queueName, { connection });
 
+    // Verify Redis connectivity — fail fast if unreachable
+    try {
+      const queueEvents = await queue.client;
+      await queueEvents.ping();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      await queue.close().catch(() => {});
+      queue = null;
+      throw new Error(`BullMQ Redis connection failed: ${message}`);
+    }
+
     // Single long-lived Worker — its processor callback feeds the local
     // buffer. We return a never-resolving promise from the processor so
     // BullMQ keeps the job "active" until we explicitly acknowledge or

@@ -60,11 +60,14 @@ func main() {
 
 	// ── Set up chi router with middleware ──
 	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recovery)
+	r.Use(middleware.MaxBody(1 << 20)) // 1 MB request body limit
 
 	// ── Routes ──
 	r.Get("/health", handler.Health)
+	r.Get("/readyz", handler.Readyz(nil)) // pass a ReadyzChecker to probe dependencies
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/examples", exampleHandler.List)

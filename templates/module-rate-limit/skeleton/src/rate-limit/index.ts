@@ -8,6 +8,8 @@
 // Default store: __STORE__
 //
 
+import { z } from "zod";
+import { validateBootstrap } from "./bootstrap.js";
 import { getAlgorithm, listAlgorithms } from "./algorithms/index.js";
 import { getStore, listStores } from "./stores/index.js";
 import type { RateLimitAlgorithm } from "./algorithms/types.js";
@@ -60,12 +62,32 @@ export interface RateLimiter {
  *   const result = await limiter.check("user:123");
  *   if (!result.allowed) { // reject }
  */
+/** Zod schema for validating createRateLimiter arguments. */
+const CreateRateLimiterSchema = z.object({
+  algorithmName: z.string().min(1, "algorithmName must be a non-empty string"),
+  storeName: z.string().min(1, "storeName must be a non-empty string"),
+  opts: z.object({
+    limit: z.number().positive("limit must be a positive number").optional(),
+    window: z.number().positive("window must be a positive number").optional(),
+    keyPrefix: z.string().optional(),
+  }).optional(),
+  storeConfig: z.object({}).passthrough().optional(),
+});
+
 export async function createRateLimiter(
   algorithmName: string = "__ALGORITHM__",
   storeName: string = "__STORE__",
   opts?: RateLimitOptions,
   storeConfig?: StoreConfig,
 ): Promise<RateLimiter> {
+  const parsed = CreateRateLimiterSchema.safeParse({ algorithmName, storeName, opts, storeConfig });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid rate limiter config: ${issues}`);
+  }
+
+  validateBootstrap();
+
   const limit = opts?.limit ?? DEFAULTS.limit;
   const window = opts?.window ?? DEFAULTS.window;
   const keyPrefix = opts?.keyPrefix ?? DEFAULTS.keyPrefix;

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { getSignatureProvider } from "./signatures/index.js";
 import type { SenderConfig, DeliveryResult, DeliveryOptions, WebhookEvent } from "./types.js";
 
@@ -47,7 +48,22 @@ const SENDER_DEFAULTS = {
  *     payload: { version: "1.2.0" },
  *   });
  */
+/** Zod schema for validating createWebhookSender config. */
+const SenderConfigSchema = z.object({
+  secret: z.string().min(1, "secret must be a non-empty string"),
+  signatureMethod: z.string().optional(),
+  signatureHeader: z.string().optional(),
+  maxRetries: z.number().optional(),
+  baseDelay: z.number().optional(),
+}).passthrough();
+
 export function createWebhookSender(config: SenderConfig): WebhookSender {
+  const parsed = SenderConfigSchema.safeParse(config);
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid webhook sender config: ${issues}`);
+  }
+
   const signatureMethod = config.signatureMethod ?? SENDER_DEFAULTS.signatureMethod;
   const signatureHeader = config.signatureHeader ?? SENDER_DEFAULTS.signatureHeader;
   const defaultMaxRetries = config.maxRetries ?? SENDER_DEFAULTS.maxRetries;

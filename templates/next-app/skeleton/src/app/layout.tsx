@@ -1,5 +1,8 @@
+import { validateBootstrap } from "../bootstrap.js";
 import type { Metadata } from "next";
 import "./globals.css";
+
+validateBootstrap();
 
 export const metadata: Metadata = {
   title: "__PROJECT_NAME__",

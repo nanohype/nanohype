@@ -1,3 +1,4 @@
+import { validateBootstrap } from "./bootstrap.js";
 import type { DatabaseConfig } from "./types.js";
 import { getDriver } from "./drivers/registry.js";
 
@@ -29,6 +30,8 @@ let activeDriver: string | null = null;
  * subsequent calls to getDb() return the same instance.
  */
 export async function createDatabase(config: DatabaseConfig): Promise<unknown> {
+  validateBootstrap();
+
   if (instance) {
     await disconnectDatabase();
   }

@@ -1,63 +1,56 @@
 import { Hono } from "hono";
+import { validate } from "../middleware/validate.js";
+import { CreateItemSchema, UpdateItemSchema } from "../schemas/example.js";
+import {
+  ExampleService,
+  InMemoryItemRepository,
+} from "../services/example.js";
 
 // ── Example CRUD Routes ──────────────────────────────────────────────
 //
-// Demonstrates the route pattern. Replace with your own domain logic.
-// Mount under /api in app.ts.
+// Thin HTTP layer that delegates to ExampleService. Business logic
+// lives in the service; routes handle parsing, validation, and HTTP
+// response formatting. Domain errors (NotFoundError, etc.) propagate
+// to the global error handler middleware.
 //
 
-interface Item {
-  id: string;
-  name: string;
-  createdAt: string;
-}
-
-const store = new Map<string, Item>();
+const service = new ExampleService(new InMemoryItemRepository());
 
 export const exampleRoutes = new Hono();
 
 // ── List ─────────────────────────────────────────────────────────────
 
-exampleRoutes.get("/items", (c) => {
-  return c.json({ items: Array.from(store.values()) });
+exampleRoutes.get("/items", async (c) => {
+  const items = await service.listItems();
+  return c.json({ items });
 });
 
 // ── Get by ID ────────────────────────────────────────────────────────
 
-exampleRoutes.get("/items/:id", (c) => {
-  const item = store.get(c.req.param("id"));
-  if (!item) {
-    return c.json({ error: "Not found" }, 404);
-  }
+exampleRoutes.get("/items/:id", async (c) => {
+  const item = await service.getItem(c.req.param("id"));
   return c.json(item);
 });
 
 // ── Create ───────────────────────────────────────────────────────────
 
-exampleRoutes.post("/items", async (c) => {
-  const body = await c.req.json<{ name?: string }>();
-  if (!body.name) {
-    return c.json({ error: "name is required" }, 400);
-  }
-
-  const id = crypto.randomUUID();
-  const item: Item = {
-    id,
-    name: body.name,
-    createdAt: new Date().toISOString(),
-  };
-  store.set(id, item);
-
+exampleRoutes.post("/items", validate(CreateItemSchema), async (c) => {
+  const body = c.get("validatedBody");
+  const item = await service.createItem(body);
   return c.json(item, 201);
+});
+
+// ── Update ───────────────────────────────────────────────────────────
+
+exampleRoutes.patch("/items/:id", validate(UpdateItemSchema), async (c) => {
+  const body = c.get("validatedBody");
+  const item = await service.updateItem(c.req.param("id"), body);
+  return c.json(item);
 });
 
 // ── Delete ───────────────────────────────────────────────────────────
 
-exampleRoutes.delete("/items/:id", (c) => {
-  const id = c.req.param("id");
-  if (!store.has(id)) {
-    return c.json({ error: "Not found" }, 404);
-  }
-  store.delete(id);
+exampleRoutes.delete("/items/:id", async (c) => {
+  await service.deleteItem(c.req.param("id"));
   return c.json({ deleted: true });
 });

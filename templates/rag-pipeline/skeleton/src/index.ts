@@ -6,12 +6,15 @@
  *   query <question>   Retrieve context and generate an answer
  */
 
+import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
 import { ingestDirectory } from "./ingest.js";
 import { query } from "./generation.js";
 import { logger } from "./logger.js";
 
 async function main(): Promise<void> {
+  validateBootstrap();
+
   const args = process.argv.slice(2);
   const command = args[0];
 

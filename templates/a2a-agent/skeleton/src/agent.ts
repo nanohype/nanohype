@@ -1,3 +1,4 @@
+import { validateBootstrap } from "./bootstrap.js";
 import { getProvider } from "./providers/index.js";
 import { handleTask, getAvailableSkills } from "./protocol/server.js";
 import { sendTask, fetchAgentCard } from "./protocol/client.js";
@@ -108,6 +109,8 @@ export async function invokeRemoteAgent(
 // ─── Entry point ───
 
 async function main(): Promise<void> {
+  validateBootstrap();
+
   logger.info("Starting A2A agent", {
     name: "__PROJECT_NAME__",
     provider: PROVIDER_NAME,

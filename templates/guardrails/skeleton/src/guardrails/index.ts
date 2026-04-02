@@ -13,6 +13,7 @@
 // import `registerFilter` from the filters sub-module and register
 // your own Filter implementation.
 
+import { validateBootstrap } from "./bootstrap.js";
 import type { Direction, FilterResult, GuardrailConfig } from "./types.js";
 import { createPipeline } from "./pipeline.js";
 import { setMaxTokens } from "./filters/token-limit.js";
@@ -48,6 +49,8 @@ export { createPipeline } from "./pipeline.js";
 export function createGuardrail(
   config: GuardrailConfig = {},
 ): (input: string, direction: Direction) => FilterResult {
+  validateBootstrap();
+
   // Apply configuration to configurable filters
   if (config.maxTokens !== undefined) {
     setMaxTokens(config.maxTokens);

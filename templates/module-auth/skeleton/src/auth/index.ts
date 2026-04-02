@@ -12,6 +12,10 @@
 // `registerProvider` from the providers sub-module and register your
 // own AuthProvider implementation.
 
+import { validateBootstrap } from "./bootstrap.js";
+
+validateBootstrap();
+
 // Re-export core types
 export type { AuthUser, AuthResult, AuthConfig } from "./types.js";
 

@@ -36,6 +36,7 @@ func Logger(next http.Handler) http.Handler {
 			"status", rw.statusCode,
 			"duration", time.Since(start).String(),
 			"remote", r.RemoteAddr,
+			"request_id", GetRequestID(r.Context()),
 		)
 	})
 }

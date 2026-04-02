@@ -4,6 +4,8 @@
 // self-register, then expose createNotifier as the primary entry point.
 //
 
+import { z } from "zod";
+import { validateBootstrap } from "./bootstrap.js";
 import { getChannel, listChannels } from "./channels/index.js";
 import type { ChannelProvider } from "./channels/types.js";
 import type {
@@ -65,11 +67,29 @@ export interface ChannelProviderMap {
  *   await notifier.send({ channel: "email", to: "a@b.com", body: "Hello!" });
  *   await notifier.sendBatch([...notifications]);
  */
+/** Zod schema for validating createNotifier arguments. */
+const CreateNotifierSchema = z.object({
+  emailProviderName: z.string().min(1, "emailProviderName must be a non-empty string"),
+  providers: z.object({
+    sms: z.string().optional(),
+    push: z.string().optional(),
+  }).optional(),
+  config: z.object({}).passthrough().optional(),
+});
+
 export function createNotifier(
   emailProviderName: string = "__EMAIL_PROVIDER__",
   providers: ChannelProviderMap = {},
   _config: NotificationConfig = {},
 ): Notifier {
+  const parsed = CreateNotifierSchema.safeParse({ emailProviderName, providers, config: _config });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid notifier config: ${issues}`);
+  }
+
+  validateBootstrap();
+
   const emailProvider = getChannel("email", emailProviderName);
 
   function resolveProvider(channel: NotificationChannel): ChannelProvider {

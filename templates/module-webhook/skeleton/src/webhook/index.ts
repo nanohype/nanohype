@@ -5,7 +5,10 @@
 // createWebhookSender as the primary entry points.
 //
 
+import { validateBootstrap } from "./bootstrap.js";
 import "./signatures/index.js";
+
+validateBootstrap();
 
 // Re-export everything consumers need
 export { createWebhookReceiver } from "./receiver.js";

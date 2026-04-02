@@ -1,7 +1,10 @@
+import { validateBootstrap } from "../bootstrap.js";
 import { sendMessage } from "@/lib/ai";
 import { logger } from "@/lib/logger";
 import { getSettings } from "@/lib/storage";
 import type { ChatRequest, ChatResponse, ExtensionMessage } from "@/lib/messaging";
+
+validateBootstrap();
 
 /**
  * Background service worker for __EXTENSION_NAME__.

@@ -4,6 +4,8 @@
 // self-register, then expose createCache as the primary entry point.
 //
 
+import { z } from "zod";
+import { validateBootstrap } from "./bootstrap.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { CacheProvider } from "./providers/types.js";
 import type { CacheConfig, SetOptions } from "./types.js";
@@ -61,10 +63,26 @@ export interface Cache {
  *   await cache.set("user:1", { name: "Alice" }, { ttl: 60_000 });
  *   const user = await cache.get("user:1");
  */
+/** Zod schema for validating createCache arguments. */
+const CreateCacheSchema = z.object({
+  providerName: z.string().min(1, "providerName must be a non-empty string"),
+  config: z.object({
+    namespace: z.string().optional(),
+  }).passthrough(),
+});
+
 export async function createCache(
   providerName: string = "__CACHE_PROVIDER__",
   config: CacheConfig = {},
 ): Promise<Cache> {
+  const parsed = CreateCacheSchema.safeParse({ providerName, config });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid cache config: ${issues}`);
+  }
+
+  validateBootstrap();
+
   const provider = getProvider(providerName);
   await provider.init(config);
 

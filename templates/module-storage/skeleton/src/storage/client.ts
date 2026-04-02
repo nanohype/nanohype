@@ -1,3 +1,5 @@
+import { z } from "zod";
+import { validateBootstrap } from "./bootstrap.js";
 import type {
   ListOptions,
   ListResult,
@@ -61,6 +63,16 @@ export class StorageClient {
   }
 }
 
+/** Zod schema for validating createStorageClient arguments. */
+const CreateStorageClientSchema = z.object({
+  providerName: z.string().min(1, "providerName must be a non-empty string"),
+  config: z.object({
+    bucket: z.string().optional(),
+    region: z.string().optional(),
+    basePath: z.string().optional(),
+  }).passthrough(),
+});
+
 /**
  * Create and initialize a storage client for the named provider.
  *
@@ -72,6 +84,14 @@ export async function createStorageClient(
   providerName: string,
   config: ProviderConfig = {}
 ): Promise<StorageClient> {
+  const parsed = CreateStorageClientSchema.safeParse({ providerName, config });
+  if (!parsed.success) {
+    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Invalid storage config: ${issues}`);
+  }
+
+  validateBootstrap();
+
   // Ensure all built-in providers are registered
   await import("./providers/index.js");
 

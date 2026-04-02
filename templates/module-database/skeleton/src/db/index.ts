@@ -13,4 +13,5 @@
 export { createDatabase, getDb, disconnectDatabase } from "./client.js";
 export { type DatabaseConfig, type DatabaseDriver } from "./types.js";
 export { registerDriver, getDriver, listDrivers } from "./drivers/registry.js";
+export { validateBootstrap } from "./bootstrap.js";
 export * as schema from "./schema.js";

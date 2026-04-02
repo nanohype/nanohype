@@ -23,8 +23,17 @@ const postgresDriver: DatabaseDriver = {
       max: poolSize,
     });
 
-    // Verify connectivity
+    // Verify connectivity with a test query
     const client = await pool.connect();
+    try {
+      await client.query("SELECT 1");
+    } catch (err) {
+      client.release();
+      await pool.end();
+      pool = null;
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`PostgreSQL connection test failed: ${message}`);
+    }
     client.release();
     console.log("[db] Connected to PostgreSQL");
 
