@@ -1,0 +1,66 @@
+apiVersion: nanohype/v1
+
+name: discord-bot
+displayName: "Discord Bot"
+description: >
+  Scaffolds a TypeScript Discord bot using discord.js v14 with
+  GatewayIntentBits for guilds, messages, and message content. Includes
+  slash command registration and handling, a messageCreate handler with
+  AI-powered responses, a pluggable LLM provider registry (Anthropic and
+  OpenAI), and embed-based rich formatting for structured AI output.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, discord, bot, ai, chatbot]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "A Discord bot with AI"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider to use for AI responses"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test files with vitest"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/__tests__/commands.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [module-queue, module-database, agentic-loop]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the Discord bot"
+    optional: false

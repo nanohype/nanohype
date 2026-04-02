@@ -1,0 +1,62 @@
+apiVersion: nanohype/v1
+
+name: infra-vercel
+displayName: "Vercel Deployment"
+description: >
+  Scaffolds a Vercel deployment configuration with vercel.json, environment
+  variable setup, deploy scripts, and an optional GitHub Actions CI/CD
+  workflow for preview deploys on pull requests and production deploys on
+  push to main. Designed to pair with Next.js and TypeScript service
+  templates for a complete deploy pipeline.
+version: "0.1.0"
+license: Apache-2.0
+tags: [vercel, deployment, infrastructure, ci-cd]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory name and identifiers"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README"
+    prompt: "Project description"
+    default: "Vercel deployment"
+
+  - name: Framework
+    type: string
+    placeholder: "__FRAMEWORK__"
+    description: "Framework preset for vercel.json (nextjs, vite, etc.)"
+    prompt: "Framework preset"
+    default: "nextjs"
+
+  - name: IncludeCi
+    type: bool
+    placeholder: "__INCLUDE_CI__"
+    description: "Include GitHub Actions workflow for preview and production deploys"
+    prompt: "Include CI/CD?"
+    default: true
+
+conditionals:
+  - path: ".github/workflows/deploy.yml"
+    when: IncludeCi
+
+composition:
+  pairsWith: [next-app, ts-service]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for Vercel CLI"
+    optional: false
+  - name: vercel
+    purpose: "Vercel CLI for deploying and managing projects"
+    optional: true

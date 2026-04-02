@@ -1,0 +1,77 @@
+apiVersion: nanohype/v1
+
+name: electron-app
+displayName: "Electron Desktop App (React + esbuild)"
+description: >
+  Scaffolds an Electron desktop application with a React 19 renderer for
+  AI-powered chat. The main process holds API keys and routes AI calls
+  through IPC, keeping secrets out of the renderer. Uses esbuild for
+  main process bundling and Vite for the renderer. Supports Anthropic
+  and OpenAI as LLM providers with a pluggable registry.
+version: "0.1.0"
+license: Apache-2.0
+tags: [electron, desktop, react, typescript, ai, esbuild, vite]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    default: "my-electron-app"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short app description for package.json and README"
+    prompt: "App description"
+    default: "Desktop app with AI"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "Default LLM provider for AI interactions"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeAutoUpdate
+    type: bool
+    placeholder: "__INCLUDE_AUTO_UPDATE__"
+    description: "Include electron-updater for auto-update support"
+    prompt: "Include auto-update?"
+    default: false
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test setup with Vitest"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/__tests__/ipc.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [mcp-server-ts, module-database, module-storage]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for Electron, esbuild, and Vite"
+    optional: false
+  - name: electron
+    purpose: "Desktop runtime (installed as npm dependency)"
+    optional: true

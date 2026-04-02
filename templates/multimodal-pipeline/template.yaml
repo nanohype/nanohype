@@ -1,0 +1,89 @@
+apiVersion: nanohype/v1
+
+name: multimodal-pipeline
+displayName: "Multimodal Pipeline"
+description: >
+  Scaffolds a multimodal processing pipeline in TypeScript. Accepts image,
+  audio, and video inputs, detects modality automatically, routes each input
+  through a modality-specific processor, sends the result to a vision or
+  audio-capable LLM (Anthropic Claude, OpenAI GPT-4o), and returns
+  structured output with Zod-validated schemas. No heavy frameworks — all
+  components are built from first principles using provider SDKs directly.
+  Processors and LLM providers use a self-registering registry pattern for
+  easy extension.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, multimodal, vision, audio, video, llm, ai, structured-output]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory names"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "A multimodal processing pipeline"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for multimodal analysis (e.g. anthropic, openai)"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeAudio
+    type: bool
+    placeholder: "__INCLUDE_AUDIO__"
+    description: "Include audio processing support (whisper transcription + LLM analysis)"
+    prompt: "Include audio processing?"
+    default: true
+
+  - name: IncludeVideo
+    type: bool
+    placeholder: "__INCLUDE_VIDEO__"
+    description: "Include video processing support (frame extraction + LLM analysis)"
+    prompt: "Include video processing?"
+    default: false
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include vitest test suite with pipeline and processor tests"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/processors/audio.ts"
+    when: IncludeAudio
+  - path: "src/processors/video.ts"
+    when: IncludeVideo
+  - path: "src/__tests__/pipeline.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/image.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [agentic-loop, rag-pipeline, eval-harness]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false

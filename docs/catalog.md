@@ -132,6 +132,10 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **prompt-library** — Reach for this when prompts are a first-class asset: versioned, validated, and managed separately from code. The SDK loads and renders prompts at runtime. Useful when multiple systems share prompts or when prompt engineering is a distinct workflow.
 
+**multimodal-pipeline** — Reach for this when the client needs to process images, audio, or video with AI. Detects modality, preprocesses (resize, transcode, frame extract), sends to vision/audio LLMs, returns structured output. Processor registry pattern — add custom modality handlers.
+
+**fine-tune-pipeline** — Reach for this when RAG and prompting aren't enough. Dataset preparation (JSONL formatting, validation, train/val/test splitting), training job submission via provider registry (OpenAI fine-tuning API), post-training eval comparing fine-tuned vs base model.
+
 ### Applications
 
 **go-cli** — Reach for this when the deliverable is a command-line tool. Developer utilities, platform CLIs, automation scripts. Go compiles to a single binary — no runtime dependencies for the end user.
@@ -144,11 +148,23 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **vscode-ext** — Reach for this when the client wants AI in the editor: code analysis, inline suggestions, webview panels. esbuild for fast bundling, optional React webview, AI provider registry.
 
+**slack-bot** — Reach for this when the client wants AI in Slack. @slack/bolt with Socket Mode (dev) and HTTP (prod). Message and @mention handlers with thread-aware conversation context. Slash commands for direct AI queries.
+
+**discord-bot** — Reach for this when the client wants AI in Discord. discord.js v14 with slash commands, message handlers, and embed-formatted responses. Per-channel conversation context with typing indicators.
+
+**electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — API keys stay in the main process. React UI with armature design tokens. esbuild for main, Vite for renderer.
+
 ### Infrastructure
 
 **infra-aws** — Reach for this when deploying to AWS. CDK constructs for Lambda or ECS, API Gateway or ALB, optional VPC, RDS, CloudWatch. The enterprise deploy target.
 
 **infra-fly** — Reach for this when deploying to Fly.io. Simpler than AWS, faster to set up, good for services that don't need the full AWS ecosystem. Dockerfile + fly.toml + deploy script.
+
+**infra-gcp** — Reach for this when deploying to GCP. Cloud Run service, Cloud SQL, monitoring dashboards. gcloud CLI deploy scripts with GitHub Actions CI.
+
+**infra-vercel** — Reach for this when deploying to Vercel. vercel.json with framework presets, environment variable management, GitHub Actions for preview and production deploys.
+
+**k8s-deploy** — Reach for this when deploying to Kubernetes. Helm chart with proper security hardening (non-root, read-only FS, resource limits), HPA, rolling updates, ingress with TLS. Raw manifests as alternative.
 
 **monorepo** — Reach for this when a client engagement involves 3+ templates. Turborepo workspace with shared TypeScript config, ESLint, and Prettier. Everything else nests inside.
 
