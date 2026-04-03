@@ -73,6 +73,30 @@ npm run validate:schema                    # JSON Schema only, all templates
 - LF line endings everywhere
 - No trailing whitespace (except Markdown for line breaks)
 
+## SDK
+
+`sdk/` contains `@nanohype/sdk` — the reference implementation of the template rendering contract. It's a standalone TypeScript package with no dependencies on any consumer.
+
+```sh
+cd sdk
+npm install
+npm run typecheck    # type-check
+npm run build        # compile to dist/
+npm test             # run tests
+```
+
+Key modules:
+- `src/types.ts` — all type interfaces (TemplateManifest, CompositeManifest, etc.)
+- `src/source.ts` — `CatalogSource` interface for pluggable template discovery
+- `src/sources/github.ts` — `GitHubSource` (reads from GitHub API)
+- `src/sources/local.ts` — `LocalSource` (reads from filesystem)
+- `src/validator.ts` — `validateManifest()`, `validateCompositeManifest()`
+- `src/resolver.ts` — `resolveVariables()` (defaults, cross-refs, validation)
+- `src/renderer.ts` — `renderTemplate()` (the 10-step scaffolding algorithm)
+- `src/composite.ts` — `renderComposite()` (multi-template orchestration)
+
+The SDK bundles its own copy of `schemas/template.schema.json`. CI verifies the two copies stay in sync.
+
 ## Diagrams
 
 Diagrams are Excalidraw source files in `docs/diagrams/src/` with SVG exports in `docs/diagrams/svg/`. Edit the `.excalidraw` source, re-export the SVG.

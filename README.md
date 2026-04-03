@@ -82,6 +82,21 @@ Pre-configured multi-template stacks in `composites/`:
 
 Composites define which templates to scaffold, where to nest them, and how variables flow across templates. See the [composite contract](docs/spec/composite-contract.md) for the specification.
 
+## SDK
+
+`@nanohype/sdk` is the reference implementation of the template rendering contract. Install it as a dependency to build your own scaffolding tool, CLI, MCP server, or CI pipeline on top of nanohype templates.
+
+```ts
+import { LocalSource, renderTemplate } from '@nanohype/sdk';
+
+const source = new LocalSource({ rootDir: './nanohype' });
+const { manifest, files } = await source.fetchTemplate('agentic-loop');
+const result = renderTemplate(manifest, files, { ProjectName: 'my-agent' });
+// result.files — rendered SkeletonFile[] ready to write to disk
+```
+
+The SDK lives at `sdk/` in this repo. See the [Consumer Implementation Guide](docs/spec/consumer-guide.md) for the full scaffolding algorithm.
+
 ## Docs
 
 - [Consumer Implementation Guide](docs/spec/consumer-guide.md) — scaffolding algorithm, composite orchestration, catalog integration
