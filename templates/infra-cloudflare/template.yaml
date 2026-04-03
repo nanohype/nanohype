@@ -1,0 +1,69 @@
+apiVersion: nanohype/v1
+
+name: infra-cloudflare
+displayName: "Cloudflare Workers Deployment"
+description: >
+  Scaffolds a Cloudflare Workers project with wrangler.toml configuration,
+  a TypeScript fetch handler entry point, deploy scripts with environment
+  selection, and an optional GitHub Actions CI/CD workflow for preview
+  deploys on pull requests and production deploys on push to main. Includes
+  commented R2 and D1 binding sections ready to uncomment.
+version: "0.1.0"
+license: Apache-2.0
+tags: [cloudflare, workers, edge, serverless, infrastructure]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as Worker name and resource identifiers"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README"
+    prompt: "Project description"
+    default: "Cloudflare Workers deployment"
+
+  - name: IncludeR2
+    type: bool
+    placeholder: "__INCLUDE_R2__"
+    description: "Include R2 object storage binding configuration and examples"
+    prompt: "Include R2 storage?"
+    default: false
+
+  - name: IncludeD1
+    type: bool
+    placeholder: "__INCLUDE_D1__"
+    description: "Include D1 database binding configuration and examples"
+    prompt: "Include D1 database?"
+    default: false
+
+  - name: IncludeCi
+    type: bool
+    placeholder: "__INCLUDE_CI__"
+    description: "Include GitHub Actions workflow for preview and production deploys"
+    prompt: "Include CI/CD?"
+    default: true
+
+conditionals:
+  - path: ".github/workflows/deploy.yml"
+    when: IncludeCi
+
+composition:
+  pairsWith: [ts-service, monitoring-stack]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for Wrangler CLI"
+    optional: false
+  - name: wrangler
+    purpose: "Cloudflare CLI for deploying and managing Workers"
+    optional: true

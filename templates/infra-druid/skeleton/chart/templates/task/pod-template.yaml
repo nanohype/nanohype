@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-task-template
+  labels:
+    {{- include "__PROJECT_NAME__.labels" . | nindent 4 }}
+    app.kubernetes.io/component: task
+data:
+  "task-base.yaml": |
+    apiVersion: v1
+    kind: PodTemplate
+    template:
+      metadata:
+        name: {{ include "__PROJECT_NAME__.fullname" . }}-task
+        labels:
+          {{- include "__PROJECT_NAME__.labels" . | nindent 10 }}
+          app.kubernetes.io/component: task
+      spec:
+        serviceAccountName: {{ include "__PROJECT_NAME__.fullname" . }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        restartPolicy: Never
+        containers:
+          - name: task
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            command: ["sh", "-c", "/peon.sh /var/druid 1"]
+            ports:
+              - name: task
+                containerPort: 8091
+                protocol: TCP
+              - name: prometheus
+                containerPort: 9000
+                protocol: TCP
+            env:
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: DRUID_METADATA_STORAGE_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.secrets.metadata }}
+                    key: username
+              - name: DRUID_METADATA_STORAGE_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.secrets.metadata }}
+                    key: password
+              - name: DRUID_METADATA_STORAGE_CONNECT_URI
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.secrets.metadata }}
+                    key: uri
+              - name: DRUID_DEEP_STORAGE_BUCKET
+                value: {{ .Values.deepStorage.bucket | quote }}
+              - name: DRUID_INDEX_LOGS_BUCKET
+                value: {{ .Values.deepStorage.indexLogsBucket | quote }}
+            resources:
+              {{- toYaml .Values.task.resources | nindent 14 }}
+            volumeMounts:
+              - name: common-conf
+                mountPath: /opt/druid/conf/druid/cluster/_common
+                readOnly: true
+              - name: scratch
+                mountPath: /var/druid
+        volumes:
+          - name: common-conf
+            configMap:
+              name: {{ include "__PROJECT_NAME__.fullname" . }}-common
+          - name: scratch
+            emptyDir: {}
+  "jvm.config": |
+    {{- .Values.task.jvm | nindent 4 }}
+  "runtime.properties": |
+    {{- .Values.task.runtime | nindent 4 }}

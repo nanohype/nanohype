@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}-conf
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "coordinator" .) | nindent 4 }}
+data:
+  "jvm.config": |
+    {{- .Values.coordinator.jvm | nindent 4 }}
+  "runtime.properties": |
+    {{- .Values.coordinator.runtime | nindent 4 }}

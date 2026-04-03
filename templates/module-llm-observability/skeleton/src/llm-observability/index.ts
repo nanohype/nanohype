@@ -51,7 +51,7 @@ export interface LlmObserver {
  * ```ts
  * const observer = createLlmObserver({
  *   serviceName: "my-service",
- *   exporterName: "__EXPORTER__",
+ *   exporterName: "console",
  * });
  *
  * const response = await observer.trace(async () => {
@@ -68,7 +68,7 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
   validateBootstrap();
 
   const parsed = ObserverConfigSchema.parse(config);
-  const exporterName = parsed.exporterName ?? "__EXPORTER__";
+  const exporterName = parsed.exporterName ?? "console";
 
   const exporter: LlmExporter = getExporter(exporterName);
   const tracer = createLlmTracer({

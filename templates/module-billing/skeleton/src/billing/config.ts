@@ -22,7 +22,7 @@ const PricingRuleSchema = z.object({
 
 export const BillingConfigSchema = z
   .object({
-    provider: z.string().optional(),
+    provider: z.string().min(1, "provider must be a non-empty string").optional(),
     currency: z.string().length(3).optional(),
     pricingRules: z.array(PricingRuleSchema).optional(),
     stripe: z

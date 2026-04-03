@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "router" .) }}
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "router" .) | nindent 4 }}
+spec:
+  serviceName: {{ include "__PROJECT_NAME__.componentName" (list "router" .) }}
+  replicas: {{ .Values.router.replicas }}
+  selector:
+    matchLabels:
+      {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "router" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "router" .) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "__PROJECT_NAME__.fullname" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: router
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["router"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.service.port }}
+              protocol: TCP
+            - name: prometheus
+              containerPort: 9000
+              protocol: TCP
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DRUID_METADATA_STORAGE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: username
+            - name: DRUID_METADATA_STORAGE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: password
+            - name: DRUID_METADATA_STORAGE_CONNECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: uri
+            - name: DRUID_DEEP_STORAGE_BUCKET
+              value: {{ .Values.deepStorage.bucket | quote }}
+            - name: DRUID_INDEX_LOGS_BUCKET
+              value: {{ .Values.deepStorage.indexLogsBucket | quote }}
+          volumeMounts:
+            - name: common-conf
+              mountPath: /opt/druid/conf/druid/cluster/_common
+              readOnly: true
+            - name: component-conf
+              mountPath: /opt/druid/conf/druid/cluster/query/router
+              readOnly: true
+            - name: scratch
+              mountPath: /var/druid
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.router.resources | nindent 12 }}
+      volumes:
+        - name: common-conf
+          configMap:
+            name: {{ include "__PROJECT_NAME__.fullname" . }}-common
+        - name: component-conf
+          configMap:
+            name: {{ include "__PROJECT_NAME__.componentName" (list "router" .) }}-conf
+        - name: scratch
+          emptyDir: {}

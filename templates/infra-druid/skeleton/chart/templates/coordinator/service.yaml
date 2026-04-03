@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "coordinator" .) | nindent 4 }}
+spec:
+  type: {{ .Values.coordinator.service.type }}
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ .Values.coordinator.service.port }}
+      targetPort: http
+      protocol: TCP
+    - name: prometheus
+      port: 9000
+      targetPort: prometheus
+      protocol: TCP
+  selector:
+    {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "coordinator" .) | nindent 4 }}

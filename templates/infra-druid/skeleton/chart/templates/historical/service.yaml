@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "historical" .) }}
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "historical" .) | nindent 4 }}
+spec:
+  type: {{ .Values.historical.service.type }}
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ .Values.historical.service.port }}
+      targetPort: http
+      protocol: TCP
+    - name: prometheus
+      port: 9000
+      targetPort: prometheus
+      protocol: TCP
+  selector:
+    {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "historical" .) | nindent 4 }}

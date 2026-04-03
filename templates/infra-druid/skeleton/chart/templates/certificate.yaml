@@ -1,0 +1,87 @@
+# Self-signed CA for Druid internal mTLS
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-selfsigned-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+---
+# CA Certificate
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-ca
+  namespace: {{ .Release.Namespace }}
+spec:
+  isCA: true
+  commonName: {{ include "__PROJECT_NAME__.fullname" . }}-ca
+  secretName: {{ include "__PROJECT_NAME__.fullname" . }}-ca-secret
+  duration: 87600h # 10 years
+  renewBefore: 720h # 30 days
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: {{ include "__PROJECT_NAME__.fullname" . }}-selfsigned-issuer
+    kind: Issuer
+---
+# CA Issuer using the CA cert
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-ca-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  ca:
+    secretName: {{ include "__PROJECT_NAME__.fullname" . }}-ca-secret
+---
+# Druid server certificate with SANs for all components
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ include "__PROJECT_NAME__.fullname" . }}-tls
+  duration: 8760h # 1 year
+  renewBefore: 720h # 30 days
+  commonName: druid
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - "*.{{ .Release.Namespace }}"
+    - "*.{{ .Release.Namespace }}.svc"
+    - "*.{{ .Release.Namespace }}.svc.cluster.local"
+    - "*.{{ include "__PROJECT_NAME__.componentName" (list "router" .) }}.{{ .Release.Namespace }}.svc.cluster.local"
+    - "*.{{ include "__PROJECT_NAME__.componentName" (list "broker" .) }}.{{ .Release.Namespace }}.svc.cluster.local"
+    - "*.{{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}.{{ .Release.Namespace }}.svc.cluster.local"
+    - "*.{{ include "__PROJECT_NAME__.componentName" (list "overlord" .) }}.{{ .Release.Namespace }}.svc.cluster.local"
+    - "*.{{ include "__PROJECT_NAME__.componentName" (list "historical" .) }}.{{ .Release.Namespace }}.svc.cluster.local"
+    - "localhost"
+  ipAddresses:
+    - "127.0.0.1"
+  issuerRef:
+    name: {{ include "__PROJECT_NAME__.fullname" . }}-ca-issuer
+    kind: Issuer
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: {{ include "__PROJECT_NAME__.fullname" . }}-keystore-password
+        key: password
+---
+# Keystore password secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-keystore-password
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+  password: changeit

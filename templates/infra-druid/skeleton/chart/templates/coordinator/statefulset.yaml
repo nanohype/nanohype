@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "coordinator" .) | nindent 4 }}
+spec:
+  serviceName: {{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}
+  replicas: {{ .Values.coordinator.replicas }}
+  selector:
+    matchLabels:
+      {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "coordinator" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "__PROJECT_NAME__.componentSelectorLabels" (list "coordinator" .) | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "__PROJECT_NAME__.fullname" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: coordinator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["coordinator"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.coordinator.service.port }}
+              protocol: TCP
+            - name: prometheus
+              containerPort: 9000
+              protocol: TCP
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DRUID_METADATA_STORAGE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: username
+            - name: DRUID_METADATA_STORAGE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: password
+            - name: DRUID_METADATA_STORAGE_CONNECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.metadata }}
+                  key: uri
+            - name: DRUID_DEEP_STORAGE_BUCKET
+              value: {{ .Values.deepStorage.bucket | quote }}
+            - name: DRUID_INDEX_LOGS_BUCKET
+              value: {{ .Values.deepStorage.indexLogsBucket | quote }}
+          volumeMounts:
+            - name: common-conf
+              mountPath: /opt/druid/conf/druid/cluster/_common
+              readOnly: true
+            - name: component-conf
+              mountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
+              readOnly: true
+            - name: scratch
+              mountPath: /var/druid
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.coordinator.resources | nindent 12 }}
+      volumes:
+        - name: common-conf
+          configMap:
+            name: {{ include "__PROJECT_NAME__.fullname" . }}-common
+        - name: component-conf
+          configMap:
+            name: {{ include "__PROJECT_NAME__.componentName" (list "coordinator" .) }}-conf
+        - name: scratch
+          emptyDir: {}

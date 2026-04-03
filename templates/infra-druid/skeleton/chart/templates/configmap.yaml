@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-common
+  labels:
+    {{- include "__PROJECT_NAME__.labels" . | nindent 4 }}
+data:
+  "common.runtime.properties": |
+    # --- Discovery (Kubernetes-native, no ZooKeeper) ---
+    druid.discovery.type=k8s
+    druid.zk.service.enabled=false
+    druid.discovery.k8s.clusterIdentifier={{ include "__PROJECT_NAME__.fullname" . }}
+    druid.serverview.type=http
+    druid.indexer.runner.type=httpRemote
+
+    # --- Metadata Storage (__METADATA_DRIVER__) ---
+    druid.metadata.storage.type=__METADATA_DRIVER__
+    druid.metadata.storage.connector.user=${env:DRUID_METADATA_STORAGE_USERNAME}
+    druid.metadata.storage.connector.password=${env:DRUID_METADATA_STORAGE_PASSWORD}
+    druid.metadata.storage.connector.connectURI=${env:DRUID_METADATA_STORAGE_CONNECT_URI}
+    druid.metadata.storage.connector.createTables=true
+
+    # --- Deep Storage (__DEEP_STORAGE_TYPE__) ---
+    druid.storage.type=__DEEP_STORAGE_TYPE__
+    druid.storage.disableAcl=true
+    druid.storage.baseKey=druid/segments
+    druid.storage.bucket=${env:DRUID_DEEP_STORAGE_BUCKET}
+
+    # --- Index Logs ---
+    druid.indexer.logs.type=__DEEP_STORAGE_TYPE__
+    druid.indexer.logs.disableAcl=true
+    druid.indexer.logs.s3Prefix=druid/indexing-logs
+    druid.indexer.logs.s3Bucket=${env:DRUID_INDEX_LOGS_BUCKET}
+
+    # --- Extensions ---
+    druid.extensions.loadList=["druid-kubernetes-extensions", "druid-kubernetes-overlord-extensions", "__METADATA_DRIVER__-metadata-storage", "druid-__DEEP_STORAGE_TYPE__-extensions", "druid-basic-security"]
+
+    # --- Security ---
+    druid.startup.logging.logProperties=true
+    druid.server.hiddenProperties=["druid.s3.accessKey","druid.s3.secretKey","druid.metadata.storage.connector.password","password","key","token","pwd"]
+
+    # --- Monitoring (Prometheus emitter) ---
+    # Remove or comment these lines if IncludeMonitoring is false.
+    druid.emitter=composing
+    druid.emitter.composing.emitters=["logging","prometheus"]
+    druid.emitter.prometheus.port=9000
+    druid.emitter.prometheus.strategy=exporter
+    druid.emitter.prometheus.addHostAsLabel=true
+    druid.emitter.prometheus.addServiceAsLabel=true
+    druid.monitoring.monitors=["org.apache.druid.java.util.metrics.JvmMonitor","org.apache.druid.server.metrics.ServiceStatusMonitor"]

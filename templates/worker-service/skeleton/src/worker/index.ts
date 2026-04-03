@@ -189,11 +189,13 @@ function createMemoryProvider() {
     async fail(jobId: string, _error: Error): Promise<void> {
       const entry = jobs.find((e) => e.job.id === jobId);
       if (!entry) return;
-      if (entry.job.attempts < entry.job.maxRetries) {
-        entry.job.attempts = entry.job.attempts;
-      } else {
+      if (entry.job.attempts >= entry.job.maxRetries) {
+        // All retries exhausted — mark as permanently failed so it
+        // won't be returned by dequeue() again.
         entry.failed = true;
       }
+      // When attempts < maxRetries the job stays eligible for dequeue,
+      // allowing the consumer to retry it on the next poll cycle.
     },
 
     async close(): Promise<void> {

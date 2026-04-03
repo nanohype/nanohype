@@ -2,31 +2,35 @@ import type { PaymentProvider } from "./types.js";
 
 // ── Provider Registry ──────────────────────────────────────────────
 //
-// Central registry for payment providers. Each provider module
-// self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain the active provider.
+// Central registry for payment provider factories. Each provider module
+// self-registers by calling registerProvider() with a factory function
+// at import time. Consumer code calls getProvider() to obtain a fresh
+// instance with its own encapsulated state — no module-level mutable
+// state leaks between callers.
 //
 
-const providers = new Map<string, PaymentProvider>();
+export type PaymentProviderFactory = () => PaymentProvider;
 
-export function registerProvider(provider: PaymentProvider): void {
-  if (providers.has(provider.name)) {
-    throw new Error(`Payment provider "${provider.name}" is already registered`);
+const factories = new Map<string, PaymentProviderFactory>();
+
+export function registerProvider(name: string, factory: PaymentProviderFactory): void {
+  if (factories.has(name)) {
+    throw new Error(`Payment provider "${name}" is already registered`);
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): PaymentProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(
       `Payment provider "${name}" not found. Available: ${available}`,
     );
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

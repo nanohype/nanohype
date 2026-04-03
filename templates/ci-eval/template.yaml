@@ -1,0 +1,87 @@
+apiVersion: nanohype/v1
+
+name: ci-eval
+displayName: "CI Eval Pipeline"
+description: >
+  GitHub Actions workflow for eval-gated deployments. Runs LLM evaluation
+  suites on every pull request, compares scores against a stored baseline,
+  posts a markdown report as a PR comment, and fails the check if any
+  suite regresses beyond a configurable threshold. Ships with a CLI for
+  local runs, baseline management, and score comparison.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, ci, eval, github-actions, llm, ai]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "CI pipeline for eval-gated deployments"
+
+  - name: EvalPath
+    type: string
+    placeholder: "__EVAL_PATH__"
+    description: "Directory containing YAML eval suite files"
+    prompt: "Eval suites directory"
+    default: "evals"
+
+  - name: RegressionThreshold
+    type: string
+    placeholder: "__REGRESSION_THRESHOLD__"
+    description: "Maximum allowed score regression before failing the check (0.0–1.0)"
+    prompt: "Regression threshold"
+    default: "0.05"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "Default LLM provider name (built-in: anthropic, openai — or any custom registered provider)"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include unit tests for baseline, reporter, and runner"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/__tests__/baseline.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/reporter.test.ts"
+    when: IncludeTests
+  - path: "src/__tests__/runner.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [eval-harness, ts-service, agentic-loop]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false
+  - name: gh
+    purpose: "GitHub CLI for posting PR comments"
+    optional: true

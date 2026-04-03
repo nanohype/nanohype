@@ -1,0 +1,17 @@
+.env
+.wrangler
+.dev.vars
+node_modules/
+dist/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

@@ -1,0 +1,66 @@
+name: Eval Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run eval suites
+        id: eval
+        run: npx tsx src/ci-eval/index.ts run --json > eval-output.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Compare against baseline
+        id: compare
+        run: npx tsx src/ci-eval/index.ts compare --results eval-output.json --format markdown > eval-comment.md
+
+      - name: Post PR comment
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT_BODY=$(cat eval-comment.md)
+          MARKER="<!-- eval-gate-report -->"
+          FULL_BODY="${MARKER}
+          ${COMMENT_BODY}"
+
+          # Try to update existing comment, otherwise create new one
+          EXISTING=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$EXISTING \
+              -X PATCH -f body="$FULL_BODY"
+          else
+            gh pr comment ${{ github.event.pull_request.number }} --body "$FULL_BODY"
+          fi
+
+      - name: Check regression threshold
+        run: npx tsx src/ci-eval/index.ts compare --results eval-output.json --fail-on-regression
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval-output.json
+          retention-days: 30

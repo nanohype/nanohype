@@ -114,7 +114,7 @@ export async function createBillingService(
   validateBootstrap();
   validateConfig(config);
 
-  const providerName = config.provider ?? "__PAYMENT_PROVIDER__";
+  const providerName = config.provider ?? "mock";
   const currency = config.currency ?? "usd";
 
   // Initialize the payment provider

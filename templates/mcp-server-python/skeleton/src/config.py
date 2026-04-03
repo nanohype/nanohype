@@ -21,5 +21,5 @@ class Config(BaseSettings):
     log_level: str = "info"
 
     # Application
-    server_name: str = "__PROJECT_NAME__"
+    server_name: str = "mcp-server"
     server_version: str = "0.1.0"

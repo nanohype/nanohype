@@ -16,7 +16,9 @@ grafana:
       cpu: 500m
       memory: 256Mi
   adminUser: admin
-  adminPassword: admin
+  # REQUIRED: Set a strong password. Do not use the default in production.
+  # Override via: helm install --set grafana.adminPassword=<password>
+  adminPassword: ""
   env:
     GF_USERS_ALLOW_SIGN_UP: "false"
     GF_LOG_LEVEL: "warn"

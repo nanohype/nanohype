@@ -1,0 +1,224 @@
+# --- Global ---
+
+image:
+  repository: apache/druid
+  tag: "__DRUID_VERSION__"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  annotations: {}
+  # eks.amazonaws.com/role-arn: arn:aws:iam::role/druid
+
+securityContext:
+  runAsNonRoot: true
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsGroup: 1000
+
+secrets:
+  metadata: ""   # K8s Secret name for metadata DB credentials
+  admin: ""      # K8s Secret name for Druid admin credentials
+  system: ""     # K8s Secret name for Druid internal credentials
+
+deepStorage:
+  bucket: ""           # Deep storage bucket name
+  indexLogsBucket: ""   # Index logs bucket name
+
+# --- Router ---
+
+router:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 9088
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=9088
+    druid.service=druid/router
+    druid.router.defaultBrokerServiceName=druid/broker
+    druid.router.tierToBrokerMap={"_default_tier":"druid/broker"}
+    druid.router.defaultRule=_default
+    druid.router.pollPeriod=PT1H
+    druid.router.managementProxy.enabled=true
+    druid.router.http.numConnections=20
+    druid.router.http.readTimeout=PT60M
+    druid.router.http.numMaxThreads=32
+  jvm: |
+    -Xms512m
+    -Xmx512m
+    -XX:MaxDirectMemorySize=128m
+
+# --- Broker ---
+
+broker:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  service:
+    type: ClusterIP
+    port: 8282
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=8282
+    druid.service=druid/broker
+    druid.broker.balancer.type=random
+    druid.broker.select.tier=highestPriority
+    druid.server.http.numThreads=24
+    druid.broker.http.numConnections=20
+    druid.broker.http.readTimeout=PT45M
+    druid.processing.buffer.sizeBytes=125000000
+    druid.processing.numMergeBuffers=4
+    druid.processing.tmpDir=/var/druid/query/tmp
+    druid.sql.enable=true
+    druid.sql.avatica.enable=true
+    druid.sql.avatica.maxConnections=20
+    druid.broker.cache.useCache=false
+    druid.broker.cache.populateCache=false
+  jvm: |
+    -Xms4g
+    -Xmx4g
+    -XX:MaxDirectMemorySize=2g
+
+# --- Coordinator ---
+
+coordinator:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  service:
+    type: ClusterIP
+    port: 8281
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=8281
+    druid.service=druid/coordinator
+    druid.coordinator.period=PT30S
+    druid.coordinator.startDelay=PT30S
+    druid.coordinator.load.timeout=PT60M
+    druid.coordinator.balancer.strategy=cost
+    druid.coordinator.asOverlord.enabled=false
+    druid.coordinator.kill.on=false
+    druid.coordinator.kill.pendingSegments.on=false
+    druid.manager.config.pollDuration=PT1M
+    druid.manager.segments.pollDuration=PT1M
+    druid.manager.rules.pollDuration=PT1M
+    druid.manager.rules.defaultRule=_default
+  jvm: |
+    -Xms2g
+    -Xmx2g
+
+# --- Overlord ---
+
+overlord:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  service:
+    type: ClusterIP
+    port: 8290
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=8290
+    druid.service=druid/overlord
+    druid.indexer.runner.type=k8s
+    druid.indexer.storage.type=metadata
+    druid.indexer.queue.maxSize=100
+    druid.indexer.queue.startDelay=PT1M
+    druid.indexer.queue.restartDelay=PT30S
+    druid.indexer.queue.storageSyncRate=PT1M
+    druid.indexer.runner.taskAssignmentTimeout=PT60M
+    druid.indexer.runner.taskCleanupTimeout=PT60M
+    druid.indexer.runner.capacity=10
+    druid.indexer.task.encapsulatedTask=true
+    druid.indexer.runner.namespace=${env:POD_NAMESPACE}
+    druid.indexer.runner.k8s.adapter.type=customTemplateAdapter
+    druid.indexer.runner.k8s.podTemplate.base=/opt/druid/conf/druid/cluster/task/task-base.yaml
+    druid.processing.intermediaryData.storage.type=deepstore
+  jvm: |
+    -Xms2g
+    -Xmx2g
+
+# --- Historical ---
+
+historical:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 8Gi
+    limits:
+      cpu: 8000m
+      memory: 32Gi
+  service:
+    type: ClusterIP
+    port: 8283
+  storage:
+    size: 50Gi
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=8283
+    druid.service=druid/historical
+    druid.server.maxSize=50g
+    druid.server.tier=_default_tier
+    druid.server.priority=0
+    druid.segmentCache.locations=[{"path":"/var/druid/segment-cache","maxSize":"50g"}]
+    druid.segmentCache.locationSelector.strategy=leastBytesUsed
+    druid.segmentCache.deleteOnRemove=true
+    druid.segmentCache.numLoadingThreads=2
+    druid.server.http.numThreads=24
+    druid.processing.buffer.sizeBytes=125000000
+    druid.processing.numMergeBuffers=3
+    druid.processing.numThreads=8
+    druid.processing.tmpDir=/var/druid/query/tmp
+    druid.historical.cache.useCache=false
+    druid.historical.cache.populateCache=false
+  jvm: |
+    -Xms4g
+    -Xmx4g
+    -XX:MaxDirectMemorySize=8g
+
+# --- Task ---
+
+task:
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  runtime: |
+    druid.bindOnHost=false
+    druid.plaintextPort=8091
+    druid.peon.mode=remote
+    druid.service=druid/peon
+    druid.server.http.numThreads=24
+    druid.indexer.runner.type=k8s
+    druid.indexer.task.encapsulatedTask=true
+    druid.indexer.task.baseTaskDir=/var/druid/task
+  jvm: |
+    -Xms2g
+    -Xmx2g
+    -XX:MaxDirectMemorySize=2g

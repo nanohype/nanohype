@@ -1,0 +1,73 @@
+apiVersion: nanohype/v1
+
+name: agent-orchestrator
+displayName: "Agent Orchestrator"
+description: >
+  Multi-agent orchestrator that decomposes tasks via an LLM-powered
+  planner agent, routes subtasks to specialized agents based on
+  capability matching, and aggregates results. Agents communicate
+  through a shared context with namespacing and a handoff protocol
+  that creates an audit trail of agent-to-agent transitions. Supports
+  Anthropic and OpenAI as LLM providers for orchestration reasoning.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, agent, orchestrator, multi-agent, llm, ai]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in package.json and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Multi-agent orchestrator"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for orchestration reasoning"
+    prompt: "LLM provider"
+    default: "anthropic"
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include the test suite"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/orchestrator/__tests__/orchestrator.test.ts"
+    when: IncludeTests
+  - path: "src/orchestrator/__tests__/routing.test.ts"
+    when: IncludeTests
+  - path: "src/orchestrator/__tests__/context.test.ts"
+    when: IncludeTests
+  - path: "src/orchestrator/resilience/__tests__/circuit-breaker.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [agentic-loop, mcp-server-ts, rag-pipeline]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for TypeScript execution"
+    optional: false

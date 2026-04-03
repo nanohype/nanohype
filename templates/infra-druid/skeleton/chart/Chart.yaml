@@ -1,0 +1,12 @@
+apiVersion: v2
+name: __PROJECT_NAME__
+description: __DESCRIPTION__
+type: application
+version: 0.1.0
+appVersion: "__DRUID_VERSION__"
+home: https://druid.apache.org/
+keywords:
+  - druid
+  - olap
+  - analytics
+  - database

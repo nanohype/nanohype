@@ -95,7 +95,7 @@ export interface ObserverConfig {
   serviceName: string;
   /** Service version. Default: "0.0.0". */
   serviceVersion?: string;
-  /** Exporter name — must match a registered exporter. Default: "__EXPORTER__". */
+  /** Exporter name — must match a registered exporter. Default: "console". */
   exporterName?: string;
   /** Enable cost tracking. Default: true. */
   costTracking?: boolean;

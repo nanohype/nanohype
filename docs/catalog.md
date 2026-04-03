@@ -140,6 +140,10 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **fine-tune-pipeline** — Reach for this when RAG and prompting aren't enough. Dataset preparation (JSONL formatting, validation, train/val/test splitting), training job submission via provider registry (OpenAI fine-tuning API), post-training eval comparing fine-tuned vs base model.
 
+**agent-orchestrator** — Reach for this when one agent isn't enough. Coordinates multiple specialized agents with LLM-powered task decomposition, capability-based routing, shared context accumulation, and handoff audit trails. Sits above agentic-loop and a2a-agent.
+
+**ci-eval** — Reach for this to gate deployments on eval scores. GitHub Actions workflow that runs eval-harness suites in CI, compares against stored baselines, posts results as PR comments, and fails the check if any suite regresses beyond a configurable threshold.
+
 ### Applications
 
 **go-cli** — Reach for this when the deliverable is a command-line tool. Developer utilities, platform CLIs, automation scripts. Go compiles to a single binary — no runtime dependencies for the end user.
@@ -176,6 +180,10 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **monorepo** — Reach for this when a client engagement involves 3+ templates. Turborepo workspace with shared TypeScript config, ESLint, and Prettier. Everything else nests inside.
 
+**infra-druid** — Reach for this when the client needs real-time analytics. Apache Druid OLAP cluster on Kubernetes with all six services (router, broker, coordinator, overlord, historical, task). Kubernetes-native discovery (no ZooKeeper), S3 deep storage, PostgreSQL metadata, optional mTLS and Prometheus monitoring.
+
+**infra-cloudflare** — Reach for this when deploying to the edge. Cloudflare Workers with wrangler.toml, optional R2 object storage and D1 database bindings, GitHub Actions deploy workflow with staging preview on PR.
+
 ### Composable Modules
 
 **module-auth** — Add this when the service needs authentication. Five built-in providers (JWT, Clerk, Auth0, Supabase, API key). Framework-agnostic middleware that works with both Hono and Express.
@@ -205,6 +213,8 @@ A decision guide for selecting and composing templates. Read this to understand 
 **module-llm-observability** — Add this when you need to answer "how much is this costing us" and "is the AI getting worse." Wraps LLM calls to capture prompt, response, model, latency, and token usage as structured spans. Cost calculator with per-model pricing and anomaly detection. Quality monitor with rolling p50/p95 scores and regression alerts. Pluggable exporters (console, OTLP, JSON file).
 
 **module-billing** — Add this when the service needs usage metering and payments. Tracks API calls, tokens, or custom metrics per customer. Generates invoices from aggregated usage with per-unit, tiered, and flat pricing. Stripe integration for payment collection and webhook lifecycle events. Mock provider for offline development.
+
+**module-feature-flags** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
 
 ### Infrastructure
 

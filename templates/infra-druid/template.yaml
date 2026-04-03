@@ -1,0 +1,91 @@
+apiVersion: nanohype/v1
+
+name: infra-druid
+displayName: "Apache Druid OLAP Cluster"
+description: >
+  Scaffolds an Apache Druid OLAP cluster as a Helm chart for Kubernetes.
+  Includes all six Druid services (router, broker, coordinator, overlord,
+  historical, task) as StatefulSets with per-component runtime properties,
+  JVM tuning, and resource limits. Uses Kubernetes-native service discovery
+  (no ZooKeeper), configurable metadata storage and deep storage backends,
+  optional cert-manager TLS certificates, and optional Prometheus metrics
+  emitter.
+version: "0.1.0"
+license: Apache-2.0
+tags: [druid, olap, analytics, kubernetes, helm, infrastructure]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as Helm release name and resource prefix"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README and chart metadata"
+    prompt: "Project description"
+    default: "Apache Druid OLAP cluster"
+
+  - name: DruidVersion
+    type: string
+    placeholder: "__DRUID_VERSION__"
+    description: "Apache Druid version for the container image"
+    prompt: "Druid version"
+    default: "36.0.0"
+    validation:
+      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      message: "Must be a valid semver (e.g. 36.0.0)"
+
+  - name: MetadataDriver
+    type: string
+    placeholder: "__METADATA_DRIVER__"
+    description: "Metadata storage driver (postgresql, mysql, derby)"
+    prompt: "Metadata storage driver"
+    default: "postgresql"
+
+  - name: DeepStorageType
+    type: string
+    placeholder: "__DEEP_STORAGE_TYPE__"
+    description: "Deep storage backend (s3, google, azure, hdfs, local)"
+    prompt: "Deep storage type"
+    default: "s3"
+
+  - name: IncludeMonitoring
+    type: bool
+    placeholder: "__INCLUDE_MONITORING__"
+    description: "Include Prometheus metrics emitter configuration and annotations"
+    prompt: "Include monitoring?"
+    default: true
+
+  - name: IncludeTls
+    type: bool
+    placeholder: "__INCLUDE_TLS__"
+    description: "Include cert-manager Certificate for internal mTLS"
+    prompt: "Include TLS?"
+    default: true
+
+conditionals:
+  - path: "chart/templates/certificate.yaml"
+    when: IncludeTls
+
+composition:
+  pairsWith: [monitoring-stack, k8s-deploy]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: kubectl
+    purpose: "Kubernetes CLI for cluster access and manifest debugging"
+    optional: false
+  - name: helm
+    version: ">=3.0"
+    purpose: "Helm CLI for installing and upgrading the Druid chart"
+    optional: false
+  - name: cert-manager
+    purpose: "Kubernetes certificate management (only needed if TLS is enabled)"
+    optional: true

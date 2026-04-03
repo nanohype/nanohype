@@ -1,0 +1,34 @@
+name = "__PROJECT_NAME__"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Uncomment to configure a custom route:
+# routes = [
+#   { pattern = "__PROJECT_NAME__.example.com/*", zone_name = "example.com" }
+# ]
+
+# ── R2 Object Storage ──────────────────────────────────────────────
+# Uncomment to enable R2 bucket binding.
+# Create the bucket first: wrangler r2 bucket create __PROJECT_NAME__-storage
+#
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "__PROJECT_NAME__-storage"
+
+# ── D1 Database ────────────────────────────────────────────────────
+# Uncomment to enable D1 database binding.
+# Create the database first: wrangler d1 create __PROJECT_NAME__-db
+# Then fill in the database_id from the output.
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "__PROJECT_NAME__-db"
+# database_id = ""
+
+# ── Environment Overrides ──────────────────────────────────────────
+
+[env.staging]
+name = "__PROJECT_NAME__-staging"
+
+[env.production]
+name = "__PROJECT_NAME__"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "__PROJECT_NAME__.componentName" (list "broker" .) }}-conf
+  labels:
+    {{- include "__PROJECT_NAME__.componentLabels" (list "broker" .) | nindent 4 }}
+data:
+  "jvm.config": |
+    {{- .Values.broker.jvm | nindent 4 }}
+  "runtime.properties": |
+    {{- .Values.broker.runtime | nindent 4 }}
