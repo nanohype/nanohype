@@ -1,0 +1,69 @@
+apiVersion: nanohype/v1
+
+name: monitoring-stack
+displayName: "Monitoring Stack"
+description: >
+  Standalone observability bundle with Grafana, Prometheus, and Loki.
+  Ships a working docker-compose setup with auto-provisioned datasources,
+  pre-built service and system dashboards, alert rules for errors, latency,
+  CPU, memory, and disk, plus an alternative Helm chart for Kubernetes
+  deployment. Single command to start, batteries included.
+version: "0.1.0"
+license: Apache-2.0
+tags: [monitoring, observability, grafana, prometheus, loki, infrastructure]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as resource names and labels"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README and chart metadata"
+    prompt: "Project description"
+    default: "Observability stack with Grafana, Prometheus, and Loki"
+
+  - name: DeployTarget
+    type: string
+    placeholder: "__DEPLOY_TARGET__"
+    description: "Primary deployment target (docker-compose or kubernetes)"
+    prompt: "Deploy target"
+    default: "docker-compose"
+
+  - name: IncludeAlerts
+    type: bool
+    placeholder: "__INCLUDE_ALERTS__"
+    description: "Include Prometheus alert rules for service and system metrics"
+    prompt: "Include alert rules?"
+    default: true
+
+conditionals:
+  - path: "prometheus/rules/"
+    when: IncludeAlerts
+
+composition:
+  pairsWith: [ts-service, go-service, k8s-deploy]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: docker
+    purpose: "Container runtime for running the monitoring stack via docker-compose"
+    optional: false
+  - name: docker-compose
+    version: ">=2.0"
+    purpose: "Orchestrate multi-container monitoring stack"
+    optional: false
+  - name: helm
+    version: ">=3.0"
+    purpose: "Helm CLI for Kubernetes chart deployment (only needed for Helm alternative)"
+    optional: true
+  - name: kubectl
+    purpose: "Kubernetes CLI for applying chart output and managing cluster resources"
+    optional: true

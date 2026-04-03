@@ -194,6 +194,12 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-semantic-cache** — Add this when LLM costs are high and prompts are repetitive. Embeds prompts into vectors and finds similar cached responses via cosine similarity. Configurable similarity threshold (default 0.95). Ships with a gateway adapter so it plugs directly into module-llm-gateway as a caching strategy.
 
+**module-llm-observability** — Add this when you need to answer "how much is this costing us" and "is the AI getting worse." Wraps LLM calls to capture prompt, response, model, latency, and token usage as structured spans. Cost calculator with per-model pricing and anomaly detection. Quality monitor with rolling p50/p95 scores and regression alerts. Pluggable exporters (console, OTLP, JSON file).
+
+### Infrastructure
+
+**monitoring-stack** — Reach for this when a client needs observability but doesn't have an existing platform. Grafana for dashboards, Prometheus for metrics, Loki for logs. Docker Compose for local dev, Helm chart for Kubernetes. Pre-configured datasources, default service and system dashboards, and alert rules for error rate, latency, CPU, memory, and disk.
+
 ---
 
 ## Module Layering Guide

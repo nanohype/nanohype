@@ -1,0 +1,68 @@
+apiVersion: nanohype/v1
+
+name: module-llm-observability
+displayName: "Module: LLM Observability"
+description: >
+  AI-specific telemetry module layered on OpenTelemetry. Wraps any async
+  LLM call with trace capture, records per-request cost from a shared
+  pricing table, monitors response quality with sliding-window statistics
+  (avg, p50, p95, trend), and exports spans to pluggable backends
+  (console, OTLP, JSON file). Factory-based architecture with no
+  module-level mutable state — all tracers, calculators, and monitors
+  are instance-scoped via createLlmObserver().
+version: "0.1.0"
+license: Apache-2.0
+tags: [llm, observability, tracing, cost-tracking, quality, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "LLM observability module with tracing, cost tracking, and quality monitoring"
+
+  - name: Exporter
+    type: string
+    placeholder: "__EXPORTER__"
+    description: "Default LLM exporter (console, otlp, json-file, or a custom name)"
+    prompt: "Default exporter"
+    default: "console"
+
+  - name: IncludeCostTracking
+    type: bool
+    placeholder: "__INCLUDE_COST_TRACKING__"
+    description: "Include cost tracking with per-model pricing and anomaly detection"
+    prompt: "Include cost tracking?"
+    default: true
+
+conditionals:
+  - path: "src/llm-observability/cost/"
+    when: IncludeCostTracking
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, agentic-loop, rag-pipeline, module-llm-gateway]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for LLM observability module"
+    optional: false

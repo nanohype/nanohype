@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}-loki
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "__PROJECT_NAME__.labels" . | nindent 4 }}
+    app.kubernetes.io/component: loki
+spec:
+  serviceName: {{ include "__PROJECT_NAME__.fullname" . }}-loki
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: loki
+  template:
+    metadata:
+      labels:
+        {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: loki
+    spec:
+      securityContext:
+        fsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: loki
+          image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
+          imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
+          args:
+            - "-config.file=/etc/loki/loki-config.yml"
+          ports:
+            - name: http
+              containerPort: 3100
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+              readOnly: true
+            - name: data
+              mountPath: /loki/data
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.loki.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "__PROJECT_NAME__.fullname" . }}-loki
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: {{ .Values.loki.storage.size }}

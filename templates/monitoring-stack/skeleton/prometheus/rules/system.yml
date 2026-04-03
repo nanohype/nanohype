@@ -1,0 +1,42 @@
+groups:
+  - name: system_alerts
+    interval: 30s
+    rules:
+      - alert: HighCpuUsage
+        expr: >
+          100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: >
+            CPU usage on {{ $labels.instance }} is {{ $value | printf "%.1f" }}%.
+            Threshold is 85% sustained over 10 minutes.
+
+      - alert: HighMemoryUsage
+        expr: >
+          (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+          > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage"
+          description: >
+            Memory usage on {{ $labels.instance }} is {{ $value | printf "%.1f" }}%.
+            Threshold is 90% sustained over 5 minutes.
+
+      - alert: DiskAlmostFull
+        expr: >
+          (1 - node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100
+          > 85
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk almost full"
+          description: >
+            Disk usage on {{ $labels.instance }} mount {{ $labels.mountpoint }}
+            is {{ $value | printf "%.1f" }}%. Threshold is 85%.

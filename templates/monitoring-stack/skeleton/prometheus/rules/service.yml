@@ -1,0 +1,55 @@
+groups:
+  - name: service_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: >
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP error rate"
+          description: >
+            Error rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+            More than 5% of requests are returning 5xx status codes.
+
+      - alert: HighLatencyP99
+        expr: >
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+          > 1.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p99 latency"
+          description: >
+            99th percentile latency is {{ $value | humanizeDuration }}.
+            Threshold is 1 second.
+
+      - alert: HighLatencyP95
+        expr: >
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+          > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency"
+          description: >
+            95th percentile latency is {{ $value | humanizeDuration }}.
+            Threshold is 500ms.
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: >
+            Target {{ $labels.instance }} of job {{ $labels.job }}
+            has been down for more than 1 minute.
