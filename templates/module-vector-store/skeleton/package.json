@@ -1,0 +1,54 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "description": "__DESCRIPTION__",
+  "type": "module",
+  "main": "dist/vector-store/index.js",
+  "types": "dist/vector-store/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/vector-store/index.d.ts",
+      "import": "./dist/vector-store/index.js"
+    },
+    "./providers": {
+      "types": "./dist/vector-store/providers/index.d.ts",
+      "import": "./dist/vector-store/providers/index.js"
+    },
+    "./filters": {
+      "types": "./dist/vector-store/filters/types.d.ts",
+      "import": "./dist/vector-store/filters/types.js"
+    },
+    "./similarity": {
+      "types": "./dist/vector-store/similarity.d.ts",
+      "import": "./dist/vector-store/similarity.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^4.0.0",
+    "pg": "^8.13.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

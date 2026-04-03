@@ -1,0 +1,43 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "description": "__DESCRIPTION__",
+  "type": "module",
+  "main": "dist/semantic-cache/index.js",
+  "types": "dist/semantic-cache/index.d.ts",
+  "exports": {
+    ".": "./dist/semantic-cache/index.js",
+    "./embedder": "./dist/semantic-cache/embedder/index.js",
+    "./store": "./dist/semantic-cache/store/index.js",
+    "./similarity": "./dist/semantic-cache/similarity.js",
+    "./gateway-adapter": "./dist/semantic-cache/gateway-adapter.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch src/semantic-cache/index.ts",
+    "start": "node dist/semantic-cache/index.js",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "openai": "^4.78.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

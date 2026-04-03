@@ -23,7 +23,7 @@ Templates fall into four categories:
 - **AI Systems** — agentic-loop, rag-pipeline, mcp-server-ts, eval-harness, prompt-library, a2a-agent, guardrails, multimodal-pipeline, fine-tune-pipeline
 - **Applications** — go-cli, ts-service, go-service, next-app, chrome-ext, vscode-ext, slack-bot, discord-bot, electron-app
 - **Infrastructure** — infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo
-- **Composable Modules** — module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications
+- **Composable Modules** — module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications, module-llm-gateway, module-vector-store, module-semantic-cache
 
 Module templates (`module-*`) are designed to be layered into other projects, not used standalone.
 

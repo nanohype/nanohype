@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+
+name: module-vector-store
+displayName: "Vector Store Module"
+description: >
+  Pluggable vector database abstraction for embedding storage and similarity
+  search. Ships with providers for in-memory (Map-backed with cosine similarity),
+  PostgreSQL with pgvector, Qdrant (HTTP API), and Pinecone (SDK). Includes a
+  composable filter expression compiler that translates logical predicates into
+  backend-native query formats. Uses the self-registering provider pattern so
+  custom backends can be added without modifying core code.
+version: "0.1.0"
+license: Apache-2.0
+tags: [vector-store, embeddings, similarity-search, typescript, infrastructure]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Pluggable vector store for embedding storage and similarity search"
+
+  - name: VectorProvider
+    type: string
+    placeholder: "__VECTOR_PROVIDER__"
+    description: "Default vector backend (memory, pgvector, qdrant, pinecone, or a custom provider name)"
+    prompt: "Vector provider"
+    default: "memory"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, rag-pipeline, agentic-loop]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the vector store module"
+    optional: false

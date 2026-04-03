@@ -188,6 +188,12 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-notifications** — Add this when the service sends user notifications. Email (Resend, SendGrid), optional SMS (Twilio), optional push (web-push). Template rendering with variable substitution and batch sending.
 
+**module-llm-gateway** — Add this when the service calls multiple LLM providers. Unified routing with five pluggable strategies (static, round-robin, latency, cost, adaptive epsilon-greedy). Response caching (hash, sliding-TTL), token counting, per-request cost tracking with anomaly detection, and circuit breakers on every provider call.
+
+**module-vector-store** — Add this when any service needs similarity search. Pluggable backends: in-memory for dev, pgvector for PostgreSQL, Qdrant and Pinecone for managed services. Provider-agnostic filter expressions compiled per backend. Batch upserts, cosine similarity, metadata filtering.
+
+**module-semantic-cache** — Add this when LLM costs are high and prompts are repetitive. Embeds prompts into vectors and finds similar cached responses via cosine similarity. Configurable similarity threshold (default 0.95). Ships with a gateway adapter so it plugs directly into module-llm-gateway as a caching strategy.
+
 ---
 
 ## Module Layering Guide
