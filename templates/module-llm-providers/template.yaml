@@ -1,0 +1,92 @@
+apiVersion: nanohype/v1
+
+name: module-llm-providers
+displayName: "Module: LLM Providers"
+description: >
+  Shared LLM provider pack — the canonical interface for all AI templates.
+  Ships with Anthropic, OpenAI, and Groq providers out of the box, plus
+  optional Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama
+  providers. Factory-based registry, streaming, token counting via
+  js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.
+version: "0.1.0"
+license: Apache-2.0
+tags: [llm, providers, anthropic, openai, groq, streaming, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "LLM provider pack for Anthropic, OpenAI, Bedrock, Azure, and more"
+
+  - name: DefaultProvider
+    type: string
+    placeholder: "__DEFAULT_PROVIDER__"
+    description: "Default LLM provider (anthropic, openai, groq, or a custom name)"
+    prompt: "Default LLM provider"
+    default: "anthropic"
+
+  - name: IncludeBedrock
+    type: bool
+    placeholder: "__INCLUDE_BEDROCK__"
+    description: "Include AWS Bedrock provider"
+
+  - name: IncludeAzure
+    type: bool
+    placeholder: "__INCLUDE_AZURE__"
+    description: "Include Azure OpenAI provider"
+
+  - name: IncludeVertex
+    type: bool
+    placeholder: "__INCLUDE_VERTEX__"
+    description: "Include Google Vertex AI provider"
+
+  - name: IncludeHuggingFace
+    type: bool
+    placeholder: "__INCLUDE_HUGGING_FACE__"
+    description: "Include Hugging Face Inference provider"
+
+  - name: IncludeOllama
+    type: bool
+    placeholder: "__INCLUDE_OLLAMA__"
+    description: "Include Ollama local inference provider"
+
+conditionals:
+  - path: "src/llm-providers/providers/bedrock.ts"
+    when: IncludeBedrock
+  - path: "src/llm-providers/providers/azure-openai.ts"
+    when: IncludeAzure
+  - path: "src/llm-providers/providers/vertex.ts"
+    when: IncludeVertex
+  - path: "src/llm-providers/providers/huggingface.ts"
+    when: IncludeHuggingFace
+  - path: "src/llm-providers/providers/ollama.ts"
+    when: IncludeOllama
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, agentic-loop, rag-pipeline, module-llm-gateway, module-llm-observability]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the LLM providers module"
+    optional: false

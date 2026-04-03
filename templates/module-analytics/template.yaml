@@ -1,0 +1,57 @@
+apiVersion: nanohype/v1
+
+name: module-analytics
+displayName: "Module: Product Analytics"
+description: >
+  Event tracking and product analytics with pluggable backends. Ships
+  with providers for Segment (HTTP batch API), PostHog (batch capture),
+  Mixpanel (batch track + engage), and Amplitude (HTTP V2 batch). All
+  providers use native fetch (no heavy SDKs). Includes an instance-scoped
+  event buffer with interval and capacity flushing, plus Hono and
+  Express middleware factories for automatic request tracking. Factory-based
+  registry, circuit breakers, and OTel metrics.
+version: "0.1.0"
+license: Apache-2.0
+tags: [analytics, tracking, segment, posthog, mixpanel, amplitude, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Event tracking and product analytics"
+
+  - name: AnalyticsProvider
+    type: string
+    placeholder: "__ANALYTICS_PROVIDER__"
+    description: "Default analytics provider (posthog, segment, mixpanel, amplitude, mock, or a custom name)"
+    prompt: "Analytics provider"
+    default: "posthog"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, next-app, go-service]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the analytics module"
+    optional: false

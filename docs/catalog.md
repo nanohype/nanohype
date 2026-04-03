@@ -216,6 +216,18 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-feature-flags** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
 
+**module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface across Anthropic, OpenAI, Groq (always included), plus Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama (conditional). Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
+
+**module-project-mgmt** — Add this when AI agents need to create and manage work items. Unified interface across Linear (GraphQL), Jira (REST), Asana, and Shortcut. Priority mapping, pagination abstraction, comment threading.
+
+**module-knowledge-base** — Add this when pipelines need to ingest from or publish to where documentation lives. Unified interface across Notion, Confluence, Google Docs, and Coda. Content normalized to markdown. Ships with a data-pipeline IngestSource adapter for RAG ingestion from SaaS knowledge bases.
+
+**module-search** — Add this when the service needs full-text search. Pluggable backends: Algolia, Typesense, Meilisearch. Hybrid search combiner merges keyword results with vector-store results via reciprocal rank fusion.
+
+**module-analytics** — Add this when the service needs event tracking. Unified interface across Segment, PostHog, Mixpanel, Amplitude. Buffered batch sends, auto-tracking HTTP middleware for Hono and Express.
+
+**module-media** — Add this when the service handles images or video. Upload, transform, and deliver through Cloudinary, Uploadcare, or imgix. Named transform presets (thumbnail, avatar, hero, og-image), fluent TransformBuilder API, responsive srcset generation.
+
 ### Infrastructure
 
 **monitoring-stack** — Reach for this when a client needs observability but doesn't have an existing platform. Grafana for dashboards, Prometheus for metrics, Loki for logs. Docker Compose for local dev, Helm chart for Kubernetes. Pre-configured datasources, default service and system dashboards, and alert rules for error rate, latency, CPU, memory, and disk.
