@@ -158,6 +158,10 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — API keys stay in the main process. React UI with armature design tokens. esbuild for main, Vite for renderer.
 
+**api-gateway** — Reach for this when you need an edge layer in front of multiple backend services. Reverse proxy with per-route rate limiting, JWT/API key auth, request/response transformation, canary traffic splitting, and upstream health checking. Per-upstream circuit breakers.
+
+**worker-service** — Reach for this when you need background processing. Combines scheduled cron jobs and queue consumption in a single deployable service. Lightweight cron parser (no external library), pluggable queue provider, health server on a separate port, graceful shutdown that drains both subsystems.
+
 ### Infrastructure
 
 **infra-aws** — Reach for this when deploying to AWS. CDK constructs for Lambda or ECS, API Gateway or ALB, optional VPC, RDS, CloudWatch. The enterprise deploy target.
@@ -199,6 +203,8 @@ A decision guide for selecting and composing templates. Read this to understand 
 **module-semantic-cache** — Add this when LLM costs are high and prompts are repetitive. Embeds prompts into vectors and finds similar cached responses via cosine similarity. Configurable similarity threshold (default 0.95). Ships with a gateway adapter so it plugs directly into module-llm-gateway as a caching strategy.
 
 **module-llm-observability** — Add this when you need to answer "how much is this costing us" and "is the AI getting worse." Wraps LLM calls to capture prompt, response, model, latency, and token usage as structured spans. Cost calculator with per-model pricing and anomaly detection. Quality monitor with rolling p50/p95 scores and regression alerts. Pluggable exporters (console, OTLP, JSON file).
+
+**module-billing** — Add this when the service needs usage metering and payments. Tracks API calls, tokens, or custom metrics per customer. Generates invoices from aggregated usage with per-unit, tiered, and flat pricing. Stripe integration for payment collection and webhook lifecycle events. Mock provider for offline development.
 
 ### Infrastructure
 

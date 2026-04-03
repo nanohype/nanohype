@@ -1,0 +1,84 @@
+apiVersion: nanohype/v1
+
+name: worker-service
+displayName: "TypeScript Worker Service"
+description: >
+  Background processor with scheduled cron jobs and queue consumption.
+  Features a lightweight cron scheduler with standard 5-field expression
+  parsing, a poll-based queue consumer with pluggable providers, a
+  circuit breaker for resilience, OpenTelemetry metrics, and a minimal
+  Hono health server for Kubernetes probes. Graceful shutdown drains
+  both cron and queue work before exit.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, worker, cron, queue, background, jobs]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Background worker with cron and queue processing"
+
+  - name: QueueProvider
+    type: string
+    placeholder: "__QUEUE_PROVIDER__"
+    description: "Default queue provider (memory, bullmq, sqs, or a custom name)"
+    prompt: "Queue provider"
+    default: "memory"
+
+  - name: IncludeCron
+    type: bool
+    placeholder: "__INCLUDE_CRON__"
+    description: "Include cron scheduler with example scheduled jobs"
+    prompt: "Include cron scheduler?"
+    default: true
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test suite with vitest"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/worker/scheduler/cron.ts"
+    when: IncludeCron
+  - path: "src/worker/scheduler/types.ts"
+    when: IncludeCron
+  - path: "src/worker/scheduler/jobs/example.ts"
+    when: IncludeCron
+  - path: "src/worker/__tests__/scheduler.test.ts"
+    when: IncludeTests
+  - path: "src/worker/__tests__/consumer.test.ts"
+    when: IncludeTests
+  - path: "src/worker/__tests__/health.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [module-queue, infra-aws, infra-fly, k8s-deploy]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the worker service"
+    optional: false

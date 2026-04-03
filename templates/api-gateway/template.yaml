@@ -1,0 +1,73 @@
+apiVersion: nanohype/v1
+
+name: api-gateway
+displayName: "API Gateway"
+description: >
+  Scaffolds an API gateway with edge routing, per-route auth and rate
+  limiting, traffic management (canary splits, health checking), and
+  per-upstream circuit breakers. Built on Hono with native fetch proxying,
+  JWT/API key validation via jose, and OpenTelemetry instrumentation.
+version: "0.1.0"
+license: Apache-2.0
+tags: [typescript, hono, api-gateway, proxy, rate-limit, auth]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "API gateway with routing, auth, and rate limiting"
+
+  - name: Framework
+    type: string
+    placeholder: "__FRAMEWORK__"
+    description: "HTTP framework (hono is default; extensible to express, fastify)"
+    prompt: "HTTP framework"
+    default: "hono"
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test suite for gateway components"
+    prompt: "Include tests?"
+    default: true
+
+conditionals:
+  - path: "src/gateway/__tests__/proxy.test.ts"
+    when: IncludeTests
+  - path: "src/gateway/__tests__/matcher.test.ts"
+    when: IncludeTests
+  - path: "src/gateway/__tests__/rate-limit.test.ts"
+    when: IncludeTests
+  - path: "src/gateway/__tests__/canary.test.ts"
+    when: IncludeTests
+  - path: "src/gateway/__tests__/registry.test.ts"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [infra-aws, infra-fly, module-auth, module-rate-limit, module-cache]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the API gateway"
+    optional: false
