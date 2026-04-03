@@ -132,7 +132,11 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **prompt-library** — Reach for this when prompts are a first-class asset: versioned, validated, and managed separately from code. The SDK loads and renders prompts at runtime. Useful when multiple systems share prompts or when prompt engineering is a distinct workflow.
 
+**mcp-server-python** — Reach for this when the client's team is Python-native and needs an MCP server. Same architecture as mcp-server-ts but idiomatic Python with Pydantic validation, structlog logging, and FastAPI for the HTTP transport. Decorator-based tool registration.
+
 **multimodal-pipeline** — Reach for this when the client needs to process images, audio, or video with AI. Detects modality, preprocesses (resize, transcode, frame extract), sends to vision/audio LLMs, returns structured output. Processor registry pattern — add custom modality handlers.
+
+**data-pipeline** — Reach for this when you need ETL for AI workloads. Ingests documents from files or web pages, chunks with pluggable strategies (recursive, fixed-size, semantic), embeds via provider registry, and indexes to pluggable output adapters. Separates ingestion from query in RAG architectures. Output is compatible with module-vector-store.
 
 **fine-tune-pipeline** — Reach for this when RAG and prompting aren't enough. Dataset preparation (JSONL formatting, validation, train/val/test splitting), training job submission via provider registry (OpenAI fine-tuning API), post-training eval comparing fine-tuned vs base model.
 

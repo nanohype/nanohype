@@ -1,0 +1,38 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "description": "__DESCRIPTION__",
+  "type": "module",
+  "main": "dist/pipeline/index.js",
+  "scripts": {
+    "run": "tsx src/pipeline/index.ts",
+    "build": "tsc",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "openai": "^4.85.0",
+    "pdf-parse": "^1.1.1",
+    "cheerio": "^1.0.0",
+    "@opentelemetry/api": "^1.9.0",
+    "zod": "^3.24.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.0.0",
+    "@types/pdf-parse": "^1.1.4",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
