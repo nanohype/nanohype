@@ -1,0 +1,53 @@
+apiVersion: nanohype/v1
+kind: composite
+name: cost-optimized-ai
+displayName: "Cost-Optimized AI Stack"
+description: >
+  Minimize LLM costs with intelligent routing, response caching,
+  and cost monitoring. Routes to the cheapest provider that meets
+  quality thresholds, caches similar prompts to avoid redundant calls,
+  and tracks spend with anomaly detection.
+version: "0.1.0"
+tags: [ai, cost, optimization, caching]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "Default LLM provider for the gateway"
+    default: "anthropic"
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: module-llm-gateway
+    path: packages/gateway
+    variables:
+      ProjectName: "${ProjectName}-gateway"
+      DefaultProvider: "${LlmProvider}"
+      RoutingStrategy: "cost"
+
+  - template: module-semantic-cache
+    path: packages/cache
+    variables:
+      ProjectName: "${ProjectName}-cache"
+      EmbeddingProvider: "openai"
+
+  - template: module-llm-observability
+    path: packages/observability
+    variables:
+      ProjectName: "${ProjectName}-observability"
+      Exporter: "console"

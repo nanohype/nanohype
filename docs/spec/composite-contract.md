@@ -1,7 +1,7 @@
 # Composite Contract Specification
 
 **Schema version:** `nanohype/v1`
-**Status:** Draft
+**Status:** Stable
 **License:** Apache-2.0
 
 ---

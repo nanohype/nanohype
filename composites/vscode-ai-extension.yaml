@@ -36,6 +36,12 @@ variables:
     description: "LLM provider"
     default: "anthropic"
 
+  - name: IncludePrompts
+    type: bool
+    placeholder: "__INCLUDE_PROMPTS__"
+    description: "Include versioned prompt library"
+    default: true
+
 templates:
   - template: vscode-ext
     root: true
@@ -55,5 +61,6 @@ templates:
 
   - template: prompt-library
     path: prompts
+    condition: IncludePrompts
     variables:
       ProjectName: "${ProjectName}-prompts"

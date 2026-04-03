@@ -10,6 +10,9 @@
       "default": "./dist/index.js"
     }
   },
+  "bin": {
+    "nanohype": "./dist/bin/nanohype.js"
+  },
   "files": [
     "dist",
     "schemas"

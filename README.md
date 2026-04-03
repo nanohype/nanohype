@@ -2,7 +2,11 @@
 
 A tool-agnostic template catalog for AI-focused projects. Each template is a self-contained, scaffoldable starting point — consumable by any scaffolding tool that reads the [template contract](docs/spec/template-contract.md).
 
+**New here?** Start with the [Quick Start guide](docs/quick-start.md) — find the right template, scaffold it, and run it in under 2 minutes.
+
 ## Templates
+
+48 templates across four categories, plus 15 composable modules.
 
 ### AI Systems
 
@@ -11,10 +15,16 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [agentic-loop](templates/agentic-loop/) | Autonomous agent with tool registry, memory, provider abstraction, eval harness | `typescript` `agent` `llm` |
 | [rag-pipeline](templates/rag-pipeline/) | TypeScript RAG pipeline with chunking, embedding, vector store, retrieval, generation | `typescript` `rag` `embeddings` |
 | [mcp-server-ts](templates/mcp-server-ts/) | TypeScript MCP server with tool/resource registration and Zod validation | `mcp` `typescript` `tools` |
+| [mcp-server-python](templates/mcp-server-python/) | Python MCP server with tool/resource registration | `mcp` `python` `tools` |
 | [eval-harness](templates/eval-harness/) | Standalone LLM evaluation framework with YAML suites, assertions, and reporters | `typescript` `eval` `testing` |
 | [prompt-library](templates/prompt-library/) | Versioned prompt management with YAML frontmatter and optional TypeScript SDK | `prompts` `yaml` `versioning` |
 | [a2a-agent](templates/a2a-agent/) | Agent-to-Agent protocol peer with skill registry, transport abstraction, and discovery | `typescript` `a2a` `agents` |
 | [guardrails](templates/guardrails/) | Input/output safety filters — prompt injection, PII, content policy, token limits | `typescript` `safety` `filters` |
+| [multimodal-pipeline](templates/multimodal-pipeline/) | Process images, audio, and video with AI models | `typescript` `multimodal` `ai` |
+| [fine-tune-pipeline](templates/fine-tune-pipeline/) | LLM fine-tuning pipeline with dataset preparation and training | `typescript` `fine-tuning` `llm` |
+| [data-pipeline](templates/data-pipeline/) | Data ingestion and transformation pipeline | `typescript` `data` `pipeline` |
+| [agent-orchestrator](templates/agent-orchestrator/) | Multi-agent orchestration with delegation and coordination | `typescript` `agents` `orchestrator` |
+| [ci-eval](templates/ci-eval/) | CI-integrated LLM evaluation with GitHub Actions | `typescript` `eval` `ci` |
 
 ### Applications
 
@@ -26,6 +36,11 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [chrome-ext](templates/chrome-ext/) | Chrome extension (Manifest V3) with React sidepanel for AI interactions | `chrome-extension` `react` `vite` |
 | [vscode-ext](templates/vscode-ext/) | VS Code extension with optional React webview and AI provider integration | `vscode` `extension` `typescript` |
 | [next-app](templates/next-app/) | Next.js 15 App Router with streaming AI chat, Tailwind, auth, and database | `typescript` `nextjs` `react` |
+| [slack-bot](templates/slack-bot/) | Slack bot with event handling and slash commands | `typescript` `slack` `bot` |
+| [discord-bot](templates/discord-bot/) | Discord bot with command registration and event handling | `typescript` `discord` `bot` |
+| [electron-app](templates/electron-app/) | Electron desktop application with IPC and auto-updates | `typescript` `electron` `desktop` |
+| [api-gateway](templates/api-gateway/) | API gateway with routing, rate limiting, and upstream management | `typescript` `gateway` `api` |
+| [worker-service](templates/worker-service/) | Background worker service with job processing | `typescript` `worker` `jobs` |
 
 ### Infrastructure
 
@@ -33,9 +48,13 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 |---|---|---|
 | [infra-aws](templates/infra-aws/) | AWS CDK with Lambda/ECS, VPC, RDS, and CloudWatch monitoring | `aws` `cdk` `infrastructure` |
 | [infra-fly](templates/infra-fly/) | Fly.io deployment with Dockerfile, fly.toml, and CI/CD | `fly` `deployment` `docker` |
-| [monorepo](templates/monorepo/) | Turborepo/pnpm workspace with shared packages and CI | `monorepo` `turborepo` `pnpm` |
 | [infra-gcp](templates/infra-gcp/) | GCP Cloud Run with Cloud SQL, monitoring, and GitHub Actions | `gcp` `cloud-run` `infrastructure` |
+| [infra-vercel](templates/infra-vercel/) | Vercel deployment with edge functions and CI/CD | `vercel` `deployment` `edge` |
+| [infra-druid](templates/infra-druid/) | Apache Druid cluster with ingestion and query configuration | `druid` `analytics` `infrastructure` |
+| [infra-cloudflare](templates/infra-cloudflare/) | Cloudflare Workers with KV, D1, and R2 | `cloudflare` `workers` `infrastructure` |
 | [k8s-deploy](templates/k8s-deploy/) | Kubernetes manifests and Helm chart with Ingress, HPA, and CI/CD | `kubernetes` `helm` `deployment` |
+| [monorepo](templates/monorepo/) | Turborepo/pnpm workspace with shared packages and CI | `monorepo` `turborepo` `pnpm` |
+| [monitoring-stack](templates/monitoring-stack/) | Observability infrastructure with metrics, logs, and traces | `monitoring` `observability` `infrastructure` |
 
 ### Composable Modules
 
@@ -46,6 +65,16 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [module-observability](templates/module-observability/) | OpenTelemetry instrumentation with pluggable exporters (console, OTLP, Datadog) | `observability` `opentelemetry` `tracing` |
 | [module-storage](templates/module-storage/) | Blob storage abstraction with pluggable backends (local, S3, R2, GCS) | `storage` `s3` `blob` |
 | [module-queue](templates/module-queue/) | Background job processing with pluggable brokers (in-memory, BullMQ, SQS) | `queue` `jobs` `workers` |
+| [module-cache](templates/module-cache/) | Caching layer with pluggable backends (memory, Redis) | `cache` `redis` `performance` |
+| [module-rate-limit](templates/module-rate-limit/) | Rate limiting with pluggable algorithms (token bucket, sliding window) | `rate-limit` `throttle` `middleware` |
+| [module-webhook](templates/module-webhook/) | Webhook ingestion and delivery with signature verification | `webhook` `events` `middleware` |
+| [module-notifications](templates/module-notifications/) | Multi-channel notifications (email, SMS, push) | `notifications` `email` `messaging` |
+| [module-llm-gateway](templates/module-llm-gateway/) | LLM provider gateway with routing and fallback | `llm` `gateway` `ai` |
+| [module-vector-store](templates/module-vector-store/) | Vector store abstraction with pluggable backends | `vectors` `embeddings` `ai` |
+| [module-semantic-cache](templates/module-semantic-cache/) | Semantic caching for LLM responses using embeddings | `cache` `semantic` `ai` |
+| [module-llm-observability](templates/module-llm-observability/) | LLM-specific observability with cost and latency tracking | `observability` `llm` `cost` |
+| [module-billing](templates/module-billing/) | Usage-based billing and subscription management | `billing` `payments` `saas` |
+| [module-feature-flags](templates/module-feature-flags/) | Feature flag management with evaluation rules | `feature-flags` `toggles` `configuration` |
 
 ## How It Works
 
@@ -79,6 +108,9 @@ Pre-configured multi-template stacks in `composites/`:
 | [internal-tool](composites/internal-tool.yaml) | CLI or browser extension with MCP tools |
 | [enterprise-ai](composites/enterprise-ai.yaml) | Full enterprise stack — agents, RAG, guardrails, evals, K8s |
 | [eval-suite](composites/eval-suite.yaml) | Standalone eval infrastructure with prompts and safety testing |
+| [cost-optimized-ai](composites/cost-optimized-ai.yaml) | LLM gateway with cost-aware routing, semantic caching, and cost tracking |
+| [ai-platform](composites/ai-platform.yaml) | Full AI platform with service, gateway, vectors, pipeline, auth, billing, monitoring |
+| [agent-team](composites/agent-team.yaml) | Multi-agent system with orchestrator, specialized agents, evals, and MCP tools |
 
 Composites define which templates to scaffold, where to nest them, and how variables flow across templates. See the [composite contract](docs/spec/composite-contract.md) for the specification.
 

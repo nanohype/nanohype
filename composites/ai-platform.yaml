@@ -1,0 +1,92 @@
+apiVersion: nanohype/v1
+kind: composite
+name: ai-platform
+displayName: "AI Platform"
+description: >
+  Full AI platform with HTTP service, LLM gateway, vector store,
+  data pipeline, auth, billing, and monitoring. Everything needed
+  to ship a production AI product with usage-based billing and
+  operational visibility.
+version: "0.1.0"
+tags: [ai, platform, fullstack, billing, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for AI features"
+    default: "anthropic"
+
+  - name: DatabaseDriver
+    type: string
+    placeholder: "__DATABASE_DRIVER__"
+    description: "Database driver"
+    default: "postgres"
+
+  - name: IncludeBilling
+    type: bool
+    placeholder: "__INCLUDE_BILLING__"
+    description: "Include billing and usage tracking"
+    default: true
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: ts-service
+    path: apps/api
+    variables:
+      ProjectName: "${ProjectName}-api"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: module-llm-gateway
+    path: packages/gateway
+    variables:
+      ProjectName: "${ProjectName}-gateway"
+      DefaultProvider: "${LlmProvider}"
+
+  - template: module-vector-store
+    path: packages/vectors
+    variables:
+      ProjectName: "${ProjectName}-vectors"
+
+  - template: data-pipeline
+    path: packages/pipeline
+    variables:
+      ProjectName: "${ProjectName}-pipeline"
+
+  - template: module-auth
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+      AuthProvider: "jwt"
+
+  - template: module-billing
+    path: packages/billing
+    condition: IncludeBilling
+    variables:
+      ProjectName: "${ProjectName}-billing"
+
+  - template: module-database
+    path: packages/db
+    variables:
+      ProjectName: "${ProjectName}-db"
+      DatabaseDriver: "${DatabaseDriver}"
+
+  - template: monitoring-stack
+    path: infra/monitoring
+    variables:
+      ProjectName: "${ProjectName}-monitoring"

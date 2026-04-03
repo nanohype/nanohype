@@ -18,11 +18,11 @@ variables:
       pattern: "^[a-z][a-z0-9-]*$"
       message: "Must be lowercase kebab-case"
 
-  - name: Interface
-    type: string
-    placeholder: "__INTERFACE__"
-    description: "User interface type (cli or chrome-ext)"
-    default: "cli"
+  - name: IncludeCli
+    type: bool
+    placeholder: "__INCLUDE_CLI__"
+    description: "Include CLI interface (go-cli template)"
+    default: true
 
   - name: IncludeEvals
     type: bool
@@ -33,7 +33,7 @@ variables:
 templates:
   - template: go-cli
     path: "."
-    condition: InterfaceIsCli
+    condition: IncludeCli
     variables:
       ProjectName: "${ProjectName}"
       Org: "${ProjectName}"

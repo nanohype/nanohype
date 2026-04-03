@@ -1,0 +1,67 @@
+apiVersion: nanohype/v1
+kind: composite
+name: agent-team
+displayName: "Agent Team"
+description: >
+  Multi-agent system with a central orchestrator, specialized agents
+  for research and writing, an evaluation harness, and MCP tool
+  server. Agents coordinate through the orchestrator, each with
+  distinct roles and capabilities.
+version: "0.1.0"
+tags: [ai, agents, orchestrator, multi-agent, mcp]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name used across all templates"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: LlmProvider
+    type: string
+    placeholder: "__LLM_PROVIDER__"
+    description: "LLM provider for agent reasoning"
+    default: "anthropic"
+
+templates:
+  - template: monorepo
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      IncludeSharedUtils: true
+
+  - template: agent-orchestrator
+    path: packages/orchestrator
+    variables:
+      ProjectName: "${ProjectName}-orchestrator"
+      LlmProvider: "${LlmProvider}"
+
+  - template: agentic-loop
+    path: packages/agents/researcher
+    variables:
+      ProjectName: "${ProjectName}-researcher"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+
+  - template: agentic-loop
+    path: packages/agents/writer
+    variables:
+      ProjectName: "${ProjectName}-writer"
+      LlmProvider: "${LlmProvider}"
+      IncludeMemory: true
+
+  - template: eval-harness
+    path: packages/evals
+    variables:
+      ProjectName: "${ProjectName}-evals"
+      LlmProvider: "${LlmProvider}"
+
+  - template: mcp-server-ts
+    path: packages/tools
+    variables:
+      ProjectName: "${ProjectName}-tools"
+      ServerName: "${ProjectName} Tools"
+      Transport: "stdio"
