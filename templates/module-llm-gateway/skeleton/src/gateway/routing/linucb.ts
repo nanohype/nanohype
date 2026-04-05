@@ -20,7 +20,7 @@ import { registerStrategy } from "./registry.js";
 
 const DEFAULT_ALPHA = 1.0;
 const FEATURE_DIM = 8;
-const MIN_SAMPLES = 5;
+const MIN_SAMPLES = 10;
 
 // ── Flat-array linear algebra (d < 10) ──────────────────────────────
 
@@ -92,11 +92,14 @@ interface ArmState {
 
 // ── Factory ─────────────────────────────────────────────────────────
 
-export function createLinucbStrategy(alpha = DEFAULT_ALPHA): RoutingStrategy {
+export function createLinucbStrategy(): RoutingStrategy {
   const d = FEATURE_DIM;
+  const alpha = DEFAULT_ALPHA;
   const arms = new Map<string, ArmState>();
-  // Cache the feature vector from the most recent select() per provider
-  // so recordOutcome() can use the actual request context for its update.
+  // Feature vector cache: select() stores the context vector for the chosen
+  // provider so recordOutcome() can update the model with the actual request
+  // features. Single-threaded — concurrent select() calls to the same provider
+  // would overwrite. This matches the sequential request lifecycle.
   const lastFeatures = new Map<string, number[]>();
 
   function getArm(name: string): ArmState {
@@ -163,12 +166,13 @@ export function createLinucbStrategy(alpha = DEFAULT_ALPHA): RoutingStrategy {
 
       // Use the cached feature vector from select() when available,
       // otherwise fall back to a bias-only vector for global signal.
-      const x = lastFeatures.get(provider) ?? (() => {
-        const fallback = new Array(d).fill(0);
-        fallback[0] = 1;
-        return fallback;
-      })();
-      lastFeatures.delete(provider);
+      let x = lastFeatures.get(provider);
+      if (x) {
+        lastFeatures.delete(provider);
+      } else {
+        x = new Array(d).fill(0);
+        x[0] = 1;
+      }
 
       // Sherman-Morrison rank-1 update to A⁻¹
       shermanMorrisonUpdate(arm.ainv, x, d);
