@@ -1,0 +1,47 @@
+apiVersion: nanohype/v1
+
+name: compliance-checklist
+displayName: "Compliance Checklist"
+description: >
+  Scaffolds a compliance management package with control inventory,
+  audit trail tracking, and remediation workflows. Optionally includes
+  evidence collection templates. Supports SOC 2, ISO 27001, HIPAA,
+  and other frameworks through configurable control definitions.
+version: "0.1.0"
+license: Apache-2.0
+persona: [operations]
+category: operations
+tags: [compliance, audit, soc2, controls, remediation]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Framework
+    type: string
+    placeholder: "__FRAMEWORK__"
+    description: "Compliance framework (soc2, iso27001, hipaa, pci-dss)"
+    prompt: "Compliance framework"
+    default: "soc2"
+
+  - name: IncludeEvidenceTemplates
+    type: bool
+    placeholder: "__INCLUDE_EVIDENCE_TEMPLATES__"
+    description: "Include evidence collection templates"
+    prompt: "Include evidence templates?"
+    default: true
+
+conditionals:
+  - path: "compliance/evidence/collection-template.md"
+    when: IncludeEvidenceTemplates
+
+composition:
+  pairsWith: [runbook, module-auth, module-observability]
+  nestsInside: [monorepo]

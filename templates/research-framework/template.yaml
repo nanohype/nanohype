@@ -1,0 +1,48 @@
+apiVersion: nanohype/v1
+
+name: research-framework
+displayName: "Research Framework"
+description: >
+  Scaffolds a product research framework with hypothesis canvas,
+  interview guides, and synthesis templates. Supports generative and
+  evaluative research workflows. Optionally includes a structured
+  competitive analysis. Designed to feed insights directly into PRDs
+  and product strategy.
+version: "0.1.0"
+license: Apache-2.0
+persona: [product]
+category: product
+tags: [research, interviews, competitive-analysis, hypothesis, synthesis]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ResearchType
+    type: string
+    placeholder: "__RESEARCH_TYPE__"
+    description: "Primary research methodology (generative, evaluative, mixed)"
+    prompt: "Research type"
+    default: "generative"
+
+  - name: IncludeCompetitive
+    type: bool
+    placeholder: "__INCLUDE_COMPETITIVE__"
+    description: "Include a competitive analysis YAML template"
+    prompt: "Include competitive analysis?"
+    default: true
+
+conditionals:
+  - path: "research/competitive-analysis.yaml"
+    when: IncludeCompetitive
+
+composition:
+  pairsWith: [prd-template]
+  nestsInside: [monorepo]

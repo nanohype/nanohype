@@ -1,0 +1,57 @@
+apiVersion: nanohype/v1
+
+name: prd-template
+displayName: "Product Requirements Document"
+description: >
+  Scaffolds a structured PRD with problem statement, user stories,
+  success metrics, constraints, and milestones. Produces a complete
+  requirements package that aligns engineering, design, and stakeholders
+  around what to build and why. Optionally includes dedicated user story
+  and success metrics documents.
+version: "0.1.0"
+license: Apache-2.0
+persona: [product]
+category: product
+tags: [prd, requirements, product, user-stories, metrics]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ProductName
+    type: string
+    placeholder: "__PRODUCT_NAME__"
+    description: "Human-readable product name for document titles"
+    prompt: "Product name"
+    required: true
+
+  - name: IncludeUserStories
+    type: bool
+    placeholder: "__INCLUDE_USER_STORIES__"
+    description: "Include a dedicated user stories document"
+    prompt: "Include user stories?"
+    default: true
+
+  - name: IncludeMetrics
+    type: bool
+    placeholder: "__INCLUDE_METRICS__"
+    description: "Include a success metrics YAML definition"
+    prompt: "Include success metrics?"
+    default: true
+
+conditionals:
+  - path: "prd/user-stories.md"
+    when: IncludeUserStories
+  - path: "prd/success-metrics.yaml"
+    when: IncludeMetrics
+
+composition:
+  pairsWith: [research-framework, campaign-brief]
+  nestsInside: [monorepo]

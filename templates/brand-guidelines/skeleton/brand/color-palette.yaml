@@ -1,0 +1,113 @@
+# __BRAND_NAME__ Color Palette
+#
+# Canonical color definitions for the __PROJECT_NAME__ brand. All product
+# surfaces and marketing materials should reference these values. When
+# implementing in code, map these to semantic design tokens rather than
+# using hex values directly.
+
+brand: __BRAND_NAME__
+
+palette:
+  primary:
+    - name: primary-900
+      hex: "#0D1B2A"
+      rgb: [13, 27, 42]
+      usage: "Darkest primary — headings on light backgrounds"
+
+    - name: primary-700
+      hex: "#1B3A5C"
+      rgb: [27, 58, 92]
+      usage: "Default primary — buttons, links, key UI elements"
+
+    - name: primary-500
+      hex: "#2E6BA6"
+      rgb: [46, 107, 166]
+      usage: "Medium primary — hover states, secondary emphasis"
+
+    - name: primary-300
+      hex: "#7BADE2"
+      rgb: [123, 173, 226]
+      usage: "Light primary — backgrounds, subtle highlights"
+
+    - name: primary-100
+      hex: "#D6E8F7"
+      rgb: [214, 232, 247]
+      usage: "Lightest primary — tinted surfaces, badges"
+
+  secondary:
+    - name: secondary-700
+      hex: "#5C4B8A"
+      rgb: [92, 75, 138]
+      usage: "Default secondary — accent elements, secondary actions"
+
+    - name: secondary-500
+      hex: "#8B7BBF"
+      rgb: [139, 123, 191]
+      usage: "Medium secondary — hover states, decorative elements"
+
+    - name: secondary-300
+      hex: "#C4B8E8"
+      rgb: [196, 184, 232]
+      usage: "Light secondary — backgrounds, tags"
+
+  neutral:
+    - name: neutral-900
+      hex: "#1A1A1A"
+      rgb: [26, 26, 26]
+      usage: "Primary text"
+
+    - name: neutral-700
+      hex: "#4A4A4A"
+      rgb: [74, 74, 74]
+      usage: "Secondary text, labels"
+
+    - name: neutral-500
+      hex: "#7A7A7A"
+      rgb: [122, 122, 122]
+      usage: "Placeholder text, disabled states"
+
+    - name: neutral-300
+      hex: "#BFBFBF"
+      rgb: [191, 191, 191]
+      usage: "Borders, dividers"
+
+    - name: neutral-100
+      hex: "#F0F0F0"
+      rgb: [240, 240, 240]
+      usage: "Subtle backgrounds, alternating rows"
+
+    - name: neutral-0
+      hex: "#FFFFFF"
+      rgb: [255, 255, 255]
+      usage: "Page background, card surfaces"
+
+  semantic:
+    - name: success
+      hex: "#2E7D32"
+      rgb: [46, 125, 50]
+      usage: "Success states, confirmations, positive indicators"
+
+    - name: warning
+      hex: "#ED6C02"
+      rgb: [237, 108, 2]
+      usage: "Warning states, caution indicators"
+
+    - name: error
+      hex: "#D32F2F"
+      rgb: [211, 47, 47]
+      usage: "Error states, destructive action indicators"
+
+    - name: info
+      hex: "#0288D1"
+      rgb: [2, 136, 209]
+      usage: "Informational states, help indicators"
+
+accessibility:
+  minimum_contrast:
+    normal_text: "4.5:1"
+    large_text: "3:1"
+    ui_elements: "3:1"
+  notes:
+    - "Primary-700 on neutral-0 passes 4.5:1 for normal text"
+    - "Primary-500 on neutral-0 passes 3:1 for large text only"
+    - "Semantic colors are tuned for sufficient contrast on neutral-0 and neutral-100"

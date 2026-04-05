@@ -1,0 +1,200 @@
+# __PROJECT_NAME__ — Competitive Comparison Matrix
+# Competitor slots: __COMPETITOR_COUNT__
+
+last_updated: "YYYY-MM-DD"
+reviewed_by: "Competitive Intelligence Lead"
+
+scoring:
+  scale: "1-5"
+  labels:
+    1: "Major gap — missing or fundamentally broken"
+    2: "Below average — exists but lags competitors"
+    3: "At parity — meets market expectations"
+    4: "Above average — meaningfully better than most"
+    5: "Market-leading — clear best-in-class"
+
+categories:
+  - name: "Core Product"
+    weight: 0.30
+    criteria:
+      - name: "Primary use case completeness"
+        description: "How well does the product solve the main job to be done?"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 5
+            notes: "Mature feature set, broadest coverage"
+          - name: "Competitor B"
+            score: 3
+            notes: "Covers basics, limited advanced workflows"
+          - name: "Competitor C"
+            score: 3
+            notes: "Good core, requires extensions for full coverage"
+
+      - name: "Workflow flexibility"
+        description: "Can users customize workflows to match their process?"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 3
+            notes: "Rigid workflow model, requires admin configuration"
+          - name: "Competitor B"
+            score: 4
+            notes: "Flexible no-code builder"
+          - name: "Competitor C"
+            score: 5
+            notes: "Fully programmable, open extensibility"
+
+      - name: "Data accuracy and reliability"
+        description: "How accurate and consistent are outputs?"
+        our_score: 5
+        competitors:
+          - name: "Competitor A"
+            score: 4
+            notes: "Generally reliable, occasional sync delays"
+          - name: "Competitor B"
+            score: 3
+            notes: "Known issues with large data sets"
+          - name: "Competitor C"
+            score: 4
+            notes: "Reliable when configured correctly"
+
+  - name: "User Experience"
+    weight: 0.25
+    criteria:
+      - name: "Time to value"
+        description: "How quickly can a new user accomplish their first goal?"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 2
+            notes: "Steep learning curve, requires training"
+          - name: "Competitor B"
+            score: 5
+            notes: "Excellent onboarding, fast setup"
+          - name: "Competitor C"
+            score: 2
+            notes: "Requires technical expertise to configure"
+
+      - name: "Day-to-day usability"
+        description: "How pleasant is the product for daily use?"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 3
+            notes: "Functional but dated interface"
+          - name: "Competitor B"
+            score: 5
+            notes: "Modern, clean design"
+          - name: "Competitor C"
+            score: 3
+            notes: "Developer-centric, non-technical users struggle"
+
+  - name: "Integration Ecosystem"
+    weight: 0.20
+    criteria:
+      - name: "Native integrations"
+        description: "Breadth of out-of-the-box integrations"
+        our_score: 3
+        competitors:
+          - name: "Competitor A"
+            score: 5
+            notes: "200+ native integrations"
+          - name: "Competitor B"
+            score: 4
+            notes: "50+ integrations, growing fast"
+          - name: "Competitor C"
+            score: 3
+            notes: "Community-driven integration library"
+
+      - name: "API quality"
+        description: "Completeness, documentation, and reliability of API"
+        our_score: 5
+        competitors:
+          - name: "Competitor A"
+            score: 4
+            notes: "Well-documented REST API"
+          - name: "Competitor B"
+            score: 3
+            notes: "Limited API, some endpoints undocumented"
+          - name: "Competitor C"
+            score: 5
+            notes: "Excellent API-first design"
+
+  - name: "Pricing and Value"
+    weight: 0.15
+    criteria:
+      - name: "Price competitiveness"
+        description: "Value relative to cost at target company size"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 2
+            notes: "Premium pricing, enterprise contracts"
+          - name: "Competitor B"
+            score: 4
+            notes: "Competitive usage-based pricing"
+          - name: "Competitor C"
+            score: 5
+            notes: "Free tier, low-cost managed offering"
+
+      - name: "Pricing transparency"
+        description: "Can prospects understand total cost before buying?"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 2
+            notes: "Custom quotes only"
+          - name: "Competitor B"
+            score: 5
+            notes: "Public pricing, calculator on website"
+          - name: "Competitor C"
+            score: 5
+            notes: "Open-source core, transparent managed pricing"
+
+  - name: "Support and Trust"
+    weight: 0.10
+    criteria:
+      - name: "Support quality"
+        description: "Responsiveness, expertise, and availability"
+        our_score: 4
+        competitors:
+          - name: "Competitor A"
+            score: 4
+            notes: "Dedicated CSM for enterprise, slow for others"
+          - name: "Competitor B"
+            score: 3
+            notes: "Chat support, variable quality"
+          - name: "Competitor C"
+            score: 3
+            notes: "Community forums, paid support tier"
+
+      - name: "Company viability"
+        description: "Financial stability, team size, and growth trajectory"
+        our_score: 3
+        competitors:
+          - name: "Competitor A"
+            score: 5
+            notes: "Public company, market leader"
+          - name: "Competitor B"
+            score: 3
+            notes: "Series B, growing fast"
+          - name: "Competitor C"
+            score: 3
+            notes: "Well-funded open-source company"
+
+summary:
+  our_weighted_score: null
+  competitor_weighted_scores:
+    - name: "Competitor A"
+      score: null
+    - name: "Competitor B"
+      score: null
+    - name: "Competitor C"
+      score: null
+  key_advantages:
+    - "Describe primary competitive advantage"
+    - "Describe secondary competitive advantage"
+  key_gaps:
+    - "Describe primary gap to address"
+    - "Describe secondary gap"

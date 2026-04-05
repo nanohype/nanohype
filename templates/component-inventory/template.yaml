@@ -1,0 +1,47 @@
+apiVersion: nanohype/v1
+
+name: component-inventory
+displayName: "Component Inventory"
+description: >
+  Scaffolds a component inventory with structured status tracking, ownership
+  metadata, and an optional accessibility checklist. Provides a single registry
+  for tracking every UI component from proposal through deprecation, with
+  framework-specific implementation notes and audit history.
+version: "0.1.0"
+license: Apache-2.0
+persona: [design]
+category: design
+tags: [components, inventory, accessibility, design, audit]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory and reference identifier"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Framework
+    type: string
+    placeholder: "__FRAMEWORK__"
+    description: "Frontend framework used for component implementation"
+    prompt: "Frontend framework"
+    default: "react"
+
+  - name: IncludeA11yChecklist
+    type: bool
+    placeholder: "__INCLUDE_A11Y_CHECKLIST__"
+    description: "Include accessibility audit checklist for component reviews"
+    prompt: "Include accessibility checklist?"
+    default: true
+
+conditionals:
+  - path: "a11y/checklist.md"
+    when: IncludeA11yChecklist
+
+composition:
+  pairsWith: [design-system, design-tokens, next-app]
+  nestsInside: [monorepo]

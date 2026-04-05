@@ -1,0 +1,144 @@
+# __PROJECT_NAME__ — Expansion Tracking
+# Review cadence: __REVIEW_CADENCE__
+
+tracking_period: "Q_ YYYY"
+account: "Account Name"
+csm: "CSM Name"
+current_arr: 50000
+
+expansion_types:
+  - type: upsell
+    description: "Upgrade to a higher tier or add premium features"
+  - type: cross_sell
+    description: "Add a complementary product or module"
+  - type: seat_expansion
+    description: "Increase licensed seat count"
+  - type: usage_expansion
+    description: "Increase usage-based limits or quotas"
+
+pipeline:
+  - id: "EXP-001"
+    type: seat_expansion
+    title: "European team rollout"
+    description: >
+      Customer's European operations team (15 people) has expressed
+      interest in adopting the product after seeing results from the
+      US team. Pending a specific integration that is on the product
+      roadmap.
+    status: qualified
+    probability: 60
+    estimated_arr_increase: 22500
+    target_close_date: "YYYY-MM-DD"
+    champion: "European Ops Director"
+    decision_maker: "VP of Global Operations"
+    blockers:
+      - "Integration with European ERP system not yet available"
+      - "Data residency requirements need validation"
+    next_steps:
+      - action: "Share product roadmap timeline for ERP integration"
+        owner: "CSM"
+        due_date: "YYYY-MM-DD"
+      - action: "Confirm data residency compliance for EU"
+        owner: "Legal + Engineering"
+        due_date: "YYYY-MM-DD"
+    signals:
+      - date: "YYYY-MM-DD"
+        signal: "European director attended product demo"
+      - date: "YYYY-MM-DD"
+        signal: "Budget pre-approved for Q_ tool consolidation"
+
+  - id: "EXP-002"
+    type: upsell
+    title: "Upgrade to Enterprise tier"
+    description: >
+      Customer is approaching the usage limits of their current plan
+      and has started requesting Enterprise-only features (SSO, audit
+      logs, custom roles). Natural upgrade path as organization grows.
+    status: discovery
+    probability: 40
+    estimated_arr_increase: 30000
+    target_close_date: "YYYY-MM-DD"
+    champion: "Operations Manager"
+    decision_maker: "CFO"
+    blockers:
+      - "Budget approval cycle aligns with fiscal year"
+      - "CFO needs ROI justification"
+    next_steps:
+      - action: "Prepare ROI analysis with customer's actual usage data"
+        owner: "CSM"
+        due_date: "YYYY-MM-DD"
+      - action: "Schedule demo of Enterprise features with champion"
+        owner: "CSM"
+        due_date: "YYYY-MM-DD"
+    signals:
+      - date: "YYYY-MM-DD"
+        signal: "Customer hit 80% of usage quota"
+      - date: "YYYY-MM-DD"
+        signal: "Asked about SSO integration in check-in call"
+
+  - id: "EXP-003"
+    type: cross_sell
+    title: "Add analytics module"
+    description: >
+      Customer has been exporting data to their own BI tool for
+      analysis. The analytics module would give them built-in
+      dashboards and eliminate the export workflow.
+    status: awareness
+    probability: 20
+    estimated_arr_increase: 12000
+    target_close_date: "YYYY-MM-DD"
+    champion: "Data Analyst"
+    decision_maker: "Operations Manager"
+    blockers:
+      - "Customer unaware of analytics module capabilities"
+      - "Existing BI tool contract runs through end of year"
+    next_steps:
+      - action: "Share analytics module overview in next check-in"
+        owner: "CSM"
+        due_date: "YYYY-MM-DD"
+      - action: "Offer free trial of analytics module"
+        owner: "CSM"
+        due_date: "YYYY-MM-DD"
+    signals:
+      - date: "YYYY-MM-DD"
+        signal: "Customer asked about API export rate limits"
+      - date: "YYYY-MM-DD"
+        signal: "Analyst mentioned spending 3 hours/week on data exports"
+
+statuses:
+  - name: awareness
+    description: "Customer may benefit; not yet discussed"
+    probability_range: [0, 20]
+  - name: discovery
+    description: "Actively discussing need and fit"
+    probability_range: [20, 40]
+  - name: qualified
+    description: "Need confirmed, budget identified, timeline discussed"
+    probability_range: [40, 70]
+  - name: proposal
+    description: "Pricing shared, decision pending"
+    probability_range: [70, 90]
+  - name: closed_won
+    description: "Deal signed"
+    probability_range: [100, 100]
+  - name: closed_lost
+    description: "Opportunity did not convert"
+    probability_range: [0, 0]
+
+summary:
+  total_pipeline_value: 64500
+  weighted_pipeline_value: 28500
+  opportunities: 3
+  by_type:
+    seat_expansion: 1
+    upsell: 1
+    cross_sell: 1
+  by_status:
+    awareness: 1
+    discovery: 1
+    qualified: 1
+    proposal: 0
+    closed_won: 0
+    closed_lost: 0
+  expected_close_this_period: 0
+  expected_close_next_period: 1

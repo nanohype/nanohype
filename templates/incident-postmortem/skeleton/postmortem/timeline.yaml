@@ -1,0 +1,128 @@
+# __SERVICE_NAME__ — Incident Timeline
+# Project: __PROJECT_NAME__
+# Incident ID: INC-XXXX
+
+incident:
+  id: "INC-XXXX"
+  service: __SERVICE_NAME__
+  severity: P1  # P1 | P2 | P3
+  date: "YYYY-MM-DD"
+  timezone: UTC
+
+phases:
+  - phase: trigger
+    description: "The event that initiated the chain of failures"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Database migration deployed to production via CI/CD pipeline"
+        actor: "CI/CD system"
+        source: "deploy-pipeline"
+        details: "Migration #42 applied — ALTER TABLE on users table"
+        evidence: "Deploy log: link-to-deploy-log"
+
+  - phase: onset
+    description: "First system-level symptoms before human awareness"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Application instances begin returning 500 errors on write operations"
+        actor: "system"
+        source: "application-logs"
+        details: "Schema mismatch causes INSERT failures — column not found error"
+        evidence: "Log query: link-to-log-search"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Error rate crosses 1% threshold"
+        actor: "system"
+        source: "metrics"
+        details: "Error rate spike from 0.05% to 3.2% over 90 seconds"
+        evidence: "Dashboard: link-to-dashboard"
+
+  - phase: detection
+    description: "How and when the incident was first identified by humans or automated systems"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "High error rate alert fires"
+        actor: "monitoring-system"
+        source: "alerting"
+        details: "Alert: __SERVICE_NAME__ error rate > 1% for 5 minutes"
+        evidence: "Alert: link-to-alert"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "On-call engineer acknowledges page"
+        actor: "on-call-primary"
+        source: "paging-system"
+        details: "Engineer Name acknowledged alert via mobile"
+        evidence: "Pager log: link-to-pager-log"
+
+  - phase: response
+    description: "Initial investigation and triage actions"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Incident channel created"
+        actor: "on-call-primary"
+        source: "slack"
+        details: "#inc-XXXX-service-name created, incident commander assigned"
+        evidence: "Slack channel: link-to-channel"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Initial diagnosis: write operations failing, reads unaffected"
+        actor: "on-call-primary"
+        source: "investigation"
+        details: "Checked error logs — all 500s are on POST/PUT endpoints with schema mismatch errors"
+        evidence: "Log query: link-to-log-search"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Root cause identified: database migration incompatible with running app version"
+        actor: "on-call-primary"
+        source: "investigation"
+        details: "Migration added NOT NULL column without default, breaking existing INSERT statements"
+        evidence: "Migration file: link-to-migration"
+
+  - phase: mitigation
+    description: "Actions taken to reduce or eliminate user impact"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Decision to roll back database migration"
+        actor: "incident-commander"
+        source: "incident-channel"
+        details: "Rollback chosen over forward-fix due to severity and clear root cause"
+        evidence: "Slack message: link-to-decision"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Database migration rollback initiated"
+        actor: "database-admin"
+        source: "database"
+        details: "Manual rollback: ALTER TABLE DROP COLUMN, revert migration version"
+        evidence: "DB audit log: link-to-audit-log"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Error rate begins dropping"
+        actor: "system"
+        source: "metrics"
+        details: "Error rate decreasing as application reconnects with corrected schema"
+        evidence: "Dashboard: link-to-dashboard"
+
+  - phase: resolution
+    description: "Full service restoration and verification"
+    events:
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Error rate returns to baseline (< 0.1%)"
+        actor: "system"
+        source: "metrics"
+        details: "All write operations succeeding, no more schema mismatch errors"
+        evidence: "Dashboard: link-to-dashboard"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "All health checks passing across all instances"
+        actor: "system"
+        source: "health-checks"
+        details: "/ready returning 200 on all instances"
+        evidence: "Health check dashboard: link-to-health"
+      - timestamp: "YYYY-MM-DDThh:mm:ssZ"
+        event: "Incident declared resolved"
+        actor: "incident-commander"
+        source: "incident-channel"
+        details: "All clear communicated to stakeholders, monitoring returns to normal"
+        evidence: "Slack message: link-to-all-clear"
+
+summary:
+  trigger_to_onset: "~30 seconds"
+  onset_to_detection: "~5 minutes (alert evaluation window)"
+  detection_to_response: "~3 minutes"
+  response_to_mitigation: "~25 minutes"
+  mitigation_to_resolution: "~14 minutes"
+  total_duration: "~47 minutes"
+  total_user_impact_duration: "~42 minutes"

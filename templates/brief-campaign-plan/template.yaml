@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-campaign-plan
+displayName: "Campaign Plan Brief"
+description: >
+  Scaffolds an agent brief for producing a marketing campaign plan.
+  The rendered brief instructs an agent to define campaign strategy,
+  identify distribution channels, craft messaging pillars, set KPIs
+  and measurement criteria, and produce a structured campaign plan
+  with timeline and budget allocation.
+version: "0.1.0"
+license: Apache-2.0
+persona: [marketing]
+category: marketing
+tags: [brief, campaign, marketing, strategy, kpi]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Internal project name for the campaign"
+    prompt: "Project name"
+    required: true
+
+  - name: CampaignGoal
+    type: string
+    placeholder: "__CAMPAIGN_GOAL__"
+    description: "Primary objective of the campaign (awareness, acquisition, retention, launch)"
+    prompt: "Campaign goal"
+    required: true
+
+  - name: TargetAudience
+    type: string
+    placeholder: "__TARGET_AUDIENCE__"
+    description: "Target audience segments for the campaign"
+    prompt: "Target audience"
+    required: true
+
+  - name: Budget
+    type: string
+    placeholder: "__BUDGET__"
+    description: "Total campaign budget or budget range"
+    prompt: "Budget"
+    default: ""
+
+  - name: Timeline
+    type: string
+    placeholder: "__TIMELINE__"
+    description: "Campaign duration or key dates"
+    prompt: "Timeline"
+    default: ""
+
+composition:
+  pairsWith: [campaign-brief, content-calendar]
+  nestsInside: [monorepo]

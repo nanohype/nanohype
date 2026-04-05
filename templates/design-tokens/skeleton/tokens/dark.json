@@ -1,0 +1,75 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "project": "__PROJECT_NAME__",
+    "format": "__TOKEN_FORMAT__",
+    "description": "Dark mode overrides — repoints semantic tokens to dark-appropriate base values. Only tokens that differ from light mode are listed here."
+  },
+  "color": {
+    "text": {
+      "primary": { "value": "{color.neutral.0}", "type": "color", "description": "Default text on dark surfaces" },
+      "secondary": { "value": "{color.neutral.300}", "type": "color", "description": "Secondary text on dark surfaces" },
+      "tertiary": { "value": "{color.neutral.500}", "type": "color", "description": "Placeholder, disabled text" },
+      "inverse": { "value": "{color.neutral.900}", "type": "color", "description": "Text on light elements within dark mode" },
+      "brand": { "value": "{color.primary.300}", "type": "color", "description": "Brand-colored text, links" },
+      "success": { "value": "#66BB6A", "type": "color", "description": "Success text tuned for dark backgrounds" },
+      "warning": { "value": "#FFA726", "type": "color", "description": "Warning text tuned for dark backgrounds" },
+      "error": { "value": "#EF5350", "type": "color", "description": "Error text tuned for dark backgrounds" }
+    },
+    "surface": {
+      "default": { "value": "#121212", "type": "color", "description": "Dark mode page background" },
+      "secondary": { "value": "#1E1E1E", "type": "color", "description": "Elevated dark surface" },
+      "brand": { "value": "#1A2A3A", "type": "color", "description": "Brand-tinted dark surface" },
+      "inverse": { "value": "{color.neutral.100}", "type": "color", "description": "Light surface for contrast within dark mode" }
+    },
+    "border": {
+      "default": { "value": "#333333", "type": "color", "description": "Default border on dark surfaces" },
+      "subtle": { "value": "#252525", "type": "color", "description": "Subtle separation on dark surfaces" },
+      "strong": { "value": "{color.neutral.300}", "type": "color", "description": "Emphasized border on dark surfaces" },
+      "brand": { "value": "{color.primary.500}", "type": "color", "description": "Brand-colored borders, focus rings" },
+      "error": { "value": "#EF5350", "type": "color", "description": "Error state border on dark surfaces" }
+    },
+    "action": {
+      "primary": {
+        "default": { "value": "{color.primary.500}", "type": "color", "description": "Primary button on dark surfaces" },
+        "hover": { "value": "{color.primary.300}", "type": "color", "description": "Primary button hover on dark surfaces" },
+        "text": { "value": "{color.neutral.900}", "type": "color", "description": "Text on primary actions in dark mode" }
+      },
+      "secondary": {
+        "default": { "value": "transparent", "type": "color", "description": "Secondary button background" },
+        "hover": { "value": "#2A2A2A", "type": "color", "description": "Secondary button hover on dark surfaces" },
+        "text": { "value": "{color.primary.300}", "type": "color", "description": "Text on secondary actions in dark mode" }
+      },
+      "danger": {
+        "default": { "value": "#C62828", "type": "color", "description": "Danger button on dark surfaces" },
+        "hover": { "value": "#E53935", "type": "color", "description": "Danger button hover on dark surfaces" },
+        "text": { "value": "{color.neutral.0}", "type": "color", "description": "Text on danger actions" }
+      }
+    },
+    "focus": {
+      "ring": { "value": "{color.primary.300}", "type": "color", "description": "Focus ring on dark surfaces" }
+    }
+  },
+  "elevation": {
+    "card": {
+      "value": "0 1px 3px rgba(0, 0, 0, 0.3)",
+      "type": "boxShadow",
+      "description": "Card elevation on dark surfaces — stronger shadow for visibility"
+    },
+    "dropdown": {
+      "value": "0 4px 8px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)",
+      "type": "boxShadow",
+      "description": "Dropdown elevation on dark surfaces"
+    },
+    "modal": {
+      "value": "0 20px 30px rgba(0, 0, 0, 0.5), 0 8px 12px rgba(0, 0, 0, 0.3)",
+      "type": "boxShadow",
+      "description": "Modal elevation on dark surfaces"
+    },
+    "toast": {
+      "value": "0 10px 20px rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.3)",
+      "type": "boxShadow",
+      "description": "Toast elevation on dark surfaces"
+    }
+  }
+}

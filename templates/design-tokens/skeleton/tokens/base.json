@@ -1,0 +1,104 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "project": "__PROJECT_NAME__",
+    "format": "__TOKEN_FORMAT__",
+    "description": "Base primitive tokens — raw values that semantic tokens reference"
+  },
+  "color": {
+    "primary": {
+      "900": { "value": "#0D1B2A", "type": "color", "description": "Darkest primary" },
+      "700": { "value": "#1B3A5C", "type": "color", "description": "Default primary" },
+      "500": { "value": "#2E6BA6", "type": "color", "description": "Medium primary" },
+      "300": { "value": "#7BADE2", "type": "color", "description": "Light primary" },
+      "100": { "value": "#D6E8F7", "type": "color", "description": "Lightest primary" }
+    },
+    "secondary": {
+      "700": { "value": "#5C4B8A", "type": "color", "description": "Default secondary" },
+      "500": { "value": "#8B7BBF", "type": "color", "description": "Medium secondary" },
+      "300": { "value": "#C4B8E8", "type": "color", "description": "Light secondary" }
+    },
+    "neutral": {
+      "900": { "value": "#1A1A1A", "type": "color", "description": "Darkest neutral" },
+      "700": { "value": "#4A4A4A", "type": "color", "description": "Dark neutral" },
+      "500": { "value": "#7A7A7A", "type": "color", "description": "Medium neutral" },
+      "300": { "value": "#BFBFBF", "type": "color", "description": "Light neutral" },
+      "100": { "value": "#F0F0F0", "type": "color", "description": "Lightest neutral" },
+      "0": { "value": "#FFFFFF", "type": "color", "description": "White" }
+    },
+    "success": { "value": "#2E7D32", "type": "color", "description": "Success green" },
+    "warning": { "value": "#ED6C02", "type": "color", "description": "Warning orange" },
+    "error": { "value": "#D32F2F", "type": "color", "description": "Error red" },
+    "info": { "value": "#0288D1", "type": "color", "description": "Info blue" }
+  },
+  "spacing": {
+    "2xs": { "value": "2px", "type": "spacing", "description": "Micro spacing" },
+    "xs": { "value": "4px", "type": "spacing", "description": "Extra small" },
+    "sm": { "value": "8px", "type": "spacing", "description": "Small" },
+    "md": { "value": "16px", "type": "spacing", "description": "Medium — base unit" },
+    "lg": { "value": "24px", "type": "spacing", "description": "Large" },
+    "xl": { "value": "32px", "type": "spacing", "description": "Extra large" },
+    "2xl": { "value": "48px", "type": "spacing", "description": "Section spacing" },
+    "3xl": { "value": "64px", "type": "spacing", "description": "Page-level spacing" }
+  },
+  "radius": {
+    "none": { "value": "0px", "type": "borderRadius", "description": "No rounding" },
+    "sm": { "value": "4px", "type": "borderRadius", "description": "Subtle rounding" },
+    "md": { "value": "8px", "type": "borderRadius", "description": "Default rounding" },
+    "lg": { "value": "12px", "type": "borderRadius", "description": "Prominent rounding" },
+    "xl": { "value": "16px", "type": "borderRadius", "description": "Card rounding" },
+    "full": { "value": "9999px", "type": "borderRadius", "description": "Pill shape" }
+  },
+  "shadow": {
+    "sm": {
+      "value": "0 1px 2px rgba(0, 0, 0, 0.05)",
+      "type": "boxShadow",
+      "description": "Subtle elevation"
+    },
+    "md": {
+      "value": "0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05)",
+      "type": "boxShadow",
+      "description": "Default elevation"
+    },
+    "lg": {
+      "value": "0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05)",
+      "type": "boxShadow",
+      "description": "Prominent elevation"
+    },
+    "xl": {
+      "value": "0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04)",
+      "type": "boxShadow",
+      "description": "Modal/overlay elevation"
+    }
+  },
+  "typography": {
+    "family": {
+      "heading": { "value": "Inter, system-ui, -apple-system, sans-serif", "type": "fontFamily" },
+      "body": { "value": "Inter, system-ui, -apple-system, sans-serif", "type": "fontFamily" },
+      "mono": { "value": "JetBrains Mono, ui-monospace, Menlo, Consolas, monospace", "type": "fontFamily" }
+    },
+    "weight": {
+      "regular": { "value": "400", "type": "fontWeight" },
+      "medium": { "value": "500", "type": "fontWeight" },
+      "semibold": { "value": "600", "type": "fontWeight" },
+      "bold": { "value": "700", "type": "fontWeight" }
+    },
+    "size": {
+      "xs": { "value": "0.75rem", "type": "fontSize", "description": "12px — captions" },
+      "sm": { "value": "0.875rem", "type": "fontSize", "description": "14px — secondary text" },
+      "md": { "value": "1rem", "type": "fontSize", "description": "16px — body default" },
+      "lg": { "value": "1.125rem", "type": "fontSize", "description": "18px — lead text" },
+      "xl": { "value": "1.25rem", "type": "fontSize", "description": "20px — heading sm" },
+      "2xl": { "value": "1.563rem", "type": "fontSize", "description": "25px — heading md" },
+      "3xl": { "value": "1.953rem", "type": "fontSize", "description": "31px — heading lg" },
+      "4xl": { "value": "2.441rem", "type": "fontSize", "description": "39px — display sm" },
+      "5xl": { "value": "3.052rem", "type": "fontSize", "description": "49px — display lg" }
+    },
+    "lineHeight": {
+      "tight": { "value": "1.1", "type": "lineHeight", "description": "Display text" },
+      "snug": { "value": "1.25", "type": "lineHeight", "description": "Headings" },
+      "normal": { "value": "1.5", "type": "lineHeight", "description": "Body text" },
+      "relaxed": { "value": "1.6", "type": "lineHeight", "description": "Lead paragraphs" }
+    }
+  }
+}

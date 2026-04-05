@@ -1,0 +1,87 @@
+# __PRODUCT_NAME__ — Success Metrics
+# Project: __PROJECT_NAME__
+
+metrics:
+  - name: "Primary Adoption Rate"
+    category: adoption
+    description: "Percentage of target users who complete core workflow within first 7 days"
+    baseline: null
+    target: 60
+    unit: percent
+    measurement:
+      source: "analytics"
+      event: "core_workflow_completed"
+      window: "7d"
+      segment: "new_users"
+
+  - name: "Task Completion Time"
+    category: efficiency
+    description: "Median time to complete the primary task end-to-end"
+    baseline: 45
+    target: 15
+    unit: minutes
+    measurement:
+      source: "analytics"
+      event: "task_completed"
+      window: "30d"
+      segment: "all_users"
+
+  - name: "Error Rate"
+    category: quality
+    description: "Percentage of task attempts that result in user-facing errors"
+    baseline: 12
+    target: 3
+    unit: percent
+    measurement:
+      source: "analytics"
+      event: "task_error"
+      window: "7d"
+      segment: "all_users"
+
+  - name: "User Satisfaction (CSAT)"
+    category: satisfaction
+    description: "Average satisfaction score from in-app survey after task completion"
+    baseline: null
+    target: 4.2
+    unit: "score (1-5)"
+    measurement:
+      source: "survey"
+      event: "csat_submitted"
+      window: "30d"
+      segment: "active_users"
+
+  - name: "Retention Impact"
+    category: retention
+    description: "30-day retention rate for users who adopt the feature vs. control"
+    baseline: null
+    target: 85
+    unit: percent
+    measurement:
+      source: "analytics"
+      event: "user_active"
+      window: "30d"
+      segment: "feature_adopters"
+
+guardrail_metrics:
+  - name: "Page Load Time"
+    description: "P95 page load must not regress beyond current baseline"
+    threshold: 2000
+    unit: milliseconds
+    direction: "must_not_exceed"
+
+  - name: "Support Ticket Volume"
+    description: "Feature-related tickets should not spike above normal variance"
+    threshold: 1.5
+    unit: "standard deviations above mean"
+    direction: "must_not_exceed"
+
+review_schedule:
+  cadence: weekly
+  first_review: "YYYY-MM-DD"
+  stakeholders:
+    - role: "Product Manager"
+      responsibility: "Track adoption and satisfaction metrics"
+    - role: "Engineering Lead"
+      responsibility: "Monitor error rate and performance guardrails"
+    - role: "Design Lead"
+      responsibility: "Review task completion time and usability signals"

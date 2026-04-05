@@ -1,0 +1,130 @@
+# __ORG_NAME__ — OKR Review Cadence
+# Project: __PROJECT_NAME__
+# Cadence: __CADENCE__
+
+cadence: __CADENCE__
+
+cycle_timeline:
+  - phase: "Drafting"
+    description: "Executive team publishes company OKRs; teams draft their OKRs in response"
+    duration: "Week 1 of cycle"
+    activities:
+      - "Executive team finalizes and publishes company-level OKRs"
+      - "Team leads draft team-level OKRs aligned to company objectives"
+      - "Individuals draft personal OKRs (if applicable)"
+      - "Identify dependencies between teams"
+    deliverable: "Draft OKRs submitted for review"
+    owner: "All OKR owners"
+
+  - phase: "Alignment Review"
+    description: "Cross-team review to resolve conflicts, gaps, and dependencies"
+    duration: "Week 2 of cycle"
+    activities:
+      - "Cross-functional review meeting with all team leads"
+      - "Resolve double-counting of shared key results"
+      - "Identify and document cross-team dependencies"
+      - "Adjust targets based on baseline data availability"
+      - "Publish finalized OKRs visible to entire organization"
+    deliverable: "Finalized OKRs published and shared"
+    owner: "VP Product / Chief of Staff"
+
+  - phase: "Execution"
+    description: "Active work toward key results with regular check-ins"
+    duration: "Weeks 3 through end of cycle"
+    activities:
+      - "Teams execute initiatives linked to key results"
+      - "Regular check-ins surface progress, blockers, and confidence changes"
+      - "Mid-cycle calibration review at halfway point"
+    deliverable: "Ongoing progress updates"
+    owner: "OKR owners"
+
+  - phase: "Scoring"
+    description: "Score key results, calculate objective scores, prepare retrospective"
+    duration: "Final week of cycle"
+    activities:
+      - "Each KR owner scores their key result (0-1.0 scale)"
+      - "Objective scores calculated as average of KR scores"
+      - "Score narratives written explaining what drove the result"
+      - "Lessons learned documented for next cycle"
+    deliverable: "Completed scorecards with narratives"
+    owner: "All OKR owners"
+
+  - phase: "Retrospective"
+    description: "Review cycle outcomes, extract learnings, inform next cycle"
+    duration: "First day of next cycle (overlaps with Drafting)"
+    activities:
+      - "Company-wide OKR retrospective presentation"
+      - "Team-level retrospective discussions"
+      - "Document what worked, what didn't, and structural improvements"
+      - "Feed learnings into next cycle's OKR drafting"
+    deliverable: "Retrospective notes and improvement actions"
+    owner: "VP Product / Chief of Staff"
+
+check_in_schedule:
+  - type: "Weekly check-in"
+    frequency: weekly
+    duration_minutes: 15
+    attendees: ["OKR owner", "Manager"]
+    format: "async"
+    template:
+      questions:
+        - "What progress did you make on your key results this week?"
+        - "What is your confidence level for each KR (on track / at risk / off track)?"
+        - "What blockers need to be escalated?"
+    channel: "Team Slack channel or 1:1 doc"
+
+  - type: "Bi-weekly team review"
+    frequency: bi-weekly
+    duration_minutes: 30
+    attendees: ["Team lead", "All team members"]
+    format: "synchronous"
+    template:
+      agenda:
+        - "Review KR progress dashboard (5 min)"
+        - "Discuss at-risk and off-track KRs (15 min)"
+        - "Adjust tactics or escalate blockers (10 min)"
+    channel: "Team meeting"
+
+  - type: "Monthly leadership review"
+    frequency: monthly
+    duration_minutes: 60
+    attendees: ["Executive team", "Team leads"]
+    format: "synchronous"
+    template:
+      agenda:
+        - "Company OKR progress overview (10 min)"
+        - "Team OKR highlights and escalations (30 min)"
+        - "Cross-team dependency check (10 min)"
+        - "Decisions and action items (10 min)"
+    channel: "Leadership meeting"
+
+  - type: "Mid-cycle calibration"
+    frequency: "once per cycle (midpoint)"
+    duration_minutes: 90
+    attendees: ["Executive team", "Team leads"]
+    format: "synchronous"
+    template:
+      agenda:
+        - "Score all KRs at current trajectory (20 min)"
+        - "Identify OKRs that need intervention (30 min)"
+        - "Reallocate resources or adjust scope if needed (20 min)"
+        - "Confirm no new company priorities override current OKRs (20 min)"
+    channel: "Dedicated calibration meeting"
+
+progress_tracking:
+  statuses:
+    - name: "on-track"
+      description: "Confident we will hit target by end of cycle"
+      color: green
+    - name: "at-risk"
+      description: "May miss target without intervention or scope change"
+      color: yellow
+    - name: "off-track"
+      description: "Will not hit target at current trajectory"
+      color: red
+    - name: "not-started"
+      description: "Work has not begun yet"
+      color: gray
+    - name: "complete"
+      description: "Key result achieved or exceeded target"
+      color: blue

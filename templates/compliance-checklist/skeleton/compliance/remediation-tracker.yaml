@@ -1,0 +1,109 @@
+# __PROJECT_NAME__ — Remediation Tracker
+# Framework: __FRAMEWORK__
+
+remediations:
+  - id: "REM-001"
+    finding_id: "FINDING-001"
+    control_id: "AC-004"
+    title: "Automate legacy system deprovisioning"
+    severity: medium
+    priority: high
+    status: in_progress
+    owner: "IT Operations Lead"
+    created_date: "YYYY-MM-DD"
+    target_date: "YYYY-MM-DD"
+    completed_date: null
+    description: >
+      Three legacy systems require manual access revocation during
+      employee offboarding. This creates a window where departed
+      employees may retain access for up to 48 hours.
+    root_cause: >
+      Legacy systems predate SSO integration and use local
+      authentication that cannot be managed through the identity
+      provider's SCIM provisioning.
+    remediation_plan:
+      steps:
+        - step: 1
+          description: "Inventory all legacy systems with local authentication"
+          status: completed
+          completed_date: "YYYY-MM-DD"
+        - step: 2
+          description: "Evaluate LDAP/SAML integration options for each system"
+          status: in_progress
+          completed_date: null
+        - step: 3
+          description: "Implement SSO integration for supported systems"
+          status: not_started
+          completed_date: null
+        - step: 4
+          description: "Create automated deprovisioning scripts for remaining systems"
+          status: not_started
+          completed_date: null
+        - step: 5
+          description: "Validate automated offboarding end-to-end"
+          status: not_started
+          completed_date: null
+    interim_controls:
+      - description: "Manual deprovisioning checklist added to HR offboarding ticket template"
+        effective_date: "YYYY-MM-DD"
+      - description: "Weekly audit of active accounts on legacy systems"
+        effective_date: "YYYY-MM-DD"
+    verification:
+      method: "Test offboarding flow for 5 accounts; verify deprovisioning within 24h"
+      verifier: "Compliance Lead"
+      verification_date: null
+      result: null
+
+  - id: "REM-002"
+    finding_id: null
+    control_id: "DP-001"
+    title: "Upgrade database encryption key rotation to quarterly"
+    severity: low
+    priority: medium
+    status: planned
+    owner: "Platform Team Lead"
+    created_date: "YYYY-MM-DD"
+    target_date: "YYYY-MM-DD"
+    completed_date: null
+    description: >
+      Current encryption key rotation is annual. Industry best practice
+      and updated framework guidance recommend quarterly rotation for
+      database encryption keys.
+    root_cause: >
+      Initial key rotation policy was set at annual cadence during
+      initial setup and was not updated as guidance evolved.
+    remediation_plan:
+      steps:
+        - step: 1
+          description: "Configure automated key rotation in KMS"
+          status: not_started
+          completed_date: null
+        - step: 2
+          description: "Test key rotation in staging with zero-downtime verification"
+          status: not_started
+          completed_date: null
+        - step: 3
+          description: "Deploy to production and verify"
+          status: not_started
+          completed_date: null
+    interim_controls: []
+    verification:
+      method: "Verify key rotation occurred on schedule for 2 consecutive cycles"
+      verifier: "Compliance Lead"
+      verification_date: null
+      result: null
+
+dashboard:
+  total_remediations: 2
+  by_status:
+    completed: 0
+    in_progress: 1
+    planned: 1
+    blocked: 0
+  by_severity:
+    critical: 0
+    high: 0
+    medium: 1
+    low: 1
+  overdue: 0
+  avg_days_to_remediate: null

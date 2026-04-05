@@ -1,0 +1,189 @@
+# __PROJECT_NAME__ — Metrics Framework
+# Review cadence: __REVIEW_CADENCE__
+
+framework_version: "1.0"
+review_cadence: __REVIEW_CADENCE__
+
+metric_categories:
+  - name: "Adoption"
+    description: "Measures of how broadly and deeply the customer uses the product"
+    metrics:
+      - name: "Seat Utilization"
+        description: "Percentage of licensed seats with at least one login in the past 30 days"
+        source: "product_analytics"
+        calculation: "active_seats / licensed_seats * 100"
+        unit: percent
+        benchmarks:
+          excellent: 90
+          good: 70
+          at_risk: 50
+          critical: 30
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+      - name: "Weekly Active Users"
+        description: "Distinct users who performed at least one action in the past 7 days"
+        source: "product_analytics"
+        calculation: "count(distinct users where last_active >= now() - 7d)"
+        unit: count
+        benchmarks:
+          excellent: null
+          good: null
+          at_risk: null
+          critical: null
+        trend_direction: "higher_is_better"
+        collection_frequency: weekly
+        notes: "Benchmark varies by account size; track trend over absolute number"
+
+      - name: "Feature Adoption Depth"
+        description: "Number of distinct product features used in the past 30 days"
+        source: "product_analytics"
+        calculation: "count(distinct features used)"
+        unit: count
+        benchmarks:
+          excellent: 8
+          good: 5
+          at_risk: 3
+          critical: 1
+        trend_direction: "higher_is_better"
+        collection_frequency: monthly
+
+  - name: "Value Delivered"
+    description: "Measures of the business outcomes the customer achieves through the product"
+    metrics:
+      - name: "Core Workflow Completion Rate"
+        description: "Percentage of initiated workflows that complete successfully"
+        source: "product_analytics"
+        calculation: "completed_workflows / initiated_workflows * 100"
+        unit: percent
+        benchmarks:
+          excellent: 95
+          good: 85
+          at_risk: 70
+          critical: 50
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+      - name: "Time Saved"
+        description: "Estimated hours saved per user per week compared to manual process"
+        source: "calculated"
+        calculation: "manual_process_time - product_process_time (self-reported or benchmarked)"
+        unit: "hours/user/week"
+        benchmarks:
+          excellent: 8
+          good: 4
+          at_risk: 2
+          critical: 0
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+        notes: "Requires customer input or benchmark comparison"
+
+      - name: "Error Reduction"
+        description: "Percentage reduction in errors compared to baseline"
+        source: "customer_reported"
+        calculation: "(baseline_error_rate - current_error_rate) / baseline_error_rate * 100"
+        unit: percent
+        benchmarks:
+          excellent: 90
+          good: 60
+          at_risk: 30
+          critical: 0
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+  - name: "Engagement"
+    description: "Measures of the customer's relationship health and engagement level"
+    metrics:
+      - name: "CSM Meeting Attendance"
+        description: "Percentage of scheduled check-ins attended"
+        source: "crm"
+        calculation: "attended / scheduled * 100"
+        unit: percent
+        benchmarks:
+          excellent: 90
+          good: 75
+          at_risk: 50
+          critical: 25
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+      - name: "NPS Score"
+        description: "Net Promoter Score from most recent survey"
+        source: "survey"
+        calculation: "standard NPS calculation"
+        unit: "score (-100 to 100)"
+        benchmarks:
+          excellent: 50
+          good: 20
+          at_risk: 0
+          critical: -20
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+      - name: "Days Since Last Executive Contact"
+        description: "Business days since last meaningful interaction with executive sponsor"
+        source: "crm"
+        calculation: "business_days(last_executive_interaction, today)"
+        unit: days
+        benchmarks:
+          excellent: 30
+          good: 60
+          at_risk: 90
+          critical: 120
+        trend_direction: "lower_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+  - name: "Operational Health"
+    description: "Measures of product reliability and support quality for this account"
+    metrics:
+      - name: "Support Ticket Volume"
+        description: "Number of support tickets submitted in the review period"
+        source: "support_platform"
+        calculation: "count(tickets where created_at in review_period)"
+        unit: count
+        benchmarks:
+          excellent: null
+          good: null
+          at_risk: null
+          critical: null
+        trend_direction: "lower_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+        notes: "Benchmark varies by account size; focus on trend and severity distribution"
+
+      - name: "Average Resolution Time"
+        description: "Mean time from ticket creation to resolution"
+        source: "support_platform"
+        calculation: "avg(resolution_time)"
+        unit: hours
+        benchmarks:
+          excellent: 4
+          good: 12
+          at_risk: 24
+          critical: 48
+        trend_direction: "lower_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+      - name: "Uptime (Account-Specific)"
+        description: "Percentage availability of the product from this account's perspective"
+        source: "monitoring"
+        calculation: "1 - (downtime_minutes / total_minutes) * 100"
+        unit: percent
+        benchmarks:
+          excellent: 99.99
+          good: 99.9
+          at_risk: 99.5
+          critical: 99.0
+        trend_direction: "higher_is_better"
+        collection_frequency: __REVIEW_CADENCE__
+
+data_collection:
+  owner: "Customer Success Manager"
+  preparation_time: "3-5 days before review"
+  automated_sources:
+    - "product_analytics"
+    - "support_platform"
+    - "monitoring"
+  manual_sources:
+    - "crm (meeting notes, executive contact)"
+    - "customer_reported (ROI, time savings)"
+    - "survey (NPS, CSAT)"

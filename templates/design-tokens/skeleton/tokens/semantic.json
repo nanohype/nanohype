@@ -1,0 +1,81 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "project": "__PROJECT_NAME__",
+    "format": "__TOKEN_FORMAT__",
+    "description": "Semantic tokens — intent-based aliases that map to base primitives. Components reference these, never base tokens directly."
+  },
+  "color": {
+    "text": {
+      "primary": { "value": "{color.neutral.900}", "type": "color", "description": "Default text color" },
+      "secondary": { "value": "{color.neutral.700}", "type": "color", "description": "Secondary/supporting text" },
+      "tertiary": { "value": "{color.neutral.500}", "type": "color", "description": "Placeholder, disabled text" },
+      "inverse": { "value": "{color.neutral.0}", "type": "color", "description": "Text on dark backgrounds" },
+      "brand": { "value": "{color.primary.700}", "type": "color", "description": "Brand-colored text, links" },
+      "success": { "value": "{color.success}", "type": "color", "description": "Success message text" },
+      "warning": { "value": "{color.warning}", "type": "color", "description": "Warning message text" },
+      "error": { "value": "{color.error}", "type": "color", "description": "Error message text" }
+    },
+    "surface": {
+      "default": { "value": "{color.neutral.0}", "type": "color", "description": "Default page/card background" },
+      "secondary": { "value": "{color.neutral.100}", "type": "color", "description": "Subtle background, alternating rows" },
+      "brand": { "value": "{color.primary.100}", "type": "color", "description": "Brand-tinted surface" },
+      "inverse": { "value": "{color.neutral.900}", "type": "color", "description": "Dark surface for contrast sections" }
+    },
+    "border": {
+      "default": { "value": "{color.neutral.300}", "type": "color", "description": "Default borders and dividers" },
+      "subtle": { "value": "{color.neutral.100}", "type": "color", "description": "Subtle separation" },
+      "strong": { "value": "{color.neutral.700}", "type": "color", "description": "Emphasized borders" },
+      "brand": { "value": "{color.primary.500}", "type": "color", "description": "Brand-colored borders, focus rings" },
+      "error": { "value": "{color.error}", "type": "color", "description": "Error state borders" }
+    },
+    "action": {
+      "primary": {
+        "default": { "value": "{color.primary.700}", "type": "color", "description": "Primary button background" },
+        "hover": { "value": "{color.primary.900}", "type": "color", "description": "Primary button hover" },
+        "text": { "value": "{color.neutral.0}", "type": "color", "description": "Text on primary actions" }
+      },
+      "secondary": {
+        "default": { "value": "transparent", "type": "color", "description": "Secondary button background" },
+        "hover": { "value": "{color.neutral.100}", "type": "color", "description": "Secondary button hover" },
+        "text": { "value": "{color.primary.700}", "type": "color", "description": "Text on secondary actions" }
+      },
+      "danger": {
+        "default": { "value": "{color.error}", "type": "color", "description": "Danger button background" },
+        "hover": { "value": "#B71C1C", "type": "color", "description": "Danger button hover" },
+        "text": { "value": "{color.neutral.0}", "type": "color", "description": "Text on danger actions" }
+      }
+    },
+    "focus": {
+      "ring": { "value": "{color.primary.500}", "type": "color", "description": "Focus ring color" }
+    }
+  },
+  "spacing": {
+    "component": {
+      "padding-sm": { "value": "{spacing.sm}", "type": "spacing", "description": "Compact component padding" },
+      "padding-md": { "value": "{spacing.md}", "type": "spacing", "description": "Default component padding" },
+      "padding-lg": { "value": "{spacing.lg}", "type": "spacing", "description": "Spacious component padding" },
+      "gap-sm": { "value": "{spacing.sm}", "type": "spacing", "description": "Tight gap between elements" },
+      "gap-md": { "value": "{spacing.md}", "type": "spacing", "description": "Default gap between elements" }
+    },
+    "layout": {
+      "section": { "value": "{spacing.2xl}", "type": "spacing", "description": "Space between page sections" },
+      "page-margin": { "value": "{spacing.lg}", "type": "spacing", "description": "Page edge margin" },
+      "stack-sm": { "value": "{spacing.sm}", "type": "spacing", "description": "Tight vertical stack" },
+      "stack-md": { "value": "{spacing.md}", "type": "spacing", "description": "Default vertical stack" },
+      "stack-lg": { "value": "{spacing.lg}", "type": "spacing", "description": "Loose vertical stack" }
+    }
+  },
+  "elevation": {
+    "card": { "value": "{shadow.sm}", "type": "boxShadow", "description": "Default card elevation" },
+    "dropdown": { "value": "{shadow.md}", "type": "boxShadow", "description": "Dropdown/popover elevation" },
+    "modal": { "value": "{shadow.xl}", "type": "boxShadow", "description": "Modal/dialog elevation" },
+    "toast": { "value": "{shadow.lg}", "type": "boxShadow", "description": "Toast notification elevation" }
+  },
+  "radius": {
+    "button": { "value": "{radius.md}", "type": "borderRadius", "description": "Button border radius" },
+    "input": { "value": "{radius.md}", "type": "borderRadius", "description": "Input field border radius" },
+    "card": { "value": "{radius.xl}", "type": "borderRadius", "description": "Card border radius" },
+    "badge": { "value": "{radius.full}", "type": "borderRadius", "description": "Badge/pill border radius" }
+  }
+}

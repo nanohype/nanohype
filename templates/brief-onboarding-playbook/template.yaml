@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-onboarding-playbook
+displayName: "Onboarding Playbook Brief"
+description: >
+  Scaffolds an agent brief for producing a customer onboarding playbook.
+  The rendered brief instructs an agent to define onboarding stages,
+  set milestone criteria, create health scoring rubrics, design
+  intervention triggers, and produce a playbook that guides
+  customer success teams from signup through time-to-value.
+version: "0.1.0"
+license: Apache-2.0
+persona: [customer-success]
+category: customer-success
+tags: [brief, onboarding, customer-success, playbook, milestones]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Internal project name"
+    prompt: "Project name"
+    required: true
+
+  - name: ProductName
+    type: string
+    placeholder: "__PRODUCT_NAME__"
+    description: "Customer-facing product name"
+    prompt: "Product name"
+    required: true
+
+  - name: OnboardingModel
+    type: string
+    placeholder: "__ONBOARDING_MODEL__"
+    description: "Onboarding approach (guided, self-serve, hybrid, white-glove)"
+    prompt: "Onboarding model"
+    default: "guided"
+
+  - name: TimeToValue
+    type: string
+    placeholder: "__TIME_TO_VALUE__"
+    description: "Target duration from signup to first value realization"
+    prompt: "Time to value"
+    default: "30 days"
+
+  - name: KeyMilestones
+    type: string
+    placeholder: "__KEY_MILESTONES__"
+    description: "Comma-separated key milestones customers should hit"
+    prompt: "Key milestones"
+    default: ""
+
+composition:
+  pairsWith: [onboarding-playbook, qbr-template]
+  nestsInside: [monorepo]

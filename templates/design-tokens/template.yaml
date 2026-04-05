@@ -1,0 +1,48 @@
+apiVersion: nanohype/v1
+
+name: design-tokens
+displayName: "Design Tokens"
+description: >
+  Scaffolds a design token system with base primitives, semantic aliases,
+  theme configuration, and optional dark mode definitions. Tokens follow
+  a three-tier architecture: base values define raw primitives, semantic
+  tokens map intent to base values, and themes override semantic tokens
+  for different contexts.
+version: "0.1.0"
+license: Apache-2.0
+persona: [design]
+category: design
+tags: [tokens, design, theming, dark-mode, css-variables]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory and token prefix"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: TokenFormat
+    type: string
+    placeholder: "__TOKEN_FORMAT__"
+    description: "Primary output format for token files"
+    prompt: "Token format"
+    default: "json"
+
+  - name: IncludeDarkMode
+    type: bool
+    placeholder: "__INCLUDE_DARK_MODE__"
+    description: "Include dark mode token overrides"
+    prompt: "Include dark mode tokens?"
+    default: true
+
+conditionals:
+  - path: "tokens/dark.json"
+    when: IncludeDarkMode
+
+composition:
+  pairsWith: [design-system, component-inventory, brand-guidelines, next-app]
+  nestsInside: [monorepo]

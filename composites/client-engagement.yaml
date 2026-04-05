@@ -1,0 +1,85 @@
+apiVersion: nanohype/v1
+kind: composite
+name: client-engagement
+displayName: "Client Engagement"
+description: >
+  Non-engineering client engagement package. Sales proposal with
+  competitive battle cards, brand guidelines, marketing campaign
+  brief, and optional customer onboarding playbook. Zero engineering
+  templates — proves the catalog works for non-code workflows.
+version: "0.1.0"
+tags: [sales, marketing, design, customer-success, engagement]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project name for the engagement"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: CompanyName
+    type: string
+    placeholder: "__COMPANY_NAME__"
+    description: "Your company name"
+    required: true
+
+  - name: CompetitorCount
+    type: int
+    placeholder: "__COMPETITOR_COUNT__"
+    description: "Number of competitors to track"
+    default: 3
+
+  - name: IncludeOnboarding
+    type: bool
+    placeholder: "__INCLUDE_ONBOARDING__"
+    description: "Include customer onboarding playbook"
+    default: true
+
+  - name: IncludeProposalDraft
+    type: bool
+    placeholder: "__INCLUDE_PROPOSAL_DRAFT__"
+    description: "Include agent brief for proposal drafting"
+    default: false
+
+templates:
+  - template: proposal-template
+    path: sales/proposal
+    variables:
+      ProjectName: "${ProjectName}-proposal"
+      CompanyName: "${CompanyName}"
+
+  - template: battle-cards
+    path: sales/competitive
+    variables:
+      ProjectName: "${ProjectName}-competitive"
+      CompetitorCount: "${CompetitorCount}"
+
+  - template: brand-guidelines
+    path: brand
+    variables:
+      ProjectName: "${ProjectName}-brand"
+      BrandName: "${CompanyName}"
+
+  - template: campaign-brief
+    path: marketing
+    variables:
+      ProjectName: "${ProjectName}-campaign"
+      CampaignName: "${ProjectName} Launch"
+
+  - template: onboarding-playbook
+    path: customer-success
+    condition: IncludeOnboarding
+    variables:
+      ProjectName: "${ProjectName}-onboarding"
+      ProductName: "${ProjectName}"
+
+  - template: brief-proposal
+    path: drafts
+    condition: IncludeProposalDraft
+    variables:
+      ProjectName: "${ProjectName}"
+      CompanyName: "${CompanyName}"
+      ClientName: "Client"

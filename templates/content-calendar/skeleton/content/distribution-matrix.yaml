@@ -1,0 +1,110 @@
+# __PROJECT_NAME__ — Distribution Matrix
+# Cadence: __CADENCE__
+
+channels:
+  - name: blog
+    type: owned
+    url: "https://example.com/blog"
+    audience: "Organic search visitors, direct traffic, referrals"
+    publishing_notes: "SEO-optimized, include meta description and OG tags"
+    formats:
+      - format: blog_post
+        adaptation: "Full article with hero image"
+      - format: case_study
+        adaptation: "Full article with customer pull quotes"
+      - format: technical_article
+        adaptation: "Full article with code samples and diagrams"
+
+  - name: linkedin
+    type: owned
+    url: "https://linkedin.com/company/example"
+    audience: "Professional network, decision-makers, industry peers"
+    publishing_notes: "Native posts perform better than link shares. Lead with insight, not promotion."
+    formats:
+      - format: blog_post
+        adaptation: "Extract key insight as native text post with link in first comment"
+      - format: case_study
+        adaptation: "Customer quote graphic with 2-3 sentence caption"
+      - format: technical_article
+        adaptation: "Key takeaway as text post, link to full article"
+
+  - name: newsletter
+    type: owned
+    url: null
+    audience: "Subscribed contacts, existing leads, customers"
+    publishing_notes: "Keep to 3-5 items per send. Each item gets a headline, 1-2 sentences, and a link."
+    formats:
+      - format: blog_post
+        adaptation: "Headline + 2 sentence summary + link"
+      - format: case_study
+        adaptation: "Customer name + result headline + link"
+      - format: technical_article
+        adaptation: "Technical insight teaser + link"
+
+  - name: email
+    type: owned
+    url: null
+    audience: "Segmented contact lists based on persona and lifecycle stage"
+    publishing_notes: "Personalize subject line and opening. A/B test on >1000 recipient sends."
+    formats:
+      - format: case_study
+        adaptation: "Dedicated send with customer story narrative"
+      - format: blog_post
+        adaptation: "Included in nurture sequences as educational touchpoint"
+
+  - name: dev_community
+    type: earned
+    url: null
+    audience: "Technical decision-makers, developers, architects"
+    publishing_notes: "Respect community norms. Lead with value, not promotion. Engage in comments."
+    formats:
+      - format: technical_article
+        adaptation: "Cross-post or original technical content"
+      - format: blog_post
+        adaptation: "Only if highly technical or data-driven"
+
+  - name: youtube
+    type: owned
+    url: "https://youtube.com/@example"
+    audience: "Visual learners, tutorial seekers, demo watchers"
+    publishing_notes: "Optimize thumbnails, titles, and descriptions for search. Include chapters."
+    formats:
+      - format: technical_article
+        adaptation: "Screen recording walkthrough"
+      - format: case_study
+        adaptation: "Video testimonial with customer"
+
+content_to_channel_map:
+  blog_post: [blog, linkedin, newsletter]
+  case_study: [blog, linkedin, newsletter, email]
+  technical_article: [blog, dev_community, linkedin, youtube]
+  social_post: [linkedin]
+  newsletter: [newsletter]
+
+repurposing_rules:
+  - source: blog_post
+    derivatives:
+      - format: "3 LinkedIn posts"
+        timing: "Publish day, day+3, day+7"
+      - format: "Newsletter item"
+        timing: "Next newsletter send"
+      - format: "Email nurture touchpoint"
+        timing: "Added to relevant sequence"
+
+  - source: case_study
+    derivatives:
+      - format: "Customer quote graphic"
+        timing: "Publish day"
+      - format: "Sales one-pager"
+        timing: "Within 1 week"
+      - format: "Email dedicated send"
+        timing: "Next segment-relevant send"
+
+  - source: technical_article
+    derivatives:
+      - format: "Dev community cross-post"
+        timing: "Day+1"
+      - format: "Screen recording"
+        timing: "Within 2 weeks"
+      - format: "LinkedIn technical insight"
+        timing: "Publish day"

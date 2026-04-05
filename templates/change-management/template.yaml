@@ -1,0 +1,49 @@
+apiVersion: nanohype/v1
+
+name: change-management
+displayName: "Change Management"
+description: >
+  Scaffolds a change management package with a change request template,
+  impact assessment matrix, and approval workflow configuration.
+  Optionally includes a rollback plan with triggers and verification
+  steps. Designed for operations and engineering teams managing
+  controlled changes to production systems.
+version: "0.1.0"
+license: Apache-2.0
+persona: [operations]
+category: operations
+tags: [change-management, change-request, impact-assessment, approval, rollback]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ChangeType
+    type: enum
+    placeholder: "__CHANGE_TYPE__"
+    description: "Default change type determining approval workflow and SLAs"
+    prompt: "Change type"
+    default: "normal"
+    options: [standard, normal, emergency]
+
+  - name: IncludeRollback
+    type: bool
+    placeholder: "__INCLUDE_ROLLBACK__"
+    description: "Include a rollback plan document"
+    prompt: "Include rollback plan?"
+    default: true
+
+conditionals:
+  - path: "change/rollback-plan.md"
+    when: IncludeRollback
+
+composition:
+  pairsWith: [runbook, release-checklist, compliance-checklist]
+  nestsInside: [monorepo]

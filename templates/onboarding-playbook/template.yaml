@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+
+name: onboarding-playbook
+displayName: "Customer Onboarding Playbook"
+description: >
+  Scaffolds a customer onboarding playbook with milestone definitions,
+  success criteria, health checks, and sales-to-CS handoff checklists.
+  Supports self-serve, guided, and enterprise onboarding workflows.
+  Optionally includes a health scoring model for proactive account
+  management.
+version: "0.1.0"
+license: Apache-2.0
+persona: [customer-success]
+category: customer-success
+tags: [onboarding, customer-success, milestones, health-scoring, handoff]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ProductName
+    type: string
+    placeholder: "__PRODUCT_NAME__"
+    description: "Human-readable product name for document titles"
+    prompt: "Product name"
+    required: true
+
+  - name: OnboardingType
+    type: enum
+    placeholder: "__ONBOARDING_TYPE__"
+    description: "Onboarding workflow type"
+    prompt: "Onboarding type"
+    default: "guided"
+    options: ["self-serve", "guided", "enterprise"]
+
+  - name: IncludeHealthScoring
+    type: bool
+    placeholder: "__INCLUDE_HEALTH_SCORING__"
+    description: "Include a health scoring model"
+    prompt: "Include health scoring?"
+    default: true
+
+conditionals:
+  - path: "onboarding/health-scoring.yaml"
+    when: IncludeHealthScoring
+
+composition:
+  pairsWith: [qbr-template, prd-template]
+  nestsInside: [monorepo]

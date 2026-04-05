@@ -1,0 +1,43 @@
+apiVersion: nanohype/v1
+
+name: campaign-brief
+displayName: "Campaign Brief"
+description: >
+  Scaffolds a marketing campaign brief with objectives, audience
+  segments, messaging matrix, channel plan, and timeline. Provides
+  a structured package that aligns creative, media, and stakeholders
+  around campaign strategy and execution.
+version: "0.1.0"
+license: Apache-2.0
+persona: [marketing]
+category: marketing
+tags: [campaign, marketing, messaging, channels, timeline]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: CampaignName
+    type: string
+    placeholder: "__CAMPAIGN_NAME__"
+    description: "Human-readable campaign name for document titles"
+    prompt: "Campaign name"
+    required: true
+
+  - name: Channel
+    type: string
+    placeholder: "__CHANNEL__"
+    description: "Primary distribution channel (multi, email, social, paid, organic)"
+    prompt: "Primary channel"
+    default: "multi"
+
+composition:
+  pairsWith: [content-calendar, prd-template, brand-guidelines]
+  nestsInside: [monorepo]

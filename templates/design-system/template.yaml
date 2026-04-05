@@ -1,0 +1,55 @@
+apiVersion: nanohype/v1
+
+name: design-system
+displayName: "Design System"
+description: >
+  Scaffolds a design system specification with foundational principles,
+  a component catalog structure, usage guidelines, and optional token
+  sync configuration. Provides the structural backbone for maintaining
+  a consistent visual language across products and teams.
+version: "0.1.0"
+license: Apache-2.0
+persona: [design]
+category: design
+tags: [design-system, components, tokens, figma, design]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory and reference identifier"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: DesignToolkit
+    type: string
+    placeholder: "__DESIGN_TOOLKIT__"
+    description: "Primary design tool used for source-of-truth assets"
+    prompt: "Design toolkit"
+    default: "figma"
+
+  - name: IncludeTokenSync
+    type: bool
+    placeholder: "__INCLUDE_TOKEN_SYNC__"
+    description: "Include token sync configuration for automated design-to-code token export"
+    prompt: "Include token sync config?"
+    default: true
+
+  - name: ColorScheme
+    type: enum
+    placeholder: "__COLOR_SCHEME__"
+    description: "Color scheme support mode"
+    prompt: "Color scheme"
+    default: "both"
+    options: ["light", "dark", "both"]
+
+conditionals:
+  - path: "sync/token-sync-config.yaml"
+    when: IncludeTokenSync
+
+composition:
+  pairsWith: [design-tokens, component-inventory, next-app]
+  nestsInside: [monorepo]

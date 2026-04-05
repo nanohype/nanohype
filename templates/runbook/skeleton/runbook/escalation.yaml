@@ -1,0 +1,138 @@
+# __SERVICE_NAME__ — Escalation Matrix
+# Project: __PROJECT_NAME__
+# On-call tool: __ON_CALL_TOOL__
+
+severity_levels:
+  - level: P1
+    name: "Critical"
+    description: "Service completely unavailable or data integrity at risk"
+    examples:
+      - "All health checks failing across all instances"
+      - "Data corruption detected"
+      - "Complete loss of write capability"
+    response_time: "15 minutes"
+    update_cadence: "Every 30 minutes"
+    communication: "Incident channel created immediately"
+    resolution_target: "4 hours"
+    escalation_chain:
+      - step: 1
+        role: "On-call primary"
+        tool: __ON_CALL_TOOL__
+        contact: "__PROJECT_NAME__-primary rotation"
+        timeout: "15 minutes"
+      - step: 2
+        role: "On-call secondary"
+        tool: __ON_CALL_TOOL__
+        contact: "__PROJECT_NAME__-secondary rotation"
+        timeout: "15 minutes"
+      - step: 3
+        role: "Engineering manager"
+        tool: "phone"
+        contact: "Engineering Manager"
+        timeout: "30 minutes"
+      - step: 4
+        role: "VP Engineering"
+        tool: "phone"
+        contact: "VP Engineering"
+        timeout: "30 minutes"
+
+  - level: P2
+    name: "High"
+    description: "Service degraded — partial functionality loss or elevated error rates"
+    examples:
+      - "Error rate > 5% sustained"
+      - "P99 latency > 2x SLA"
+      - "Single dependency failure causing degraded responses"
+    response_time: "30 minutes"
+    update_cadence: "Every 1 hour"
+    communication: "Post in #ops-incidents Slack channel"
+    resolution_target: "8 hours"
+    escalation_chain:
+      - step: 1
+        role: "On-call primary"
+        tool: __ON_CALL_TOOL__
+        contact: "__PROJECT_NAME__-primary rotation"
+        timeout: "30 minutes"
+      - step: 2
+        role: "On-call secondary"
+        tool: __ON_CALL_TOOL__
+        contact: "__PROJECT_NAME__-secondary rotation"
+        timeout: "30 minutes"
+      - step: 3
+        role: "Engineering manager"
+        tool: "Slack DM"
+        contact: "Engineering Manager"
+        timeout: "1 hour"
+
+  - level: P3
+    name: "Medium"
+    description: "Minor degradation — non-critical feature impacted or performance warning"
+    examples:
+      - "Non-critical background job failing"
+      - "Cache hit rate dropped significantly"
+      - "Disk usage approaching threshold"
+    response_time: "2 hours"
+    update_cadence: "Daily"
+    communication: "Post in team Slack channel"
+    resolution_target: "3 business days"
+    escalation_chain:
+      - step: 1
+        role: "On-call primary"
+        tool: __ON_CALL_TOOL__
+        contact: "__PROJECT_NAME__-primary rotation"
+        timeout: "2 hours"
+      - step: 2
+        role: "Team lead"
+        tool: "Slack mention"
+        contact: "Team Lead"
+        timeout: "4 hours"
+
+  - level: P4
+    name: "Low"
+    description: "Cosmetic or minor issue — no user impact"
+    examples:
+      - "Log noise from non-critical warnings"
+      - "Minor dashboard display issue"
+      - "Non-urgent infrastructure maintenance needed"
+    response_time: "Next business day"
+    update_cadence: "As needed"
+    communication: "Filed as ticket"
+    resolution_target: "Next sprint"
+    escalation_chain:
+      - step: 1
+        role: "On-call primary"
+        tool: "ticket"
+        contact: "Team backlog"
+        timeout: "Next business day"
+
+contacts:
+  - name: "On-call primary"
+    tool: __ON_CALL_TOOL__
+    schedule: "__PROJECT_NAME__-primary"
+    hours: "24/7"
+  - name: "On-call secondary"
+    tool: __ON_CALL_TOOL__
+    schedule: "__PROJECT_NAME__-secondary"
+    hours: "24/7"
+  - name: "Engineering Manager"
+    email: "eng-manager@example.com"
+    slack: "@eng-manager"
+    phone: "+1-555-0100"
+    hours: "Business hours + P1 escalation"
+  - name: "VP Engineering"
+    email: "vp-eng@example.com"
+    slack: "@vp-eng"
+    phone: "+1-555-0200"
+    hours: "P1 escalation only"
+
+external_dependencies:
+  - name: "AWS Support"
+    contact: "AWS Support Console"
+    plan: "Business"
+    response_time: "1 hour for production system down"
+    use_for: "Infrastructure issues beyond application layer"
+  - name: "Database vendor support"
+    contact: "support@dbvendor.com"
+    plan: "Enterprise"
+    response_time: "30 minutes for critical"
+    use_for: "Database engine issues, replication failures"

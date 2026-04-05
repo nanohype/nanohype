@@ -1,0 +1,121 @@
+# __SERVICE_NAME__ — Follow-Up Action Tracker
+# Project: __PROJECT_NAME__
+# Incident ID: INC-XXXX
+
+incident_reference:
+  id: "INC-XXXX"
+  service: __SERVICE_NAME__
+  date: "YYYY-MM-DD"
+  postmortem: "postmortem/template.md"
+
+action_items:
+  - id: "AI-1"
+    title: "Add production schema snapshot comparison to CI pipeline"
+    description: >
+      Before applying any migration in the deploy pipeline, compare the
+      migration's expected input schema against a daily snapshot of the
+      production schema. Fail the deploy if the schemas diverge beyond
+      the migration's assumptions.
+    priority: P1
+    category: prevention  # prevention | detection | mitigation | process
+    owner: "Engineer Name"
+    team: "Platform Engineering"
+    due_date: "YYYY-MM-DD"
+    status: open  # open | in-progress | complete | deferred
+    ticket: "JIRA-XXX"
+    root_cause_link: "Schema drift between environments"
+    verification: "CI pipeline fails when migration targets incorrect schema version"
+    notes: ""
+
+  - id: "AI-2"
+    title: "Automate database migration rollback procedure"
+    description: >
+      Create an automated rollback script for database migrations that
+      can be triggered from the deploy pipeline or via CLI. Include
+      schema verification before and after rollback, and automatic
+      connection pool drain.
+    priority: P1
+    category: mitigation
+    owner: "Engineer Name"
+    team: "Platform Engineering"
+    due_date: "YYYY-MM-DD"
+    status: open
+    ticket: "JIRA-XXX"
+    root_cause_link: "Manual rollback added 15 minutes to incident duration"
+    verification: "Rollback completes in under 2 minutes in staging test"
+    notes: ""
+
+  - id: "AI-3"
+    title: "Reduce error rate alert evaluation window from 5 min to 2 min"
+    description: >
+      The current 5-minute evaluation window delayed detection by several
+      minutes. Reduce to 2 minutes for __SERVICE_NAME__ error rate alerts.
+      Monitor for false positive rate increase over 2 weeks after change.
+    priority: P2
+    category: detection
+    owner: "SRE Name"
+    team: "SRE"
+    due_date: "YYYY-MM-DD"
+    status: open
+    ticket: "JIRA-XXX"
+    root_cause_link: "5-minute alert window delayed detection"
+    verification: "Alert fires within 2 minutes of error rate exceeding threshold in staging test"
+    notes: ""
+
+  - id: "AI-4"
+    title: "Add database migration failure mode to __SERVICE_NAME__ runbook"
+    description: >
+      Document the diagnosis and recovery procedure for schema mismatch
+      errors in the __SERVICE_NAME__ operational runbook. Include the
+      automated rollback procedure (once AI-2 is complete).
+    priority: P2
+    category: process
+    owner: "SRE Name"
+    team: "SRE"
+    due_date: "YYYY-MM-DD"
+    status: open
+    ticket: "JIRA-XXX"
+    root_cause_link: "Runbook did not cover this failure mode"
+    verification: "New section exists in runbook/procedures.md with step-by-step recovery"
+    notes: "Blocked on AI-2 for the automated rollback steps"
+
+  - id: "AI-5"
+    title: "Sync staging database schema with production weekly"
+    description: >
+      Implement automated weekly schema snapshot from production to staging
+      environment. This ensures staging validations test against a schema
+      that matches production, catching drift-related issues before deploy.
+    priority: P2
+    category: prevention
+    owner: "Platform Engineer Name"
+    team: "Platform Engineering"
+    due_date: "YYYY-MM-DD"
+    status: open
+    ticket: "JIRA-XXX"
+    root_cause_link: "Staging schema diverged from production"
+    verification: "Weekly cron job runs successfully; schema diff report shows zero drift"
+    notes: ""
+
+tracking:
+  review_cadence: weekly
+  next_review: "YYYY-MM-DD"
+  reviewer: "Engineering Manager"
+  completion_target: "All P1 items within 2 weeks, all P2 items within 4 weeks"
+  escalation: "Overdue P1 items escalate to VP Engineering"
+
+statuses:
+  - open        # Assigned but work not started
+  - in-progress # Actively being worked on
+  - complete    # Implemented, verified, and deployed
+  - deferred    # Postponed with documented justification
+
+priorities:
+  - P1  # Must complete within 2 weeks — directly prevents recurrence
+  - P2  # Must complete within 4 weeks — improves detection or response
+  - P3  # Complete within current quarter — process improvements
+
+categories:
+  - prevention  # Prevents the root cause from recurring
+  - detection   # Reduces time to detect similar incidents
+  - mitigation  # Reduces impact or time to mitigate
+  - process     # Improves documentation, training, or communication

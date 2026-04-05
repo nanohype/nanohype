@@ -1,0 +1,134 @@
+# __PROJECT_NAME__ Component Inventory
+#
+# Central registry of all UI components. Each entry tracks implementation
+# status, ownership, framework details, and design system alignment.
+#
+# Status values: proposed | in-progress | alpha | beta | stable | deprecated
+# Framework: __FRAMEWORK__
+
+components:
+  - name: Button
+    status: stable
+    owner: design-systems-team
+    description: >
+      Primary action trigger supporting multiple visual variants, sizes,
+      and loading states. The most-used interactive primitive in the system.
+    framework:
+      name: __FRAMEWORK__
+      package: "@__PROJECT_NAME__/button"
+      import_path: "@__PROJECT_NAME__/button"
+      version: "1.2.0"
+    design_system:
+      catalog_ref: "Button"
+      token_dependencies: [color-action-primary, color-action-secondary, space-sm, space-md, radius-md]
+      figma_link: ""
+    props:
+      - name: variant
+        type: "string"
+        values: [primary, secondary, ghost, danger]
+        default: primary
+      - name: size
+        type: "string"
+        values: [sm, md, lg]
+        default: md
+      - name: disabled
+        type: "boolean"
+        default: false
+      - name: loading
+        type: "boolean"
+        default: false
+    last_audit: "2025-01-15"
+    notes: "Fully stable, used across all product surfaces"
+
+  - name: Input
+    status: stable
+    owner: design-systems-team
+    description: >
+      Text input field with label, helper text, error state, and
+      optional prefix/suffix slots for icons or units.
+    framework:
+      name: __FRAMEWORK__
+      package: "@__PROJECT_NAME__/input"
+      import_path: "@__PROJECT_NAME__/input"
+      version: "1.1.0"
+    design_system:
+      catalog_ref: "Input"
+      token_dependencies: [color-border-default, color-border-error, color-text-primary, space-sm, space-md]
+      figma_link: ""
+    props:
+      - name: type
+        type: "string"
+        values: [text, password, email, search, number]
+        default: text
+      - name: size
+        type: "string"
+        values: [sm, md, lg]
+        default: md
+      - name: error
+        type: "boolean"
+        default: false
+      - name: disabled
+        type: "boolean"
+        default: false
+    last_audit: "2025-01-15"
+    notes: "Stable — form integration patterns documented separately"
+
+  - name: DataTable
+    status: beta
+    owner: platform-team
+    description: >
+      Sortable, filterable data table with pagination, row selection,
+      and expandable row details. Handles large datasets with virtualization.
+    framework:
+      name: __FRAMEWORK__
+      package: "@__PROJECT_NAME__/data-table"
+      import_path: "@__PROJECT_NAME__/data-table"
+      version: "0.9.0"
+    design_system:
+      catalog_ref: "DataTable"
+      token_dependencies: [color-border-subtle, color-surface-secondary, space-xs, space-sm, space-md]
+      figma_link: ""
+    props:
+      - name: columns
+        type: "array"
+        description: "Column definitions with header, accessor, and sort config"
+      - name: data
+        type: "array"
+        description: "Row data matching column accessors"
+      - name: selectable
+        type: "boolean"
+        default: false
+      - name: paginated
+        type: "boolean"
+        default: true
+    last_audit: ""
+    notes: "Beta — virtualization performance under review for 10k+ rows"
+
+  - name: Toast
+    status: in-progress
+    owner: design-systems-team
+    description: >
+      Non-blocking notification that appears at the edge of the viewport.
+      Auto-dismisses after a configurable duration. Supports action buttons.
+    framework:
+      name: __FRAMEWORK__
+      package: "@__PROJECT_NAME__/toast"
+      import_path: "@__PROJECT_NAME__/toast"
+      version: "0.3.0"
+    design_system:
+      catalog_ref: "Toast"
+      token_dependencies: [color-success, color-warning, color-error, color-info, shadow-lg]
+      figma_link: ""
+    props:
+      - name: variant
+        type: "string"
+        values: [success, warning, error, info]
+        default: info
+      - name: duration
+        type: "number"
+        default: 5000
+      - name: dismissible
+        type: "boolean"
+        default: true
+    last_audit: ""
+    notes: "Implementation in progress — animation and stacking behavior under design review"

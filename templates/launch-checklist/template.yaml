@@ -1,0 +1,49 @@
+apiVersion: nanohype/v1
+
+name: launch-checklist
+displayName: "Launch Checklist"
+description: >
+  Scaffolds a structured launch package with go/no-go criteria organized
+  by functional area, a stakeholder sign-off matrix, monitoring setup
+  guidance, and rollback plan. Optionally includes an internal and
+  external communications plan. Designed for product and engineering
+  teams coordinating multi-team launches.
+version: "0.1.0"
+license: Apache-2.0
+persona: [product]
+category: product
+tags: [launch, checklist, go-no-go, sign-off, monitoring, rollback, comms]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: LaunchType
+    type: enum
+    placeholder: "__LAUNCH_TYPE__"
+    description: "Launch phase determining the scope of checklist criteria"
+    prompt: "Launch type"
+    default: "ga"
+    options: [alpha, beta, ga]
+
+  - name: IncludeComms
+    type: bool
+    placeholder: "__INCLUDE_COMMS__"
+    description: "Include a communications plan document"
+    prompt: "Include comms plan?"
+    default: true
+
+conditionals:
+  - path: "launch/comms-plan.md"
+    when: IncludeComms
+
+composition:
+  pairsWith: [prd-template, campaign-brief, release-checklist, runbook]
+  nestsInside: [monorepo]

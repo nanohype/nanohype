@@ -1,0 +1,49 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-runbook
+displayName: "Runbook Brief"
+description: >
+  Scaffolds an agent brief for producing an operational runbook.
+  The rendered brief instructs an agent to analyze a service's
+  architecture, document dependencies and failure modes, create
+  step-by-step operational procedures, define escalation paths,
+  and produce a runbook suitable for on-call engineers.
+version: "0.1.0"
+license: Apache-2.0
+persona: [operations]
+category: operations
+tags: [brief, runbook, operations, incident, on-call]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Project or team that owns this service"
+    prompt: "Project name"
+    required: true
+
+  - name: ServiceName
+    type: string
+    placeholder: "__SERVICE_NAME__"
+    description: "Name of the service this runbook covers"
+    prompt: "Service name"
+    required: true
+
+  - name: InfraProvider
+    type: string
+    placeholder: "__INFRA_PROVIDER__"
+    description: "Primary infrastructure provider (aws, gcp, azure, fly, vercel)"
+    prompt: "Infrastructure provider"
+    default: "aws"
+
+  - name: IncidentSeverityLevels
+    type: string
+    placeholder: "__INCIDENT_SEVERITY_LEVELS__"
+    description: "Comma-separated severity levels used by the organization"
+    prompt: "Incident severity levels"
+    default: "P1,P2,P3,P4"
+
+composition:
+  pairsWith: [runbook, monitoring-stack]
+  nestsInside: [monorepo]

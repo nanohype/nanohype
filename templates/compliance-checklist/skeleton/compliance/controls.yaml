@@ -1,0 +1,173 @@
+# __PROJECT_NAME__ — Control Inventory
+# Framework: __FRAMEWORK__
+
+framework: __FRAMEWORK__
+last_reviewed: "YYYY-MM-DD"
+next_review: "YYYY-MM-DD"
+owner: "Compliance Lead"
+
+control_categories:
+  - name: "Access Control"
+    id: "AC"
+    controls:
+      - id: "AC-001"
+        name: "User Authentication"
+        description: "All users must authenticate with unique credentials before accessing systems"
+        framework_reference: "CC6.1"
+        implementation_status: implemented
+        owner: "Identity Team"
+        evidence_type: "configuration"
+        evidence_location: "Auth service configuration and SSO provider settings"
+        test_procedure: "Verify SSO enforcement, review authentication logs for anomalies"
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "SSO enforced for all production systems"
+
+      - id: "AC-002"
+        name: "Multi-Factor Authentication"
+        description: "MFA required for all production system access and admin operations"
+        framework_reference: "CC6.1"
+        implementation_status: implemented
+        owner: "Identity Team"
+        evidence_type: "configuration"
+        evidence_location: "SSO provider MFA policy configuration"
+        test_procedure: "Attempt login without MFA; verify rejection. Review MFA enrollment reports."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: null
+
+      - id: "AC-003"
+        name: "Role-Based Access Control"
+        description: "Access to systems and data is granted based on role with least-privilege principle"
+        framework_reference: "CC6.3"
+        implementation_status: implemented
+        owner: "Identity Team"
+        evidence_type: "configuration"
+        evidence_location: "IAM policies, role definitions, access review records"
+        test_procedure: "Review role assignments quarterly. Verify no excessive permissions."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "Quarterly access reviews scheduled"
+
+      - id: "AC-004"
+        name: "Access Provisioning and Deprovisioning"
+        description: "Access granted within 24h of approved request; revoked within 24h of role change or departure"
+        framework_reference: "CC6.2"
+        implementation_status: partial
+        owner: "IT Operations"
+        evidence_type: "process"
+        evidence_location: "Ticketing system access requests, HR offboarding checklist"
+        test_procedure: "Sample 10 recent onboard/offboard events. Verify timing compliance."
+        last_tested: "YYYY-MM-DD"
+        test_result: partial_pass
+        notes: "Deprovisioning automated for SSO; manual steps remain for some legacy systems"
+
+  - name: "Data Protection"
+    id: "DP"
+    controls:
+      - id: "DP-001"
+        name: "Encryption at Rest"
+        description: "All sensitive data encrypted at rest using AES-256 or equivalent"
+        framework_reference: "CC6.7"
+        implementation_status: implemented
+        owner: "Platform Team"
+        evidence_type: "configuration"
+        evidence_location: "Database encryption settings, disk encryption configuration"
+        test_procedure: "Verify encryption enabled on all data stores. Check key rotation schedule."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "Encryption keys rotated annually"
+
+      - id: "DP-002"
+        name: "Encryption in Transit"
+        description: "All network communication encrypted via TLS 1.2+"
+        framework_reference: "CC6.7"
+        implementation_status: implemented
+        owner: "Platform Team"
+        evidence_type: "configuration"
+        evidence_location: "Load balancer TLS configuration, certificate management"
+        test_procedure: "SSL scan all public endpoints. Verify internal service mesh TLS."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: null
+
+      - id: "DP-003"
+        name: "Data Backup and Recovery"
+        description: "Automated daily backups with tested recovery procedures"
+        framework_reference: "A1.2"
+        implementation_status: implemented
+        owner: "Platform Team"
+        evidence_type: "process"
+        evidence_location: "Backup logs, recovery test records"
+        test_procedure: "Verify backup completion logs. Perform recovery test quarterly."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "Recovery time objective: 4 hours. Recovery point objective: 24 hours."
+
+  - name: "Monitoring and Logging"
+    id: "ML"
+    controls:
+      - id: "ML-001"
+        name: "Audit Logging"
+        description: "All security-relevant events logged with timestamp, actor, action, and resource"
+        framework_reference: "CC7.2"
+        implementation_status: implemented
+        owner: "Platform Team"
+        evidence_type: "configuration"
+        evidence_location: "Logging infrastructure configuration, sample audit logs"
+        test_procedure: "Verify audit events captured for auth, access changes, data exports. Check log retention."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "Logs retained for 1 year in immutable storage"
+
+      - id: "ML-002"
+        name: "Security Monitoring and Alerting"
+        description: "Automated monitoring for security anomalies with alerting"
+        framework_reference: "CC7.3"
+        implementation_status: implemented
+        owner: "Security Team"
+        evidence_type: "configuration"
+        evidence_location: "SIEM rules, alert configurations, response procedures"
+        test_procedure: "Review alert triggers from past quarter. Verify alert routing and response."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: null
+
+  - name: "Change Management"
+    id: "CM"
+    controls:
+      - id: "CM-001"
+        name: "Change Authorization"
+        description: "All production changes require peer review and approval before deployment"
+        framework_reference: "CC8.1"
+        implementation_status: implemented
+        owner: "Engineering"
+        evidence_type: "process"
+        evidence_location: "Git history showing PR reviews, deployment pipeline configurations"
+        test_procedure: "Sample 20 recent production deploys. Verify each had approved PR."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: "Branch protection enforces review requirement"
+
+      - id: "CM-002"
+        name: "Change Testing"
+        description: "Changes tested in non-production environment before production deployment"
+        framework_reference: "CC8.1"
+        implementation_status: implemented
+        owner: "Engineering"
+        evidence_type: "process"
+        evidence_location: "CI/CD pipeline logs, staging deployment records"
+        test_procedure: "Verify CI pipeline includes test stage. Sample deploys for staging sign-off."
+        last_tested: "YYYY-MM-DD"
+        test_result: pass
+        notes: null
+
+summary:
+  total_controls: 12
+  implemented: 11
+  partial: 1
+  not_implemented: 0
+  pass: 11
+  partial_pass: 1
+  fail: 0
+  not_tested: 0

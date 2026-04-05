@@ -18,25 +18,48 @@ Key rules:
 
 ## Template categories
 
-Templates fall into four categories:
+Templates are classified by `category` (catalog grouping) and `persona` (who they serve). The `kind` field distinguishes execution mode: `template` (default) scaffolds files directly, `brief` produces agent instruction documents.
 
-- **AI Systems** — agentic-loop, rag-pipeline, mcp-server-ts, mcp-server-python, eval-harness, prompt-library, a2a-agent, guardrails, multimodal-pipeline, fine-tune-pipeline, data-pipeline, agent-orchestrator, ci-eval
-- **Applications** — go-cli, ts-service, go-service, next-app, chrome-ext, vscode-ext, slack-bot, discord-bot, electron-app, api-gateway, worker-service
-- **Infrastructure** — infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo, monitoring-stack, infra-druid, infra-cloudflare
-- **Composable Modules** — module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications, module-llm-gateway, module-vector-store, module-semantic-cache, module-llm-observability, module-billing, module-feature-flags, module-llm-providers, module-project-mgmt, module-knowledge-base, module-search, module-analytics, module-media
+### Engineering (persona: engineering)
+
+- **AI Systems** (`ai-systems`) — agentic-loop, rag-pipeline, mcp-server-ts, mcp-server-python, eval-harness, prompt-library, a2a-agent, guardrails, multimodal-pipeline, fine-tune-pipeline, data-pipeline, agent-orchestrator, ci-eval
+- **Applications** (`applications`) — go-cli, ts-service, go-service, next-app, chrome-ext, vscode-ext, slack-bot, discord-bot, electron-app, api-gateway, worker-service
+- **Infrastructure** (`infrastructure`) — infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo, monitoring-stack, infra-druid, infra-cloudflare
+- **Composable Modules** (`composable-modules`) — module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications, module-llm-gateway, module-vector-store, module-semantic-cache, module-llm-observability, module-billing, module-feature-flags, module-llm-providers, module-project-mgmt, module-knowledge-base, module-search, module-analytics, module-media
 
 Module templates (`module-*`) are designed to be layered into other projects, not used standalone.
+
+### Non-engineering personas
+
+- **Design** (`design`) — design-system, component-inventory, brand-guidelines, design-tokens
+- **QA** (`qa`) — test-plan, acceptance-criteria, test-automation (also engineering), release-checklist
+- **Product** (`product`) — prd-template, research-framework, launch-checklist, okr-framework
+- **Marketing** (`marketing`) — campaign-brief, content-calendar
+- **Sales** (`sales`) — proposal-template, battle-cards
+- **Operations** (`operations`) — runbook, compliance-checklist, incident-postmortem, change-management
+- **Customer Success** (`customer-success`) — onboarding-playbook, qbr-template
+
+### Agent briefs (kind: brief)
+
+Brief templates scaffold structured agent instruction documents instead of static files. One per non-engineering persona: brief-design-review, brief-test-strategy, brief-prd, brief-campaign-plan, brief-proposal, brief-runbook, brief-onboarding-playbook.
 
 ## Working with templates
 
 ### Creating a new template
 
 1. Create `templates/<name>/` with `template.yaml`, `skeleton/`, and `README.md`
-2. Follow field order: apiVersion, name, displayName, description, version, license, tags, variables, conditionals, hooks, composition, prerequisites
+2. Follow field order: apiVersion, kind, name, displayName, description, version, license, persona, category, tags, variables, conditionals, hooks, composition, prerequisites
 3. Use `license: Apache-2.0` for all templates (patent grant protects clients)
 4. Hook naming: always use `install-dependencies` as the hook name
 5. All templates should include `nestsInside: [monorepo]` in composition (exception: the monorepo template itself uses `nestsInside: []`)
 6. README sections in order: "What you get", "Variables", "Project layout", "Pairs with", "Nests inside"
+
+### Choosing persona, category, and kind
+
+- Set `persona` to an array of who the template serves (e.g., `[engineering]`, `[qa, engineering]`). Open vocabulary — no schema constraint.
+- Set `category` to the catalog grouping. Use existing values when possible: `ai-systems`, `applications`, `infrastructure`, `composable-modules`, `design`, `qa`, `product`, `marketing`, `sales`, `operations`, `customer-success`.
+- Set `kind: brief` only for agent instruction templates. Default (`template`) is for everything that scaffolds files — including non-code documents like design specs or test plans.
+- Brief template skeletons should contain at least 500 words of rendered content, structured as: Context, Brief, Output Specification, Quality Criteria.
 
 ### Provider registry pattern
 
@@ -52,8 +75,9 @@ Variables for provider selection use `type: string` (not `enum`) so new provider
 ### Validating
 
 ```sh
-./scripts/validate.sh templates/<name>    # full validation
+./scripts/validate.sh templates/<name>    # full validation, single template
 npm run validate:schema                    # JSON Schema only, all templates
+npm run validate:catalog                   # full catalog validation + summary
 ```
 
 ### Skeleton code quality

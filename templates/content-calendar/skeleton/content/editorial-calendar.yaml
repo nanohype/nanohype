@@ -1,0 +1,125 @@
+# __PROJECT_NAME__ — Editorial Calendar
+# Cadence: __CADENCE__
+
+cadence: __CADENCE__
+timezone: "America/New_York"
+
+slots:
+  - id: "content-001"
+    title: "Introduction to [Topic]"
+    pillar: "thought-leadership"
+    format: blog_post
+    author: "Author Name"
+    status: planned
+    publish_date: "YYYY-MM-DD"
+    channels:
+      - name: blog
+        url: null
+      - name: linkedin
+        post_date: "YYYY-MM-DD"
+      - name: newsletter
+        send_date: "YYYY-MM-DD"
+    brief: >
+      Introduce the core problem space and establish credibility.
+      Target audience is operations managers evaluating tools.
+    keywords: ["primary keyword", "secondary keyword"]
+    cta: "Sign up for early access"
+    assets_needed:
+      - type: "hero image"
+        status: not_started
+      - type: "social graphic"
+        status: not_started
+
+  - id: "content-002"
+    title: "How [Persona] Solves [Problem] Today"
+    pillar: "customer-stories"
+    format: case_study
+    author: "Author Name"
+    status: planned
+    publish_date: "YYYY-MM-DD"
+    channels:
+      - name: blog
+        url: null
+      - name: email
+        send_date: "YYYY-MM-DD"
+    brief: >
+      Showcase a real workflow transformation. Focus on before/after
+      metrics and the human story behind the numbers.
+    keywords: ["case study keyword", "outcome keyword"]
+    cta: "See all customer stories"
+    assets_needed:
+      - type: "customer quote graphic"
+        status: not_started
+
+  - id: "content-003"
+    title: "Technical Deep-Dive: [Feature]"
+    pillar: "product-education"
+    format: technical_article
+    author: "Author Name"
+    status: idea
+    publish_date: "YYYY-MM-DD"
+    channels:
+      - name: blog
+        url: null
+      - name: dev_community
+        post_date: "YYYY-MM-DD"
+    brief: >
+      Explain the technical approach behind a key feature.
+      Target audience is engineering leaders evaluating architecture.
+    keywords: ["technical keyword", "architecture keyword"]
+    cta: "Read the documentation"
+    assets_needed:
+      - type: "architecture diagram"
+        status: not_started
+
+  - id: "content-004"
+    title: "Industry Trends: [Theme]"
+    pillar: "thought-leadership"
+    format: blog_post
+    author: "Author Name"
+    status: idea
+    publish_date: "YYYY-MM-DD"
+    channels:
+      - name: blog
+        url: null
+      - name: linkedin
+        post_date: "YYYY-MM-DD"
+    brief: >
+      Analyze a trend in the industry and connect it to the
+      problem space. Position the team as informed, opinionated observers.
+    keywords: ["trend keyword", "industry keyword"]
+    cta: "Subscribe for weekly insights"
+    assets_needed:
+      - type: "data visualization"
+        status: not_started
+
+statuses:
+  - name: idea
+    description: "Concept captured, not yet approved"
+  - name: planned
+    description: "Approved and scheduled, brief written"
+  - name: in_progress
+    description: "Draft being written"
+  - name: in_review
+    description: "Draft complete, under editorial review"
+  - name: approved
+    description: "Final draft approved, ready for publishing"
+  - name: published
+    description: "Live on target channel(s)"
+
+formats:
+  - name: blog_post
+    target_length: "800-1200 words"
+    review_cycle: "2 business days"
+  - name: case_study
+    target_length: "600-1000 words"
+    review_cycle: "3 business days (includes customer approval)"
+  - name: technical_article
+    target_length: "1500-2500 words"
+    review_cycle: "3 business days (includes technical review)"
+  - name: social_post
+    target_length: "50-280 characters"
+    review_cycle: "1 business day"
+  - name: newsletter
+    target_length: "300-500 words"
+    review_cycle: "1 business day"

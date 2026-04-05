@@ -1,0 +1,134 @@
+# __CAMPAIGN_NAME__ — Campaign Timeline
+# Project: __PROJECT_NAME__
+# Channel: __CHANNEL__
+
+campaign_duration:
+  start: "YYYY-MM-DD"
+  end: "YYYY-MM-DD"
+  total_weeks: 6
+
+phases:
+  - name: "Pre-Launch"
+    start: "YYYY-MM-DD"
+    end: "YYYY-MM-DD"
+    duration: "2 weeks"
+    objective: "Prepare all assets, set up tracking, warm up audiences"
+    deliverables:
+      - name: "Campaign brief finalized"
+        owner: "Marketing Lead"
+        due: "YYYY-MM-DD"
+        status: in_progress
+      - name: "Landing page live"
+        owner: "Design"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Email sequences built"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Ad creatives approved"
+        owner: "Design"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "UTM tracking configured"
+        owner: "Marketing Ops"
+        due: "YYYY-MM-DD"
+        status: not_started
+    milestones:
+      - name: "Creative review gate"
+        date: "YYYY-MM-DD"
+        criteria: "All assets reviewed and approved by stakeholders"
+
+  - name: "Launch"
+    start: "YYYY-MM-DD"
+    end: "YYYY-MM-DD"
+    duration: "1 week"
+    objective: "Execute launch sequence across all channels simultaneously"
+    deliverables:
+      - name: "Launch email sent"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Paid campaigns activated"
+        owner: "Demand Gen"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Blog post published"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Social posts scheduled"
+        owner: "Social"
+        due: "YYYY-MM-DD"
+        status: not_started
+    milestones:
+      - name: "Launch day"
+        date: "YYYY-MM-DD"
+        criteria: "All channels active and tracking confirmed"
+
+  - name: "Sustain"
+    start: "YYYY-MM-DD"
+    end: "YYYY-MM-DD"
+    duration: "3 weeks"
+    objective: "Nurture leads, optimize spend, publish supporting content"
+    deliverables:
+      - name: "Drip sequence emails sent"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Mid-campaign performance review"
+        owner: "Marketing Lead"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Ad creative refresh"
+        owner: "Design"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Technical deep-dive post"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+    milestones:
+      - name: "Mid-campaign review"
+        date: "YYYY-MM-DD"
+        criteria: "Performance data reviewed, budget reallocation decisions made"
+
+  - name: "Close and Report"
+    start: "YYYY-MM-DD"
+    end: "YYYY-MM-DD"
+    duration: "1 week"
+    objective: "Final push, collect results, document learnings"
+    deliverables:
+      - name: "Case study email sent"
+        owner: "Content"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Campaign wrap report"
+        owner: "Marketing Lead"
+        due: "YYYY-MM-DD"
+        status: not_started
+      - name: "Lead handoff to sales"
+        owner: "Marketing Ops"
+        due: "YYYY-MM-DD"
+        status: not_started
+    milestones:
+      - name: "Campaign close"
+        date: "YYYY-MM-DD"
+        criteria: "All channels paused, final metrics captured"
+      - name: "Retrospective"
+        date: "YYYY-MM-DD"
+        criteria: "Lessons learned documented and shared with team"
+
+review_cadence:
+  frequency: weekly
+  day: "Monday"
+  attendees:
+    - "Marketing Lead"
+    - "Demand Gen"
+    - "Content"
+    - "Design"
+  agenda:
+    - "Channel performance vs. KPIs"
+    - "Budget pacing"
+    - "Asset status updates"
+    - "Blockers and decisions needed"

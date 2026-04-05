@@ -1,0 +1,166 @@
+# __PROJECT_NAME__ — Risk Assessment
+# Review cadence: __REVIEW_CADENCE__
+
+assessment_date: "YYYY-MM-DD"
+assessor: "Customer Success Manager"
+account: "Account Name"
+overall_risk_level: low
+
+risk_matrix:
+  likelihood_scale:
+    1: "Unlikely — Less than 10% chance in next review period"
+    2: "Possible — 10-30% chance"
+    3: "Likely — 30-60% chance"
+    4: "Very likely — Greater than 60% chance"
+  impact_scale:
+    1: "Minimal — No revenue impact, minor inconvenience"
+    2: "Moderate — Potential downgrade or reduced engagement"
+    3: "Significant — Likely churn or major contract reduction"
+    4: "Critical — Immediate churn risk or executive escalation"
+  risk_score: "likelihood * impact (max 16)"
+  thresholds:
+    low: [1, 4]
+    medium: [5, 8]
+    high: [9, 12]
+    critical: [13, 16]
+
+risks:
+  - id: "RISK-001"
+    category: adoption
+    title: "Low seat utilization"
+    description: >
+      Only 45% of licensed seats have logged in within the past 30 days.
+      If utilization does not improve, the customer may downgrade at renewal.
+    likelihood: 3
+    impact: 2
+    risk_score: 6
+    risk_level: medium
+    early_warning_signals:
+      - "Login frequency declining month-over-month"
+      - "Champion hasn't mentioned new user onboarding"
+      - "Training session attendance was below 50%"
+    mitigation:
+      strategy: "Drive seat activation through targeted enablement"
+      actions:
+        - description: "Schedule additional training session for underactive teams"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: planned
+        - description: "Share department-specific use case guides"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: planned
+        - description: "Set up weekly usage email to managers"
+          owner: "Product"
+          due_date: "YYYY-MM-DD"
+          status: not_started
+    review_date: "YYYY-MM-DD"
+
+  - id: "RISK-002"
+    category: relationship
+    title: "Champion departure risk"
+    description: >
+      The primary champion has mentioned exploring new opportunities.
+      Losing the champion without a replacement would significantly
+      reduce our internal advocacy.
+    likelihood: 2
+    impact: 3
+    risk_score: 6
+    risk_level: medium
+    early_warning_signals:
+      - "Champion mentioned career changes in conversation"
+      - "LinkedIn profile updated recently"
+      - "Reduced engagement in recent meetings"
+    mitigation:
+      strategy: "Build multi-threaded relationships to reduce single-point-of-failure"
+      actions:
+        - description: "Identify and engage a secondary champion"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: in_progress
+        - description: "Schedule executive-to-executive touchpoint"
+          owner: "CS Manager"
+          due_date: "YYYY-MM-DD"
+          status: planned
+        - description: "Document all institutional knowledge and processes"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: not_started
+    review_date: "YYYY-MM-DD"
+
+  - id: "RISK-003"
+    category: competitive
+    title: "Competitive evaluation at renewal"
+    description: >
+      Customer's procurement team requires competitive evaluation for
+      all contracts above $50K. Renewal is 6 months away.
+    likelihood: 3
+    impact: 3
+    risk_score: 9
+    risk_level: high
+    early_warning_signals:
+      - "Procurement policy shared during last QBR"
+      - "Competitor mentioned in passing by non-champion stakeholder"
+      - "RFP preparation signals from procurement"
+    mitigation:
+      strategy: "Build such strong value evidence that evaluation is a formality"
+      actions:
+        - description: "Compile ROI report with concrete metrics"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: planned
+        - description: "Secure executive sponsor endorsement before RFP"
+          owner: "CS Manager"
+          due_date: "YYYY-MM-DD"
+          status: not_started
+        - description: "Prepare competitive response document"
+          owner: "Sales + CSM"
+          due_date: "YYYY-MM-DD"
+          status: not_started
+        - description: "Offer multi-year pricing incentive"
+          owner: "Account Executive"
+          due_date: "YYYY-MM-DD"
+          status: not_started
+    review_date: "YYYY-MM-DD"
+
+  - id: "RISK-004"
+    category: product
+    title: "Feature gap blocking expansion"
+    description: >
+      Customer has requested a specific integration that is on the
+      roadmap but not yet available. This blocks expansion to their
+      European team.
+    likelihood: 2
+    impact: 2
+    risk_score: 4
+    risk_level: low
+    early_warning_signals:
+      - "Feature request submitted and discussed in QBR"
+      - "European team evaluation paused pending integration"
+    mitigation:
+      strategy: "Provide timeline transparency and interim workaround"
+      actions:
+        - description: "Share product roadmap timeline for the integration"
+          owner: "CSM"
+          due_date: "YYYY-MM-DD"
+          status: completed
+        - description: "Offer API-based workaround documentation"
+          owner: "Support"
+          due_date: "YYYY-MM-DD"
+          status: in_progress
+        - description: "Include customer in beta program when feature ships"
+          owner: "Product"
+          due_date: "YYYY-MM-DD"
+          status: planned
+    review_date: "YYYY-MM-DD"
+
+summary:
+  total_risks: 4
+  by_level:
+    critical: 0
+    high: 1
+    medium: 2
+    low: 1
+  top_priority_risk: "RISK-003"
+  overall_trajectory: "stable"
+  next_assessment_date: "YYYY-MM-DD"

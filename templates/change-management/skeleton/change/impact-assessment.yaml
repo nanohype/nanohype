@@ -1,0 +1,147 @@
+# __PROJECT_NAME__ — Change Impact Assessment
+# Change ID: CHG-XXXX
+# Change type: __CHANGE_TYPE__
+
+change_reference:
+  id: "CHG-XXXX"
+  type: __CHANGE_TYPE__
+  target_date: "YYYY-MM-DD"
+  request_document: "change/request-template.md"
+
+affected_systems:
+  - name: __PROJECT_NAME__
+    type: primary  # primary | dependent | infrastructure
+    relationship: "Target of the change"
+    current_state: "Running on current version/configuration"
+    expected_state: "Running on new version/configuration"
+    impact_level: high  # none | low | medium | high | critical
+    downtime_required: false
+    downtime_estimate: null
+    data_impact: none  # none | read-only | migration | transformation | loss-risk
+    testing_status: pending  # pending | passed | failed | not-applicable
+
+  - name: "API Gateway"
+    type: infrastructure
+    relationship: "Routes traffic to __PROJECT_NAME__"
+    current_state: "Routing to current instances"
+    expected_state: "No configuration change required"
+    impact_level: low
+    downtime_required: false
+    downtime_estimate: null
+    data_impact: none
+    testing_status: not-applicable
+
+  - name: "Dependent Service A"
+    type: dependent
+    relationship: "Consumes __PROJECT_NAME__ API for data retrieval"
+    current_state: "Active consumer with retry logic"
+    expected_state: "May experience transient errors during implementation window"
+    impact_level: medium
+    downtime_required: false
+    downtime_estimate: null
+    data_impact: none
+    testing_status: pending
+
+  - name: "Monitoring System"
+    type: infrastructure
+    relationship: "Observes __PROJECT_NAME__ health and performance"
+    current_state: "Active monitoring with standard alert thresholds"
+    expected_state: "Alert suppression during maintenance window; resume after"
+    impact_level: low
+    downtime_required: false
+    downtime_estimate: null
+    data_impact: none
+    testing_status: not-applicable
+
+dependencies:
+  - name: "Database cluster"
+    type: infrastructure
+    direction: downstream  # upstream | downstream
+    protocol: "TCP/5432"
+    failure_mode: "Connection interruption during primary failover (< 30 seconds)"
+    mitigation: "Application connection pool configured with retry; brief write unavailability expected"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    notification_required: true
+    notification_sent: false
+
+  - name: "Cache layer"
+    type: infrastructure
+    direction: downstream
+    protocol: "TCP/6379"
+    failure_mode: "No direct impact — cache operates independently of this change"
+    mitigation: "None required"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    notification_required: false
+    notification_sent: false
+
+  - name: "Message queue"
+    type: infrastructure
+    direction: downstream
+    protocol: "HTTPS"
+    failure_mode: "Messages may queue during brief application restart"
+    mitigation: "Consumer will process backlog on restart; dead-letter queue catches failures"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    notification_required: true
+    notification_sent: false
+
+risk_scoring:
+  methodology: "Risk = Likelihood x Impact (1-5 scale each)"
+  overall_risk: medium  # low | medium | high | critical
+
+  factors:
+    - factor: "Technical complexity"
+      score: 3
+      max: 5
+      rationale: "Standard procedure but involves stateful infrastructure (database)"
+
+    - factor: "Blast radius"
+      score: 3
+      max: 5
+      rationale: "Tier-1 service with downstream consumers; brief impact expected"
+
+    - factor: "Reversibility"
+      score: 2
+      max: 5
+      rationale: "Rollback procedure established and tested; 30-minute recovery time"
+
+    - factor: "Data integrity risk"
+      score: 1
+      max: 5
+      rationale: "No data format changes; backup taken before start"
+
+    - factor: "Time pressure"
+      score: 2
+      max: 5
+      rationale: "Maintenance window is adequate; no hard deadline driving rushed execution"
+
+  composite_score: 11
+  composite_max: 25
+  risk_thresholds:
+    low: "5-10"
+    medium: "11-15"
+    high: "16-20"
+    critical: "21-25"
+
+user_impact:
+  affected_user_count: "Estimated number of users affected during implementation window"
+  user_visible_symptoms:
+    - "Brief inability to save or submit data (< 30 seconds during failover)"
+    - "Possible slow page loads for 2-3 minutes after failover"
+  user_communication_required: false
+  user_communication_plan: "Not required — impact duration below communication threshold (< 5 minutes)"
+
+rollback_assessment:
+  rollback_feasible: true
+  rollback_time_estimate: "30 minutes"
+  rollback_procedure: "change/rollback-plan.md"
+  rollback_triggers:
+    - "Error rate exceeds 2x baseline for > 5 minutes post-change"
+    - "Health check failures on > 25% of instances for > 2 minutes"
+    - "Data integrity issue detected"
+    - "Implementation exceeds maintenance window by > 30 minutes"
+  rollback_risks:
+    - "Rollback requires database restore which takes 30 minutes"
+    - "Any data written between change and rollback may need reconciliation"

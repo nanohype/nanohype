@@ -1,0 +1,71 @@
+# __PROJECT_NAME__ — Audit Trail
+# Framework: __FRAMEWORK__
+
+audit_log:
+  - id: "AUDIT-001"
+    date: "YYYY-MM-DD"
+    type: internal_review
+    scope: "Full control inventory"
+    auditor: "Compliance Lead"
+    status: completed
+    findings:
+      - id: "FINDING-001"
+        control_id: "AC-004"
+        severity: medium
+        title: "Legacy system deprovisioning not fully automated"
+        description: >
+          Access deprovisioning for legacy systems requires manual steps
+          that are not covered by the automated SSO offboarding process.
+          Three legacy systems still require manual access revocation.
+        evidence: "Sampled 10 offboarding events; 2 showed delayed legacy system deprovisioning"
+        remediation_id: "REM-001"
+        status: open
+    summary:
+      controls_reviewed: 12
+      controls_passed: 11
+      findings_raised: 1
+      critical_findings: 0
+
+  - id: "AUDIT-002"
+    date: "YYYY-MM-DD"
+    type: external_audit
+    scope: "SOC 2 Type II — Trust Services Criteria"
+    auditor: "External Audit Firm"
+    status: planned
+    findings: []
+    summary:
+      controls_reviewed: null
+      controls_passed: null
+      findings_raised: null
+      critical_findings: null
+
+assessment_schedule:
+  - type: "Internal review"
+    frequency: quarterly
+    next_due: "YYYY-MM-DD"
+    owner: "Compliance Lead"
+    scope: "All controls"
+
+  - type: "External audit"
+    frequency: annually
+    next_due: "YYYY-MM-DD"
+    owner: "Compliance Lead"
+    scope: "Full SOC 2 Type II"
+
+  - type: "Penetration test"
+    frequency: annually
+    next_due: "YYYY-MM-DD"
+    owner: "Security Team"
+    scope: "External attack surface and critical internal systems"
+
+  - type: "Access review"
+    frequency: quarterly
+    next_due: "YYYY-MM-DD"
+    owner: "Identity Team"
+    scope: "All production system access"
+
+evidence_retention:
+  policy: "Retain all audit evidence for 7 years"
+  storage: "Immutable storage in compliance document repository"
+  access: "Compliance Lead and auditors only"
+  deletion: "Automated after retention period with approval"

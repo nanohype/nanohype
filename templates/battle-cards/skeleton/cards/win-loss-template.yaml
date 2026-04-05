@@ -1,0 +1,119 @@
+# __PROJECT_NAME__ — Win/Loss Analysis Template
+# Competitors tracked: __COMPETITOR_COUNT__
+
+analysis_period: "Q_ YYYY"
+analyst: "Competitive Intelligence Lead"
+
+deals:
+  - id: "deal-001"
+    account: "Example Corp"
+    deal_size: 50000
+    segment: "mid-market"
+    outcome: win
+    competitors_involved: ["Competitor A"]
+    decision_date: "YYYY-MM-DD"
+    sales_cycle_days: 45
+    decision_maker_persona: "VP of Operations"
+    champion_persona: "Operations Manager"
+    evaluation_criteria:
+      - criterion: "Time to value"
+        weight: high
+        our_score: strong
+        competitor_score: weak
+      - criterion: "Feature depth"
+        weight: medium
+        our_score: adequate
+        competitor_score: strong
+      - criterion: "Pricing"
+        weight: high
+        our_score: strong
+        competitor_score: weak
+    win_reasons:
+      - "Faster proof-of-concept — demonstrated value in a 2-week trial"
+      - "Champion was frustrated with competitor's implementation timeline"
+      - "Pricing transparency vs. competitor's custom quote process"
+    loss_risks:
+      - "Almost lost on feature depth — competitor had more advanced reporting"
+    lessons_learned:
+      - "Lead with a time-to-value POC when competing against enterprise incumbents"
+      - "Prepare a feature comparison specifically for the gaps they care about"
+    follow_up_actions:
+      - action: "Add advanced reporting to product roadmap"
+        owner: "Product"
+        status: planned
+
+  - id: "deal-002"
+    account: "Acme Industries"
+    deal_size: 35000
+    segment: "mid-market"
+    outcome: loss
+    competitors_involved: ["Competitor B"]
+    decision_date: "YYYY-MM-DD"
+    sales_cycle_days: 30
+    decision_maker_persona: "Director of Engineering"
+    champion_persona: null
+    evaluation_criteria:
+      - criterion: "User experience"
+        weight: high
+        our_score: adequate
+        competitor_score: strong
+      - criterion: "Onboarding speed"
+        weight: high
+        our_score: adequate
+        competitor_score: strong
+      - criterion: "API capabilities"
+        weight: low
+        our_score: strong
+        competitor_score: weak
+    win_reasons: []
+    loss_reasons:
+      - "No internal champion — decision was made by committee"
+      - "Competitor's design-forward approach resonated with non-technical stakeholders"
+      - "We focused on technical differentiation that didn't matter to the decision maker"
+    lessons_learned:
+      - "Identify and enable a champion early — committee decisions favor incumbents and visual appeal"
+      - "Tailor the demo to the decision-maker's priorities, not just technical strengths"
+    follow_up_actions:
+      - action: "Create persona-specific demo scripts"
+        owner: "Sales Enablement"
+        status: in_progress
+
+summary:
+  total_deals_analyzed: 2
+  wins: 1
+  losses: 1
+  win_rate: 50
+  by_competitor:
+    - name: "Competitor A"
+      wins: 1
+      losses: 0
+      win_rate: 100
+    - name: "Competitor B"
+      wins: 0
+      losses: 1
+      win_rate: 0
+    - name: "Competitor C"
+      wins: 0
+      losses: 0
+      win_rate: null
+
+  top_win_themes:
+    - theme: "Time to value"
+      frequency: 1
+      description: "Fast POC and deployment resonates with frustrated buyers"
+    - theme: "Pricing transparency"
+      frequency: 1
+      description: "Public pricing builds trust in the evaluation process"
+
+  top_loss_themes:
+    - theme: "No champion identified"
+      frequency: 1
+      description: "Committee decisions without an internal advocate favor competitors with stronger brand"
+    - theme: "UX perception"
+      frequency: 1
+      description: "Non-technical decision makers weight visual polish heavily"
+
+  recommended_actions:
+    - "Invest in champion enablement playbook for sales team"
+    - "Create persona-specific demo flows for non-technical stakeholders"
+    - "Develop competitive POC framework to accelerate proof-of-value"

@@ -1,0 +1,49 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-design-review
+displayName: "Design Review Brief"
+description: >
+  Scaffolds an agent brief for conducting a comprehensive design review.
+  The rendered brief instructs an agent to audit visual consistency, design
+  token coverage, accessibility compliance, and component-level coherence
+  against a design system. Produces a structured findings report with
+  prioritized recommendations.
+version: "0.1.0"
+license: Apache-2.0
+persona: [design]
+category: design
+tags: [brief, design-review, accessibility, design-system, audit]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Name of the project under review"
+    prompt: "Project name"
+    required: true
+
+  - name: DesignSystemUrl
+    type: string
+    placeholder: "__DESIGN_SYSTEM_URL__"
+    description: "URL to the design system documentation or Figma library"
+    prompt: "Design system URL"
+    default: ""
+
+  - name: TargetPlatform
+    type: string
+    placeholder: "__TARGET_PLATFORM__"
+    description: "Primary platform being reviewed (web, ios, android, cross-platform)"
+    prompt: "Target platform"
+    default: "web"
+
+  - name: AuditScope
+    type: string
+    placeholder: "__AUDIT_SCOPE__"
+    description: "Scope of the review (full, component-only, page-level, token-audit)"
+    prompt: "Audit scope"
+    default: "full"
+
+composition:
+  pairsWith: [design-system, design-tokens, component-inventory]
+  nestsInside: [monorepo]

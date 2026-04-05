@@ -1,0 +1,49 @@
+apiVersion: nanohype/v1
+
+name: release-checklist
+displayName: "Release Checklist"
+description: >
+  Scaffolds a structured release checklist covering pre-release validation,
+  deployment verification, rollback criteria, and a sign-off matrix.
+  Produces actionable Markdown checklists and a YAML sign-off matrix
+  with role-based approval tracking. Designed to standardize the release
+  process across teams and ensure consistent quality gates.
+version: "0.1.0"
+license: Apache-2.0
+persona: [qa]
+category: qa
+tags: [testing, qa, release, checklist, deployment]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in document titles and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: ReleaseType
+    type: enum
+    placeholder: "__RELEASE_TYPE__"
+    description: "Semantic version release type"
+    prompt: "Release type"
+    default: "minor"
+    options: ["major", "minor", "patch"]
+
+  - name: IncludeRollback
+    type: bool
+    placeholder: "__INCLUDE_ROLLBACK__"
+    description: "Include a rollback plan document"
+    prompt: "Include rollback plan?"
+    default: true
+
+conditionals:
+  - path: "release/rollback-plan.md"
+    when: IncludeRollback
+
+composition:
+  pairsWith: [test-plan, monitoring-stack]
+  nestsInside: [monorepo]

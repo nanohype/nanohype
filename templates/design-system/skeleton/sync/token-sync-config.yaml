@@ -1,0 +1,62 @@
+# Token Sync Configuration
+#
+# Automates the export of design tokens from __DESIGN_TOOLKIT__ into
+# code-consumable formats. Run this sync after updating tokens in the
+# design tool to keep code and design in lockstep.
+
+sync:
+  source:
+    toolkit: __DESIGN_TOOLKIT__
+    project: __PROJECT_NAME__
+    description: "Source of truth for design token values"
+
+  output:
+    formats:
+      - type: css-variables
+        path: "dist/tokens.css"
+        description: "CSS custom properties for web consumption"
+        options:
+          prefix: __PROJECT_NAME__
+          selector: ":root"
+
+      - type: json
+        path: "dist/tokens.json"
+        description: "Raw JSON for tooling and build pipelines"
+        options:
+          flat: false
+
+      - type: scss-variables
+        path: "dist/tokens.scss"
+        description: "SCSS variables for projects using Sass"
+        options:
+          prefix: __PROJECT_NAME__
+
+  mappings:
+    colors:
+      source_collection: "Colors"
+      token_prefix: "color"
+      include_modes: true
+      description: "Maps color styles to semantic color tokens"
+
+    typography:
+      source_collection: "Typography"
+      token_prefix: "font"
+      include_modes: false
+      description: "Maps text styles to typography tokens"
+
+    spacing:
+      source_collection: "Spacing"
+      token_prefix: "space"
+      include_modes: false
+      description: "Maps spacing values to spacing scale tokens"
+
+    elevation:
+      source_collection: "Elevation"
+      token_prefix: "shadow"
+      include_modes: true
+      description: "Maps shadow styles to elevation tokens"
+
+  schedule:
+    auto_sync: false
+    description: "Set to true to enable webhook-triggered sync on design changes"
+    webhook_url: ""

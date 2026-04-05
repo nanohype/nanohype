@@ -1,0 +1,48 @@
+apiVersion: nanohype/v1
+
+name: acceptance-criteria
+displayName: "Acceptance Criteria"
+description: >
+  Scaffolds an acceptance criteria framework using Given/When/Then BDD
+  structure. Includes a reusable template for writing criteria, example
+  Gherkin feature files, and an optional definition of done checklist.
+  Provides a consistent format for capturing expected behavior across
+  features and user stories.
+version: "0.1.0"
+license: Apache-2.0
+persona: [qa]
+category: qa
+tags: [testing, qa, bdd, gherkin, acceptance-criteria]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in document titles and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Format
+    type: string
+    placeholder: "__FORMAT__"
+    description: "Criteria format style (e.g., gherkin, tabular, narrative)"
+    prompt: "Criteria format"
+    default: "gherkin"
+
+  - name: IncludeDoD
+    type: bool
+    placeholder: "__INCLUDE_DOD__"
+    description: "Include a definition of done checklist document"
+    prompt: "Include definition of done?"
+    default: true
+
+conditionals:
+  - path: "criteria/definition-of-done.md"
+    when: IncludeDoD
+
+composition:
+  pairsWith: [test-plan, test-automation, prd-template]
+  nestsInside: [monorepo]

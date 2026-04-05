@@ -1,0 +1,123 @@
+# __PROJECT_NAME__ Component Catalog
+#
+# Each entry defines a component's purpose, anatomy, variants, and current status.
+# Status values: proposed | draft | review | stable | deprecated
+
+components:
+  - name: Button
+    status: stable
+    description: >
+      Primary interactive element for triggering actions. Supports multiple
+      variants for visual hierarchy and size options for different contexts.
+    anatomy:
+      - element: container
+        description: "Outer wrapper with padding, border-radius, and background"
+      - element: label
+        description: "Text content, always centered"
+      - element: icon
+        description: "Optional leading or trailing icon"
+    variants:
+      - name: primary
+        description: "High-emphasis actions — submit, confirm, save"
+      - name: secondary
+        description: "Medium-emphasis actions — cancel, back, alternative paths"
+      - name: ghost
+        description: "Low-emphasis actions — inline links, tertiary options"
+      - name: danger
+        description: "Destructive actions — delete, remove, revoke"
+    sizes: [sm, md, lg]
+    states: [default, hover, active, focus, disabled, loading]
+    accessibility:
+      role: button
+      keyboard: "Enter and Space activate the button"
+      aria: "Use aria-label when the button has no visible text (icon-only)"
+
+  - name: Input
+    status: stable
+    description: >
+      Text input field for collecting user data. Supports labels, helper text,
+      error messages, and optional prefix/suffix elements.
+    anatomy:
+      - element: label
+        description: "Visible label text, always required"
+      - element: field
+        description: "The input element itself"
+      - element: helper-text
+        description: "Optional guidance below the field"
+      - element: error-message
+        description: "Validation error, replaces helper text when active"
+      - element: prefix
+        description: "Optional icon or text before the input value"
+      - element: suffix
+        description: "Optional icon or text after the input value"
+    variants:
+      - name: text
+        description: "Standard single-line text input"
+      - name: password
+        description: "Masked input with optional reveal toggle"
+      - name: search
+        description: "Input with search icon and clear button"
+    sizes: [sm, md, lg]
+    states: [default, hover, focus, filled, error, disabled, readonly]
+    accessibility:
+      role: textbox
+      keyboard: "Tab to focus, standard text editing keys"
+      aria: "Label associated via for/id or aria-labelledby"
+
+  - name: Card
+    status: review
+    description: >
+      Container for grouping related content. Uses elevation and border
+      to create visual separation from the background surface.
+    anatomy:
+      - element: container
+        description: "Outer wrapper with padding, border-radius, and optional shadow"
+      - element: header
+        description: "Optional title and subtitle area"
+      - element: body
+        description: "Main content area"
+      - element: footer
+        description: "Optional action area for buttons or links"
+    variants:
+      - name: elevated
+        description: "Shadow-based separation from the surface"
+      - name: outlined
+        description: "Border-based separation, no shadow"
+      - name: filled
+        description: "Background fill for subtle grouping"
+    sizes: []
+    states: [default, hover, selected]
+    accessibility:
+      role: "article or region depending on context"
+      keyboard: "If interactive, Tab to focus and Enter to activate"
+      aria: "Use aria-label or heading element for card title"
+
+  - name: Modal
+    status: draft
+    description: >
+      Overlay dialog for focused interactions. Traps focus, dims background,
+      and requires explicit dismissal.
+    anatomy:
+      - element: backdrop
+        description: "Semi-transparent overlay behind the dialog"
+      - element: container
+        description: "Dialog surface with padding and border-radius"
+      - element: header
+        description: "Title and optional close button"
+      - element: body
+        description: "Scrollable content area"
+      - element: footer
+        description: "Action buttons, right-aligned"
+    variants:
+      - name: dialog
+        description: "Standard confirmation or information dialog"
+      - name: form
+        description: "Dialog containing a form with submit/cancel"
+      - name: fullscreen
+        description: "Full-viewport overlay for complex flows"
+    sizes: [sm, md, lg]
+    states: [open, closing]
+    accessibility:
+      role: dialog
+      keyboard: "Escape closes, Tab cycles through focusable elements"
+      aria: "aria-modal=true, aria-labelledby pointing to the title"

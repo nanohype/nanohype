@@ -1,0 +1,160 @@
+# __ORG_NAME__ — OKR Template
+# Project: __PROJECT_NAME__
+# Cadence: __CADENCE__
+# Cycle: YYYY-QN (e.g., 2025-Q1)
+
+cycle:
+  name: "YYYY-QN"
+  start_date: "YYYY-MM-DD"
+  end_date: "YYYY-MM-DD"
+  cadence: __CADENCE__
+  status: draft  # draft | active | scoring | complete
+
+company_okrs:
+  - objective:
+      id: "CO-1"
+      statement: "Establish __ORG_NAME__ as the trusted choice for enterprise customers"
+      owner: "CEO"
+      level: company
+      key_results:
+        - id: "CO-1-KR1"
+          statement: "Increase enterprise trial-to-paid conversion from 12% to 20%"
+          baseline: 12
+          target: 20
+          unit: percent
+          data_source: "CRM pipeline report"
+          current_value: null
+          score: null
+          confidence: high  # high | medium | low
+        - id: "CO-1-KR2"
+          statement: "Achieve Net Promoter Score of 50+ among enterprise accounts (current: 35)"
+          baseline: 35
+          target: 50
+          unit: "NPS score"
+          data_source: "Quarterly NPS survey"
+          current_value: null
+          score: null
+          confidence: medium
+        - id: "CO-1-KR3"
+          statement: "Reduce enterprise onboarding time from 14 days to 5 days"
+          baseline: 14
+          target: 5
+          unit: days
+          data_source: "Onboarding analytics"
+          current_value: null
+          score: null
+          confidence: medium
+      initiatives:
+        - name: "Enterprise onboarding redesign"
+          owner: "Product Team"
+          status: planned  # planned | in-progress | complete | blocked
+          linked_kr: ["CO-1-KR3"]
+        - name: "Dedicated success manager program"
+          owner: "Customer Success"
+          status: planned
+          linked_kr: ["CO-1-KR1", "CO-1-KR2"]
+
+  - objective:
+      id: "CO-2"
+      statement: "Build a self-serve analytics capability that eliminates ad-hoc data requests"
+      owner: "VP Product"
+      level: company
+      key_results:
+        - id: "CO-2-KR1"
+          statement: "Reduce ad-hoc data requests from 40/week to fewer than 10/week"
+          baseline: 40
+          target: 10
+          unit: "requests per week"
+          data_source: "Data team ticket queue"
+          current_value: null
+          score: null
+          confidence: medium
+        - id: "CO-2-KR2"
+          statement: "80% of active users create at least one custom report per month"
+          baseline: 15
+          target: 80
+          unit: percent
+          data_source: "Product analytics"
+          current_value: null
+          score: null
+          confidence: low
+
+team_okrs:
+  - objective:
+      id: "TO-1"
+      statement: "Accelerate developer onboarding to reduce time-to-first-deploy"
+      owner: "Engineering Lead"
+      team: "Platform Engineering"
+      level: team
+      parent_objective: "CO-1"
+      key_results:
+        - id: "TO-1-KR1"
+          statement: "Reduce time-to-first-deploy for new engineers from 5 days to 1 day"
+          baseline: 5
+          target: 1
+          unit: days
+          data_source: "Onboarding tracker"
+          current_value: null
+          score: null
+          confidence: medium
+        - id: "TO-1-KR2"
+          statement: "100% of new engineers complete self-serve onboarding without pairing session"
+          baseline: 30
+          target: 100
+          unit: percent
+          data_source: "Onboarding survey"
+          current_value: null
+          score: null
+          confidence: medium
+        - id: "TO-1-KR3"
+          statement: "Developer satisfaction with tooling improves from 3.2 to 4.0 (5-point scale)"
+          baseline: 3.2
+          target: 4.0
+          unit: "satisfaction score"
+          data_source: "Developer experience survey"
+          current_value: null
+          score: null
+          confidence: high
+      initiatives:
+        - name: "One-command dev environment setup"
+          owner: "Platform team"
+          status: planned
+          linked_kr: ["TO-1-KR1", "TO-1-KR2"]
+        - name: "Interactive onboarding guide"
+          owner: "Platform team"
+          status: planned
+          linked_kr: ["TO-1-KR2"]
+
+individual_okrs:
+  - objective:
+      id: "IO-1"
+      statement: "Become the go-to expert on observability practices within the team"
+      owner: "Engineer Name"
+      level: individual
+      parent_objective: "TO-1"
+      key_results:
+        - id: "IO-1-KR1"
+          statement: "Instrument 3 critical services with structured logging and tracing"
+          baseline: 0
+          target: 3
+          unit: services
+          data_source: "Service inventory"
+          current_value: null
+          score: null
+          confidence: high
+        - id: "IO-1-KR2"
+          statement: "Reduce mean-time-to-detect for P1 incidents from 12 minutes to under 5 minutes"
+          baseline: 12
+          target: 5
+          unit: minutes
+          data_source: "Incident metrics"
+          current_value: null
+          score: null
+          confidence: medium
+
+summary:
+  total_company_objectives: 2
+  total_team_objectives: 1
+  total_individual_objectives: 1
+  alignment_coverage: "All team OKRs trace to company objectives"
+  unlinked_objectives: []

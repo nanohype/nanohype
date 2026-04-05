@@ -26,6 +26,7 @@
     "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
     "validate:schema": "ajv validate -s schemas/template.schema.json -d 'templates/*/template.yaml' --spec=draft2020 --strict=false",
     "validate:all": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
+    "validate:catalog": "./scripts/validate-catalog.sh",
     "lint:docs": "markdownlint-cli2 '**/*.md' '!node_modules/**' '!templates/*/skeleton/**'"
   },
   "devDependencies": {

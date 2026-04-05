@@ -1,0 +1,48 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-test-strategy
+displayName: "Test Strategy Brief"
+description: >
+  Scaffolds an agent brief for producing a comprehensive test strategy.
+  The rendered brief instructs an agent to analyze a codebase, identify
+  critical paths, recommend tooling, define coverage targets, and produce
+  a layered test strategy document organized by test type and priority.
+version: "0.1.0"
+license: Apache-2.0
+persona: [qa]
+category: qa
+tags: [brief, testing, strategy, qa, coverage]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Name of the project to define a test strategy for"
+    prompt: "Project name"
+    required: true
+
+  - name: Language
+    type: string
+    placeholder: "__LANGUAGE__"
+    description: "Primary programming language of the codebase"
+    prompt: "Primary language"
+    default: "typescript"
+
+  - name: TestingGoal
+    type: string
+    placeholder: "__TESTING_GOAL__"
+    description: "High-level objective for the test strategy"
+    prompt: "Testing goal"
+    default: "comprehensive coverage"
+
+  - name: CriticalPaths
+    type: string
+    placeholder: "__CRITICAL_PATHS__"
+    description: "Comma-separated list of critical user or system paths to prioritize"
+    prompt: "Critical paths"
+    default: ""
+
+composition:
+  pairsWith: [test-plan, test-automation, eval-harness]
+  nestsInside: [monorepo]

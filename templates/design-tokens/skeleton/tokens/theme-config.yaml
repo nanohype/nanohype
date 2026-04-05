@@ -1,0 +1,90 @@
+# __PROJECT_NAME__ Theme Configuration
+#
+# Controls how tokens are resolved into consumable output. Defines
+# which themes exist, how they override base/semantic tokens, and
+# what output formats are generated.
+
+project: __PROJECT_NAME__
+format: __TOKEN_FORMAT__
+
+themes:
+  - name: light
+    description: "Default light theme — uses semantic tokens as-is"
+    base: "tokens/base.json"
+    semantic: "tokens/semantic.json"
+    overrides: null
+
+  - name: dark
+    description: "Dark theme — overrides semantic color tokens for dark surfaces"
+    base: "tokens/base.json"
+    semantic: "tokens/semantic.json"
+    overrides: "tokens/dark.json"
+
+resolution:
+  strategy: "semantic-first"
+  description: >
+    Components reference semantic tokens only. Semantic tokens resolve
+    to base primitives. Themes override semantic values without changing
+    component code.
+  fallback: "light"
+
+output:
+  formats:
+    - type: css-variables
+      path: "dist/tokens.css"
+      options:
+        prefix: __PROJECT_NAME__
+        selector:
+          light: ":root, [data-theme='light']"
+          dark: "[data-theme='dark']"
+
+    - type: json
+      path: "dist/tokens.json"
+      options:
+        flat: false
+        include_meta: true
+
+    - type: scss-map
+      path: "dist/tokens.scss"
+      options:
+        prefix: __PROJECT_NAME__
+        map_name: "tokens"
+
+    - type: typescript
+      path: "dist/tokens.ts"
+      options:
+        export_type: "const"
+        include_types: true
+
+  media_queries:
+    dark:
+      selector: "@media (prefers-color-scheme: dark)"
+      description: "Apply dark theme automatically when system preference is dark"
+      enabled: true
+
+naming:
+  convention: "kebab-case"
+  separator: "-"
+  prefix: __PROJECT_NAME__
+  examples:
+    - token: "color.text.primary"
+      css: "--__PROJECT_NAME__-color-text-primary"
+      scss: "$__PROJECT_NAME__-color-text-primary"
+      js: "color.text.primary"
+
+validation:
+  rules:
+    - name: "no-hardcoded-values"
+      description: "Semantic tokens must reference base tokens, not raw values"
+      severity: error
+
+    - name: "contrast-ratio"
+      description: "Text/background pairs must meet WCAG AA contrast ratios"
+      severity: warning
+      config:
+        normal_text: 4.5
+        large_text: 3.0
+
+    - name: "unused-tokens"
+      description: "Flag base tokens not referenced by any semantic token"
+      severity: warning

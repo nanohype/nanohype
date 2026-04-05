@@ -1,0 +1,160 @@
+# __PROJECT_NAME__ — Approval Workflow
+# Default change type: __CHANGE_TYPE__
+
+change_types:
+  - type: standard
+    display_name: "Standard Change"
+    description: >
+      Pre-approved, low-risk changes that follow an established procedure.
+      Examples: routine patching, config flag toggles, certificate renewals.
+      Standard changes are pre-authorized and require only notification,
+      not approval.
+    risk_level: low
+    approval_required: false
+    approval_chain: []
+    pre_authorization:
+      conditions:
+        - "Change follows a documented standard operating procedure"
+        - "Change has been executed successfully at least 3 times before"
+        - "Change risk score is 10 or below"
+        - "Change does not require downtime"
+      authorized_by: "Change Advisory Board (quarterly review)"
+      documentation: "Standard change catalog: link-to-catalog"
+    sla:
+      submission_to_implementation: "No waiting period — implement when ready"
+      notification_lead_time: "1 hour before implementation"
+    notification:
+      - audience: "Operations team"
+        channel: "#ops Slack channel"
+        timing: "1 hour before implementation"
+      - audience: "Service owner"
+        channel: "Email"
+        timing: "1 hour before implementation"
+
+  - type: normal
+    display_name: "Normal Change"
+    description: >
+      Changes that require review and approval before implementation.
+      Examples: database upgrades, service migrations, infrastructure
+      changes, new integrations. Most changes fall into this category.
+    risk_level: medium
+    approval_required: true
+    approval_chain:
+      - step: 1
+        role: "Technical Reviewer"
+        description: "Validates technical approach, testing plan, and rollback procedure"
+        approver_pool:
+          - "Senior Engineer (same team)"
+          - "Staff Engineer (any team)"
+          - "SRE on rotation"
+        sla: "2 business days"
+        can_delegate: true
+        auto_approve_after: null
+
+      - step: 2
+        role: "Service Owner"
+        description: "Confirms change is appropriate for the service and timing is acceptable"
+        approver_pool:
+          - "Service owner (primary)"
+          - "Service owner (backup)"
+        sla: "2 business days"
+        can_delegate: true
+        auto_approve_after: null
+
+      - step: 3
+        role: "Change Manager"
+        description: "Reviews overall risk, confirms compliance with change policy, schedules implementation window"
+        approver_pool:
+          - "Change manager (primary)"
+          - "Engineering manager (fallback)"
+        sla: "1 business day"
+        can_delegate: false
+        auto_approve_after: null
+    sla:
+      submission_to_approval: "5 business days"
+      approval_to_implementation: "Schedule within next available maintenance window"
+      total_lead_time: "7 business days minimum"
+    notification:
+      - audience: "Operations team"
+        channel: "#ops Slack channel"
+        timing: "24 hours before implementation"
+      - audience: "Affected service owners"
+        channel: "Email + Slack DM"
+        timing: "48 hours before implementation"
+      - audience: "On-call team"
+        channel: "On-call handoff"
+        timing: "1 hour before implementation"
+
+  - type: emergency
+    display_name: "Emergency Change"
+    description: >
+      Changes required to resolve an active incident or mitigate an
+      imminent security threat. Emergency changes bypass the normal
+      approval workflow but require retroactive review within 48 hours.
+    risk_level: varies
+    approval_required: true
+    approval_chain:
+      - step: 1
+        role: "Incident Commander or On-Call Lead"
+        description: "Verbal approval to proceed — documented retroactively"
+        approver_pool:
+          - "Current incident commander"
+          - "On-call lead"
+          - "Engineering manager (if IC unavailable)"
+        sla: "15 minutes"
+        can_delegate: false
+        auto_approve_after: null
+    retroactive_review:
+      required: true
+      deadline: "48 hours after implementation"
+      reviewer: "Change Advisory Board"
+      review_includes:
+        - "Was the emergency classification justified?"
+        - "Was the change technically sound?"
+        - "Were there alternatives that could have used normal process?"
+        - "Should this become a standard change for future occurrences?"
+    sla:
+      submission_to_implementation: "Immediate — implement as soon as approval granted"
+      retroactive_documentation: "Complete change request within 24 hours"
+      retroactive_review: "Complete within 48 hours"
+    notification:
+      - audience: "Engineering manager"
+        channel: "Phone / Slack DM"
+        timing: "Immediately"
+      - audience: "Operations team"
+        channel: "#ops-incidents Slack channel"
+        timing: "Immediately"
+      - audience: "Change Advisory Board"
+        channel: "Email"
+        timing: "Within 24 hours (retroactive)"
+
+escalation:
+  - trigger: "Approval SLA exceeded"
+    action: "Escalate to approver's manager"
+    timeline: "1 business day after SLA expiry"
+
+  - trigger: "Approval rejected"
+    action: "Requestor may revise and resubmit, or escalate to Change Advisory Board"
+    timeline: "Resubmit within 5 business days; escalation within 2 business days"
+
+  - trigger: "Emergency change retroactive review overdue"
+    action: "Escalate to VP Engineering"
+    timeline: "Immediately after 48-hour deadline"
+
+  - trigger: "Disagreement between approvers"
+    action: "Escalate to Change Advisory Board for resolution"
+    timeline: "Within 2 business days"
+
+change_advisory_board:
+  description: "Cross-functional group that governs the change management process"
+  members:
+    - role: "Engineering Manager"
+    - role: "SRE Lead"
+    - role: "Security Lead"
+    - role: "Product representative"
+  meeting_cadence: "Weekly, or ad-hoc for escalations"
+  responsibilities:
+    - "Review and approve high-risk changes"
+    - "Retroactively review emergency changes"
+    - "Maintain the standard change catalog"
+    - "Audit change management process compliance quarterly"

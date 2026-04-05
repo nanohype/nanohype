@@ -1,0 +1,99 @@
+# __PROJECT_NAME__ — Stakeholder Sign-Off Matrix
+# Launch type: __LAUNCH_TYPE__
+
+sign_off_matrix:
+  - role: "Engineering Lead"
+    team: "Engineering"
+    criteria:
+      - "All launch-blocking bugs resolved"
+      - "Load testing completed at 2x expected peak"
+      - "Deployment pipeline tested end-to-end"
+      - "Feature flags configured for gradual rollout"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "Product Manager"
+    team: "Product"
+    criteria:
+      - "PRD accepted and in-scope features complete"
+      - "User acceptance testing completed"
+      - "Success metrics instrumented"
+      - "Help documentation published"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "Design Lead"
+    team: "Design"
+    criteria:
+      - "Final design review completed"
+      - "Accessibility audit passed (WCAG 2.1 AA)"
+      - "Responsive behavior verified"
+      - "All UI states implemented"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "QA Lead"
+    team: "Quality Assurance"
+    criteria:
+      - "Test plan executed — P0 and P1 cases passing"
+      - "Regression suite clean"
+      - "Cross-browser and cross-device testing completed"
+      - "Performance benchmarks met"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "Security Engineer"
+    team: "Security"
+    criteria:
+      - "Security review completed — no open critical findings"
+      - "Auth flows verified"
+      - "Dependency vulnerability scan clean"
+      - "Data handling compliant with privacy requirements"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "Legal Counsel"
+    team: "Legal"
+    criteria:
+      - "Terms of service reviewed"
+      - "Privacy policy reviewed for new data collection"
+      - "Regulatory requirements met"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+  - role: "SRE / Operations Lead"
+    team: "Operations"
+    criteria:
+      - "Monitoring and alerting configured"
+      - "Runbook updated"
+      - "On-call team briefed"
+      - "Rollback procedure tested"
+      - "Capacity validated"
+    approval_status: pending
+    approved_by: null
+    approved_date: null
+    notes: ""
+
+approval_workflow:
+  quorum: "All roles must approve for go decision"
+  exception_process: "Launch owner may grant exceptions with documented mitigation"
+  escalation: "Unresolved disagreements escalate to VP Product and VP Engineering"
+  decision_authority: "Launch owner makes final go/no-go call after sign-offs collected"
+
+approval_statuses:
+  - pending     # Not yet reviewed
+  - approved    # Criteria met, sign-off granted
+  - conditional # Approved with documented exceptions
+  - blocked     # Criteria not met, blocks launch

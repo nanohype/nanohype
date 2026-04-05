@@ -1,0 +1,69 @@
+# __PROJECT_NAME__ Component Status Tracker
+#
+# Tracks the lifecycle of each component through the design system pipeline.
+# Updated as components move between stages, reviewed quarterly.
+
+tracker:
+  last_updated: "2025-01-15"
+  review_cadence: quarterly
+  framework: __FRAMEWORK__
+
+  summary:
+    total: 4
+    proposed: 0
+    in_progress: 1
+    alpha: 0
+    beta: 1
+    stable: 2
+    deprecated: 0
+
+  lifecycle_stages:
+    - stage: proposed
+      description: "Identified need, no design or implementation work started"
+      exit_criteria:
+        - "Use case documented with at least two product references"
+        - "Design system team has acknowledged the proposal"
+
+    - stage: in_progress
+      description: "Active design and/or implementation underway"
+      exit_criteria:
+        - "Design spec complete and reviewed"
+        - "Implementation matches spec for all variants and states"
+
+    - stage: alpha
+      description: "Initial implementation available, API may change"
+      exit_criteria:
+        - "Used in at least one product surface"
+        - "Basic unit tests passing"
+
+    - stage: beta
+      description: "API stabilizing, broader adoption encouraged"
+      exit_criteria:
+        - "Used in at least three product surfaces"
+        - "Accessibility audit complete"
+        - "Performance benchmarks within thresholds"
+
+    - stage: stable
+      description: "Production-ready, API frozen for the major version"
+      exit_criteria:
+        - "Full test coverage including visual regression"
+        - "Documentation complete with examples"
+        - "Accessibility checklist signed off"
+
+    - stage: deprecated
+      description: "Scheduled for removal, replacement identified"
+      exit_criteria:
+        - "Replacement component at stable status"
+        - "Migration guide published"
+        - "All consumers notified with timeline"
+
+  reviews:
+    - date: "2025-01-15"
+      reviewer: "design-systems-team"
+      components_reviewed: [Button, Input]
+      outcome: "Both confirmed stable, no changes needed"
+
+    - date: "2024-10-15"
+      reviewer: "platform-team"
+      components_reviewed: [DataTable]
+      outcome: "Moved from alpha to beta, virtualization still pending"

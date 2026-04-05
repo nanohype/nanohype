@@ -1,0 +1,168 @@
+# Test Matrix: __PROJECT_NAME__
+# Test Type: __TEST_TYPE__
+#
+# Each suite groups related test cases. Cases reference environments,
+# priority levels, and current status to support execution tracking.
+
+suites:
+  - name: authentication
+    description: "User authentication and session management"
+    cases:
+      - id: AUTH-001
+        title: "Successful login with valid credentials"
+        priority: critical
+        environments: [staging, pre-production]
+        preconditions:
+          - "Test user account exists with known credentials"
+          - "Authentication service is accessible"
+        steps:
+          - "Navigate to login page"
+          - "Enter valid email and password"
+          - "Submit login form"
+        expected: "User is authenticated and redirected to dashboard"
+        status: not-started
+
+      - id: AUTH-002
+        title: "Login rejected with invalid password"
+        priority: high
+        environments: [staging, pre-production]
+        preconditions:
+          - "Test user account exists"
+        steps:
+          - "Navigate to login page"
+          - "Enter valid email with incorrect password"
+          - "Submit login form"
+        expected: "Error message displayed, account not locked on first attempt"
+        status: not-started
+
+      - id: AUTH-003
+        title: "Account lockout after repeated failed attempts"
+        priority: high
+        environments: [staging]
+        preconditions:
+          - "Test user account exists"
+          - "Lockout threshold configured to 5 attempts"
+        steps:
+          - "Attempt login with incorrect password 5 times"
+          - "Attempt login with correct password"
+        expected: "Account locked, correct password rejected, lockout notification sent"
+        status: not-started
+
+      - id: AUTH-004
+        title: "Session expires after inactivity timeout"
+        priority: medium
+        environments: [staging]
+        preconditions:
+          - "User is authenticated"
+          - "Session timeout configured to 30 minutes"
+        steps:
+          - "Authenticate successfully"
+          - "Wait for session timeout duration"
+          - "Attempt to access protected resource"
+        expected: "User redirected to login page with session expired message"
+        status: not-started
+
+  - name: data-integrity
+    description: "Data creation, modification, and persistence"
+    cases:
+      - id: DATA-001
+        title: "Create record with all required fields"
+        priority: critical
+        environments: [staging, pre-production]
+        preconditions:
+          - "User is authenticated with create permissions"
+        steps:
+          - "Navigate to create form"
+          - "Fill all required fields with valid data"
+          - "Submit form"
+          - "Verify record appears in list view"
+        expected: "Record persisted, visible in list, all fields match input"
+        status: not-started
+
+      - id: DATA-002
+        title: "Reject record creation with missing required fields"
+        priority: high
+        environments: [staging]
+        preconditions:
+          - "User is authenticated with create permissions"
+        steps:
+          - "Navigate to create form"
+          - "Leave required fields empty"
+          - "Attempt to submit form"
+        expected: "Validation errors displayed for each missing field, no record created"
+        status: not-started
+
+      - id: DATA-003
+        title: "Concurrent edit conflict resolution"
+        priority: medium
+        environments: [staging]
+        preconditions:
+          - "Record exists"
+          - "Two authenticated sessions for different users"
+        steps:
+          - "User A opens record for editing"
+          - "User B opens same record for editing"
+          - "User A saves changes"
+          - "User B attempts to save changes"
+        expected: "User B receives conflict notification with option to merge or overwrite"
+        status: not-started
+
+  - name: api-contract
+    description: "API endpoint behavior and response format validation"
+    cases:
+      - id: API-001
+        title: "GET endpoint returns correct schema"
+        priority: critical
+        environments: [staging, pre-production]
+        preconditions:
+          - "API server is running"
+          - "Test data seeded"
+        steps:
+          - "Send GET request to resource endpoint"
+          - "Validate response status code"
+          - "Validate response body against JSON schema"
+        expected: "200 status, response matches documented schema"
+        status: not-started
+
+      - id: API-002
+        title: "POST endpoint validates request body"
+        priority: high
+        environments: [staging]
+        preconditions:
+          - "API server is running"
+          - "Valid authentication token"
+        steps:
+          - "Send POST request with invalid body"
+          - "Validate error response format"
+        expected: "400 status, error response includes field-level validation messages"
+        status: not-started
+
+      - id: API-003
+        title: "Unauthenticated request returns 401"
+        priority: critical
+        environments: [staging, pre-production]
+        preconditions:
+          - "API server is running"
+        steps:
+          - "Send request without authorization header"
+        expected: "401 status, no sensitive data in response body"
+        status: not-started
+
+environments:
+  staging:
+    url: "https://staging.__PROJECT_NAME__.example.com"
+    database: "staging-db"
+    notes: "Refreshed nightly from anonymized production snapshot"
+
+  pre-production:
+    url: "https://preprod.__PROJECT_NAME__.example.com"
+    database: "preprod-db"
+    notes: "Production-scale infrastructure, synthetic data"
+
+status-legend:
+  not-started: "Test case not yet executed"
+  in-progress: "Currently being executed"
+  passed: "Executed successfully, expected result observed"
+  failed: "Executed, result did not match expected"
+  blocked: "Cannot execute due to dependency or environment issue"
+  skipped: "Intentionally not executed this cycle"

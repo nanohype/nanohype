@@ -1,0 +1,47 @@
+apiVersion: nanohype/v1
+
+name: brand-guidelines
+displayName: "Brand Guidelines"
+description: >
+  Scaffolds brand guideline documentation covering color palette definitions,
+  typography scale, logo usage rules, and optional voice and tone guidelines.
+  Provides a structured reference for maintaining brand consistency across
+  all touchpoints and teams.
+version: "0.1.0"
+license: Apache-2.0
+persona: [design]
+category: design
+tags: [brand, guidelines, typography, color, voice-tone]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as directory and reference identifier"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: BrandName
+    type: string
+    placeholder: "__BRAND_NAME__"
+    description: "Display name of the brand, used in guidelines and documentation"
+    prompt: "Brand name"
+    required: true
+
+  - name: IncludeVoiceTone
+    type: bool
+    placeholder: "__INCLUDE_VOICE_TONE__"
+    description: "Include voice and tone guidelines for written content"
+    prompt: "Include voice and tone guidelines?"
+    default: true
+
+conditionals:
+  - path: "brand/voice-tone.md"
+    when: IncludeVoiceTone
+
+composition:
+  pairsWith: [design-system, design-tokens]
+  nestsInside: [monorepo]

@@ -1,0 +1,94 @@
+# __SERVICE_NAME__ — Dependency Map
+# Project: __PROJECT_NAME__
+
+upstream:
+  - name: "API Gateway"
+    type: infrastructure
+    protocol: "HTTPS"
+    endpoint: "https://gateway.example.com"
+    health_check: "GET /health"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    failure_mode: "Service becomes unreachable from external clients"
+    fallback: "None — this is the entry point for all traffic"
+    sla: "99.99%"
+
+  - name: "Auth Service"
+    type: internal_service
+    protocol: "gRPC"
+    endpoint: "auth-service.internal:443"
+    health_check: "gRPC health check"
+    owner: "Identity Team"
+    contact: "#identity-team (Slack)"
+    failure_mode: "Unauthenticated requests rejected; authenticated sessions continue with cached tokens"
+    fallback: "Cache valid tokens locally with 5-minute TTL"
+    sla: "99.95%"
+
+downstream:
+  - name: "PostgreSQL"
+    type: datastore
+    protocol: "TCP/5432"
+    endpoint: "db.__PROJECT_NAME__.internal:5432"
+    health_check: "SELECT 1"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    failure_mode: "All write operations fail; reads may succeed from replica"
+    fallback: "Read replica for read operations; queue writes for retry"
+    connection_pool:
+      min: 5
+      max: 25
+      timeout_ms: 5000
+    sla: "99.95%"
+
+  - name: "Redis"
+    type: cache
+    protocol: "TCP/6379"
+    endpoint: "redis.__PROJECT_NAME__.internal:6379"
+    health_check: "PING"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    failure_mode: "Cache misses increase; all requests hit database directly"
+    fallback: "Bypass cache, serve from database (degraded performance)"
+    connection_pool:
+      min: 2
+      max: 10
+      timeout_ms: 1000
+    sla: "99.9%"
+
+  - name: "SQS Queue"
+    type: queue
+    protocol: "HTTPS (AWS SDK)"
+    endpoint: "https://sqs.us-east-1.amazonaws.com/ACCOUNT/__PROJECT_NAME__-events"
+    health_check: "GetQueueAttributes"
+    owner: "Platform Team"
+    contact: "#platform-eng (Slack)"
+    failure_mode: "Async events not processed; backpressure builds"
+    fallback: "Dead-letter queue captures failed messages; manual replay available"
+    sla: "99.99%"
+
+  - name: "Email Service (third-party)"
+    type: external_api
+    protocol: "HTTPS"
+    endpoint: "https://api.emailprovider.com/v1"
+    health_check: "GET /status"
+    owner: "Third-party"
+    contact: "support@emailprovider.com"
+    failure_mode: "Transactional emails delayed or not sent"
+    fallback: "Queue email requests; retry with exponential backoff"
+    rate_limit: "100 requests/second"
+    sla: "99.9% (vendor SLA)"
+
+dependency_graph:
+  critical_path:
+    - "API Gateway → __SERVICE_NAME__ → PostgreSQL"
+    description: "Any failure on this path causes full service unavailability"
+  degraded_paths:
+    - path: "Redis unavailable"
+      impact: "Increased latency, higher database load"
+      duration_tolerance: "30 minutes before database saturation risk"
+    - path: "SQS unavailable"
+      impact: "Async processing halted, events accumulate"
+      duration_tolerance: "4 hours before backlog becomes operationally significant"
+    - path: "Email Service unavailable"
+      impact: "Notifications delayed"
+      duration_tolerance: "24 hours"

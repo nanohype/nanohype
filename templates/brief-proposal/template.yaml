@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-proposal
+displayName: "Proposal Brief"
+description: >
+  Scaffolds an agent brief for drafting a client-facing proposal.
+  The rendered brief instructs an agent to analyze client needs,
+  define a solution approach, structure pricing and timeline,
+  articulate differentiators, and produce a polished proposal
+  document ready for client delivery.
+version: "0.1.0"
+license: Apache-2.0
+persona: [sales]
+category: sales
+tags: [brief, proposal, sales, client, engagement]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Internal project name for this engagement"
+    prompt: "Project name"
+    required: true
+
+  - name: CompanyName
+    type: string
+    placeholder: "__COMPANY_NAME__"
+    description: "Your company name as it should appear in the proposal"
+    prompt: "Company name"
+    required: true
+
+  - name: ClientName
+    type: string
+    placeholder: "__CLIENT_NAME__"
+    description: "Client organization name"
+    prompt: "Client name"
+    required: true
+
+  - name: EngagementType
+    type: string
+    placeholder: "__ENGAGEMENT_TYPE__"
+    description: "Type of engagement (services, product, advisory, hybrid)"
+    prompt: "Engagement type"
+    default: "services"
+
+  - name: ClientContext
+    type: string
+    placeholder: "__CLIENT_CONTEXT__"
+    description: "Background on the client's situation, goals, or pain points"
+    prompt: "Client context"
+    default: ""
+
+composition:
+  pairsWith: [proposal-template, battle-cards]
+  nestsInside: [monorepo]

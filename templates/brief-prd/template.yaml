@@ -1,0 +1,55 @@
+apiVersion: nanohype/v1
+kind: brief
+
+name: brief-prd
+displayName: "Product Requirements Document Brief"
+description: >
+  Scaffolds an agent brief for drafting a product requirements document.
+  The rendered brief instructs an agent to analyze a problem space, define
+  functional and non-functional requirements, write user stories, establish
+  success metrics, and produce a complete PRD ready for engineering handoff.
+version: "0.1.0"
+license: Apache-2.0
+persona: [product]
+category: product
+tags: [brief, prd, product, requirements, user-stories]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Internal project codename or identifier"
+    prompt: "Project name"
+    required: true
+
+  - name: ProductName
+    type: string
+    placeholder: "__PRODUCT_NAME__"
+    description: "Customer-facing product or feature name"
+    prompt: "Product name"
+    required: true
+
+  - name: ProblemStatement
+    type: string
+    placeholder: "__PROBLEM_STATEMENT__"
+    description: "Core problem this product addresses"
+    prompt: "Problem statement"
+    required: true
+
+  - name: TargetAudience
+    type: string
+    placeholder: "__TARGET_AUDIENCE__"
+    description: "Primary user segments or personas"
+    prompt: "Target audience"
+    default: ""
+
+  - name: ExistingResearch
+    type: string
+    placeholder: "__EXISTING_RESEARCH__"
+    description: "Links or references to existing research, interviews, or data"
+    prompt: "Existing research"
+    default: ""
+
+composition:
+  pairsWith: [prd-template, research-framework]
+  nestsInside: [monorepo]

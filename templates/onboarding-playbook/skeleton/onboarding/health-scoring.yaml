@@ -1,0 +1,212 @@
+# __PRODUCT_NAME__ — Health Scoring Model
+# Project: __PROJECT_NAME__
+# Onboarding type: __ONBOARDING_TYPE__
+
+model_version: "1.0"
+last_updated: "YYYY-MM-DD"
+scoring_scale:
+  min: 0
+  max: 100
+  thresholds:
+    healthy: 80
+    at_risk: 50
+    critical: 0
+
+categories:
+  - name: "Product Adoption"
+    weight: 0.35
+    signals:
+      - name: "Weekly Active Users"
+        description: "Percentage of licensed seats active in the past 7 days"
+        source: "product_analytics"
+        measurement: "active_users / licensed_seats * 100"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "Healthy"
+          - range: [50, 79]
+            score: 70
+            label: "Moderate"
+          - range: [20, 49]
+            score: 40
+            label: "At risk"
+          - range: [0, 19]
+            score: 10
+            label: "Critical"
+
+      - name: "Core Feature Usage"
+        description: "Number of core workflow completions per user per week"
+        source: "product_analytics"
+        measurement: "core_workflow_completions / active_users"
+        scoring:
+          - range: [5, null]
+            score: 100
+            label: "Power users"
+          - range: [2, 4]
+            score: 70
+            label: "Regular usage"
+          - range: [1, 1]
+            score: 40
+            label: "Light usage"
+          - range: [0, 0]
+            score: 0
+            label: "No usage"
+
+      - name: "Feature Breadth"
+        description: "Number of distinct features used in the past 30 days"
+        source: "product_analytics"
+        measurement: "distinct_features_used"
+        scoring:
+          - range: [5, null]
+            score: 100
+            label: "Broad adoption"
+          - range: [3, 4]
+            score: 70
+            label: "Moderate adoption"
+          - range: [1, 2]
+            score: 30
+            label: "Narrow adoption"
+
+  - name: "Engagement"
+    weight: 0.25
+    signals:
+      - name: "CSM Meeting Attendance"
+        description: "Percentage of scheduled check-ins attended in the past 90 days"
+        source: "crm"
+        measurement: "attended_meetings / scheduled_meetings * 100"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "Highly engaged"
+          - range: [50, 79]
+            score: 60
+            label: "Moderately engaged"
+          - range: [0, 49]
+            score: 20
+            label: "Disengaged"
+
+      - name: "Executive Sponsor Contact"
+        description: "Days since last meaningful interaction with executive sponsor"
+        source: "crm"
+        measurement: "days_since_last_executive_contact"
+        scoring:
+          - range: [0, 30]
+            score: 100
+            label: "Recent"
+          - range: [31, 60]
+            score: 60
+            label: "Aging"
+          - range: [61, 90]
+            score: 30
+            label: "Stale"
+          - range: [91, null]
+            score: 0
+            label: "Lost contact"
+
+      - name: "Support Ticket Sentiment"
+        description: "Trend in support ticket volume and resolution satisfaction"
+        source: "support_platform"
+        measurement: "composite of volume trend and CSAT"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "Positive"
+          - range: [50, 79]
+            score: 60
+            label: "Neutral"
+          - range: [0, 49]
+            score: 20
+            label: "Negative"
+
+  - name: "Outcome Achievement"
+    weight: 0.25
+    signals:
+      - name: "Stated Goals Progress"
+        description: "Percentage of onboarding goals the customer reports achieving"
+        source: "csm_assessment"
+        measurement: "goals_achieved / total_goals * 100"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "On track"
+          - range: [50, 79]
+            score: 60
+            label: "Partially achieved"
+          - range: [0, 49]
+            score: 20
+            label: "Behind"
+
+      - name: "ROI Realized"
+        description: "Whether the customer can articulate concrete ROI"
+        source: "csm_assessment"
+        measurement: "qualitative assessment (0-100)"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "Clear ROI articulated"
+          - range: [40, 79]
+            score: 50
+            label: "Some value recognized"
+          - range: [0, 39]
+            score: 10
+            label: "No ROI recognized"
+
+  - name: "Relationship"
+    weight: 0.15
+    signals:
+      - name: "Champion Strength"
+        description: "How actively the champion advocates internally"
+        source: "csm_assessment"
+        measurement: "qualitative assessment (0-100)"
+        scoring:
+          - range: [80, 100]
+            score: 100
+            label: "Strong advocate"
+          - range: [40, 79]
+            score: 50
+            label: "Passive supporter"
+          - range: [0, 39]
+            score: 10
+            label: "Disengaged or departed"
+
+      - name: "NPS / CSAT Score"
+        description: "Most recent satisfaction score from the customer"
+        source: "survey"
+        measurement: "nps_score or csat_score"
+        scoring:
+          - range: [9, 10]
+            score: 100
+            label: "Promoter"
+          - range: [7, 8]
+            score: 60
+            label: "Passive"
+          - range: [0, 6]
+            score: 10
+            label: "Detractor"
+
+actions:
+  healthy:
+    description: "Account is in good standing — maintain relationship and look for expansion"
+    actions:
+      - "Continue regular check-in cadence"
+      - "Identify expansion opportunities"
+      - "Request referral or case study participation"
+      - "Share advanced feature tips and best practices"
+
+  at_risk:
+    description: "Account showing warning signs — increase engagement proactively"
+    actions:
+      - "Increase check-in frequency to weekly"
+      - "Schedule call with champion to understand concerns"
+      - "Review product usage for drop-off points"
+      - "Create a recovery plan with specific actions and timeline"
+      - "Alert CS Manager"
+
+  critical:
+    description: "Account at high churn risk — immediate intervention required"
+    actions:
+      - "Escalate to CS Manager and VP CS"
+      - "Schedule executive-to-executive call"
+      - "Prepare save plan with specific value reinforcement"
+      - "Review contract terms and renewal timeline"
+      - "Consider offering concessions or additional services"

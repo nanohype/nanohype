@@ -1,0 +1,131 @@
+# __PROJECT_NAME__ — Delivery Timeline
+# Client: __COMPANY_NAME__
+# Proposal type: __PROPOSAL_TYPE__
+
+total_duration: "12 weeks"
+start_date: "YYYY-MM-DD"
+end_date: "YYYY-MM-DD"
+
+phases:
+  - name: "Discovery"
+    start_week: 1
+    end_week: 2
+    objective: "Deep understanding of current state and requirements"
+    milestones:
+      - name: "Kickoff meeting"
+        week: 1
+        day: "Monday"
+        attendees: ["Engagement Lead", "Technical Lead", "Client stakeholders"]
+        deliverable: null
+      - name: "Discovery report delivered"
+        week: 2
+        day: "Friday"
+        attendees: null
+        deliverable: "Discovery report with findings and recommendations"
+    dependencies: ["Contract signed", "System access provided"]
+    client_commitments:
+      - "Provide access to all relevant systems by Day 1"
+      - "Make 4-6 stakeholders available for 60-minute interviews"
+      - "Share existing documentation and process artifacts"
+
+  - name: "Design"
+    start_week: 3
+    end_week: 4
+    objective: "Solution architecture aligned with client constraints"
+    milestones:
+      - name: "Architecture review"
+        week: 3
+        day: "Thursday"
+        attendees: ["Technical Lead", "Client engineering lead"]
+        deliverable: "Draft architecture document"
+      - name: "Design sign-off"
+        week: 4
+        day: "Friday"
+        attendees: ["Engagement Lead", "Client stakeholder"]
+        deliverable: "Approved solution design document"
+    dependencies: ["Discovery report approved"]
+    client_commitments:
+      - "Engineering lead available for architecture review"
+      - "Design sign-off within 2 business days of presentation"
+
+  - name: "Build"
+    start_week: 5
+    end_week: 10
+    objective: "Working system in staging environment"
+    milestones:
+      - name: "Sprint 1 demo"
+        week: 6
+        day: "Friday"
+        attendees: ["Full team", "Client stakeholders"]
+        deliverable: "Core data model and pipeline working in staging"
+      - name: "Sprint 2 demo"
+        week: 8
+        day: "Friday"
+        attendees: ["Full team", "Client stakeholders"]
+        deliverable: "Integrations connected, dashboard functional"
+      - name: "Sprint 3 demo"
+        week: 10
+        day: "Friday"
+        attendees: ["Full team", "Client stakeholders"]
+        deliverable: "Complete system in staging, test results shared"
+    dependencies: ["Design sign-off"]
+    client_commitments:
+      - "Stakeholder available for biweekly demos (30 minutes)"
+      - "Staging environment access and test data provided"
+      - "Timely feedback on demo builds (within 2 business days)"
+
+  - name: "Launch"
+    start_week: 11
+    end_week: 12
+    objective: "Production deployment and knowledge transfer"
+    milestones:
+      - name: "Production deployment"
+        week: 11
+        day: "Wednesday"
+        attendees: ["Technical Lead", "Client engineering"]
+        deliverable: "System live in production"
+      - name: "Training session 1"
+        week: 11
+        day: "Thursday"
+        attendees: ["Full team", "Client end-users"]
+        deliverable: "Recorded training session"
+      - name: "Training session 2"
+        week: 12
+        day: "Tuesday"
+        attendees: ["Full team", "Client end-users"]
+        deliverable: "Recorded training session"
+      - name: "Project close"
+        week: 12
+        day: "Friday"
+        attendees: ["Engagement Lead", "Client stakeholder"]
+        deliverable: "Final documentation package and handoff"
+    dependencies: ["Staging sign-off from client"]
+    client_commitments:
+      - "Production environment ready with credentials"
+      - "End-users available for training sessions"
+      - "Final acceptance within 5 business days of launch"
+
+communication:
+  cadence:
+    - type: "Status update"
+      frequency: "Weekly"
+      format: "Written summary (email)"
+      owner: "Engagement Lead"
+    - type: "Sprint demo"
+      frequency: "Biweekly"
+      format: "Video call with screen share"
+      owner: "Technical Lead"
+    - type: "Steering committee"
+      frequency: "Monthly"
+      format: "Video call"
+      owner: "Engagement Lead"
+  escalation:
+    - level: "Day-to-day issues"
+      contact: "Technical Lead"
+      response_time: "Same business day"
+    - level: "Scope or timeline concerns"
+      contact: "Engagement Lead"
+      response_time: "Within 4 business hours"
+    - level: "Contract or commercial issues"
+      contact: "Account Manager"
+      response_time: "Within 1 business day"

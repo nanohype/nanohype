@@ -1,0 +1,134 @@
+# __BRAND_NAME__ Typography Scale
+#
+# Type system for the __PROJECT_NAME__ brand. Defines font families,
+# weights, the modular scale, and line height guidelines. Use these
+# values via design tokens — never hard-code font sizes or families.
+
+brand: __BRAND_NAME__
+
+families:
+  - name: heading
+    family: "Inter"
+    fallback: "system-ui, -apple-system, sans-serif"
+    usage: "Headings, display text, and prominent UI labels"
+    weights:
+      - name: bold
+        value: 700
+      - name: semibold
+        value: 600
+      - name: medium
+        value: 500
+
+  - name: body
+    family: "Inter"
+    fallback: "system-ui, -apple-system, sans-serif"
+    usage: "Body text, form labels, descriptions, and general content"
+    weights:
+      - name: regular
+        value: 400
+      - name: medium
+        value: 500
+
+  - name: mono
+    family: "JetBrains Mono"
+    fallback: "ui-monospace, Menlo, Consolas, monospace"
+    usage: "Code snippets, technical identifiers, tabular data"
+    weights:
+      - name: regular
+        value: 400
+
+scale:
+  base_size: "16px"
+  ratio: 1.25
+  description: "Major third scale — each step is 1.25x the previous"
+
+  steps:
+    - name: display-lg
+      size: "3.052rem"
+      line_height: 1.1
+      letter_spacing: "-0.02em"
+      family: heading
+      weight: bold
+      usage: "Hero headings, marketing pages"
+
+    - name: display-sm
+      size: "2.441rem"
+      line_height: 1.15
+      letter_spacing: "-0.015em"
+      family: heading
+      weight: bold
+      usage: "Page titles, section heroes"
+
+    - name: heading-lg
+      size: "1.953rem"
+      line_height: 1.2
+      letter_spacing: "-0.01em"
+      family: heading
+      weight: semibold
+      usage: "Primary section headings"
+
+    - name: heading-md
+      size: "1.563rem"
+      line_height: 1.25
+      letter_spacing: "0"
+      family: heading
+      weight: semibold
+      usage: "Subsection headings"
+
+    - name: heading-sm
+      size: "1.25rem"
+      line_height: 1.3
+      letter_spacing: "0"
+      family: heading
+      weight: medium
+      usage: "Card titles, dialog headings"
+
+    - name: body-lg
+      size: "1.125rem"
+      line_height: 1.6
+      letter_spacing: "0"
+      family: body
+      weight: regular
+      usage: "Lead paragraphs, emphasized body text"
+
+    - name: body-md
+      size: "1rem"
+      line_height: 1.5
+      letter_spacing: "0"
+      family: body
+      weight: regular
+      usage: "Default body text"
+
+    - name: body-sm
+      size: "0.875rem"
+      line_height: 1.5
+      letter_spacing: "0.005em"
+      family: body
+      weight: regular
+      usage: "Secondary text, helper text, captions"
+
+    - name: caption
+      size: "0.75rem"
+      line_height: 1.4
+      letter_spacing: "0.01em"
+      family: body
+      weight: regular
+      usage: "Timestamps, metadata, fine print"
+
+    - name: code
+      size: "0.875rem"
+      line_height: 1.5
+      letter_spacing: "0"
+      family: mono
+      weight: regular
+      usage: "Inline code, code blocks"
+
+guidelines:
+  max_line_length: "65-80 characters for body text"
+  paragraph_spacing: "Use space-md token between paragraphs"
+  heading_spacing: "space-lg above headings, space-sm below"
+  alignment: "Left-aligned for LTR languages, right-aligned for RTL"
+  responsive:
+    - "Display sizes scale down by one step on viewports under 768px"
+    - "Body sizes remain consistent across breakpoints"
+    - "Line length is controlled by container max-width, not font size"

@@ -1,0 +1,106 @@
+# __PRODUCT_NAME__ — Onboarding Milestones
+# Project: __PROJECT_NAME__
+# Onboarding type: __ONBOARDING_TYPE__
+
+onboarding_type: __ONBOARDING_TYPE__
+
+milestones:
+  - id: "M1"
+    name: "Handoff Complete"
+    phase: handoff
+    day_target: 2
+    owner: "Account Executive"
+    description: "Sales-to-CS handoff completed with all context transferred"
+    completion_criteria:
+      - "Handoff checklist completed"
+      - "CSM has reviewed deal notes and customer goals"
+      - "Introduction email sent to customer"
+    verification_method: "Handoff checklist reviewed and approved by CSM"
+    risk_if_missed: "Delayed onboarding start, customer feels abandoned between sales and CS"
+
+  - id: "M2"
+    name: "Kickoff Complete"
+    phase: kickoff
+    day_target: 5
+    owner: "Customer Success Manager"
+    description: "Kickoff meeting held with goals confirmed and onboarding plan agreed"
+    completion_criteria:
+      - "Kickoff meeting completed"
+      - "Customer goals and success metrics documented"
+      - "Onboarding timeline agreed upon"
+      - "Customer champion identified"
+    verification_method: "Kickoff notes recorded in CRM with customer-confirmed goals"
+    risk_if_missed: "Misaligned expectations, unclear success criteria"
+
+  - id: "M3"
+    name: "Setup Complete"
+    phase: setup
+    day_target: 14
+    owner: "Customer Success Manager"
+    description: "Technical setup finished — account configured, integrations working, data imported"
+    completion_criteria:
+      - "Account fully configured"
+      - "Integrations tested and working"
+      - "Initial data imported and verified"
+      - "Customer can log in and navigate"
+    verification_method: "CSM confirms setup checklist complete; customer acknowledges access"
+    risk_if_missed: "Customer cannot use the product, activation delayed"
+
+  - id: "M4"
+    name: "First Value Moment"
+    phase: activation
+    day_target: 21
+    owner: "Customer Success Manager"
+    description: "Customer completes first end-to-end workflow with real data and sees results"
+    completion_criteria:
+      - "First workflow completed with real data"
+      - "Customer has viewed results/output"
+      - "Customer articulates value received"
+    verification_method: "Product analytics confirm workflow completion; CSM documents customer reaction"
+    risk_if_missed: "Customer does not see ROI, churn risk increases significantly"
+
+  - id: "M5"
+    name: "Activated"
+    phase: activation
+    day_target: 28
+    owner: "Customer Success Manager"
+    description: "Account meets activation criteria — multi-user, recurring usage established"
+    completion_criteria:
+      - "2+ users active in the past 7 days"
+      - "Core workflow completed 3+ times"
+      - "At least one workflow completed independently (without CSM guidance)"
+    verification_method: "Product analytics dashboard shows activation criteria met"
+    risk_if_missed: "Adoption stalls, account at risk of becoming dormant"
+
+  - id: "M6"
+    name: "Team Trained"
+    phase: adoption
+    day_target: 35
+    owner: "Customer Success Manager"
+    description: "Broader team trained and using the product for their specific workflows"
+    completion_criteria:
+      - "Training session completed with 80%+ of intended users"
+      - "Training materials shared and accessible"
+      - "Each attendee has completed at least one workflow post-training"
+    verification_method: "Training attendance log; product analytics show new user activity"
+    risk_if_missed: "Usage concentrated in champion, vulnerable to champion departure"
+
+  - id: "M7"
+    name: "Onboarding Graduated"
+    phase: graduation
+    day_target: 45
+    owner: "Customer Success Manager"
+    description: "Customer formally transitioned from onboarding to ongoing success management"
+    completion_criteria:
+      - "Customer confirms initial goals are being achieved"
+      - "Ongoing communication cadence agreed"
+      - "First QBR scheduled"
+      - "Onboarding feedback captured"
+    verification_method: "Graduation meeting completed; CRM updated with ongoing plan"
+    risk_if_missed: "Customer feels unsupported, relationship deteriorates"
+
+tracking:
+  review_frequency: weekly
+  review_owner: "Customer Success Manager"
+  escalation_trigger: "Milestone missed by > 5 business days"
+  reporting: "Weekly onboarding status report to CS Manager"

@@ -1,0 +1,125 @@
+# Sign-Off Matrix: __PROJECT_NAME__
+# Release Type: __RELEASE_TYPE__
+#
+# Tracks role-based approvals required before a release can proceed.
+# Each role has defined responsibilities and approval criteria.
+
+release:
+  project: __PROJECT_NAME__
+  type: __RELEASE_TYPE__
+  version: ""
+  targetDate: ""
+
+roles:
+  - role: engineering-lead
+    name: ""
+    responsibilities:
+      - "Code review completeness"
+      - "Architecture and technical debt assessment"
+      - "CI pipeline health and test coverage"
+      - "Performance benchmark review"
+    approvalCriteria:
+      - "All pull requests reviewed and merged"
+      - "No critical technical debt introduced"
+      - "CI pipelines green on release branch"
+      - "Performance within acceptable thresholds"
+    status: pending
+    approvedAt: null
+    notes: ""
+
+  - role: qa-lead
+    name: ""
+    responsibilities:
+      - "Test execution completeness"
+      - "Defect triage and disposition"
+      - "Regression verification"
+      - "Test environment validation"
+    approvalCriteria:
+      - "All planned test cases executed"
+      - "No open S1 or S2 defects"
+      - "Pass rate meets threshold (>= 95% critical, >= 90% overall)"
+      - "Regression suite passing"
+    status: pending
+    approvedAt: null
+    notes: ""
+
+  - role: product-owner
+    name: ""
+    responsibilities:
+      - "Feature acceptance against requirements"
+      - "User experience review"
+      - "Release scope confirmation"
+      - "Customer communication readiness"
+    approvalCriteria:
+      - "All acceptance criteria met for in-scope features"
+      - "UX reviewed and approved"
+      - "Release notes accurate and complete"
+      - "Customer-facing documentation ready"
+    status: pending
+    approvedAt: null
+    notes: ""
+
+  - role: security-lead
+    name: ""
+    responsibilities:
+      - "Security scan review"
+      - "Dependency vulnerability assessment"
+      - "Access control verification"
+    approvalCriteria:
+      - "No critical or high security findings"
+      - "Dependency vulnerabilities addressed or documented"
+      - "Auth and authz changes reviewed"
+    status: pending
+    approvedAt: null
+    required:
+      major: true
+      minor: true
+      patch: false
+    notes: ""
+
+  - role: release-manager
+    name: ""
+    responsibilities:
+      - "Deployment coordination"
+      - "Rollback readiness verification"
+      - "Stakeholder communication"
+      - "Final go/no-go decision"
+    approvalCriteria:
+      - "All required role approvals obtained"
+      - "Deployment runbook reviewed"
+      - "Rollback procedure tested"
+      - "Communication plan executed"
+    status: pending
+    approvedAt: null
+    notes: ""
+
+gates:
+  - name: code-freeze
+    description: "No feature merges after this point — bug fixes only"
+    requiredBy: [engineering-lead]
+    status: pending
+    completedAt: null
+
+  - name: qa-complete
+    description: "All test cycles executed, defect disposition finalized"
+    requiredBy: [qa-lead]
+    status: pending
+    completedAt: null
+
+  - name: staging-verified
+    description: "Full deployment rehearsal completed in staging"
+    requiredBy: [engineering-lead, qa-lead]
+    status: pending
+    completedAt: null
+
+  - name: go-no-go
+    description: "Final decision to proceed with production deployment"
+    requiredBy: [engineering-lead, qa-lead, product-owner, release-manager]
+    status: pending
+    completedAt: null
+
+statusValues:
+  - pending: "Not yet reviewed"
+  - approved: "Reviewed and approved"
+  - rejected: "Reviewed and rejected — see notes"
+  - deferred: "Review deferred to next cycle — see notes"

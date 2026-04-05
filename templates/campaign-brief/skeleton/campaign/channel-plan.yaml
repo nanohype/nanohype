@@ -1,0 +1,111 @@
+# __CAMPAIGN_NAME__ — Channel Plan
+# Project: __PROJECT_NAME__
+# Primary channel strategy: __CHANNEL__
+
+channels:
+  - name: email
+    type: owned
+    role: "Primary nurture and conversion channel"
+    audience_segments: ["Operations Manager", "VP of Engineering"]
+    tactics:
+      - name: "Launch announcement"
+        format: "Single send"
+        timing: "Day 1"
+        goal: "Awareness and landing page traffic"
+        kpi: "Open rate > 25%, CTR > 4%"
+      - name: "Drip sequence (3 emails)"
+        format: "Automated series"
+        timing: "Days 3, 7, 14"
+        goal: "Education and conversion"
+        kpi: "Sequence completion > 60%, conversion > 8%"
+      - name: "Case study share"
+        format: "Single send"
+        timing: "Day 21"
+        goal: "Social proof and re-engagement"
+        kpi: "CTR > 5%"
+    budget: 500
+    tools: ["Email platform", "UTM builder"]
+
+  - name: linkedin
+    type: paid
+    role: "Targeted awareness and thought leadership"
+    audience_segments: ["Operations Manager", "VP of Engineering"]
+    tactics:
+      - name: "Sponsored content"
+        format: "Single image + carousel"
+        timing: "Weeks 1-4"
+        goal: "Awareness and engagement"
+        kpi: "CTR > 0.8%, engagement rate > 2%"
+      - name: "Conversation ads"
+        format: "Interactive message"
+        timing: "Weeks 2-5"
+        goal: "Demo requests"
+        kpi: "Response rate > 30%"
+    budget: 5000
+    tools: ["LinkedIn Campaign Manager", "Analytics"]
+
+  - name: organic_social
+    type: owned
+    role: "Community building and content distribution"
+    audience_segments: ["Operations Manager"]
+    tactics:
+      - name: "Launch posts"
+        format: "Text + image"
+        timing: "Day 1, Day 3"
+        goal: "Awareness"
+        kpi: "Impressions > 10K, engagement > 3%"
+      - name: "Weekly insights"
+        format: "Text posts"
+        timing: "Weekly for 6 weeks"
+        goal: "Thought leadership"
+        kpi: "Follower growth > 5%"
+    budget: 0
+    tools: ["Social scheduler"]
+
+  - name: search
+    type: paid
+    role: "Capture intent-driven demand"
+    audience_segments: ["Operations Manager", "VP of Engineering"]
+    tactics:
+      - name: "Brand keywords"
+        format: "Text ads"
+        timing: "Ongoing"
+        goal: "Brand protection and conversion"
+        kpi: "CTR > 8%, CPC < $5"
+      - name: "Category keywords"
+        format: "Text ads"
+        timing: "Weeks 1-6"
+        goal: "Demand capture"
+        kpi: "CTR > 3%, CPA < $100"
+    budget: 3000
+    tools: ["Google Ads", "Analytics"]
+
+  - name: content
+    type: owned
+    role: "SEO and thought leadership"
+    audience_segments: ["Operations Manager", "VP of Engineering"]
+    tactics:
+      - name: "Launch blog post"
+        format: "Long-form article"
+        timing: "Day 1"
+        goal: "SEO and social sharing"
+        kpi: "Organic sessions > 500 in first 30 days"
+      - name: "Technical deep-dive"
+        format: "Long-form article"
+        timing: "Week 3"
+        goal: "Technical credibility"
+        kpi: "Time on page > 4 min"
+    budget: 1000
+    tools: ["CMS", "SEO tools"]
+
+budget_summary:
+  total: 9500
+  by_type:
+    paid: 8000
+    owned: 1500
+  by_channel:
+    email: 500
+    linkedin: 5000
+    organic_social: 0
+    search: 3000
+    content: 1000

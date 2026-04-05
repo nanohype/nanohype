@@ -1,0 +1,107 @@
+# __PROJECT_NAME__ — Competitive Analysis
+# Research type: __RESEARCH_TYPE__
+
+analysis_date: "YYYY-MM-DD"
+analyst: "Team Member Name"
+
+evaluation_criteria:
+  - name: "Core Functionality"
+    weight: 0.30
+    description: "Completeness and quality of the primary use case"
+  - name: "User Experience"
+    weight: 0.20
+    description: "Ease of use, onboarding, and workflow efficiency"
+  - name: "Integration Ecosystem"
+    weight: 0.15
+    description: "Breadth and depth of third-party integrations"
+  - name: "Pricing and Packaging"
+    weight: 0.15
+    description: "Value proposition relative to cost"
+  - name: "Scalability"
+    weight: 0.10
+    description: "Ability to grow with customer needs"
+  - name: "Support and Documentation"
+    weight: 0.10
+    description: "Quality of help resources and responsiveness"
+
+competitors:
+  - name: "Competitor A"
+    website: "https://example-a.com"
+    positioning: "Market leader focused on enterprise segment"
+    target_audience: "Large enterprises with dedicated ops teams"
+    pricing_model: "Per-seat, annual contract"
+    pricing_range: "$50-150/user/month"
+    strengths:
+      - "Deep feature set for power users"
+      - "Strong integration ecosystem"
+      - "Established brand recognition"
+    weaknesses:
+      - "Steep learning curve for new users"
+      - "Expensive for small teams"
+      - "Slow feature release cadence"
+    scores:
+      core_functionality: 8
+      user_experience: 5
+      integration_ecosystem: 9
+      pricing_and_packaging: 4
+      scalability: 9
+      support_and_documentation: 7
+
+  - name: "Competitor B"
+    website: "https://example-b.com"
+    positioning: "Modern challenger targeting mid-market"
+    target_audience: "Growing teams (50-500 employees)"
+    pricing_model: "Usage-based with free tier"
+    pricing_range: "$0-80/user/month"
+    strengths:
+      - "Clean, modern interface"
+      - "Fast onboarding experience"
+      - "Competitive pricing"
+    weaknesses:
+      - "Limited advanced features"
+      - "Fewer integrations than established players"
+      - "Young company with uncertain roadmap"
+    scores:
+      core_functionality: 6
+      user_experience: 9
+      integration_ecosystem: 5
+      pricing_and_packaging: 8
+      scalability: 6
+      support_and_documentation: 7
+
+  - name: "Competitor C"
+    website: "https://example-c.com"
+    positioning: "Open-source alternative with managed offering"
+    target_audience: "Developer-led teams and startups"
+    pricing_model: "Open-core with managed cloud tier"
+    pricing_range: "$0-40/user/month"
+    strengths:
+      - "Transparent and customizable"
+      - "Strong developer community"
+      - "Low entry cost"
+    weaknesses:
+      - "Requires technical expertise to operate"
+      - "Limited non-technical user experience"
+      - "Smaller support team"
+    scores:
+      core_functionality: 7
+      user_experience: 4
+      integration_ecosystem: 6
+      pricing_and_packaging: 9
+      scalability: 7
+      support_and_documentation: 5
+
+our_position:
+  positioning: "Describe our intended market position"
+  target_audience: "Who we serve and why"
+  differentiators:
+    - "Differentiator 1 — why it matters to the target audience"
+    - "Differentiator 2 — what makes it defensible"
+    - "Differentiator 3 — how it connects to our unique capabilities"
+  gaps_to_close:
+    - area: "Feature area where we lag"
+      priority: high
+      timeline: "Q_ YYYY"
+    - area: "Another gap area"
+      priority: medium
+      timeline: "Q_ YYYY"

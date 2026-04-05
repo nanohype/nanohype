@@ -1,0 +1,48 @@
+apiVersion: nanohype/v1
+
+name: content-calendar
+displayName: "Content Calendar"
+description: >
+  Scaffolds an editorial content calendar with content pillars,
+  distribution matrix, and publishing cadence. Supports weekly,
+  biweekly, and monthly rhythms. Optionally includes a social media
+  playbook with platform-specific guidance.
+version: "0.1.0"
+license: Apache-2.0
+persona: [marketing]
+category: marketing
+tags: [content, editorial, calendar, distribution, social]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Cadence
+    type: enum
+    placeholder: "__CADENCE__"
+    description: "Publishing cadence for the editorial calendar"
+    prompt: "Publishing cadence"
+    default: "weekly"
+    options: ["weekly", "biweekly", "monthly"]
+
+  - name: IncludeSocial
+    type: bool
+    placeholder: "__INCLUDE_SOCIAL__"
+    description: "Include a social media playbook"
+    prompt: "Include social playbook?"
+    default: true
+
+conditionals:
+  - path: "content/social-playbook.md"
+    when: IncludeSocial
+
+composition:
+  pairsWith: [campaign-brief, brand-guidelines]
+  nestsInside: [monorepo]

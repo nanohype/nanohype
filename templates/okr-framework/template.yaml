@@ -1,0 +1,56 @@
+apiVersion: nanohype/v1
+
+name: okr-framework
+displayName: "OKR Framework"
+description: >
+  Scaffolds an OKR structure with company, team, and individual levels,
+  key result templates, review cadence configuration, and scoring
+  calibration. Optionally includes a scoring rubric with calibration
+  examples. Designed for product and leadership teams establishing
+  goal-setting practices.
+version: "0.1.0"
+license: Apache-2.0
+persona: [product]
+category: product
+tags: [okr, objectives, key-results, goals, scoring, review-cadence]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: OrgName
+    type: string
+    placeholder: "__ORG_NAME__"
+    description: "Organization name used in document titles and headers"
+    prompt: "Organization name"
+    required: true
+
+  - name: Cadence
+    type: enum
+    placeholder: "__CADENCE__"
+    description: "Review cadence for OKR cycles"
+    prompt: "Review cadence"
+    default: "quarterly"
+    options: [quarterly, monthly]
+
+  - name: IncludeScoring
+    type: bool
+    placeholder: "__INCLUDE_SCORING__"
+    description: "Include a scoring rubric with calibration examples"
+    prompt: "Include scoring rubric?"
+    default: true
+
+conditionals:
+  - path: "okrs/scoring-rubric.md"
+    when: IncludeScoring
+
+composition:
+  pairsWith: [prd-template, research-framework]
+  nestsInside: [monorepo]

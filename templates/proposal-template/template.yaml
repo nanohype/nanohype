@@ -1,0 +1,43 @@
+apiVersion: nanohype/v1
+
+name: proposal-template
+displayName: "Sales Proposal"
+description: >
+  Scaffolds a client-facing sales proposal with executive summary,
+  solution overview, pricing structure, delivery timeline, and terms.
+  Produces a professional proposal document with supporting data files
+  for pricing and scheduling.
+version: "0.1.0"
+license: Apache-2.0
+persona: [sales]
+category: sales
+tags: [proposal, sales, pricing, timeline, services]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name used as the document directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: CompanyName
+    type: string
+    placeholder: "__COMPANY_NAME__"
+    description: "Client company name for the proposal"
+    prompt: "Client company name"
+    required: true
+
+  - name: ProposalType
+    type: string
+    placeholder: "__PROPOSAL_TYPE__"
+    description: "Type of proposal (services, product, hybrid)"
+    prompt: "Proposal type"
+    default: "services"
+
+composition:
+  pairsWith: [battle-cards, brand-guidelines]
+  nestsInside: [monorepo]
