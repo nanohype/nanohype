@@ -167,9 +167,11 @@ describe("linucb strategy", () => {
     const strategy = getStrategy("linucb");
     const providers = [makeMockProvider("bad"), makeMockProvider("good")];
 
-    // Feed enough data to pass MIN_SAMPLES threshold
+    // Use select() → recordOutcome() flow so feature vectors are cached
     for (let i = 0; i < 20; i++) {
+      strategy.select(providers, defaultContext);
       strategy.recordOutcome?.("bad", 500, false);
+      strategy.select(providers, defaultContext);
       strategy.recordOutcome?.("good", 100, true);
     }
 
@@ -184,29 +186,40 @@ describe("linucb strategy", () => {
     expect(goodCount).toBeGreaterThan(40);
   });
 
-  it("uses features when provided", async () => {
+  it("selects different providers for different task types", async () => {
     const { getStrategy } = await import("../routing/registry.js");
     const strategy = getStrategy("linucb");
-    const providers = [makeMockProvider("a"), makeMockProvider("b")];
+    const providers = [makeMockProvider("coder"), makeMockProvider("chatter")];
 
-    for (let i = 0; i < 20; i++) {
-      strategy.recordOutcome?.("a", 200, true);
-      strategy.recordOutcome?.("b", 200, true);
-    }
-
-    const contextWithFeatures: RoutingContext = {
-      prompt: "test",
-      features: {
-        estimatedTokens: 500,
-        latencyBudgetMs: 3000,
-        taskType: "code",
-        qualityRequired: 0.9,
-      },
+    const codeContext: RoutingContext = {
+      prompt: "write a function",
+      features: { taskType: "code" },
+    };
+    const chatContext: RoutingContext = {
+      prompt: "hello how are you",
+      features: { taskType: "chat" },
     };
 
-    // Should not throw and should return a valid provider
-    const selected = strategy.select(providers, contextWithFeatures);
-    expect(["a", "b"]).toContain(selected.name);
+    // Train: "coder" succeeds fast on code, fails on chat;
+    //        "chatter" succeeds fast on chat, fails on code.
+    for (let i = 0; i < 30; i++) {
+      strategy.select(providers, codeContext);
+      strategy.recordOutcome?.("coder", 80, true);
+      strategy.select(providers, codeContext);
+      strategy.recordOutcome?.("chatter", 500, false);
+
+      strategy.select(providers, chatContext);
+      strategy.recordOutcome?.("chatter", 80, true);
+      strategy.select(providers, chatContext);
+      strategy.recordOutcome?.("coder", 500, false);
+    }
+
+    // After contextual training, LinUCB should route code→coder, chat→chatter
+    const codeSelection = strategy.select(providers, codeContext);
+    const chatSelection = strategy.select(providers, chatContext);
+
+    expect(codeSelection.name).toBe("coder");
+    expect(chatSelection.name).toBe("chatter");
   });
 
   it("throws when no providers available", async () => {

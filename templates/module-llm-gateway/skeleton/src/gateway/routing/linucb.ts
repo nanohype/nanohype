@@ -19,7 +19,7 @@ import { registerStrategy } from "./registry.js";
 //
 
 const DEFAULT_ALPHA = 1.0;
-const FEATURE_DIM = 6;
+const FEATURE_DIM = 8;
 const MIN_SAMPLES = 5;
 
 // ── Flat-array linear algebra (d < 10) ──────────────────────────────
@@ -46,7 +46,7 @@ function dot(a: number[], b: number[]): number {
   return s;
 }
 
-/** Sherman-Morrison: (A⁻¹ + x·xᵀ)⁻¹ = A⁻¹ − (A⁻¹·x·xᵀ·A⁻¹)/(1+xᵀ·A⁻¹·x) */
+/** Sherman-Morrison: (A + x·xᵀ)⁻¹ = A⁻¹ − (A⁻¹·x·xᵀ·A⁻¹)/(1+xᵀ·A⁻¹·x) */
 function shermanMorrisonUpdate(ainv: number[], x: number[], d: number): void {
   const ainvX = matVecMul(ainv, x, d);
   const denom = 1 + dot(x, ainvX);
@@ -65,6 +65,7 @@ function buildFeatureVector(ctx: RoutingContext): number[] {
   const f = ctx.features;
   const estimatedTokens = f?.estimatedTokens ?? Math.ceil(ctx.prompt.length / 4);
   const latencyBudget = f?.latencyBudgetMs ?? 5000;
+  const quality = f?.qualityRequired ?? 0.5;
 
   const x = new Array(FEATURE_DIM).fill(0);
   x[0] = 1; // bias
@@ -75,11 +76,8 @@ function buildFeatureVector(ctx: RoutingContext): number[] {
     x[2 + taskIndex] = 1; // one-hot task type (indices 2–5)
   }
 
-  // Scale by latency budget and quality to influence magnitude
-  const latencyScale = Math.min(latencyBudget / 5000, 2);
-  const quality = f?.qualityRequired ?? 0.5;
-  x[1] *= latencyScale;
-  x[0] *= 0.5 + quality;
+  x[6] = Math.min(latencyBudget / 5000, 2); // normalized latency budget
+  x[7] = quality;                            // quality (0–1)
 
   return x;
 }
