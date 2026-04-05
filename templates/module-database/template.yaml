@@ -12,6 +12,8 @@ description: >
   as a standalone data-access module.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [database, drizzle, orm, typescript, sql]
 
 variables:

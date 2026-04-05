@@ -11,6 +11,8 @@ description: >
   OTel metrics, and native fetch throughout (no heavy SDKs).
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [search, full-text, algolia, typesense, meilisearch, hybrid, typescript]
 
 variables:

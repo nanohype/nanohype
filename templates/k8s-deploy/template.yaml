@@ -12,6 +12,8 @@ description: >
   workflow.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: infrastructure
 tags: [kubernetes, k8s, deployment, helm, infrastructure]
 
 variables:

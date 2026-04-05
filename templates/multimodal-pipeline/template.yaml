@@ -13,6 +13,8 @@ description: >
   easy extension.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, multimodal, vision, audio, video, llm, ai, structured-output]
 
 variables:

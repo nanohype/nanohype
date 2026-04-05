@@ -10,6 +10,8 @@ description: >
   deployment. Single command to start, batteries included.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: infrastructure
 tags: [monitoring, observability, grafana, prometheus, loki, infrastructure]
 
 variables:

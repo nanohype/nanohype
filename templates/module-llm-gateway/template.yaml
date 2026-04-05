@@ -10,6 +10,8 @@ description: >
   js-tiktoken, and cost anomaly detection using z-score analysis.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [llm, gateway, routing, caching, cost-tracking, typescript]
 
 variables:

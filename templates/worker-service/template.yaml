@@ -11,6 +11,8 @@ description: >
   both cron and queue work before exit.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: applications
 tags: [typescript, worker, cron, queue, background, jobs]
 
 variables:

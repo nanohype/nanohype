@@ -11,6 +11,8 @@ description: >
   Anthropic and OpenAI as LLM providers for orchestration reasoning.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, agent, orchestrator, multi-agent, llm, ai]
 
 variables:

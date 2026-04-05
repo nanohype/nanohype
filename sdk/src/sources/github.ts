@@ -70,6 +70,9 @@ export class GitHubSource implements CatalogSource {
           displayName: manifest.displayName,
           description: manifest.description,
           version: manifest.version,
+          kind: manifest.kind,
+          persona: manifest.persona,
+          category: manifest.category,
           tags: manifest.tags,
         });
       } catch {

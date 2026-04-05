@@ -66,17 +66,45 @@ The manifest is a YAML document. The root object has the following fields:
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `apiVersion` | string | **yes** | Schema version. MUST be `nanohype/v1`. |
+| `kind` | string | no | Execution mode: `template` (default) or `brief`. See [4.1.1 Kind](#411-kind). |
 | `name` | string | **yes** | Template identifier. Kebab-case (`^[a-z][a-z0-9-]*$`). Unique within the catalog. |
 | `displayName` | string | **yes** | Human-readable name. Used in UIs and listings. |
 | `description` | string | **yes** | Multi-line description of what the template produces. |
 | `version` | string | **yes** | Template version. MUST be valid semver (e.g. `"0.1.0"`). |
 | `license` | string | no | SPDX license identifier for the _scaffolded output_ (not the template itself). |
+| `persona` | array of strings | no | Who this template serves (e.g. `[engineering]`, `[qa, engineering]`). See [4.1.2 Persona](#412-persona). |
+| `category` | string | no | Catalog grouping (e.g. `ai-systems`, `design`, `operations`). See [4.1.3 Category](#413-category). |
 | `tags` | array of strings | **yes** | Lowercase, searchable tags. Minimum one tag. |
 | `variables` | array of [Variable](#42-variable-object) | **yes** | Ordered list of template variables. MAY be empty (`[]`). |
 | `conditionals` | array of [Conditional](#43-conditional-object) | no | File inclusion/exclusion rules. |
 | `hooks` | [Hooks](#44-hooks-object) | no | Lifecycle commands. |
 | `composition` | [Composition](#45-composition-object) | no | Advisory relationships to other templates. |
 | `prerequisites` | array of [Prerequisite](#46-prerequisite-object) | no | External tool requirements. |
+
+#### 4.1.1 Kind
+
+The `kind` field distinguishes execution mode:
+
+- **`template`** (default) — Skeleton files are written to disk with placeholder substitution. Hooks run. This is the standard scaffolding behavior.
+- **`brief`** — Skeleton files are rendered (same placeholder substitution) but the output is a structured agent instruction document. Consumers feed the rendered content to an agent instead of writing files to disk. Hooks are skipped.
+
+Both kinds follow the same rendering contract (variable resolution, placeholder substitution, conditional filtering). The distinction is semantic — consumers decide how to handle the output.
+
+Templates without a `kind` field are treated as `kind: template`.
+
+#### 4.1.2 Persona
+
+An array of kebab-case strings identifying who this template serves. Open vocabulary — there is no fixed enum. Common values: `engineering`, `design`, `qa`, `product`, `marketing`, `sales`, `operations`, `customer-success`.
+
+A template MAY list multiple personas (e.g. a test-automation template that serves both `qa` and `engineering`). Consumers MAY use this field to filter templates by role in UIs.
+
+Templates without a `persona` field SHOULD be treated as `["engineering"]` by consumers.
+
+#### 4.1.3 Category
+
+A kebab-case string for catalog grouping. Open vocabulary. Common values: `ai-systems`, `applications`, `infrastructure`, `composable-modules`, `design`, `qa`, `product`, `marketing`, `sales`, `operations`, `customer-success`.
+
+Consumers MAY use this field for catalog organization and filtering. There is no structural enforcement — category is purely metadata.
 
 ### 4.2 Variable Object
 

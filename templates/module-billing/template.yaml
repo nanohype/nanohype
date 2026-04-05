@@ -10,6 +10,8 @@ description: >
   with a Stripe provider and an in-memory mock for testing.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [billing, payments, stripe, metering, invoicing, typescript]
 
 variables:

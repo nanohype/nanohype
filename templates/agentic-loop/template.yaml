@@ -12,6 +12,8 @@ description: >
   assertion-based testing against fixture files.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, agent, llm, tools, agentic, ai]
 
 variables:

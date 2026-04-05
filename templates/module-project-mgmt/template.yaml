@@ -10,6 +10,8 @@ description: >
   and OTel metrics. All providers use native fetch — no SDK dependencies.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [project-management, linear, jira, asana, shortcut, typescript]
 
 variables:

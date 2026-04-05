@@ -12,6 +12,8 @@ description: >
   are instance-scoped via createLlmObserver().
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [llm, observability, tracing, cost-tracking, quality, typescript]
 
 variables:

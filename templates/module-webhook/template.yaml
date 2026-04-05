@@ -9,6 +9,8 @@ description: >
   HMAC-SHA1 signature providers.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [webhook, events, http, retry, typescript]
 
 variables:

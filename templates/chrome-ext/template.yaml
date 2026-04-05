@@ -10,6 +10,8 @@ description: >
   LLM providers with streaming chat in the sidepanel.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: applications
 tags: [chrome-extension, react, vite, typescript, ai, browser]
 
 variables:

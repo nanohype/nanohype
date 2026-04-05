@@ -9,6 +9,8 @@ description: >
   Includes middleware factories for Hono and Express.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [rate-limit, throttle, middleware, typescript]
 
 variables:

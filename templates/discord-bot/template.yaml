@@ -10,6 +10,8 @@ description: >
   OpenAI), and embed-based rich formatting for structured AI output.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: applications
 tags: [typescript, discord, bot, ai, chatbot]
 
 variables:

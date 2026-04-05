@@ -11,6 +11,8 @@ description: >
   Anthropic and OpenAI providers included out of the box.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, eval, testing, llm, ai]
 
 variables:

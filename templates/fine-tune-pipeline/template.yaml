@@ -12,6 +12,8 @@ description: >
   creating a single file that self-registers at import time.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, fine-tuning, llm, training, dataset, ai]
 
 variables:

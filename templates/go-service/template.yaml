@@ -10,6 +10,8 @@ description: >
   a Makefile, GitHub Actions CI, and optional Docker support.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: applications
 tags: [go, chi, api, service, rest]
 
 variables:

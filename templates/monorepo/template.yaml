@@ -9,6 +9,8 @@ description: >
   utility and UI library packages under packages/.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: infrastructure
 tags: [monorepo, turborepo, pnpm, typescript, workspace]
 
 variables:

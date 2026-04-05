@@ -19,6 +19,12 @@
       "type": "string",
       "const": "nanohype/v1"
     },
+    "kind": {
+      "type": "string",
+      "enum": ["template", "brief"],
+      "default": "template",
+      "description": "Execution mode. 'template' scaffolds files directly, 'brief' produces agent instruction documents."
+    },
     "name": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]*$",
@@ -41,6 +47,21 @@
     },
     "license": {
       "type": "string"
+    },
+    "persona": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "minItems": 1,
+      "default": ["engineering"],
+      "description": "Who this template serves. Open vocabulary — no enum constraint."
+    },
+    "category": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Catalog grouping (e.g. ai-systems, applications, design, operations)."
     },
     "tags": {
       "type": "array",

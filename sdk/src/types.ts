@@ -31,11 +31,14 @@ export interface TemplatePrerequisite {
 
 export interface TemplateManifest {
   apiVersion: string;
+  kind?: 'template' | 'brief';
   name: string;
   displayName: string;
   description: string;
   version: string;
   license?: string;
+  persona?: string[];
+  category?: string;
   tags: string[];
   variables: TemplateVariable[];
   conditionals?: TemplateConditional[];
@@ -54,6 +57,9 @@ export interface CatalogEntry {
   displayName: string;
   description: string;
   version: string;
+  kind?: string;
+  persona?: string[];
+  category?: string;
   tags: string[];
 }
 

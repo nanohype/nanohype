@@ -13,6 +13,8 @@ description: >
   providers (Anthropic, OpenAI) for generation.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: ai-systems
 tags: [typescript, rag, embeddings, vector-search, llm, retrieval, ai]
 
 variables:

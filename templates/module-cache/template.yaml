@@ -9,6 +9,8 @@ description: >
   namespacing, and a cache-aside helper for read-through patterns.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [cache, caching, redis, memcached, typescript]
 
 variables:

@@ -12,6 +12,8 @@ description: >
   per-instance circuit breakers, OTel metrics, and native fetch throughout.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: composable-modules
 tags: [media, images, cloudinary, uploadcare, imgix, transforms, typescript]
 
 variables:

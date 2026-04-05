@@ -10,6 +10,8 @@ description: >
   conversation context for multi-turn AI responses.
 version: "0.1.0"
 license: Apache-2.0
+persona: [engineering]
+category: applications
 tags: [typescript, slack, bot, ai, chatbot]
 
 variables:
