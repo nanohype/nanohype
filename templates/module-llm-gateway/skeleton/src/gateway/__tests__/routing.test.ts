@@ -212,6 +212,6 @@ describe("linucb strategy", () => {
   it("throws when no providers available", async () => {
     const { getStrategy } = await import("../routing/registry.js");
     const strategy = getStrategy("linucb");
-    expect(() => strategy.select([], defaultContext)).toThrow("No providers available");
+    expect(() => strategy.select([], defaultContext)).toThrow("No providers available for routing");
   });
 });

@@ -97,6 +97,9 @@ interface ArmState {
 export function createLinucbStrategy(alpha = DEFAULT_ALPHA): RoutingStrategy {
   const d = FEATURE_DIM;
   const arms = new Map<string, ArmState>();
+  // Cache the feature vector from the most recent select() per provider
+  // so recordOutcome() can use the actual request context for its update.
+  const lastFeatures = new Map<string, number[]>();
 
   function getArm(name: string): ArmState {
     let arm = arms.get(name);
@@ -148,6 +151,9 @@ export function createLinucbStrategy(alpha = DEFAULT_ALPHA): RoutingStrategy {
         }
       }
 
+      // Cache feature vector so recordOutcome can use actual context
+      lastFeatures.set(bestProvider.name, x);
+
       return bestProvider;
     },
 
@@ -157,13 +163,14 @@ export function createLinucbStrategy(alpha = DEFAULT_ALPHA): RoutingStrategy {
       // Reward: success weighted by inverse latency (fast success = high reward)
       const reward = success ? Math.min(1, 100 / (latencyMs || 100)) : 0;
 
-      // Build a default context vector for the update when the original
-      // request context is not available (recordOutcome has no context param).
-      // Strategies that need per-request context updates should store the
-      // last feature vector externally. Here we use a bias-only vector
-      // which still accumulates global provider quality signal.
-      const x = new Array(d).fill(0);
-      x[0] = 1; // bias term
+      // Use the cached feature vector from select() when available,
+      // otherwise fall back to a bias-only vector for global signal.
+      const x = lastFeatures.get(provider) ?? (() => {
+        const fallback = new Array(d).fill(0);
+        fallback[0] = 1;
+        return fallback;
+      })();
+      lastFeatures.delete(provider);
 
       // Sherman-Morrison rank-1 update to A⁻¹
       shermanMorrisonUpdate(arm.ainv, x, d);
