@@ -29,3 +29,6 @@ Thumbs.db
 
 # Runtime
 tmp/
+
+# Generated lock files in template skeletons
+**/skeleton/package-lock.json

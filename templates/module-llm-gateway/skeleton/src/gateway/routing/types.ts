@@ -7,6 +7,18 @@
 
 import type { GatewayProvider } from "../providers/types.js";
 
+/** Structured request features for context-aware routing strategies. */
+export interface RoutingFeatures {
+  /** Estimated input token count for this request. */
+  estimatedTokens?: number;
+  /** Maximum acceptable latency in milliseconds. */
+  latencyBudgetMs?: number;
+  /** Task category hint. */
+  taskType?: "chat" | "reasoning" | "code" | "embedding";
+  /** Desired quality level (0–1). */
+  qualityRequired?: number;
+}
+
 /** Context available to routing strategies for provider selection. */
 export interface RoutingContext {
   /** The user's message text (for content-based routing). */
@@ -15,6 +27,8 @@ export interface RoutingContext {
   model?: string;
   /** Tags for this request (user, project, etc.). */
   tags?: Record<string, string>;
+  /** Structured request features for context-aware strategies (e.g. linucb). */
+  features?: RoutingFeatures;
 }
 
 export interface RoutingStrategy {
