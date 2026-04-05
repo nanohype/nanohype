@@ -10,6 +10,7 @@ import "./round-robin.js";
 import "./latency.js";
 import "./cost.js";
 import "./adaptive.js";
+import "./linucb.js";
 
 export { registerStrategy, getStrategy, listStrategies } from "./registry.js";
 export type { RoutingStrategyFactory } from "./registry.js";

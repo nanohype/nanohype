@@ -150,3 +150,68 @@ describe("adaptive strategy", () => {
     expect(goodCount).toBeGreaterThan(70);
   });
 });
+
+describe("linucb strategy", () => {
+  it("falls back to first provider with insufficient data", async () => {
+    await import("../routing/linucb.js");
+    const { getStrategy } = await import("../routing/registry.js");
+    const strategy = getStrategy("linucb");
+    const providers = [makeMockProvider("first"), makeMockProvider("second")];
+
+    const selected = strategy.select(providers, defaultContext);
+    expect(selected.name).toBe("first");
+  });
+
+  it("converges on the better provider after training", async () => {
+    const { getStrategy } = await import("../routing/registry.js");
+    const strategy = getStrategy("linucb");
+    const providers = [makeMockProvider("bad"), makeMockProvider("good")];
+
+    // Feed enough data to pass MIN_SAMPLES threshold
+    for (let i = 0; i < 20; i++) {
+      strategy.recordOutcome?.("bad", 500, false);
+      strategy.recordOutcome?.("good", 100, true);
+    }
+
+    // LinUCB is deterministic (no epsilon randomness) — the better
+    // provider should be selected consistently once data is sufficient.
+    let goodCount = 0;
+    for (let i = 0; i < 50; i++) {
+      const selected = strategy.select(providers, defaultContext);
+      if (selected.name === "good") goodCount++;
+    }
+
+    expect(goodCount).toBeGreaterThan(40);
+  });
+
+  it("uses features when provided", async () => {
+    const { getStrategy } = await import("../routing/registry.js");
+    const strategy = getStrategy("linucb");
+    const providers = [makeMockProvider("a"), makeMockProvider("b")];
+
+    for (let i = 0; i < 20; i++) {
+      strategy.recordOutcome?.("a", 200, true);
+      strategy.recordOutcome?.("b", 200, true);
+    }
+
+    const contextWithFeatures: RoutingContext = {
+      prompt: "test",
+      features: {
+        estimatedTokens: 500,
+        latencyBudgetMs: 3000,
+        taskType: "code",
+        qualityRequired: 0.9,
+      },
+    };
+
+    // Should not throw and should return a valid provider
+    const selected = strategy.select(providers, contextWithFeatures);
+    expect(["a", "b"]).toContain(selected.name);
+  });
+
+  it("throws when no providers available", async () => {
+    const { getStrategy } = await import("../routing/registry.js");
+    const strategy = getStrategy("linucb");
+    expect(() => strategy.select([], defaultContext)).toThrow("No providers available");
+  });
+});
