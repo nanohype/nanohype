@@ -1,0 +1,41 @@
+name: default-wiki
+description: Starter wiki schema with common page types
+
+pageTypes:
+  - name: entity
+    description: A concrete person, product, system, or organization
+    requiredSections:
+      - Summary
+      - Details
+      - References
+
+  - name: concept
+    description: An abstract idea, pattern, or domain term
+    requiredSections:
+      - Definition
+      - Context
+      - Related Concepts
+
+  - name: decision
+    description: A recorded decision with rationale and status
+    requiredSections:
+      - Context
+      - Decision
+      - Consequences
+
+  - name: timeline
+    description: A chronological record of events
+    requiredSections:
+      - Overview
+      - Events
+
+structure:
+  index: index.md
+  orphanThresholdDays: 14
+  contradictionPolicy: flag
+
+llm:
+  provider: __LLM_PROVIDER__
+  model: claude-sonnet-4-6
+  temperature: 0.2
+  maxPagesPerIngest: 10

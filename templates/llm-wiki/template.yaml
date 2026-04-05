@@ -1,0 +1,71 @@
+apiVersion: nanohype/v1
+name: llm-wiki
+displayName: "LLM Wiki"
+description: >
+  Multi-tenant LLM-maintained knowledge base. Agents incrementally
+  build structured markdown wikis from raw sources — knowledge
+  compounds over time rather than being re-derived per query.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: ai-systems
+tags: [knowledge-base, llm, wiki, multi-tenant, rag-alternative]
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: __PROJECT_NAME__
+    description: "Kebab-case project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be kebab-case"
+  - name: Description
+    type: string
+    placeholder: __DESCRIPTION__
+    description: "Short project description"
+    default: "Multi-tenant LLM-maintained knowledge base"
+  - name: StorageProvider
+    type: string
+    placeholder: __STORAGE_PROVIDER__
+    description: "Default wiki storage backend"
+    default: "git"
+  - name: LlmProvider
+    type: string
+    placeholder: __LLM_PROVIDER__
+    description: "Default LLM provider for wiki operations"
+    default: "anthropic"
+  - name: SourceProvider
+    type: string
+    placeholder: __SOURCE_PROVIDER__
+    description: "Default source ingestion provider"
+    default: "local"
+  - name: IncludeApi
+    type: bool
+    placeholder: __INCLUDE_API__
+    description: "Include HTTP API server (Hono)"
+    default: true
+  - name: IncludeCli
+    type: bool
+    placeholder: __INCLUDE_CLI__
+    description: "Include CLI interface"
+    default: true
+  - name: IncludeTests
+    type: bool
+    placeholder: __INCLUDE_TESTS__
+    description: "Include test suite"
+    default: true
+conditionals:
+  - path: "src/api"
+    when: IncludeApi
+  - path: "src/cli"
+    when: IncludeCli
+  - path: "src/__tests__"
+    when: IncludeTests
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+composition:
+  pairsWith: [agentic-loop, rag-pipeline, module-llm-gateway, eval-harness]
+  nestsInside: [monorepo]
