@@ -77,4 +77,4 @@ class MockVectorStoreProvider implements VectorStoreProvider {
 }
 
 // Self-register
-registerProvider(new MockVectorStoreProvider());
+registerProvider("mock", () => new MockVectorStoreProvider());

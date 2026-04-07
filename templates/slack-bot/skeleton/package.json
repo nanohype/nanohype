@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "lint": "eslint src/",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest"
   },

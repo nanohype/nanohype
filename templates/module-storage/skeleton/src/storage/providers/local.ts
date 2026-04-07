@@ -128,4 +128,4 @@ class LocalStorageProvider implements StorageProvider {
 }
 
 // Self-register
-registerProvider(new LocalStorageProvider());
+registerProvider("local", () => new LocalStorageProvider());

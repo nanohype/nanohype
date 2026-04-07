@@ -1,8 +1,10 @@
 import OpenAI from "openai";
 import type { LlmProvider, Message, LlmResponse } from "./types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 const client = new OpenAI();
+const cb = createCircuitBreaker();
 
 class OpenAIProvider implements LlmProvider {
   async sendMessage(
@@ -17,11 +19,13 @@ class OpenAIProvider implements LlmProvider {
       })),
     ];
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 4096,
-      messages: openaiMessages,
-    });
+    const response = await cb.execute(() =>
+      client.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 4096,
+        messages: openaiMessages,
+      }),
+    );
 
     const choice = response.choices[0];
     if (!choice) {

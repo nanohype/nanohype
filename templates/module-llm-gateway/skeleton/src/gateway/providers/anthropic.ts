@@ -86,4 +86,4 @@ const anthropicProvider: GatewayProvider = {
 };
 
 // Self-register
-registerProvider(anthropicProvider);
+registerProvider("anthropic", () => anthropicProvider);

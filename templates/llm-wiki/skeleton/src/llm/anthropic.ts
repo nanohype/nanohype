@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { LlmProvider, LlmMessage, LlmOptions } from "./types.js";
 import { registerLlmProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_MAX_TOKENS = 4096;
@@ -8,6 +9,7 @@ const DEFAULT_MAX_TOKENS = 4096;
 class AnthropicLlmProvider implements LlmProvider {
   readonly name = "anthropic";
   private client: Anthropic | null = null;
+  private cb = createCircuitBreaker();
 
   private getClient(): Anthropic {
     if (!this.client) {
@@ -31,13 +33,15 @@ class AnthropicLlmProvider implements LlmProvider {
         content: m.content,
       }));
 
-    const response = await client.messages.create({
-      model: opts?.model ?? DEFAULT_MODEL,
-      max_tokens: opts?.maxTokens ?? DEFAULT_MAX_TOKENS,
-      temperature: opts?.temperature,
-      ...(systemMessage ? { system: systemMessage.content } : {}),
-      messages: conversationMessages,
-    });
+    const response = await this.cb.execute(() =>
+      client.messages.create({
+        model: opts?.model ?? DEFAULT_MODEL,
+        max_tokens: opts?.maxTokens ?? DEFAULT_MAX_TOKENS,
+        temperature: opts?.temperature,
+        ...(systemMessage ? { system: systemMessage.content } : {}),
+        messages: conversationMessages,
+      }),
+    );
 
     const textBlock = response.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") {

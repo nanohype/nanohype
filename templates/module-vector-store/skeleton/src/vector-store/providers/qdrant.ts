@@ -142,6 +142,7 @@ class QdrantProvider implements VectorStoreProvider {
 
     const response = await fetch(`${this.baseUrl}${path}`, {
       method,
+      signal: AbortSignal.timeout(30_000),
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -158,4 +159,4 @@ class QdrantProvider implements VectorStoreProvider {
 }
 
 // Self-register
-registerProvider(new QdrantProvider());
+registerProvider("qdrant", () => new QdrantProvider());

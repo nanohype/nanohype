@@ -11,12 +11,12 @@ Scaffolds a structured Product Requirements Document with problem statement, use
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ProductName` | string | yes | - | Human-readable product name |
-| `IncludeUserStories` | bool | no | `true` | Include user stories document |
-| `IncludeMetrics` | bool | no | `true` | Include success metrics YAML |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ProductName` | string | (required) | Human-readable product name |
+| `IncludeUserStories` | bool | `true` | Include user stories document |
+| `IncludeMetrics` | bool | `true` | Include success metrics YAML |
 
 ## Project layout
 

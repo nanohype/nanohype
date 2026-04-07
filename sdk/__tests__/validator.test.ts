@@ -129,6 +129,117 @@ describe('validateManifest', () => {
       ),
     ).toThrow('Duplicate placeholder: __DUPE__');
   });
+
+  it('rejects placeholder that is a substring of another', () => {
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: 'Name',
+              type: 'string',
+              placeholder: 'NAME',
+              description: 'Name',
+            },
+            {
+              name: 'ProjectName',
+              type: 'string',
+              placeholder: 'PROJECT_NAME',
+              description: 'Project Name',
+            },
+          ],
+        }),
+      ),
+    ).toThrow("is a substring of");
+  });
+
+  it('rejects bool variable with non-boolean default', () => {
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: 'Flag',
+              type: 'bool',
+              placeholder: '__FLAG__',
+              description: 'Flag',
+              default: 'yes' as unknown as boolean,
+            },
+          ],
+        }),
+      ),
+    ).toThrow("is type bool but default is 'yes'");
+  });
+
+  it('rejects int variable with string default', () => {
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: 'Port',
+              type: 'int',
+              placeholder: '__PORT__',
+              description: 'Port',
+              default: 'abc' as unknown as number,
+            },
+          ],
+        }),
+      ),
+    ).toThrow("is type int but default is 'abc'");
+  });
+
+  it('rejects enum variable with default not in options', () => {
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: 'Provider',
+              type: 'enum',
+              placeholder: '__PROVIDER__',
+              description: 'Provider',
+              options: ['a', 'b'],
+              default: 'c',
+            },
+          ],
+        }),
+      ),
+    ).toThrow("default 'c' not in options: a, b");
+  });
+
+  it('accepts valid default values', () => {
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: 'Flag',
+              type: 'bool',
+              placeholder: '__FLAG__',
+              description: 'Flag',
+              default: true,
+            },
+            {
+              name: 'Port',
+              type: 'int',
+              placeholder: '__PORT__',
+              description: 'Port',
+              default: 8080,
+            },
+            {
+              name: 'Provider',
+              type: 'enum',
+              placeholder: '__PROVIDER__',
+              description: 'Provider',
+              options: ['a', 'b'],
+              default: 'a',
+            },
+          ],
+        }),
+      ),
+    ).not.toThrow();
+  });
 });
 
 describe('validateCompositeManifest', () => {

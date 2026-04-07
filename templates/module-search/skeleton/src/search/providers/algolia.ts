@@ -39,6 +39,7 @@ function createAlgoliaProvider(): SearchProvider {
     const response = await cb.execute(() =>
       fetch(url, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "X-Algolia-Application-Id": appId,
           "X-Algolia-API-Key": apiKey,

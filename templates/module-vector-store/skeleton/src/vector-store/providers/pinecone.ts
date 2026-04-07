@@ -140,4 +140,4 @@ class PineconeProvider implements VectorStoreProvider {
 }
 
 // Self-register
-registerProvider(new PineconeProvider());
+registerProvider("pinecone", () => new PineconeProvider());

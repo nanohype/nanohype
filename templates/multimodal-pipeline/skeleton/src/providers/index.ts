@@ -13,7 +13,18 @@ export {
   listProviders,
 } from "./registry.js";
 
+export {
+  registerTranscriptionProvider,
+  getTranscriptionProvider,
+} from "./whisper.js";
+
+export type {
+  TranscriptionProvider,
+  TranscriptionResult,
+} from "./whisper.js";
+
 // Import provider modules to trigger registration
 import "./anthropic.js";
 import "./openai.js";
 import "./mock.js";
+import "./whisper.js";

@@ -15,7 +15,9 @@
   },
   "files": [
     "dist",
-    "schemas"
+    "schemas",
+    "src",
+    "tsconfig.json"
   ],
   "engines": {
     "node": ">=20"
@@ -26,6 +28,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
+    "lint": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

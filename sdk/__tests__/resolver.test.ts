@@ -59,13 +59,34 @@ describe('resolveVariables', () => {
     expect(result.ModulePath).toBe('packages/my-app');
   });
 
-  it('detects circular references', () => {
+  it('detects direct circular references (A→A)', () => {
     expect(() =>
       resolveVariables(
         [v({ name: 'A', default: '${A}' })],
         {},
       ),
     ).toThrow("Circular reference in variable 'A'");
+  });
+
+  it('detects indirect circular references (A→B→A)', () => {
+    expect(() =>
+      resolveVariables(
+        [
+          v({ name: 'A', default: '${B}' }),
+          v({ name: 'B', default: '${A}' }),
+        ],
+        {},
+      ),
+    ).toThrow(/[Cc]ircular reference/);
+  });
+
+  it('throws on reference to unknown variable', () => {
+    expect(() =>
+      resolveVariables(
+        [v({ name: 'A', default: '${Nonexistent}' })],
+        {},
+      ),
+    ).toThrow("references unknown variable 'Nonexistent'");
   });
 
   it('validates enum membership', () => {

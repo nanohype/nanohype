@@ -12,12 +12,12 @@ Versioned prompt management system using YAML files with structured frontmatter.
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | `prompts` | Kebab-case project name |
-| `Description` | string | no | `A versioned prompt library` | Project description |
-| `IncludeSdk` | bool | no | `true` | Include TypeScript SDK |
-| `IncludeTests` | bool | no | `true` | Include validation tests |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | `prompts` | Kebab-case project name |
+| `Description` | string | `A versioned prompt library` | Project description |
+| `IncludeSdk` | bool | `true` | Include TypeScript SDK |
+| `IncludeTests` | bool | `true` | Include validation tests |
 
 ## Project layout
 

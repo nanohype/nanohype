@@ -11,11 +11,11 @@ Scaffolds a Quarterly Business Review package with account health dashboards, us
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ReviewCadence` | enum | no | `quarterly` | Review cadence: quarterly or monthly |
-| `IncludeExpansion` | bool | no | `true` | Include expansion tracking |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ReviewCadence` | enum | `quarterly` | Review cadence: quarterly or monthly |
+| `IncludeExpansion` | bool | `true` | Include expansion tracking |
 
 ## Project layout
 

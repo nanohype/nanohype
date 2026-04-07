@@ -11,11 +11,11 @@ Scaffolds a marketing campaign brief with objectives, audience segments, messagi
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `CampaignName` | string | yes | - | Human-readable campaign name |
-| `Channel` | string | no | `multi` | Primary distribution channel |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `CampaignName` | string | (required) | Human-readable campaign name |
+| `Channel` | string | `multi` | Primary distribution channel |
 
 ## Project layout
 

@@ -1,6 +1,7 @@
 import type { AgentCard, TaskRequest, TaskResponse } from "./types.js";
 import { getTransport } from "./transport/index.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 /**
  * A2A client — discovers remote agents and sends task requests.
@@ -9,12 +10,16 @@ import { logger } from "../logger.js";
  * transport (HTTP, WebSocket, or custom).
  */
 
+const cb = createCircuitBreaker();
+
 /** Fetch a remote agent's Agent Card from its well-known URL. */
 export async function fetchAgentCard(agentUrl: string): Promise<AgentCard> {
   const cardUrl = `${agentUrl.replace(/\/$/, "")}/.well-known/agent.json`;
   logger.info("Fetching agent card", { url: cardUrl });
 
-  const response = await fetch(cardUrl);
+  const response = await cb.execute(() =>
+    fetch(cardUrl, { signal: AbortSignal.timeout(30_000) }),
+  );
   if (!response.ok) {
     throw new Error(`Failed to fetch agent card from ${cardUrl}: ${response.status}`);
   }

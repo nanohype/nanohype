@@ -1,5 +1,5 @@
 import type { Item, ItemCreate, ItemUpdate } from "../domain/types.js";
-import { NotFoundError, ConflictError } from "../domain/errors.js";
+import { NotFoundError } from "../domain/errors.js";
 
 // ── Item Repository Interface ───────────────────────────────────────
 //

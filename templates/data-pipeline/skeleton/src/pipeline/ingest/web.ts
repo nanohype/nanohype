@@ -22,7 +22,7 @@ class WebSource implements IngestSource {
 
   async load(url: string): Promise<Document[]> {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
 
       if (!response.ok) {
         logger.warn("HTTP request failed", {

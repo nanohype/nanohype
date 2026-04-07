@@ -84,6 +84,6 @@ const supabaseProvider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(supabaseProvider);
+registerProvider("supabase", () => supabaseProvider);
 
 export { supabaseProvider };

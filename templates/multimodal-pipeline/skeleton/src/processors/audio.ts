@@ -1,16 +1,16 @@
 /**
  * Audio processor.
  *
- * Reads audio files and prepares them for transcription via the OpenAI
- * Whisper API. The transcribed text is then available for LLM analysis.
+ * Reads audio files and prepares them for transcription via the
+ * registered transcription provider (Whisper by default). The
+ * transcribed text is then available for LLM analysis.
  * Registers itself as the "audio" processor on import.
  */
 
-import { readFile, stat } from "node:fs/promises";
-import { basename } from "node:path";
-import OpenAI, { toFile } from "openai";
+import { stat } from "node:fs/promises";
 import type { Processor, ProcessedInput } from "./types.js";
 import { registerProcessor } from "./registry.js";
+import { getTranscriptionProvider } from "../providers/index.js";
 import { loadConfig } from "../config.js";
 
 const SUPPORTED_MIME_TYPES = [
@@ -32,24 +32,15 @@ class AudioProcessor implements Processor {
     const config = loadConfig();
     const apiKey = config.llm.openaiApiKey || process.env.OPENAI_API_KEY;
 
-    if (!apiKey) {
-      throw new Error(
-        "OPENAI_API_KEY environment variable is required for audio transcription (Whisper API)",
-      );
-    }
-
     const fileInfo = await stat(filePath);
     const fileSizeBytes = fileInfo.size;
 
-    const client = new OpenAI({ apiKey });
-    const buffer = await readFile(filePath);
-    const file = await toFile(buffer, basename(filePath), { type: mimeType });
-
-    const transcription = await client.audio.transcriptions.create({
-      file,
-      model: config.audio.transcriptionModel,
-      response_format: "verbose_json",
-    });
+    const provider = getTranscriptionProvider("whisper", apiKey);
+    const transcription = await provider.transcribe(
+      filePath,
+      mimeType,
+      config.audio.transcriptionModel,
+    );
 
     return {
       modality: "audio",

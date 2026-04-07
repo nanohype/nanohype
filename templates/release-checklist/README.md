@@ -12,11 +12,11 @@ Scaffolds a structured release checklist covering pre-release validation, deploy
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ReleaseType` | enum | no | `minor` | Release type: major, minor, or patch |
-| `IncludeRollback` | bool | no | `true` | Include rollback plan |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ReleaseType` | enum | `minor` | Release type: major, minor, or patch |
+| `IncludeRollback` | bool | `true` | Include rollback plan |
 
 ## Project layout
 

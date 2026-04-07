@@ -109,7 +109,7 @@ function createCloudinaryProvider(): MediaProvider {
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
       const response = await breaker.execute(async () => {
-        const res = await fetch(url, { method: "POST", body: formData });
+        const res = await fetch(url, { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`Cloudinary upload failed (${res.status}): ${text}`);
@@ -159,7 +159,7 @@ function createCloudinaryProvider(): MediaProvider {
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`;
 
       await breaker.execute(async () => {
-        const res = await fetch(url, { method: "POST", body: formData });
+        const res = await fetch(url, { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`Cloudinary delete failed (${res.status}): ${text}`);
@@ -179,6 +179,7 @@ function createCloudinaryProvider(): MediaProvider {
 
       const response = await breaker.execute(async () => {
         const res = await fetch(url, {
+          signal: AbortSignal.timeout(30_000),
           headers: { Authorization: `Basic ${auth}` },
         });
         if (!res.ok) {

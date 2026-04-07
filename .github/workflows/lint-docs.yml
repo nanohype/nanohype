@@ -26,4 +26,3 @@ jobs:
           globs: |
             docs/**/*.md
             *.md
-        continue-on-error: true

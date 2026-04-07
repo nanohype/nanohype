@@ -125,4 +125,4 @@ class GcsStorageProvider implements StorageProvider {
 }
 
 // Self-register
-registerProvider(new GcsStorageProvider());
+registerProvider("gcs", () => new GcsStorageProvider());

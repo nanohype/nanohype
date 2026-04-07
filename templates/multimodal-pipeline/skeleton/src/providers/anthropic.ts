@@ -10,11 +10,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { MultimodalLlmProvider, AnalysisResult } from "./types.js";
 import type { ProcessedInput } from "../processors/types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
 class AnthropicVisionProvider implements MultimodalLlmProvider {
   private readonly client: Anthropic;
+  private readonly cb = createCircuitBreaker();
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.ANTHROPIC_API_KEY;
@@ -55,13 +57,15 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
       });
     }
 
-    const response = await this.client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content }],
-      temperature,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.messages.create({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content }],
+        temperature,
+      }),
+    );
 
     const textBlock = response.content.find((block) => block.type === "text");
     const text = textBlock && "text" in textBlock ? textBlock.text : "";
@@ -106,13 +110,15 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
       text: "Analyze these video frames in sequence and provide a structured description of the video content.",
     });
 
-    const response = await this.client.messages.create({
-      model,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages: [{ role: "user", content }],
-      temperature,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.messages.create({
+        model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content }],
+        temperature,
+      }),
+    );
 
     const textBlock = response.content.find((block) => block.type === "text");
     const text = textBlock && "text" in textBlock ? textBlock.text : "";

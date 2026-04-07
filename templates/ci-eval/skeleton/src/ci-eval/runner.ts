@@ -12,8 +12,9 @@ import { glob } from "node:fs/promises";
 import { resolve, basename } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
-import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
+import { getProvider } from "./providers/index.js";
+import type { LlmProvider } from "./providers/index.js";
+import { evaluateAssertion } from "./assertions.js";
 import type { Config } from "./config.js";
 import type { EvalResult, SuiteScore } from "./types.js";
 import type { Logger } from "./logger.js";
@@ -43,125 +44,6 @@ const SuiteFileSchema = z.object({
 
 type SuiteFile = z.infer<typeof SuiteFileSchema>;
 type CaseSpec = z.infer<typeof CaseSchema>;
-
-// ── Provider interface ──────────────────────────────────────────────
-
-interface LlmProvider {
-  complete(prompt: string): Promise<string>;
-}
-
-function createAnthropicProvider(): LlmProvider {
-  let client: Anthropic | null = null;
-  function getClient(): Anthropic {
-    if (!client) client = new Anthropic();
-    return client;
-  }
-
-  return {
-    async complete(prompt: string): Promise<string> {
-      const response = await getClient().messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
-      });
-      const block = response.content[0];
-      return block.type === "text" ? block.text : "";
-    },
-  };
-}
-
-function createOpenAIProvider(): LlmProvider {
-  let client: OpenAI | null = null;
-  function getClient(): OpenAI {
-    if (!client) client = new OpenAI();
-    return client;
-  }
-
-  return {
-    async complete(prompt: string): Promise<string> {
-      const response = await getClient().chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 1024,
-      });
-      return response.choices[0]?.message?.content ?? "";
-    },
-  };
-}
-
-function resolveProvider(name: string): LlmProvider {
-  switch (name) {
-    case "anthropic":
-      return createAnthropicProvider();
-    case "openai":
-      return createOpenAIProvider();
-    default:
-      throw new Error(`Unknown LLM provider: ${name}. Built-in providers: anthropic, openai`);
-  }
-}
-
-// ── Assertion evaluation ────────────────────────────────────────────
-
-interface AssertionResult {
-  type: string;
-  pass: boolean;
-  message: string;
-}
-
-function evaluateAssertion(
-  type: string,
-  value: unknown,
-  output: string,
-): AssertionResult {
-  switch (type) {
-    case "contains": {
-      const target = String(value);
-      const pass = output.includes(target);
-      return {
-        type,
-        pass,
-        message: pass
-          ? `Output contains "${target}"`
-          : `Output does not contain "${target}"`,
-      };
-    }
-    case "not-contains": {
-      const target = String(value);
-      const pass = !output.includes(target);
-      return {
-        type,
-        pass,
-        message: pass
-          ? `Output does not contain "${target}"`
-          : `Output unexpectedly contains "${target}"`,
-      };
-    }
-    case "matches-pattern": {
-      const pattern = new RegExp(String(value));
-      const pass = pattern.test(output);
-      return {
-        type,
-        pass,
-        message: pass
-          ? `Output matches pattern /${String(value)}/`
-          : `Output does not match pattern /${String(value)}/`,
-      };
-    }
-    case "max-length": {
-      const limit = Number(value);
-      const pass = output.length <= limit;
-      return {
-        type,
-        pass,
-        message: pass
-          ? `Output length ${output.length} within limit ${limit}`
-          : `Output length ${output.length} exceeds limit ${limit}`,
-      };
-    }
-    default:
-      return { type, pass: false, message: `Unknown assertion type: ${type}` };
-  }
-}
 
 // ── Runner factory ──────────────────────────────────────────────────
 
@@ -292,7 +174,7 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
 
       logger.info(`Discovered ${suitePaths.length} suite(s)`);
 
-      const provider = resolveProvider(config.llmProvider);
+      const provider = getProvider(config.llmProvider);
       const scores: SuiteScore[] = [];
 
       for (const filePath of suitePaths) {

@@ -34,6 +34,7 @@ const SENDER_DEFAULTS = {
   signatureHeader: "x-signature",
   maxRetries: 3,
   baseDelay: 1000,
+  timeoutMs: 30_000,
 };
 
 /**
@@ -55,6 +56,7 @@ const SenderConfigSchema = z.object({
   signatureHeader: z.string().optional(),
   maxRetries: z.number().optional(),
   baseDelay: z.number().optional(),
+  timeoutMs: z.number().optional(),
 }).passthrough();
 
 export function createWebhookSender(config: SenderConfig): WebhookSender {
@@ -68,6 +70,7 @@ export function createWebhookSender(config: SenderConfig): WebhookSender {
   const signatureHeader = config.signatureHeader ?? SENDER_DEFAULTS.signatureHeader;
   const defaultMaxRetries = config.maxRetries ?? SENDER_DEFAULTS.maxRetries;
   const defaultBaseDelay = config.baseDelay ?? SENDER_DEFAULTS.baseDelay;
+  const timeoutMs = config.timeoutMs ?? SENDER_DEFAULTS.timeoutMs;
 
   return {
     async send(
@@ -106,6 +109,7 @@ export function createWebhookSender(config: SenderConfig): WebhookSender {
         try {
           const response = await fetch(url, {
             method: "POST",
+            signal: AbortSignal.timeout(timeoutMs),
             headers: {
               "Content-Type": "application/json",
               [signatureHeader]: signature,

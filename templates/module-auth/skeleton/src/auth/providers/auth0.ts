@@ -82,6 +82,6 @@ const auth0Provider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(auth0Provider);
+registerProvider("auth0", () => auth0Provider);
 
 export { auth0Provider };

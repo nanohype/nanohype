@@ -228,7 +228,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-media** — Add this when the service handles images or video. Upload, transform, and deliver through Cloudinary, Uploadcare, or imgix. Named transform presets (thumbnail, avatar, hero, og-image), fluent TransformBuilder API, responsive srcset generation.
 
-### Infrastructure
+### Infrastructure & Observability
 
 **monitoring-stack** — Reach for this when a client needs observability but doesn't have an existing platform. Grafana for dashboards, Prometheus for metrics, Loki for logs. Docker Compose for local dev, Helm chart for Kubernetes. Pre-configured datasources, default service and system dashboards, and alert rules for error rate, latency, CPU, memory, and disk.
 

@@ -14,12 +14,12 @@ Scaffolds an agent brief for producing an operational runbook. The rendered brie
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Project or team that owns the service |
-| `ServiceName` | string | yes | - | Name of the service |
-| `InfraProvider` | string | no | `aws` | Primary infrastructure provider |
-| `IncidentSeverityLevels` | string | no | `P1,P2,P3,P4` | Comma-separated severity levels |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Project or team that owns the service |
+| `ServiceName` | string | (required) | Name of the service |
+| `InfraProvider` | string | `aws` | Primary infrastructure provider |
+| `IncidentSeverityLevels` | string | `P1,P2,P3,P4` | Comma-separated severity levels |
 
 ## Project layout
 

@@ -40,4 +40,4 @@ class OpenAIProvider implements AiProvider {
   }
 }
 
-registerProvider("openai", new OpenAIProvider());
+registerProvider("openai", () => new OpenAIProvider());

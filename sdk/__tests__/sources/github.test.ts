@@ -110,6 +110,62 @@ describe('GitHubSource', () => {
       const source = new GitHubSource();
       await expect(source.fetchTemplate('missing')).rejects.toThrow("Template 'missing' not found");
     });
+
+    it('parses manifest, fetches skeleton tree, and returns files', async () => {
+      const manifestYaml = [
+        'apiVersion: nanohype/v1',
+        'name: go-cli',
+        'displayName: Go CLI',
+        'description: A Go CLI starter',
+        'version: "1.0.0"',
+        'tags: [go, cli]',
+        'variables: []',
+      ].join('\n');
+
+      mockFetch
+        // 1. Manifest YAML fetch
+        .mockResolvedValueOnce(textResponse(manifestYaml))
+        // 2. Git tree listing (recursive)
+        .mockResolvedValueOnce(
+          jsonResponse({
+            tree: [
+              { path: 'templates/go-cli/template.yaml', type: 'blob', sha: 'aaa' },
+              { path: 'templates/go-cli/skeleton/main.go', type: 'blob', sha: 'bbb' },
+              { path: 'templates/go-cli/skeleton/pkg/util.go', type: 'blob', sha: 'ccc' },
+              { path: 'templates/other/skeleton/index.ts', type: 'blob', sha: 'ddd' },
+              { path: 'templates/go-cli/skeleton', type: 'tree', sha: 'eee' },
+            ],
+          }),
+        )
+        // 3. File content fetches (only the two skeleton blobs matching the prefix)
+        .mockResolvedValueOnce(textResponse('package main\n\nfunc main() {}'))
+        .mockResolvedValueOnce(textResponse('package pkg\n\nfunc Util() {}'));
+
+      const source = new GitHubSource();
+      const { manifest, files } = await source.fetchTemplate('go-cli');
+
+      // Manifest is parsed correctly
+      expect(manifest.apiVersion).toBe('nanohype/v1');
+      expect(manifest.name).toBe('go-cli');
+      expect(manifest.displayName).toBe('Go CLI');
+      expect(manifest.description).toBe('A Go CLI starter');
+      expect(manifest.version).toBe('1.0.0');
+      expect(manifest.tags).toEqual(['go', 'cli']);
+
+      // Skeleton files have paths relative to the skeleton/ directory
+      expect(files).toHaveLength(2);
+      expect(files[0]).toEqual({ path: 'main.go', content: 'package main\n\nfunc main() {}' });
+      expect(files[1]).toEqual({ path: 'pkg/util.go', content: 'package pkg\n\nfunc Util() {}' });
+
+      // Verify the correct URLs were called
+      expect(mockFetch).toHaveBeenCalledTimes(4);
+      expect(mockFetch.mock.calls[0][0]).toContain(
+        'raw.githubusercontent.com/nanohype/nanohype/main/templates/go-cli/template.yaml',
+      );
+      expect(mockFetch.mock.calls[1][0]).toContain(
+        'api.github.com/repos/nanohype/nanohype/git/trees/main?recursive=1',
+      );
+    });
   });
 
   describe('listComposites', () => {

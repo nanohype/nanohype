@@ -31,4 +31,4 @@ class AnthropicProvider implements AiProvider {
   }
 }
 
-registerProvider("anthropic", new AnthropicProvider());
+registerProvider("anthropic", () => new AnthropicProvider());

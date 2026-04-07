@@ -11,11 +11,11 @@ Scaffolds a product research framework with hypothesis canvas, interview guides,
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ResearchType` | string | no | `generative` | Research methodology type |
-| `IncludeCompetitive` | bool | no | `true` | Include competitive analysis |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ResearchType` | string | `generative` | Research methodology type |
+| `IncludeCompetitive` | bool | `true` | Include competitive analysis |
 
 ## Project layout
 

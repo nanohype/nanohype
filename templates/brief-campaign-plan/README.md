@@ -13,13 +13,13 @@ Scaffolds an agent brief for producing a marketing campaign plan. The rendered b
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Internal project name |
-| `CampaignGoal` | string | yes | - | Primary campaign objective |
-| `TargetAudience` | string | yes | - | Target audience segments |
-| `Budget` | string | no | `""` | Total campaign budget or range |
-| `Timeline` | string | no | `""` | Campaign duration or key dates |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Internal project name |
+| `CampaignGoal` | string | (required) | Primary campaign objective |
+| `TargetAudience` | string | (required) | Target audience segments |
+| `Budget` | string | `""` | Total campaign budget or range |
+| `Timeline` | string | `""` | Campaign duration or key dates |
 
 ## Project layout
 

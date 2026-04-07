@@ -2,7 +2,7 @@ import { validateBootstrap } from "./bootstrap.js";
 import { getProvider } from "./providers/index.js";
 import { handleTask, getAvailableSkills } from "./protocol/server.js";
 import { sendTask, fetchAgentCard } from "./protocol/client.js";
-import { listSkills, getSkill } from "./skills/registry.js";
+import { listSkills, getSkill } from "./skills/index.js";
 import type { TaskRequest } from "./protocol/types.js";
 import type { Message } from "./providers/types.js";
 import { logger } from "./logger.js";

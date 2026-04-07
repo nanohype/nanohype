@@ -32,15 +32,15 @@ describe("provider registry", () => {
     listProviders = mod.listProviders;
   });
 
-  it("registers and retrieves a provider", () => {
-    const provider = makeFakeProvider();
-    registerProvider("test-provider", provider);
-    expect(getProvider("test-provider")).toBe(provider);
+  it("registers a factory and retrieves a provider", () => {
+    registerProvider("test-provider", () => makeFakeProvider());
+    const result = getProvider("test-provider");
+    expect(result.defaultModel).toBe("fake-model-1");
   });
 
   it("lists registered providers", () => {
-    registerProvider("alpha", makeFakeProvider());
-    registerProvider("beta", makeFakeProvider("beta-model"));
+    registerProvider("alpha", () => makeFakeProvider());
+    registerProvider("beta", () => makeFakeProvider("beta-model"));
     expect(listProviders()).toEqual(expect.arrayContaining(["alpha", "beta"]));
     expect(listProviders()).toHaveLength(2);
   });
@@ -50,7 +50,7 @@ describe("provider registry", () => {
   });
 
   it("includes available providers in the error message", () => {
-    registerProvider("only-one", makeFakeProvider());
+    registerProvider("only-one", () => makeFakeProvider());
     try {
       getProvider("missing");
     } catch (err) {
@@ -58,11 +58,17 @@ describe("provider registry", () => {
     }
   });
 
-  it("overwrites a provider when re-registered with the same name", () => {
-    const first = makeFakeProvider("v1");
-    const second = makeFakeProvider("v2");
-    registerProvider("dup", first);
-    registerProvider("dup", second);
+  it("overwrites a factory when re-registered with the same name", () => {
+    registerProvider("dup", () => makeFakeProvider("v1"));
+    registerProvider("dup", () => makeFakeProvider("v2"));
     expect(getProvider("dup").defaultModel).toBe("v2");
+  });
+
+  it("returns a fresh instance on each getProvider call", () => {
+    registerProvider("fresh", () => makeFakeProvider());
+    const a = getProvider("fresh");
+    const b = getProvider("fresh");
+    expect(a).not.toBe(b);
+    expect(a.defaultModel).toBe("fake-model-1");
   });
 });

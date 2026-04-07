@@ -13,15 +13,15 @@ GCP deployment configuration using gcloud CLI. Deploys to Cloud Run with a multi
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `GCP infrastructure` | Project description |
-| `GcpProject` | string | yes | -- | GCP project ID |
-| `GcpRegion` | string | no | `us-central1` | GCP region |
-| `IncludeCloudSql` | bool | no | `false` | Include Cloud SQL PostgreSQL |
-| `IncludeMonitoring` | bool | no | `true` | Include Cloud Monitoring |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `GCP infrastructure` | Project description |
+| `GcpProject` | string | (required) | GCP project ID |
+| `GcpRegion` | string | `us-central1` | GCP region |
+| `IncludeCloudSql` | bool | `false` | Include Cloud SQL PostgreSQL |
+| `IncludeMonitoring` | bool | `true` | Include Cloud Monitoring |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

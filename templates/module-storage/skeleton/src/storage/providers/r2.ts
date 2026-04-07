@@ -165,4 +165,4 @@ class R2StorageProvider implements StorageProvider {
 }
 
 // Self-register
-registerProvider(new R2StorageProvider());
+registerProvider("r2", () => new R2StorageProvider());

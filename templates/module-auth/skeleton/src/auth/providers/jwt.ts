@@ -168,6 +168,6 @@ const jwtProvider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(jwtProvider);
+registerProvider("jwt", () => jwtProvider);
 
 export { jwtProvider };

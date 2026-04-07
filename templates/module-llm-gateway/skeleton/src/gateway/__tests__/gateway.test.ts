@@ -45,7 +45,7 @@ describe("gateway integration", () => {
 
     // Avoid double-registration errors by checking first
     if (!listProviders().includes("test-gw")) {
-      registerProvider(createTestProvider("test-gw"));
+      registerProvider("test-gw", () => createTestProvider("test-gw"));
     }
 
     // Register minimal routing and caching strategies
@@ -96,7 +96,7 @@ describe("gateway integration", () => {
     const { registerProvider, listProviders } = await import("../providers/registry.js");
 
     if (!listProviders().includes("test-tags")) {
-      registerProvider(createTestProvider("test-tags"));
+      registerProvider("test-tags", () => createTestProvider("test-tags"));
     }
 
     const { createGateway } = await import("../index.js");

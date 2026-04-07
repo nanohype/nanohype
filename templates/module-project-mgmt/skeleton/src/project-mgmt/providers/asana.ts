@@ -89,6 +89,7 @@ function createAsanaProvider(): ProjectProvider {
     const response = await cb.execute(() =>
       fetch(`${ASANA_API}${path}`, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",

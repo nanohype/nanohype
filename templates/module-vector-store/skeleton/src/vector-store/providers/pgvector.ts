@@ -166,4 +166,4 @@ class PgVectorProvider implements VectorStoreProvider {
 }
 
 // Self-register
-registerProvider(new PgVectorProvider());
+registerProvider("pgvector", () => new PgVectorProvider());

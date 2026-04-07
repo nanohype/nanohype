@@ -11,6 +11,7 @@
     "deploy-commands": "tsx src/commands/deploy.ts",
     "lint": "eslint src/",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest"
   },

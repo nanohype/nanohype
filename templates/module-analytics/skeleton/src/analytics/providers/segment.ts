@@ -40,6 +40,7 @@ function createSegmentProvider(): AnalyticsProvider {
     await cb.execute(async () => {
       const response = await fetch(`${SEGMENT_API}/v1/batch`, {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Basic ${auth}`,

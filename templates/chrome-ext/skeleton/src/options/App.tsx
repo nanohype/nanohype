@@ -41,7 +41,6 @@ export function App() {
     background: "var(--input)",
     color: "var(--foreground)",
     fontSize: "13px",
-    outline: "none",
     marginTop: "4px",
     transition: "border-color 0.15s var(--ease-out)",
   };

@@ -13,16 +13,16 @@ Fly.io deployment configuration with fly.toml, multi-stage Dockerfile, deploy sc
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `Fly.io deployment configuration` | Project description |
-| `AppName` | string | yes | -- | Fly app name (globally unique) |
-| `Region` | string | no | `iad` | Fly.io region code |
-| `MachineSize` | string | no | `shared-cpu-1x` | VM size |
-| `IncludePostgres` | bool | no | `false` | Include Postgres setup |
-| `IncludeRedis` | bool | no | `false` | Include Redis setup |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `Fly.io deployment configuration` | Project description |
+| `AppName` | string | (required) | Fly app name (globally unique) |
+| `Region` | string | `iad` | Fly.io region code |
+| `MachineSize` | string | `shared-cpu-1x` | VM size |
+| `IncludePostgres` | bool | `false` | Include Postgres setup |
+| `IncludeRedis` | bool | `false` | Include Redis setup |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

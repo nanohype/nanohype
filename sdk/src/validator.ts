@@ -32,7 +32,7 @@ export function validateManifest(manifest: TemplateManifest): void {
     }
   }
 
-  // Placeholders must be unique
+  // Placeholders must be unique and no placeholder may be a substring of another
   const placeholders = manifest.variables.map((v) => v.placeholder);
   const seen = new Set<string>();
   for (const p of placeholders) {
@@ -40,6 +40,45 @@ export function validateManifest(manifest: TemplateManifest): void {
       throw new ManifestValidationError(`Duplicate placeholder: ${p}`);
     }
     seen.add(p);
+  }
+  for (let i = 0; i < placeholders.length; i++) {
+    for (let j = 0; j < placeholders.length; j++) {
+      if (i !== j && placeholders[j].includes(placeholders[i])) {
+        throw new ManifestValidationError(
+          `Placeholder '${placeholders[i]}' is a substring of '${placeholders[j]}' — substitution order would corrupt output`,
+        );
+      }
+    }
+  }
+
+  // Default values must match their declared type
+  for (const v of manifest.variables) {
+    if (v.default === undefined) continue;
+    const d = v.default;
+    switch (v.type) {
+      case 'bool':
+        if (typeof d !== 'boolean' && d !== 'true' && d !== 'false') {
+          throw new ManifestValidationError(
+            `Variable '${v.name}' is type bool but default is '${d}'`,
+          );
+        }
+        break;
+      case 'int':
+        if (typeof d !== 'number' || !Number.isInteger(d)) {
+          if (typeof d === 'string' && /^\d+$/.test(d)) break;
+          throw new ManifestValidationError(
+            `Variable '${v.name}' is type int but default is '${d}'`,
+          );
+        }
+        break;
+      case 'enum':
+        if (v.options && !v.options.includes(String(d))) {
+          throw new ManifestValidationError(
+            `Variable '${v.name}' default '${d}' not in options: ${v.options.join(', ')}`,
+          );
+        }
+        break;
+    }
   }
 }
 

@@ -14,13 +14,13 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | `my-electron-app` | Kebab-case project name |
-| `Description` | string | no | `Desktop app with AI` | App description |
-| `LlmProvider` | string | no | `anthropic` | Default provider: anthropic or openai |
-| `IncludeAutoUpdate` | bool | no | `false` | Include auto-update support |
-| `IncludeTests` | bool | no | `true` | Include test setup |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | `my-electron-app` | Kebab-case project name |
+| `Description` | string | `Desktop app with AI` | App description |
+| `LlmProvider` | string | `anthropic` | Default provider: anthropic or openai |
+| `IncludeAutoUpdate` | bool | `false` | Include auto-update support |
+| `IncludeTests` | bool | `true` | Include test setup |
 
 ## Project layout
 

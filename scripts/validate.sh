@@ -47,7 +47,7 @@ fi
 
 # skeleton/ directory exists and is non-empty
 if [ -d "$TEMPLATE_DIR/skeleton" ]; then
-  file_count=$(find "$TEMPLATE_DIR/skeleton" -mindepth 1 | head -1)
+  file_count=$(find "$TEMPLATE_DIR/skeleton" -mindepth 1 -not -path '*/node_modules/*' -not -path '*/.git/*' | head -1)
   if [ -n "$file_count" ]; then
     pass "skeleton/ directory exists and is non-empty"
   else

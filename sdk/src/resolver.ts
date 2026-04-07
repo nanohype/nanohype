@@ -33,6 +33,8 @@ export function resolveVariables(
   }
 
   // Expand ${VarName} cross-references
+  const variableNames = new Set(variables.map((v) => v.name));
+
   for (let pass = 0; pass < MAX_RESOLVE_PASSES; pass++) {
     let changed = false;
     for (const v of variables) {
@@ -41,7 +43,12 @@ export function resolveVariables(
         if (ref === v.name) {
           throw new VariableResolutionError(`Circular reference in variable '${v.name}'`);
         }
-        return resolved[ref] ?? '';
+        if (!variableNames.has(ref)) {
+          throw new VariableResolutionError(
+            `Variable '${v.name}' references unknown variable '${ref}'`,
+          );
+        }
+        return resolved[ref];
       });
       if (replaced !== current) {
         resolved[v.name] = replaced;
@@ -49,6 +56,15 @@ export function resolveVariables(
       }
     }
     if (!changed) break;
+  }
+
+  // Detect indirect circular references (A→B→A) that survived all passes
+  for (const v of variables) {
+    if (/\$\{\w+\}/.test(resolved[v.name])) {
+      throw new VariableResolutionError(
+        `Circular reference detected: variable '${v.name}' still contains unresolved references after ${MAX_RESOLVE_PASSES} passes`,
+      );
+    }
   }
 
   // Validate enum membership

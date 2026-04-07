@@ -77,4 +77,4 @@ const memcachedProvider: CacheProvider = {
 };
 
 // Self-register
-registerProvider(memcachedProvider);
+registerProvider("memcached", () => memcachedProvider);

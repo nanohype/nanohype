@@ -25,13 +25,14 @@ describe("auth provider registry", () => {
 
   const unique = () => `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  it("registers a provider and retrieves it by name", () => {
+  it("registers a factory and retrieves a provider by name", () => {
     const name = unique();
     const provider = stubProvider(name);
 
-    registerProvider(provider);
+    registerProvider(name, () => provider);
 
-    expect(getProvider(name)).toBe(provider);
+    const result = getProvider(name);
+    expect(result?.name).toBe(name);
   });
 
   it("returns undefined for an unregistered provider", () => {
@@ -42,22 +43,34 @@ describe("auth provider registry", () => {
     const a = unique();
     const b = unique();
 
-    registerProvider(stubProvider(a));
-    registerProvider(stubProvider(b));
+    registerProvider(a, () => stubProvider(a));
+    registerProvider(b, () => stubProvider(b));
 
     const names = listProviders();
     expect(names).toContain(a);
     expect(names).toContain(b);
   });
 
-  it("replaces a provider when re-registered with the same name", () => {
+  it("replaces a factory when re-registered with the same name", () => {
     const name = unique();
     const first = stubProvider(name);
     const second = stubProvider(name);
 
-    registerProvider(first);
-    registerProvider(second);
+    registerProvider(name, () => first);
+    registerProvider(name, () => second);
 
     expect(getProvider(name)).toBe(second);
+  });
+
+  it("returns a fresh instance on each getProvider call", () => {
+    const name = unique();
+
+    registerProvider(name, () => stubProvider(name));
+
+    const a = getProvider(name);
+    const b = getProvider(name);
+    expect(a).not.toBe(b);
+    expect(a?.name).toBe(name);
+    expect(b?.name).toBe(name);
   });
 });

@@ -11,11 +11,11 @@ Scaffolds a change management package with a change request template, impact ass
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ChangeType` | enum | no | `normal` | Default change type: standard, normal, or emergency |
-| `IncludeRollback` | bool | no | `true` | Include rollback plan |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ChangeType` | enum | `normal` | Default change type: standard, normal, or emergency |
+| `IncludeRollback` | bool | `true` | Include rollback plan |
 
 ## Project layout
 

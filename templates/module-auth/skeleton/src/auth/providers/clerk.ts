@@ -150,6 +150,6 @@ const clerkProvider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(clerkProvider);
+registerProvider("clerk", () => clerkProvider);
 
 export { clerkProvider };

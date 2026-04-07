@@ -109,4 +109,4 @@ const redisProvider: CacheProvider = {
 };
 
 // Self-register
-registerProvider(redisProvider);
+registerProvider("redis", () => redisProvider);

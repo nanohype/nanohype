@@ -87,7 +87,6 @@ class PgVectorStore implements VectorStoreProvider {
       }
     }
 
-    params.push(vectorStr);
     params.push(topK);
 
     let query = `
@@ -100,7 +99,7 @@ class PgVectorStore implements VectorStoreProvider {
       query += ` WHERE ${whereClauses.join(" AND ")}`;
     }
 
-    query += ` ORDER BY embedding <=> $${params.length - 1}::vector LIMIT $${params.length}`;
+    query += ` ORDER BY embedding <=> $1::vector LIMIT $${params.length}`;
 
     const result = await this.cb.execute(() =>
       this.pool.query(query, params)

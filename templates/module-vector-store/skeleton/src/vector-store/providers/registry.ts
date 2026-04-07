@@ -2,33 +2,35 @@ import type { VectorStoreProvider } from "./types.js";
 
 // -- Provider Registry ---------------------------------------------------
 //
-// Central registry for vector store providers. Each provider module
-// self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain a provider instance.
+// Central registry for vector store provider factories. Each provider
+// module self-registers by calling registerProvider() at import time.
+// Consumer code calls getProvider() to obtain a fresh provider instance.
 //
 
-const providers = new Map<string, VectorStoreProvider>();
+export type VectorStoreProviderFactory = () => VectorStoreProvider;
 
-export function registerProvider(provider: VectorStoreProvider): void {
-  if (providers.has(provider.name)) {
+const factories = new Map<string, VectorStoreProviderFactory>();
+
+export function registerProvider(name: string, factory: VectorStoreProviderFactory): void {
+  if (factories.has(name)) {
     throw new Error(
-      `Vector store provider "${provider.name}" is already registered`,
+      `Vector store provider "${name}" is already registered`,
     );
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): VectorStoreProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(
       `Vector store provider "${name}" not found. Available: ${available}`,
     );
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

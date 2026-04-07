@@ -45,5 +45,3 @@ export function getAllSkills(): Skill[] {
   return [...skills.values()];
 }
 
-// Side-effect import: register the example skill
-import "./example.js";

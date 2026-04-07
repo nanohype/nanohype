@@ -13,12 +13,12 @@ Scaffolds a test automation framework using Playwright for browser testing with 
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `Framework` | string | no | `playwright` | Test framework |
-| `Language` | string | no | `typescript` | Programming language |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Framework` | string | `playwright` | Test framework |
+| `Language` | string | `typescript` | Programming language |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

@@ -88,7 +88,7 @@ See the full list in `composites/` or run `npx nanohype list --composites`.
 Every scaffolded project includes:
 
 - **Bootstrap validation** — catches incomplete scaffolding (missing variable substitutions, unresolved placeholders)
-- **Startup config validation** — Zod schemas that fail fast on missing or malformed environment variables
+- **Startup config validation** — Zod schemas that fail fast on missing or malformed environment variables (TypeScript templates; Go and Python templates use their own validation patterns)
 - **`.env.example`** — documents every environment variable the project needs
 - **Structured JSON logging** — production-ready from the start
 - **Graceful shutdown handlers** — clean teardown on SIGTERM/SIGINT

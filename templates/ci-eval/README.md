@@ -23,7 +23,7 @@ CI pipeline for eval-gated deployments. Runs LLM evaluation suites on every pull
 
 ## Project layout
 
-```
+```text
 .github/workflows/
   eval.yml              # PR-triggered eval pipeline
 src/ci-eval/

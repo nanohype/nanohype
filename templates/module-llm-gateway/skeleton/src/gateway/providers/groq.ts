@@ -76,4 +76,4 @@ const groqProvider: GatewayProvider = {
 };
 
 // Self-register
-registerProvider(groqProvider);
+registerProvider("groq", () => groqProvider);

@@ -57,6 +57,6 @@ const mockProvider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(mockProvider);
+registerProvider("mock", () => mockProvider);
 
 export { mockProvider };

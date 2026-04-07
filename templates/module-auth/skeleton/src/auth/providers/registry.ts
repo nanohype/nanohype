@@ -1,28 +1,32 @@
 // ── Provider Registry ────────────────────────────────────────────────
 //
-// Central registry that maps provider names to provider instances.
+// Central registry that maps provider names to factory functions.
 // Providers self-register at import time by calling `registerProvider`.
-// The middleware looks up providers here by name.
+// The middleware looks up providers here by name — each call to
+// `getProvider` returns a fresh instance via the factory.
 
 import type { AuthProvider } from "./types.js";
 
-const providers = new Map<string, AuthProvider>();
+export type AuthProviderFactory = () => AuthProvider;
+
+const factories = new Map<string, AuthProviderFactory>();
 
 /**
- * Register an auth provider. Called by each provider module at import
- * time. If a provider with the same name is already registered, the
- * new one replaces it (useful for testing or overrides).
+ * Register an auth provider factory. Called by each provider module at
+ * import time. If a provider with the same name is already registered,
+ * the new one replaces it (useful for testing or overrides).
  */
-export function registerProvider(provider: AuthProvider): void {
-  providers.set(provider.name, provider);
+export function registerProvider(name: string, factory: AuthProviderFactory): void {
+  factories.set(name, factory);
 }
 
 /**
- * Retrieve a registered provider by name.
+ * Retrieve a registered provider by name, returning a fresh instance.
  * Returns undefined if no provider with that name has been registered.
  */
 export function getProvider(name: string): AuthProvider | undefined {
-  return providers.get(name);
+  const factory = factories.get(name);
+  return factory ? factory() : undefined;
 }
 
 /**
@@ -30,5 +34,5 @@ export function getProvider(name: string): AuthProvider | undefined {
  * error messages that suggest valid provider names.
  */
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

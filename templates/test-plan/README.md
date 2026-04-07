@@ -11,11 +11,11 @@ Scaffolds a comprehensive test plan document covering scope, approach, environme
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `TestType` | string | no | `functional` | Primary testing type |
-| `IncludeRiskMatrix` | bool | no | `true` | Include risk assessment matrix |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `TestType` | string | `functional` | Primary testing type |
+| `IncludeRiskMatrix` | bool | `true` | Include risk assessment matrix |
 
 ## Project layout
 

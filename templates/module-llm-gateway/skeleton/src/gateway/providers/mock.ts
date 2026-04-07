@@ -66,4 +66,4 @@ const mockProvider: GatewayProvider = {
 };
 
 // Self-register
-registerProvider(mockProvider);
+registerProvider("mock", () => mockProvider);

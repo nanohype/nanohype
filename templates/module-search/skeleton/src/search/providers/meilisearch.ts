@@ -42,6 +42,7 @@ function createMeilisearchProvider(): SearchProvider {
     const response = await cb.execute(() =>
       fetch(url, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers,
         body: body ? JSON.stringify(body) : undefined,
       }),

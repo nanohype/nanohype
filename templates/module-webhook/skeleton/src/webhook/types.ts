@@ -96,6 +96,9 @@ export interface SenderConfig {
   /** Base delay in milliseconds for exponential backoff (default: 1000). */
   baseDelay?: number;
 
+  /** Timeout in milliseconds for each delivery attempt (default: 30000). */
+  timeoutMs?: number;
+
   /** Optional event log for recording sent events. */
   eventLog?: WebhookEventLog;
 }

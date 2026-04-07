@@ -12,12 +12,12 @@ Scaffolds an agent brief for conducting a comprehensive design review. The rende
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Name of the project under review |
-| `DesignSystemUrl` | string | no | `""` | URL to the design system documentation or Figma library |
-| `TargetPlatform` | string | no | `web` | Primary platform being reviewed |
-| `AuditScope` | string | no | `full` | Scope of the review |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Name of the project under review |
+| `DesignSystemUrl` | string | `""` | URL to the design system documentation or Figma library |
+| `TargetPlatform` | string | `web` | Primary platform being reviewed |
+| `AuditScope` | string | `full` | Scope of the review |
 
 ## Project layout
 

@@ -143,7 +143,11 @@ export class LocalSource implements CatalogSource {
       return files;
     }
 
+    const EXCLUDED_DIRS = new Set(['node_modules', '.git', '.DS_Store']);
+
     for (const entry of entries) {
+      if (EXCLUDED_DIRS.has(entry)) continue;
+
       const fullPath = join(dir, entry);
       const s = await stat(fullPath);
       if (s.isDirectory()) {

@@ -110,6 +110,7 @@ npm test             # run tests
 ```
 
 Key modules:
+
 - `src/types.ts` — all type interfaces (TemplateManifest, CompositeManifest, etc.)
 - `src/source.ts` — `CatalogSource` interface for pluggable template discovery
 - `src/sources/github.ts` — `GitHubSource` (reads from GitHub API)

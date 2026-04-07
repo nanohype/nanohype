@@ -12,13 +12,13 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | `my-fine-tune` | Kebab-case project name |
-| `Description` | string | no | `LLM fine-tuning pipeline` | Project description |
-| `Provider` | string | no | `openai` | Default training provider: openai or custom |
-| `IncludeEval` | bool | no | `true` | Include post-training eval module |
-| `IncludeTests` | bool | no | `true` | Include vitest test suite |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | `my-fine-tune` | Kebab-case project name |
+| `Description` | string | `LLM fine-tuning pipeline` | Project description |
+| `Provider` | string | `openai` | Default training provider: openai or custom |
+| `IncludeEval` | bool | `true` | Include post-training eval module |
+| `IncludeTests` | bool | `true` | Include vitest test suite |
 
 ## Project layout
 

@@ -16,16 +16,16 @@ Kubernetes deployment with raw manifests and an optional Helm chart. Production-
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `Kubernetes deployment` | Project description |
-| `Namespace` | string | no | `default` | Kubernetes namespace |
-| `Replicas` | string | no | `2` | Replica count |
-| `IncludeIngress` | bool | no | `true` | Include Ingress resource |
-| `IncludeHpa` | bool | no | `true` | Include HorizontalPodAutoscaler |
-| `IncludeHelm` | bool | no | `true` | Include Helm chart |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `Kubernetes deployment` | Project description |
+| `Namespace` | string | `default` | Kubernetes namespace |
+| `Replicas` | string | `2` | Replica count |
+| `IncludeIngress` | bool | `true` | Include Ingress resource |
+| `IncludeHpa` | bool | `true` | Include HorizontalPodAutoscaler |
+| `IncludeHelm` | bool | `true` | Include Helm chart |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

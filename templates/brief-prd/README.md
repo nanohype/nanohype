@@ -13,13 +13,13 @@ Scaffolds an agent brief for drafting a product requirements document. The rende
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Internal project codename |
-| `ProductName` | string | yes | - | Customer-facing product name |
-| `ProblemStatement` | string | yes | - | Core problem this product addresses |
-| `TargetAudience` | string | no | `""` | Primary user segments or personas |
-| `ExistingResearch` | string | no | `""` | Links or references to existing research |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Internal project codename |
+| `ProductName` | string | (required) | Customer-facing product name |
+| `ProblemStatement` | string | (required) | Core problem this product addresses |
+| `TargetAudience` | string | `""` | Primary user segments or personas |
+| `ExistingResearch` | string | `""` | Links or references to existing research |
 
 ## Project layout
 

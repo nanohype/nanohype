@@ -34,6 +34,7 @@ export function ChatWindow() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: updatedMessages }),
+        signal: AbortSignal.timeout(10_000),
       });
 
       if (!response.ok) {
@@ -75,7 +76,12 @@ export function ChatWindow() {
 
   return (
     <div style={{ display: "flex", flex: 1, flexDirection: "column" }}>
-      <div style={{ flex: 1, overflowY: "auto", padding: "1rem" }}>
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
+        style={{ flex: 1, overflowY: "auto", padding: "1rem" }}
+      >
         {messages.length === 0 && (
           <div
             className="text-dim animate-fade-in"
@@ -85,7 +91,7 @@ export function ChatWindow() {
           </div>
         )}
         {messages.map((message, index) => (
-          <Message key={index} message={message} />
+          <Message key={`msg-${index}`} message={message} />
         ))}
         <div ref={messagesEndRef} />
       </div>
@@ -104,6 +110,7 @@ export function ChatWindow() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
+            aria-label="Message input"
             disabled={isStreaming}
             style={{
               flex: 1,

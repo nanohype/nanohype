@@ -30,14 +30,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           padding: "8px 12px",
           borderRadius: "6px",
           background: isUser
-            ? "rgba(52, 211, 153, 0.10)"
+            ? "color-mix(in srgb, var(--accent) 10%, transparent)"
             : "var(--card)",
           color: "var(--foreground)",
           fontSize: "13px",
           lineHeight: "1.5",
           wordBreak: "break-word",
           border: isUser
-            ? "1px solid rgba(52, 211, 153, 0.15)"
+            ? "1px solid color-mix(in srgb, var(--accent) 15%, transparent)"
             : "1px solid var(--border)",
         }}
       >

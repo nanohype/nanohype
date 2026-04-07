@@ -15,15 +15,15 @@ AWS CDK (TypeScript) infrastructure for deploying AI services. Supports Lambda o
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | `infra` | Kebab-case project name |
-| `Description` | string | no | `AWS CDK infrastructure for AI services` | Project description |
-| `AwsRegion` | string | no | `us-east-1` | AWS deployment region |
-| `ComputeTarget` | enum | no | `lambda` | Compute platform: lambda or ecs |
-| `IncludeVpc` | bool | no | `false` | Include VPC networking |
-| `IncludeRds` | bool | no | `false` | Include RDS PostgreSQL |
-| `IncludeMonitoring` | bool | no | `true` | Include CloudWatch monitoring |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | `infra` | Kebab-case project name |
+| `Description` | string | `AWS CDK infrastructure for AI services` | Project description |
+| `AwsRegion` | string | `us-east-1` | AWS deployment region |
+| `ComputeTarget` | enum | `lambda` | Compute platform: lambda or ecs |
+| `IncludeVpc` | bool | `false` | Include VPC networking |
+| `IncludeRds` | bool | `false` | Include RDS PostgreSQL |
+| `IncludeMonitoring` | bool | `true` | Include CloudWatch monitoring |
 
 ## Project layout
 

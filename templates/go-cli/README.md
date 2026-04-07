@@ -13,14 +13,14 @@ Scaffolds a Go CLI application using [Cobra](https://github.com/spf13/cobra) for
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `Org` | string | yes | - | GitHub org or username |
-| `GoModule` | string | yes | `github.com/<Org>/<ProjectName>` | Full Go module path |
-| `Description` | string | no | `A CLI application` | Short project description |
-| `IncludeRelease` | bool | no | `true` | Include GoReleaser + release workflow |
-| `LogFormat` | enum | no | `json` | Log format: json, text, or pretty |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Org` | string | (required) | GitHub org or username |
+| `GoModule` | string | `github.com/<Org>/<ProjectName>` | Full Go module path |
+| `Description` | string | `A CLI application` | Short project description |
+| `IncludeRelease` | bool | `true` | Include GoReleaser + release workflow |
+| `LogFormat` | enum | `json` | Log format: json, text, or pretty |
 
 ## Project layout
 

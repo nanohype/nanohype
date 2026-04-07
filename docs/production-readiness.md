@@ -1,6 +1,6 @@
 # Production Readiness
 
-Canonical checklist for deploying nanohype-scaffolded projects. Individual template READMEs reference this document from their Production Readiness sections. The items below are cumulative -- AI services inherit all base service requirements, and infrastructure deployments add their own layer on top.
+Canonical checklist for deploying nanohype-scaffolded projects. The items below are cumulative -- AI services inherit all base service requirements, and infrastructure deployments add their own layer on top.
 
 ---
 

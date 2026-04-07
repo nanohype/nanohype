@@ -11,12 +11,12 @@ Design system specification with foundational principles, a component catalog st
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `DesignToolkit` | string | no | `figma` | Primary design tool |
-| `IncludeTokenSync` | bool | no | `true` | Include token sync config |
-| `ColorScheme` | enum | no | `both` | Color scheme: light, dark, or both |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `DesignToolkit` | string | `figma` | Primary design tool |
+| `IncludeTokenSync` | bool | `true` | Include token sync config |
+| `ColorScheme` | enum | `both` | Color scheme: light, dark, or both |
 
 ## Project layout
 

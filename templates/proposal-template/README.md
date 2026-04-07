@@ -10,11 +10,11 @@ Scaffolds a client-facing sales proposal with executive summary, solution overvi
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `CompanyName` | string | yes | - | Client company name |
-| `ProposalType` | string | no | `services` | Proposal type |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `CompanyName` | string | (required) | Client company name |
+| `ProposalType` | string | `services` | Proposal type |
 
 ## Project layout
 

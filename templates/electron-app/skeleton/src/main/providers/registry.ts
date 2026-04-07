@@ -1,20 +1,22 @@
 import type { AiProvider } from "./types.js";
 
-const providers = new Map<string, AiProvider>();
+export type AiProviderFactory = () => AiProvider;
 
-export function registerProvider(name: string, provider: AiProvider): void {
-  providers.set(name, provider);
+const factories = new Map<string, AiProviderFactory>();
+
+export function registerProvider(name: string, factory: AiProviderFactory): void {
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): AiProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = [...providers.keys()].join(", ");
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = [...factories.keys()].join(", ");
     throw new Error(`Unknown AI provider: "${name}". Available: ${available}`);
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return [...providers.keys()];
+  return [...factories.keys()];
 }

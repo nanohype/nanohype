@@ -8,8 +8,8 @@ import { describe, it, expect, beforeEach } from "vitest";
  */
 
 // Import registry functions — side-effect imports register built-in skills
-import { getSkill, listSkills, getAllSkills, registerSkill } from "../skills/registry.js";
-import type { Skill } from "../skills/types.js";
+import { getSkill, listSkills, getAllSkills, registerSkill } from "../skills/index.js";
+import type { Skill } from "../skills/index.js";
 
 describe("Skill Registry", () => {
   it("lists registered skills", () => {

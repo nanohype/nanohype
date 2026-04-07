@@ -1,0 +1,24 @@
+linters:
+  enable:
+    - errcheck
+    - gocritic
+    - gofmt
+    - gosec
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+linters-settings:
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - dupCase
+      - dupSubExpr
+      - sloppyLen
+  gosec:
+    excludes:
+      - G104 # unhandled errors in deferred calls
+
+run:
+  timeout: 5m

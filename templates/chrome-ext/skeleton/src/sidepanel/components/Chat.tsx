@@ -30,6 +30,9 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
     <>
       <div
         ref={scrollRef}
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
         style={{
           flex: 1,
           overflowY: "auto",
@@ -52,7 +55,7 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
           </div>
         )}
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <MessageBubble key={`msg-${i}`} message={msg} />
         ))}
         {isLoading && (
           <div
@@ -83,6 +86,7 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type a message..."
           disabled={isLoading}
+          aria-label="Message input"
           style={{
             flex: 1,
             padding: "8px 12px",
@@ -91,7 +95,6 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             background: "var(--input)",
             color: "var(--foreground)",
             fontSize: "13px",
-            outline: "none",
             transition: "border-color 0.15s var(--ease-out)",
           }}
           onFocus={(e) =>

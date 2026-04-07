@@ -31,6 +31,9 @@ Individual templates are building blocks. Composites are the blueprints that ass
 | `cost-optimized-ai` | LLM gateway with cost routing, semantic caching, observability | 4 | Minimizing LLM spend with smart routing and caching |
 | `ai-platform` | Monorepo with service, gateway, vectors, pipeline, auth, database, billing, monitoring | 9 | Full AI product with usage-based billing |
 | `agent-team` | Orchestrator, specialized agents, MCP tools, evals | 6 | Multi-agent systems with distinct roles |
+| `client-engagement` | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook | 5 | Non-engineering client engagement workflows |
+| `product-launch` | Next.js app, design system, tokens, test plan, acceptance criteria, PRD, campaign, runbook | 10 | Cross-functional product launches spanning eng through marketing |
+| `research-to-prototype` | PRD, agentic loop prototype, optional test plan | 3 | Research-driven prototyping from idea to validated POC |
 
 ---
 
@@ -137,6 +140,31 @@ npx nanohype scaffold --composite production-api \
 - MCP tools (`packages/tools/`) are shared across agents via stdio transport -- add new tools in the server's tool index
 - Run `pnpm --filter *-evals eval` to validate agent behavior -- add multi-agent coordination test cases
 - To add a new agent role, duplicate an existing agent directory and register it with the orchestrator
+
+### client-engagement
+
+- No engineering templates -- this composite is entirely non-code deliverables
+- Start with the proposal (`proposal/`) and battle cards (`battle-cards/`) for the sales pitch
+- Brand guidelines (`brand-guidelines/`) define visual identity for all client-facing materials
+- The campaign brief (`campaign-brief/`) ties marketing to the engagement goals
+- If onboarding is enabled, the playbook (`onboarding-playbook/`) covers post-sale customer setup
+
+### product-launch
+
+- Run `pnpm install` at the monorepo root
+- The Next.js app (`apps/web/`) is the engineering deliverable -- start with `pnpm --filter *-web dev`
+- Design system (`packages/design-system/`) and tokens (`packages/design-tokens/`) define the visual language
+- QA artifacts (test plan, acceptance criteria) live alongside the PRD in `docs/`
+- The campaign brief and runbook are in `docs/` -- hand these to marketing and operations respectively
+- This composite spans engineering, design, QA, product, marketing, and operations personas
+
+### research-to-prototype
+
+- Start with the PRD (`docs/prd/`) to define the research question and success criteria
+- The agentic loop prototype (`src/`) is a minimal AI agent -- edit the system prompt and tools to match the research hypothesis
+- If the test plan is enabled (`docs/test-plan/`), use it to define validation criteria before building
+- Run `npm install && npm run dev` to start iterating on the prototype
+- When the prototype validates the hypothesis, graduate to a full composite like `ai-chatbot` or `enterprise-ai`
 
 ---
 

@@ -13,12 +13,12 @@ Scaffolds an agent brief for producing a comprehensive test strategy. The render
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Name of the project |
-| `Language` | string | no | `typescript` | Primary programming language |
-| `TestingGoal` | string | no | `comprehensive coverage` | High-level testing objective |
-| `CriticalPaths` | string | no | `""` | Comma-separated critical paths to prioritize |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Name of the project |
+| `Language` | string | `typescript` | Primary programming language |
+| `TestingGoal` | string | `comprehensive coverage` | High-level testing objective |
+| `CriticalPaths` | string | `""` | Comma-separated critical paths to prioritize |
 
 ## Project layout
 

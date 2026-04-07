@@ -39,6 +39,7 @@ function createAmplitudeProvider(): AnalyticsProvider {
     await cb.execute(async () => {
       const response = await fetch(`${AMPLITUDE_API}/2/httpapi`, {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           Accept: "*/*",

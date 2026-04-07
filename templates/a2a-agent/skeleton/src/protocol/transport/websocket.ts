@@ -2,6 +2,7 @@ import type { TaskRequest, TaskResponse } from "../types.js";
 import type { A2ATransport } from "./types.js";
 import { registerTransport } from "./registry.js";
 import { logger } from "../../logger.js";
+import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
 
 /**
  * WebSocket transport for A2A protocol.
@@ -12,13 +13,14 @@ import { logger } from "../../logger.js";
  */
 class WebSocketTransport implements A2ATransport {
   readonly name = "websocket";
+  private cb = createCircuitBreaker();
 
   async sendTask(agentUrl: string, request: TaskRequest): Promise<TaskResponse> {
     const wsUrl = agentUrl.replace(/^http/, "ws").replace(/\/$/, "") + "/tasks";
 
     logger.debug("WebSocket transport sending task", { url: wsUrl, skill: request.skill });
 
-    return new Promise<TaskResponse>((resolve, reject) => {
+    return this.cb.execute(() => new Promise<TaskResponse>((resolve, reject) => {
       const ws = new WebSocket(wsUrl);
 
       const timeout = setTimeout(() => {
@@ -46,7 +48,7 @@ class WebSocketTransport implements A2ATransport {
         clearTimeout(timeout);
         reject(new Error(`WebSocket transport error: ${event}`));
       });
-    });
+    }));
   }
 }
 

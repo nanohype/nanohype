@@ -48,6 +48,7 @@ function createMixpanelProvider(): AnalyticsProvider {
       await cb.execute(async () => {
         const response = await fetch(`${MIXPANEL_API}/import?strict=1`, {
           method: "POST",
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
@@ -71,6 +72,7 @@ function createMixpanelProvider(): AnalyticsProvider {
       await cb.execute(async () => {
         const response = await fetch(`${MIXPANEL_API}/engage#profile-batch-update`, {
           method: "POST",
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",

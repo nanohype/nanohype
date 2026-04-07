@@ -11,11 +11,11 @@ Component inventory with structured status tracking, ownership metadata, and an 
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `Framework` | string | no | `react` | Frontend framework |
-| `IncludeA11yChecklist` | bool | no | `true` | Include accessibility checklist |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Framework` | string | `react` | Frontend framework |
+| `IncludeA11yChecklist` | bool | `true` | Include accessibility checklist |
 
 ## Project layout
 

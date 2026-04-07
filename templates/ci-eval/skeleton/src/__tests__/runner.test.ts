@@ -97,7 +97,7 @@ describe("createEvalRunner", () => {
       await runner.run();
     } catch (err) {
       // Provider error expected; both files were discovered
-      expect((err as Error).message).toContain("Unknown LLM provider");
+      expect((err as Error).message).toMatch(/Unknown LLM provider/);
     }
   });
 

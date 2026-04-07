@@ -69,7 +69,7 @@ description: >
   A one-to-three sentence description of what this template scaffolds
   and why someone would reach for it.
 version: "0.1.0"
-license: MIT
+license: Apache-2.0
 tags: [python, cli, async]
 ```
 
@@ -402,14 +402,13 @@ Before submitting, mentally walk through a scaffolding run:
 
 ## 9. Template README
 
-Every template should include a `README.md` alongside `template.yaml`. Cover:
+Every template should include a `README.md` alongside `template.yaml`. Sections, in order:
 
-- **When to use this template** -- the problem it solves, the stack it targets.
 - **What you get** -- a summary of the scaffolded file tree and what each piece does.
-- **Variables reference** -- a table listing each variable, its type, default, and what it controls. This duplicates information from `template.yaml` in a human-scannable format.
-- **Hooks** -- what the hooks do, so users can make an informed decision about running them.
-- **Prerequisites** -- what needs to be installed before using the scaffolded output.
-- **Example usage** -- a concrete scaffolding invocation with realistic variable values.
+- **Variables** -- a table listing each variable, its type, default, and what it controls. This duplicates information from `template.yaml` in a human-scannable format.
+- **Project layout** -- the directory tree with explanations of each component.
+- **Pairs with** -- links to complementary templates (matches `composition.pairsWith`).
+- **Nests inside** -- where this template can be scaffolded within (matches `composition.nestsInside`).
 
 The README is for humans browsing the catalog. The manifest is for tools.
 

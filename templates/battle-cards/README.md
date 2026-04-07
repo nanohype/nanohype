@@ -11,11 +11,11 @@ Scaffolds a competitive intelligence package with feature comparison matrices, p
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `CompetitorCount` | int | no | `3` | Number of competitor slots |
-| `IncludeObjections` | bool | no | `true` | Include objection handling |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `CompetitorCount` | int | `3` | Number of competitor slots |
+| `IncludeObjections` | bool | `true` | Include objection handling |
 
 ## Project layout
 

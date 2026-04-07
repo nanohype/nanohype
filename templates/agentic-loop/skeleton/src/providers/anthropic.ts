@@ -12,9 +12,6 @@ import type {
 import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
-const client = new Anthropic();
-const cb = createCircuitBreaker();
-
 function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   if (zodType instanceof z.ZodNumber) return "number";
   if (zodType instanceof z.ZodBoolean) return "boolean";
@@ -45,13 +42,16 @@ function formatTools(
 }
 
 class AnthropicProvider implements LlmProvider {
+  private readonly client = new Anthropic();
+  private readonly cb = createCircuitBreaker();
+
   async sendMessage(
     systemPrompt: string,
     messages: Message[],
     tools: Tool[],
   ): Promise<LlmResponse> {
-    const response = await cb.execute(() =>
-      client.messages.create({
+    const response = await this.cb.execute(() =>
+      this.client.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
         system: systemPrompt,
@@ -96,8 +96,8 @@ class AnthropicProvider implements LlmProvider {
     // Use cb.execute to guard the stream creation — if the breaker is
     // open, the returned promise rejects with CircuitBreakerOpenError
     // before any network I/O occurs.
-    const streamPromise = cb.execute(async () =>
-      client.messages.stream({
+    const streamPromise = this.cb.execute(async () =>
+      this.client.messages.stream({
         model: "claude-sonnet-4-20250514",
         max_tokens: 4096,
         system: systemPrompt,

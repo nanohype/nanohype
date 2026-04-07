@@ -117,6 +117,7 @@ function createJiraProvider(): ProjectProvider {
     const response = await cb.execute(() =>
       fetch(`${baseUrl}/rest/api/3${path}`, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",

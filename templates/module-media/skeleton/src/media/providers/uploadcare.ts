@@ -84,6 +84,7 @@ function createUploadcareProvider(): MediaProvider {
       const response = await breaker.execute(async () => {
         const res = await fetch("https://upload.uploadcare.com/base/", {
           method: "POST",
+          signal: AbortSignal.timeout(30_000),
           body: formData,
         });
         if (!res.ok) {
@@ -103,6 +104,7 @@ function createUploadcareProvider(): MediaProvider {
 
       const info = await breaker.execute(async () => {
         const res = await fetch(`https://api.uploadcare.com${uri}`, {
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "Content-Type": "application/json",
             Date: date,
@@ -176,6 +178,7 @@ function createUploadcareProvider(): MediaProvider {
       await breaker.execute(async () => {
         const res = await fetch(`https://api.uploadcare.com${uri}`, {
           method: "DELETE",
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "Content-Type": "application/json",
             Date: date,
@@ -203,6 +206,7 @@ function createUploadcareProvider(): MediaProvider {
 
       const response = await breaker.execute(async () => {
         const res = await fetch(`https://api.uploadcare.com${uri}`, {
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "Content-Type": "application/json",
             Date: date,

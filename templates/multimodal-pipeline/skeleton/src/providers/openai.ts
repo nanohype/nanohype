@@ -10,9 +10,11 @@ import OpenAI from "openai";
 import type { MultimodalLlmProvider, AnalysisResult } from "./types.js";
 import type { ProcessedInput } from "../processors/types.js";
 import { registerProvider } from "./registry.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 class OpenAIVisionProvider implements MultimodalLlmProvider {
   private readonly client: OpenAI;
+  private readonly cb = createCircuitBreaker();
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.OPENAI_API_KEY;
@@ -52,15 +54,17 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
       });
     }
 
-    const response = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    );
 
     const text = response.choices[0]?.message?.content ?? "";
 
@@ -106,15 +110,17 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
       text: "Analyze these video frames in sequence and provide a structured description of the video content.",
     });
 
-    const response = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-    });
+    const response = await this.cb.execute(() =>
+      this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      }),
+    );
 
     const text = response.choices[0]?.message?.content ?? "";
 

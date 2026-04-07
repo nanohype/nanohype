@@ -11,12 +11,12 @@ Vercel deployment configuration with vercel.json, deploy scripts, and optional C
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `Vercel deployment` | Project description |
-| `Framework` | string | no | `nextjs` | Framework preset for vercel.json |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `Vercel deployment` | Project description |
+| `Framework` | string | `nextjs` | Framework preset for vercel.json |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

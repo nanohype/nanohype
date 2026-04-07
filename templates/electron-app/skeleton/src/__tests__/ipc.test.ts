@@ -27,29 +27,27 @@ describe("provider registry", () => {
     void key;
   });
 
-  it("registers a provider without throwing", async () => {
+  it("registers a factory without throwing", async () => {
     const { registerProvider, listProviders } = await freshRegistry();
     const provider = stubProvider();
 
-    expect(() => registerProvider("test", provider)).not.toThrow();
+    expect(() => registerProvider("test", () => provider)).not.toThrow();
     expect(listProviders()).toContain("test");
   });
 
-  it("retrieves a registered provider by name", async () => {
+  it("retrieves a provider by name from its factory", async () => {
     const { registerProvider, getProvider } = await freshRegistry();
-    const provider = stubProvider({ defaultModel: "gpt-4o" });
 
-    registerProvider("openai", provider);
+    registerProvider("openai", () => stubProvider({ defaultModel: "gpt-4o" }));
 
     const result = getProvider("openai");
-    expect(result).toBe(provider);
     expect(result.defaultModel).toBe("gpt-4o");
   });
 
   it("throws with a helpful message for an unknown provider", async () => {
     const { registerProvider, getProvider } = await freshRegistry();
-    registerProvider("anthropic", stubProvider());
-    registerProvider("openai", stubProvider());
+    registerProvider("anthropic", () => stubProvider());
+    registerProvider("openai", () => stubProvider());
 
     expect(() => getProvider("cohere")).toThrowError(
       /Unknown AI provider: "cohere"/,
@@ -60,12 +58,23 @@ describe("provider registry", () => {
   it("lists all registered provider names", async () => {
     const { registerProvider, listProviders } = await freshRegistry();
 
-    registerProvider("anthropic", stubProvider());
-    registerProvider("openai", stubProvider());
+    registerProvider("anthropic", () => stubProvider());
+    registerProvider("openai", () => stubProvider());
 
     const names = listProviders();
     expect(names).toEqual(expect.arrayContaining(["anthropic", "openai"]));
     expect(names).toHaveLength(2);
+  });
+
+  it("returns a fresh instance on each getProvider call", async () => {
+    const { registerProvider, getProvider } = await freshRegistry();
+
+    registerProvider("test", () => stubProvider({ defaultModel: "fresh" }));
+
+    const a = getProvider("test");
+    const b = getProvider("test");
+    expect(a).not.toBe(b);
+    expect(a.defaultModel).toBe("fresh");
   });
 });
 

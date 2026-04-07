@@ -159,4 +159,4 @@ class S3StorageProvider implements StorageProvider {
 }
 
 // Self-register
-registerProvider(new S3StorageProvider());
+registerProvider("s3", () => new S3StorageProvider());

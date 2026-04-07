@@ -35,6 +35,7 @@ function createTypesenseProvider(): SearchProvider {
     const response = await cb.execute(() =>
       fetch(url, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "X-TYPESENSE-API-KEY": apiKey,
           "Content-Type": "application/json",
@@ -113,6 +114,7 @@ function createTypesenseProvider(): SearchProvider {
       const response = await cb.execute(() =>
         fetch(url, {
           method: "POST",
+          signal: AbortSignal.timeout(30_000),
           headers: {
             "X-TYPESENSE-API-KEY": apiKey,
             "Content-Type": "text/plain",

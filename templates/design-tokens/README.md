@@ -11,11 +11,11 @@ Design token system with base primitives, semantic aliases, theme configuration,
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `TokenFormat` | string | no | `json` | Primary output format |
-| `IncludeDarkMode` | bool | no | `true` | Include dark mode tokens |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `TokenFormat` | string | `json` | Primary output format |
+| `IncludeDarkMode` | bool | `true` | Include dark mode tokens |
 
 ## Project layout
 

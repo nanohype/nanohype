@@ -16,15 +16,15 @@ Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for ro
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `GoModule` | string | yes | `github.com/<Org>/<ProjectName>` | Full Go module path |
-| `Org` | string | yes | - | GitHub org or username |
-| `Description` | string | no | `A Go HTTP service` | Short project description |
-| `Database` | string | no | `postgres` | Default database backend |
-| `IncludeAuth` | bool | no | `true` | Include auth middleware |
-| `IncludeDocker` | bool | no | `true` | Include Docker support |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `GoModule` | string | `github.com/<Org>/<ProjectName>` | Full Go module path |
+| `Org` | string | (required) | GitHub org or username |
+| `Description` | string | `A Go HTTP service` | Short project description |
+| `Database` | string | `postgres` | Default database backend |
+| `IncludeAuth` | bool | `true` | Include auth middleware |
+| `IncludeDocker` | bool | `true` | Include Docker support |
 
 ## Project layout
 

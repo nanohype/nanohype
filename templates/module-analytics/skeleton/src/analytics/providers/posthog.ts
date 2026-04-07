@@ -37,6 +37,7 @@ function createPosthogProvider(): AnalyticsProvider {
     await cb.execute(async () => {
       const response = await fetch(`${host}/batch`, {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
         },

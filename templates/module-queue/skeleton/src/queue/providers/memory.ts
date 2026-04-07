@@ -102,4 +102,4 @@ const memoryProvider: QueueProvider = {
 };
 
 // Self-register
-registerProvider(memoryProvider);
+registerProvider("memory", () => memoryProvider);

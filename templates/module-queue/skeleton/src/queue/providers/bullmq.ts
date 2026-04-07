@@ -147,4 +147,4 @@ const bullmqProvider: QueueProvider = {
 };
 
 // Self-register
-registerProvider(bullmqProvider);
+registerProvider("bullmq", () => bullmqProvider);

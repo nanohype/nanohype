@@ -115,6 +115,6 @@ const apikeyProvider: AuthProvider = {
 };
 
 // Self-register
-registerProvider(apikeyProvider);
+registerProvider("apikey", () => apikeyProvider);
 
 export { apikeyProvider };

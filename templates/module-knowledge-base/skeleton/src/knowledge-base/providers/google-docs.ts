@@ -242,6 +242,7 @@ function createGoogleDocsProvider(): KnowledgeProvider {
     const response = await cb.execute(() =>
       fetch(url, {
         ...options,
+        signal: options?.signal ?? AbortSignal.timeout(30_000),
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

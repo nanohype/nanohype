@@ -12,13 +12,13 @@ Cloudflare Workers deployment configuration with wrangler.toml, TypeScript entry
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `Cloudflare Workers deployment` | Project description |
-| `IncludeR2` | bool | no | `false` | Include R2 storage bindings |
-| `IncludeD1` | bool | no | `false` | Include D1 database bindings |
-| `IncludeCi` | bool | no | `true` | Include GitHub Actions workflow |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `Cloudflare Workers deployment` | Project description |
+| `IncludeR2` | bool | `false` | Include R2 storage bindings |
+| `IncludeD1` | bool | `false` | Include D1 database bindings |
+| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
 
 ## Project layout
 

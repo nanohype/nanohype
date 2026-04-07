@@ -238,6 +238,176 @@ describe("orchestrator", () => {
     expect(result.errors).toHaveLength(0);
   });
 
+  it("continues processing when one document in a batch fails at the source level", async () => {
+    // Create a source where one document has content that causes the embedder to fail
+    const mixedDocuments: Document[] = [
+      {
+        id: "good-1",
+        content: "This is a healthy document about machine learning fundamentals.",
+        metadata: { source: "test/good-1.txt", type: "file" },
+      },
+      {
+        id: "poison",
+        content: "TRIGGER_EMBED_FAILURE",
+        metadata: { source: "test/poison.txt", type: "file" },
+      },
+      {
+        id: "good-2",
+        content: "This is another healthy document about neural network architectures.",
+        metadata: { source: "test/good-2.txt", type: "file" },
+      },
+    ];
+
+    // Create a chunk strategy that passes content through
+    const passthroughStrategy: ChunkStrategy = {
+      name: "passthrough",
+      chunk(document) {
+        return [{
+          id: `${document.id}_0`,
+          content: document.content,
+          chunkIndex: 0,
+          chunkCount: 1,
+          metadata: { ...document.metadata },
+        }];
+      },
+    };
+
+    // Embedder that fails on specific content
+    const selectiveEmbedder: EmbeddingProvider = {
+      name: "selective",
+      dimensions: 4,
+      async embed(text) {
+        if (text === "TRIGGER_EMBED_FAILURE") {
+          throw new Error("Corrupt content: cannot embed");
+        }
+        return Array.from({ length: 4 }, () => Math.random());
+      },
+      async embedBatch(texts) {
+        // If any text in the batch triggers failure, the whole batch fails
+        // (this matches real embedding API behavior)
+        for (const text of texts) {
+          if (text === "TRIGGER_EMBED_FAILURE") {
+            throw new Error("Corrupt content in batch: cannot embed");
+          }
+        }
+        return texts.map(() => Array.from({ length: 4 }, () => Math.random()));
+      },
+    };
+
+    const adapter = createMockAdapter();
+
+    const result = await runPipeline({
+      source: createMockSource(mixedDocuments),
+      strategy: passthroughStrategy,
+      embedder: selectiveEmbedder,
+      adapter,
+      config: {
+        sourcePath: "./test",
+        sourceType: "file",
+        chunkStrategy: "passthrough",
+        chunkSize: 512,
+        chunkOverlap: 0,
+        embeddingProvider: "selective",
+        embeddingModel: "mock",
+        embeddingDimensions: 4,
+        embeddingBatchSize: 128,
+        outputAdapter: "mock",
+        outputFile: "./output/test.jsonl",
+      },
+    });
+
+    // All 3 documents were ingested
+    expect(result.documentsIngested).toBe(3);
+    // All 3 were chunked
+    expect(result.chunksCreated).toBe(3);
+    // The entire batch failed at embed because they're in one batch
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(result.errors.some((e) => e.stage === "embed")).toBe(true);
+    expect(result.errors.some((e) => e.message.includes("Corrupt content"))).toBe(true);
+  });
+
+  it("isolates per-document transform errors without affecting other documents", async () => {
+    // One document fails during chunking, the others succeed and complete the pipeline
+    const documents: Document[] = [
+      {
+        id: "healthy-a",
+        content: "First document processes without issues.",
+        metadata: { source: "a.txt", type: "file" },
+      },
+      {
+        id: "broken",
+        content: "This will break.",
+        metadata: { source: "broken.txt", type: "file" },
+      },
+      {
+        id: "healthy-b",
+        content: "Third document also processes without issues.",
+        metadata: { source: "b.txt", type: "file" },
+      },
+    ];
+
+    const failOnBrokenStrategy: ChunkStrategy = {
+      name: "fail-on-broken",
+      chunk(document) {
+        if (document.id === "broken") {
+          throw new Error("Malformed document: missing required section");
+        }
+        return [{
+          id: `${document.id}_0`,
+          content: document.content,
+          chunkIndex: 0,
+          chunkCount: 1,
+          metadata: { ...document.metadata },
+        }];
+      },
+    };
+
+    const adapter = createMockAdapter();
+    const progressEvents: ProgressEvent[] = [];
+
+    const result = await runPipeline({
+      source: createMockSource(documents),
+      strategy: failOnBrokenStrategy,
+      embedder: createMockEmbedder(),
+      adapter,
+      config: {
+        sourcePath: "./test",
+        sourceType: "file",
+        chunkStrategy: "fail-on-broken",
+        chunkSize: 512,
+        chunkOverlap: 0,
+        embeddingProvider: "mock",
+        embeddingModel: "mock",
+        embeddingDimensions: 4,
+        embeddingBatchSize: 128,
+        outputAdapter: "mock",
+        outputFile: "./output/test.jsonl",
+      },
+      onProgress: (event) => progressEvents.push(event),
+    });
+
+    // All 3 documents ingested
+    expect(result.documentsIngested).toBe(3);
+    // Only 2 documents produced chunks (the broken one was skipped)
+    expect(result.chunksCreated).toBe(2);
+    // The 2 good chunks were embedded and indexed
+    expect(result.chunksEmbedded).toBe(2);
+    expect(result.chunksIndexed).toBe(2);
+    // Exactly 1 error recorded at the transform stage
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0].stage).toBe("transform");
+    expect(result.errors[0].itemId).toBe("broken");
+    expect(result.errors[0].message).toContain("Malformed document");
+    // Output adapter received the 2 good chunks
+    expect(adapter.written.length).toBeGreaterThan(0);
+    // Progress events should cover all stages
+    const stages = new Set(progressEvents.map((e) => e.stage));
+    expect(stages.has("ingest")).toBe(true);
+    expect(stages.has("transform")).toBe(true);
+    expect(stages.has("embed")).toBe(true);
+    expect(stages.has("index")).toBe(true);
+  });
+
   it("captures embedding failures per batch", async () => {
     const failingEmbedder: EmbeddingProvider = {
       name: "failing",

@@ -1,5 +1,5 @@
 import type { AgentCard, SkillDescriptor } from "../protocol/types.js";
-import { getAllSkills } from "../skills/registry.js";
+import { getAllSkills } from "../skills/index.js";
 import { logger } from "../logger.js";
 
 /**

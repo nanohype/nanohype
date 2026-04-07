@@ -46,6 +46,7 @@ function createOllamaProvider(): LlmProvider {
       const response = await cb.execute(async () => {
         const res = await fetch(`${getBaseUrl()}/chat/completions`, {
           method: "POST",
+          signal: AbortSignal.timeout(300_000),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model,
@@ -96,6 +97,7 @@ function createOllamaProvider(): LlmProvider {
 
         const res = await fetch(`${getBaseUrl()}/chat/completions`, {
           method: "POST",
+          signal: AbortSignal.timeout(300_000),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model,

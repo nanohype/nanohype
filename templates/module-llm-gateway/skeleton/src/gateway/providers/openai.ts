@@ -76,4 +76,4 @@ const openaiProvider: GatewayProvider = {
 };
 
 // Self-register
-registerProvider(openaiProvider);
+registerProvider("openai", () => openaiProvider);

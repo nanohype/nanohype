@@ -6,7 +6,8 @@
   "scripts": {
     "validate": "tsx tests/validate.ts",
     "build:sdk": "cd sdk && npm run build",
-    "lint": "eslint --no-error-on-unmatched-pattern *.js && cd sdk && npm run lint"
+    "lint": "eslint --no-error-on-unmatched-pattern *.js && cd sdk && npm run lint",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",

@@ -80,6 +80,7 @@ function createShortcutProvider(): ProjectProvider {
     const response = await cb.execute(() =>
       fetch(`${SHORTCUT_API}${path}`, {
         method,
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           "Shortcut-Token": getToken(),

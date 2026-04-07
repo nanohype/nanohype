@@ -12,12 +12,12 @@ Scaffolds an operations runbook with service overview, dependency map, operation
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Kebab-case project name |
-| `ServiceName` | string | yes | - | Human-readable service name |
-| `IncludeIncidentResponse` | bool | no | `true` | Include incident response playbook |
-| `OnCallTool` | string | no | `pagerduty` | On-call management tool |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `ServiceName` | string | (required) | Human-readable service name |
+| `IncludeIncidentResponse` | bool | `true` | Include incident response playbook |
+| `OnCallTool` | string | `pagerduty` | On-call management tool |
 
 ## Project layout
 

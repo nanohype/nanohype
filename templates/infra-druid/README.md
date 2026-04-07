@@ -15,15 +15,15 @@ Helm chart for deploying an Apache Druid OLAP cluster on Kubernetes. Six service
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | -- | Kebab-case project name |
-| `Description` | string | no | `Apache Druid OLAP cluster` | Project description |
-| `DruidVersion` | string | no | `36.0.0` | Druid container image version |
-| `MetadataDriver` | string | no | `postgresql` | Metadata storage driver |
-| `DeepStorageType` | string | no | `s3` | Deep storage backend |
-| `IncludeMonitoring` | bool | no | `true` | Include Prometheus metrics emitter |
-| `IncludeTls` | bool | no | `true` | Include cert-manager TLS certificates |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Kebab-case project name |
+| `Description` | string | `Apache Druid OLAP cluster` | Project description |
+| `DruidVersion` | string | `36.0.0` | Druid container image version |
+| `MetadataDriver` | string | `postgresql` | Metadata storage driver |
+| `DeepStorageType` | string | `s3` | Deep storage backend |
+| `IncludeMonitoring` | bool | `true` | Include Prometheus metrics emitter |
+| `IncludeTls` | bool | `true` | Include cert-manager TLS certificates |
 
 ## Project layout
 

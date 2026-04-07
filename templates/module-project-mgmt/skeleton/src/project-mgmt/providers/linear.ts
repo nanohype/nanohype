@@ -73,6 +73,7 @@ function createLinearProvider(): ProjectProvider {
     const response = await cb.execute(() =>
       fetch(LINEAR_API, {
         method: "POST",
+        signal: AbortSignal.timeout(30_000),
         headers: {
           "Content-Type": "application/json",
           Authorization: getApiKey(),

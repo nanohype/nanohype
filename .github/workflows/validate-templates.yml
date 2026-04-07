@@ -53,3 +53,75 @@ jobs:
             echo "One or more templates failed validation"
             exit 1
           fi
+
+  validate-catalog:
+    name: Validate catalog-level checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install yq
+        uses: mikefarah/yq@master
+
+      - name: Run catalog validation
+        run: npm run validate:catalog
+
+  test-templates:
+    name: Test template skeletons
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run template tests
+        run: |
+          failed=0
+          tested=0
+
+          for pkg in templates/*/skeleton/package.json; do
+            [ -f "$pkg" ] || continue
+            dir=$(dirname "$pkg")
+
+            # Skip if no test script defined
+            if ! node -e "const p = require('./$pkg'); if (!p.scripts || !p.scripts.test) process.exit(1);" 2>/dev/null; then
+              continue
+            fi
+
+            echo "──────────────────────────────────────"
+            echo "Testing: $dir"
+            echo "──────────────────────────────────────"
+            tested=$((tested + 1))
+
+            if ! (cd "$dir" && npm install --ignore-scripts && npm test); then
+              echo "FAIL: $dir"
+              failed=1
+            fi
+
+            echo ""
+          done
+
+          echo "──────────────────────────────────────"
+          echo "Templates tested: $tested"
+          echo "──────────────────────────────────────"
+
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more template tests failed"
+            exit 1
+          fi

@@ -29,13 +29,13 @@ function stubProvider(name: string): CacheProvider {
 describe("cache provider registry", () => {
   const unique = () => `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  it("registers a provider and retrieves it by name", () => {
+  it("registers a factory and retrieves a provider by name", () => {
     const name = unique();
-    const provider = stubProvider(name);
 
-    registerProvider(provider);
+    registerProvider(name, () => stubProvider(name));
 
-    expect(getProvider(name)).toBe(provider);
+    const result = getProvider(name);
+    expect(result.name).toBe(name);
   });
 
   it("throws when retrieving an unregistered provider", () => {
@@ -46,9 +46,9 @@ describe("cache provider registry", () => {
 
   it("throws when registering a duplicate provider name", () => {
     const name = unique();
-    registerProvider(stubProvider(name));
+    registerProvider(name, () => stubProvider(name));
 
-    expect(() => registerProvider(stubProvider(name))).toThrow(
+    expect(() => registerProvider(name, () => stubProvider(name))).toThrow(
       /already registered/,
     );
   });
@@ -57,11 +57,22 @@ describe("cache provider registry", () => {
     const a = unique();
     const b = unique();
 
-    registerProvider(stubProvider(a));
-    registerProvider(stubProvider(b));
+    registerProvider(a, () => stubProvider(a));
+    registerProvider(b, () => stubProvider(b));
 
     const names = listProviders();
     expect(names).toContain(a);
     expect(names).toContain(b);
+  });
+
+  it("returns a fresh instance on each getProvider call", () => {
+    const name = unique();
+
+    registerProvider(name, () => stubProvider(name));
+
+    const a = getProvider(name);
+    const b = getProvider(name);
+    expect(a).not.toBe(b);
+    expect(a.name).toBe(name);
   });
 });

@@ -2,31 +2,33 @@ import type { CacheProvider } from "./types.js";
 
 // ── Provider Registry ───────────────────────────────────────────────
 //
-// Central registry for cache providers. Each provider module
+// Central registry for cache provider factories. Each provider module
 // self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain the active provider.
+// Consumer code calls getProvider() to obtain a fresh provider instance.
 //
 
-const providers = new Map<string, CacheProvider>();
+export type CacheProviderFactory = () => CacheProvider;
 
-export function registerProvider(provider: CacheProvider): void {
-  if (providers.has(provider.name)) {
-    throw new Error(`Cache provider "${provider.name}" is already registered`);
+const factories = new Map<string, CacheProviderFactory>();
+
+export function registerProvider(name: string, factory: CacheProviderFactory): void {
+  if (factories.has(name)) {
+    throw new Error(`Cache provider "${name}" is already registered`);
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): CacheProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(
       `Cache provider "${name}" not found. Available: ${available}`
     );
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

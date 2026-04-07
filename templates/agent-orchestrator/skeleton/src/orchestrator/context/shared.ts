@@ -76,7 +76,7 @@ export function createSharedContext(): SharedContext {
     },
 
     getNamespaced(namespace: string, key: string): unknown {
-      return getNamespace(namespace).get(key);
+      return namespaces.get(namespace)?.get(key);
     },
 
     set(key: string, value: unknown): void {
@@ -92,7 +92,8 @@ export function createSharedContext(): SharedContext {
     },
 
     getAllNamespaced(namespace: string): Record<string, unknown> {
-      return Object.fromEntries(getNamespace(namespace));
+      const nsMap = namespaces.get(namespace);
+      return nsMap ? Object.fromEntries(nsMap) : {};
     },
 
     listNamespaces(): string[] {

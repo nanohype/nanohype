@@ -168,4 +168,4 @@ const sqsProvider: QueueProvider = {
 };
 
 // Self-register
-registerProvider(sqsProvider);
+registerProvider("sqs", () => sqsProvider);

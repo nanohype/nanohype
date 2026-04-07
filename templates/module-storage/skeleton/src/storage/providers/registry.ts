@@ -2,33 +2,35 @@ import type { StorageProvider } from "./types.js";
 
 // -- Provider Registry ---------------------------------------------------
 //
-// Central registry for storage providers. Each provider module
+// Central registry for storage provider factories. Each provider module
 // self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain a provider instance.
+// Consumer code calls getProvider() to obtain a fresh provider instance.
 //
 
-const providers = new Map<string, StorageProvider>();
+export type StorageProviderFactory = () => StorageProvider;
 
-export function registerProvider(provider: StorageProvider): void {
-  if (providers.has(provider.name)) {
+const factories = new Map<string, StorageProviderFactory>();
+
+export function registerProvider(name: string, factory: StorageProviderFactory): void {
+  if (factories.has(name)) {
     throw new Error(
-      `Storage provider "${provider.name}" is already registered`
+      `Storage provider "${name}" is already registered`
     );
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): StorageProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(
       `Storage provider "${name}" not found. Available: ${available}`
     );
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

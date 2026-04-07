@@ -2,29 +2,31 @@ import type { GatewayProvider } from "./types.js";
 
 // ── Provider Registry ───────────────────────────────────────────────
 //
-// Central registry for LLM providers. Each provider module
+// Central registry for LLM provider factories. Each provider module
 // self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain the active provider.
+// Consumer code calls getProvider() to obtain a fresh provider instance.
 //
 
-const providers = new Map<string, GatewayProvider>();
+export type GatewayProviderFactory = () => GatewayProvider;
 
-export function registerProvider(provider: GatewayProvider): void {
-  if (providers.has(provider.name)) {
-    throw new Error(`Gateway provider "${provider.name}" is already registered`);
+const factories = new Map<string, GatewayProviderFactory>();
+
+export function registerProvider(name: string, factory: GatewayProviderFactory): void {
+  if (factories.has(name)) {
+    throw new Error(`Gateway provider "${name}" is already registered`);
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getProvider(name: string): GatewayProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(`Gateway provider "${name}" not found. Available: ${available}`);
   }
-  return provider;
+  return factory();
 }
 
 export function listProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

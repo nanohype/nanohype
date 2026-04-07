@@ -71,4 +71,4 @@ const memoryProvider: CacheProvider = {
 };
 
 // Self-register
-registerProvider(memoryProvider);
+registerProvider("memory", () => memoryProvider);

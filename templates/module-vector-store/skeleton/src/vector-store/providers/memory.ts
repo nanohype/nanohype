@@ -70,4 +70,4 @@ class MemoryVectorStoreProvider implements VectorStoreProvider {
 }
 
 // Self-register
-registerProvider(new MemoryVectorStoreProvider());
+registerProvider("memory", () => new MemoryVectorStoreProvider());

@@ -13,13 +13,13 @@ Scaffolds an agent brief for drafting a client-facing proposal. The rendered bri
 
 ## Variables
 
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ProjectName` | string | yes | - | Internal project name |
-| `CompanyName` | string | yes | - | Your company name |
-| `ClientName` | string | yes | - | Client organization name |
-| `EngagementType` | string | no | `services` | Type of engagement |
-| `ClientContext` | string | no | `""` | Background on the client's situation |
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `ProjectName` | string | (required) | Internal project name |
+| `CompanyName` | string | (required) | Your company name |
+| `ClientName` | string | (required) | Client organization name |
+| `EngagementType` | string | `services` | Type of engagement |
+| `ClientContext` | string | `""` | Background on the client's situation |
 
 ## Project layout
 
