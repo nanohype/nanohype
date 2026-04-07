@@ -1,5 +1,7 @@
 # nanohype
 
+[![SafeSkill 74/100](https://img.shields.io/badge/SafeSkill-74%2F100_Passes%20with%20Notes-yellow)](https://safeskill.dev/scan/nanohype-nanohype)
+
 A tool-agnostic template catalog for AI-focused projects. Each template is a self-contained, scaffoldable starting point — consumable by any scaffolding tool that reads the [template contract](docs/spec/template-contract.md).
 
 **New here?** Start with the [Quick Start guide](docs/quick-start.md) — find the right template, scaffold it, and run it in under 2 minutes.
