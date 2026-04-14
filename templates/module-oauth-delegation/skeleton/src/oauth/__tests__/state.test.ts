@@ -8,6 +8,7 @@ import {
   clearStateCookie,
   generateNonce,
   readStateCookie,
+  readStatePayloadUnverified,
   signState,
   STATE_COOKIE_NAME,
   verifyState,
@@ -110,5 +111,63 @@ describe("state cookie", () => {
   it("generateNonce returns hex of at least 16 bytes", () => {
     const n = generateNonce();
     expect(n).toMatch(/^[0-9a-f]{32}$/);
+  });
+});
+
+describe("readStatePayloadUnverified", () => {
+  it("round-trips a signed payload to its parsed userId/provider", () => {
+    const p = payload();
+    const signed = signState(p, SECRET);
+    const parsed = readStatePayloadUnverified(signed);
+    expect(parsed?.userId).toBe(p.userId);
+    expect(parsed?.provider).toBe(p.provider);
+    expect(parsed?.returnTo).toBe(p.returnTo);
+  });
+
+  it("extracts the state value from a full Cookie: header", () => {
+    const signed = signState(payload(), SECRET);
+    const header = `foo=bar; ${STATE_COOKIE_NAME}=${signed}; baz=qux`;
+    const parsed = readStatePayloadUnverified(header);
+    expect(parsed?.userId).toBe("user-1");
+  });
+
+  it("returns null when cookie is missing from the header", () => {
+    expect(readStatePayloadUnverified("foo=bar; baz=qux")).toBeNull();
+  });
+
+  it("returns null on malformed cookie (no signature separator)", () => {
+    expect(readStatePayloadUnverified("no-dot")).toBeNull();
+    expect(readStatePayloadUnverified("")).toBeNull();
+  });
+
+  it("returns null on non-JSON payload body", () => {
+    const badBody = Buffer.from("not-json", "utf-8")
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    expect(readStatePayloadUnverified(`${badBody}.anysig`)).toBeNull();
+  });
+
+  it("returns null when JSON doesn't match the StatePayload shape", () => {
+    const wrongShape = { hello: "world" };
+    const body = Buffer.from(JSON.stringify(wrongShape), "utf-8")
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    expect(readStatePayloadUnverified(`${body}.anysig`)).toBeNull();
+  });
+
+  it("does NOT verify the signature — a tampered sig still yields a payload", () => {
+    // This is the point: the function is explicitly unverified. Callers
+    // must route the cookie through verifyState before trusting it.
+    const signed = signState(payload(), SECRET);
+    const [body] = signed.split(".");
+    const forged = `${body}.this-signature-is-bogus`;
+    const parsed = readStatePayloadUnverified(forged);
+    expect(parsed?.userId).toBe("user-1");
+    // ...but verifyState on the same value must reject it.
+    expect(() => verifyState(forged, SECRET)).toThrow(StateTamperedError);
   });
 });

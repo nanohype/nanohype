@@ -151,6 +151,27 @@ Each adapter is a plain `OAuthProvider` object that self-registers at import tim
 
 The per-key mutex deduplicates concurrent refreshes within a single Node.js process. Multi-instance deployments may race; inject a shared-state mutex (Redis, for instance) via the `createOAuthRouter` seam if that matters for your throughput.
 
+## Consumer escape hatch — `readStatePayloadUnverified`
+
+Some consumers have a signed `/start` URL as their only caller-identity signal, with no parallel session on the `/callback` side. Their `resolveUserId` needs to answer both cases:
+
+```typescript
+import { readStatePayloadUnverified, type ResolveUserId } from "your-oauth-module";
+
+const resolveUserId: ResolveUserId = async (req) => {
+  const url = new URL(req.url);
+  const signedToken = url.searchParams.get("t");
+  if (signedToken) return verifyMySignedToken(signedToken); // /start
+
+  // /callback — no signed URL token present. Fall back to the cookie.
+  const cookie = req.headers.get("cookie") ?? "";
+  const payload = readStatePayloadUnverified(cookie);
+  return payload?.userId ?? null;
+};
+```
+
+`readStatePayloadUnverified` parses the cookie **without** checking the HMAC — it is a routing aid, not an authorization signal. The module's callback handler re-verifies via `verifyState` before trusting anything in the payload, so a forged cookie is caught there. The `Unverified` suffix is deliberate: do not use the returned payload to make access decisions.
+
 ## module-auth vs module-oauth-delegation
 
 | | `module-auth` | `module-oauth-delegation` |
