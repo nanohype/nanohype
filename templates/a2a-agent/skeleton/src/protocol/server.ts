@@ -41,9 +41,8 @@ export async function handleTask(request: TaskRequest): Promise<TaskResponse> {
     updatedAt: now,
   };
 
-  const skill = getSkill(request.skill);
-
   try {
+    const skill = getSkill(request.skill);
     const result = await skill.execute(request.input.content, request.input.metadata);
 
     task.artifacts.push({

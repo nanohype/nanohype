@@ -8,6 +8,24 @@ import type { GatewayCachingStrategy } from "../gateway-adapter.js";
 import "../embedder/mock.js";
 import "../store/memory.js";
 
+/** Build a minimal response shape that satisfies GatewayCachingStrategy. */
+function fakeResponse(text: string) {
+  return {
+    text,
+    model: "gpt-4",
+    provider: "openai",
+    inputTokens: 0,
+    outputTokens: 0,
+    latencyMs: 0,
+    cached: false,
+    cost: 0,
+  };
+}
+
+function fakeContext(prompt: string) {
+  return { prompt, model: "gpt-4", params: {} };
+}
+
 describe("gateway adapter", () => {
   let cache: SemanticCache;
   let strategy: GatewayCachingStrategy;
@@ -31,62 +49,49 @@ describe("gateway adapter", () => {
   });
 
   it("returns undefined from get when cache is empty", async () => {
-    const result = await strategy.get("key-1", {
-      prompt: "What is TypeScript?",
-      model: "gpt-4",
-    });
-
+    const result = await strategy.get("key-1", fakeContext("What is TypeScript?"));
     expect(result).toBeUndefined();
   });
 
   it("stores a response via set and retrieves it via get", async () => {
-    const context = {
-      prompt: "What is TypeScript?",
-      model: "gpt-4",
-    };
+    const ctx = fakeContext("What is TypeScript?");
 
-    await strategy.set("key-1", { body: "TypeScript is ..." }, context);
+    await strategy.set("key-1", fakeResponse("TypeScript is ..."), ctx);
 
-    const result = await strategy.get("key-1", context);
+    const result = await strategy.get("key-1", ctx);
 
     expect(result).toBeDefined();
-    expect(result!.body).toBe("TypeScript is ...");
-    expect(result!.metadata).toBeDefined();
-    expect(result!.metadata!.score).toBeCloseTo(1, 5);
-    expect(result!.metadata!.model).toBe("gpt-4");
+    expect(result!.response.text).toBe("TypeScript is ...");
+    expect(result!.response.cached).toBe(true);
+    expect(result!.cachedAt).toBeDefined();
   });
 
   it("invalidates a cached entry", async () => {
-    const context = {
-      prompt: "What is TypeScript?",
-      model: "gpt-4",
-    };
+    const ctx = fakeContext("What is TypeScript?");
 
-    await strategy.set("key-1", { body: "TypeScript is ..." }, context);
+    await strategy.set("key-1", fakeResponse("TypeScript is ..."), ctx);
 
     // Verify it's stored
-    const beforeInvalidate = await strategy.get("key-1", context);
+    const beforeInvalidate = await strategy.get("key-1", ctx);
     expect(beforeInvalidate).toBeDefined();
 
-    // Find the actual entry id via the underlying store
-    const embedding = await cache.embedder.embed(context.prompt);
-    const hit = await cache.store.search(embedding, 0.95);
+    // Reach into the cache's underlying backend (not the strategy's store()
+    // method) to find the actual entry id — the adapter's invalidate takes
+    // an id, but the strategy.set path generates the id internally.
+    const embedding = await cache.embedder.embed(ctx.prompt);
+    const hit = await cache.backend.search(embedding, 0.95);
     expect(hit).toBeDefined();
 
-    // Invalidate by the real id
     await strategy.invalidate(hit!.id);
 
-    const afterInvalidate = await strategy.get("key-1", context);
+    const afterInvalidate = await strategy.get("key-1", ctx);
     expect(afterInvalidate).toBeUndefined();
   });
 
   it("closes the underlying cache", async () => {
-    const context = {
-      prompt: "What is TypeScript?",
-      model: "gpt-4",
-    };
+    const ctx = fakeContext("What is TypeScript?");
 
-    await strategy.set("key-1", { body: "TypeScript is ..." }, context);
+    await strategy.set("key-1", fakeResponse("TypeScript is ..."), ctx);
 
     await strategy.close();
 

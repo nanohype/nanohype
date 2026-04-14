@@ -2,12 +2,15 @@ import { describe, it, expect, beforeEach } from "vitest";
 import type { AiProvider } from "../lib/providers/types.js";
 
 /**
- * The registry uses module-level state (a Map), so we re-import
- * a fresh module for each test to avoid cross-test pollution.
+ * The registry uses module-level state (a Map). An earlier version tried
+ * to re-import the module via dynamic import to get a fresh Map, but Node's
+ * ESM loader doesn't honor cache-bust query strings for file:// URLs — the
+ * Map leaked across tests. We now explicitly clear it in beforeEach.
  */
 
 async function freshRegistry() {
   const mod = await import("../lib/providers/registry.js");
+  mod._clearRegistry();
   return mod;
 }
 
@@ -20,14 +23,9 @@ function stubProvider(overrides?: Partial<AiProvider>): AiProvider {
 }
 
 describe("provider registry", () => {
-  // Dynamic import with cache-busting keeps each test isolated.
-  // vitest re-evaluates the module on each dynamic import when
-  // the module is not in the static import graph.
-
-  beforeEach(() => {
-    // Clear the module from vitest's module cache so the Map resets.
-    const key = Object.keys(import.meta).length; // no-op, forces new scope
-    void key;
+  beforeEach(async () => {
+    const mod = await import("../lib/providers/registry.js");
+    mod._clearRegistry();
   });
 
   it("registers a factory without throwing", async () => {

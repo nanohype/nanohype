@@ -22,14 +22,19 @@ describe("provider registry", () => {
   let registerProvider: typeof import("../ai/providers/registry").registerProvider;
   let getProvider: typeof import("../ai/providers/registry").getProvider;
   let listProviders: typeof import("../ai/providers/registry").listProviders;
+  let _clearRegistry: typeof import("../ai/providers/registry")._clearRegistry;
 
   beforeEach(async () => {
-    // Dynamic import with cache-bust so each test gets a fresh module
-    // (and therefore a fresh Map).
-    const mod = await import(`../ai/providers/registry?t=${Date.now()}`);
+    // Node's ESM loader does not honor the `?t=...` query-string cache-bust
+    // the earlier version relied on, so the module-level Map leaks across
+    // tests. Explicitly clear instead — deterministic and doesn't depend on
+    // loader internals.
+    const mod = await import("../ai/providers/registry");
     registerProvider = mod.registerProvider;
     getProvider = mod.getProvider;
     listProviders = mod.listProviders;
+    _clearRegistry = mod._clearRegistry;
+    _clearRegistry();
   });
 
   it("registers a factory and retrieves a provider", () => {

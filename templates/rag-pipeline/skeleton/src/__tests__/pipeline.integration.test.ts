@@ -34,14 +34,20 @@ class TestEmbedder implements EmbeddingProvider {
   readonly dimensions = 8;
 
   private hashToVector(text: string): number[] {
+    // Bag-of-words: hash each word to a single dimension. Documents that
+    // share vocabulary will have overlapping vectors, so a query like
+    // "What is TypeScript?" scores the TypeScript document highest.
+    // The prior implementation spread each character across dimensions and
+    // produced near-uniform vectors that couldn't separate documents.
     const vec = new Array(this.dimensions).fill(0);
-    const words = text.toLowerCase().split(/\s+/);
+    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
     for (const word of words) {
+      let h = 0;
       for (let i = 0; i < word.length; i++) {
-        vec[(i + word.charCodeAt(0)) % this.dimensions] += word.charCodeAt(i) / 1000;
+        h = (h * 31 + word.charCodeAt(i)) | 0;
       }
+      vec[Math.abs(h) % this.dimensions] += 1;
     }
-    // Normalize
     const mag = Math.sqrt(vec.reduce((s, v) => s + v * v, 0));
     return mag > 0 ? vec.map((v) => v / mag) : vec;
   }

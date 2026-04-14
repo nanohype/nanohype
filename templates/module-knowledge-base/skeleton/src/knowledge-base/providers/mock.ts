@@ -16,15 +16,24 @@ import { registerProvider } from "./registry.js";
 // Stores pages in a Map with full CRUD support, search by title
 // and content, and markdown content. No external dependencies.
 //
+// Mock state is module-level rather than per-factory-call so that the
+// adapter (which re-fetches the provider via getProvider()) sees the
+// same pages a caller seeded earlier. Tests can call resetMockState()
+// in beforeEach to start from a clean slate.
+
+const pages = new Map<string, Page>();
+let nextId = 1;
+
+function generateId(): string {
+  return `mock-page-${nextId++}`;
+}
+
+export function resetMockState(): void {
+  pages.clear();
+  nextId = 1;
+}
 
 function createMockProvider(): KnowledgeProvider {
-  const pages = new Map<string, Page>();
-  let nextId = 1;
-
-  function generateId(): string {
-    return `mock-page-${nextId++}`;
-  }
-
   return {
     name: "mock",
 

@@ -101,10 +101,12 @@ const jwtProvider: AuthProvider = {
       return { authenticated: false, error: "Missing Bearer token" };
     }
 
-    const jwksUrl = process.env.AUTH_JWT_JWKS_URL;
-    const secret = process.env.AUTH_JWT_SECRET;
-    const issuer = process.env.AUTH_JWT_ISSUER;
-    const audience = process.env.AUTH_JWT_AUDIENCE;
+    // Empty-string env vars collapse to undefined so jose doesn't try to
+    // match iss === "" / aud === "" on tokens that have no such claim.
+    const jwksUrl = process.env.AUTH_JWT_JWKS_URL || undefined;
+    const secret = process.env.AUTH_JWT_SECRET || undefined;
+    const issuer = process.env.AUTH_JWT_ISSUER || undefined;
+    const audience = process.env.AUTH_JWT_AUDIENCE || undefined;
 
     if (!jwksUrl && !secret) {
       return {

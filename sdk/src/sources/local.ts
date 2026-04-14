@@ -75,7 +75,7 @@ export class LocalSource implements CatalogSource {
     }
 
     const skeletonDir = join(templateDir, 'skeleton');
-    const files = await this.walkDir(skeletonDir);
+    const files = await this.walkDir(skeletonDir, skeletonDir);
 
     return { manifest, files };
   }
@@ -133,7 +133,14 @@ export class LocalSource implements CatalogSource {
     return manifest;
   }
 
-  private async walkDir(dir: string): Promise<SkeletonFile[]> {
+  /**
+   * Recursively walk a skeleton directory and return flat {@link SkeletonFile}
+   * records. `baseDir` is threaded through every recursion so that every
+   * emitted `path` is computed relative to the skeleton root rather than the
+   * immediate parent — otherwise nested files (e.g. `src/oauth/index.ts`)
+   * would collapse to just their basename and the output tree would be flat.
+   */
+  private async walkDir(dir: string, baseDir: string): Promise<SkeletonFile[]> {
     const files: SkeletonFile[] = [];
 
     let entries: string[];
@@ -143,7 +150,7 @@ export class LocalSource implements CatalogSource {
       return files;
     }
 
-    const EXCLUDED_DIRS = new Set(['node_modules', '.git', '.DS_Store']);
+    const EXCLUDED_DIRS = new Set(['node_modules', '.git', '.DS_Store', 'dist', 'coverage']);
 
     for (const entry of entries) {
       if (EXCLUDED_DIRS.has(entry)) continue;
@@ -151,11 +158,11 @@ export class LocalSource implements CatalogSource {
       const fullPath = join(dir, entry);
       const s = await stat(fullPath);
       if (s.isDirectory()) {
-        const nested = await this.walkDir(fullPath);
+        const nested = await this.walkDir(fullPath, baseDir);
         files.push(...nested);
       } else {
         files.push({
-          path: relative(dir, fullPath),
+          path: relative(baseDir, fullPath),
           content: await readFile(fullPath, 'utf-8'),
         });
       }

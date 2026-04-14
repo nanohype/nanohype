@@ -14,7 +14,7 @@ describe("errorHandler", () => {
     expect(res.status).toBe(500);
 
     const body = await res.json();
-    expect(body).toHaveProperty("error", "Internal Server Error");
+    expect(body.error.message).toBe("Internal Server Error");
   });
 
   it("preserves error status when present", async () => {
@@ -30,7 +30,7 @@ describe("errorHandler", () => {
     expect(res.status).toBe(404);
 
     const body = await res.json();
-    expect(body).toHaveProperty("error", "Not Found");
+    expect(body.error.message).toBe("Not Found");
   });
 
   it("returns 400 for client errors with the original message", async () => {
@@ -46,7 +46,7 @@ describe("errorHandler", () => {
     expect(res.status).toBe(400);
 
     const body = await res.json();
-    expect(body).toHaveProperty("error", "Invalid input");
+    expect(body.error.message).toBe("Invalid input");
   });
 
   it("hides internal error messages for 500+ status codes", async () => {
@@ -64,8 +64,8 @@ describe("errorHandler", () => {
     expect(res.status).toBe(502);
 
     const body = await res.json();
-    expect(body).toHaveProperty("error", "Internal Server Error");
-    expect(body.error).not.toContain("secret");
+    expect(body.error.message).toBe("Internal Server Error");
+    expect(JSON.stringify(body)).not.toContain("secret");
   });
 
   it("returns valid JSON content type", async () => {

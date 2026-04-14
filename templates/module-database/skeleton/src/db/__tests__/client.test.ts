@@ -42,13 +42,20 @@ function installFakeDriver(name: string) {
   return state;
 }
 
+// Each test needs a fresh driver name so the registry's already-registered
+// branch doesn't leave a prior test's closure-captured state live in place of
+// the current test's state object.
+function freshDriverName(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 describe("createDatabase", () => {
-  const driverName = `fake-${Date.now()}`;
+  let driverName: string;
   let state: ReturnType<typeof installFakeDriver>;
 
   beforeEach(async () => {
-    // Disconnect any existing singleton so tests are independent
     await disconnectDatabase();
+    driverName = freshDriverName("fake");
     state = installFakeDriver(driverName);
   });
 
@@ -69,11 +76,12 @@ describe("createDatabase", () => {
 });
 
 describe("getDb", () => {
-  const driverName = `lazy-${Date.now()}`;
+  let driverName: string;
   let state: ReturnType<typeof installFakeDriver>;
 
   beforeEach(async () => {
     await disconnectDatabase();
+    driverName = freshDriverName("lazy");
     state = installFakeDriver(driverName);
   });
 
@@ -104,11 +112,12 @@ describe("getDb", () => {
 });
 
 describe("disconnectDatabase", () => {
-  const driverName = `disc-${Date.now()}`;
+  let driverName: string;
   let state: ReturnType<typeof installFakeDriver>;
 
   beforeEach(async () => {
     await disconnectDatabase();
+    driverName = freshDriverName("disc");
     state = installFakeDriver(driverName);
   });
 

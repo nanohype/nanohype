@@ -46,7 +46,7 @@ describe("payment provider registry", () => {
     const name = unique();
     const provider = stubProvider(name);
 
-    registerProvider(provider);
+    registerProvider(name, () => provider);
 
     expect(getProvider(name)).toBe(provider);
   });
@@ -59,9 +59,9 @@ describe("payment provider registry", () => {
 
   it("throws when registering a duplicate provider name", () => {
     const name = unique();
-    registerProvider(stubProvider(name));
+    registerProvider(name, () => stubProvider(name));
 
-    expect(() => registerProvider(stubProvider(name))).toThrow(
+    expect(() => registerProvider(name, () => stubProvider(name))).toThrow(
       /already registered/,
     );
   });
@@ -70,8 +70,8 @@ describe("payment provider registry", () => {
     const a = unique();
     const b = unique();
 
-    registerProvider(stubProvider(a));
-    registerProvider(stubProvider(b));
+    registerProvider(a, () => stubProvider(a));
+    registerProvider(b, () => stubProvider(b));
 
     const names = listProviders();
     expect(names).toContain(a);

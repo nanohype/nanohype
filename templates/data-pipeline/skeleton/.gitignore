@@ -3,4 +3,7 @@ dist/
 .env
 *.log
 *.tsbuildinfo
-output/
+# Anchored to the skeleton root — without the leading slash, this also
+# matches src/pipeline/output/ which IS source code, not build output.
+/output/
+

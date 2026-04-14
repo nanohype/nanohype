@@ -1,9 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { trace, context, SpanContext, TraceFlags } from "@opentelemetry/api";
+import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { logger } from "../logger.js";
+
+// Without a registered context manager the @opentelemetry/api default is a
+// NOOP that silently drops `context.with(...)` scopes, so `context.active()`
+// never sees the wrapped span. Register the async-hooks manager globally so
+// the trace-propagation assertions below actually exercise the wiring.
+const contextManager = new AsyncLocalStorageContextManager();
 
 describe("structured logger", () => {
   beforeEach(() => {
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -11,6 +20,8 @@ describe("structured logger", () => {
   });
 
   afterEach(() => {
+    context.disable();
+    contextManager.disable();
     vi.restoreAllMocks();
   });
 
