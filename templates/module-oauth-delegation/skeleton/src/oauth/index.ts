@@ -37,6 +37,14 @@ export {
 
 export { logger } from "./logger.js";
 
+// State cookie helpers — `readStatePayloadUnverified` lets consumers peek
+// at the userId / provider / returnTo without verifying the HMAC, which
+// is useful when routing `resolveUserId` signals on `/callback` from a
+// service that has no independent auth source. See its JSDoc for the
+// (narrow) safety contract.
+export { readStatePayloadUnverified } from "./state.js";
+export type { StatePayload } from "./state.js";
+
 // Provider adapters — importing this file also triggers their self-registration
 // via the ./providers barrel.
 export {

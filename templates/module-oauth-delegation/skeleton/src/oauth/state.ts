@@ -133,3 +133,65 @@ export function readStateCookie(req: Request): string {
   }
   throw new StateMissingError();
 }
+
+function isStatePayload(value: unknown): value is StatePayload {
+  if (value === null || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.nonce === "string" &&
+    typeof v.userId === "string" &&
+    typeof v.provider === "string" &&
+    typeof v.returnTo === "string" &&
+    typeof v.createdAt === "number" &&
+    typeof v.codeVerifier === "string"
+  );
+}
+
+/**
+ * Parse a state-cookie value **without** verifying the HMAC signature.
+ *
+ * Useful for consumers whose own `resolveUserId` implementation has no
+ * parallel auth signal on `/callback` and needs to recover the userId
+ * from the cookie for routing. The module's handlers re-verify the
+ * HMAC before trusting the payload, so this peek cannot be used to
+ * bypass anything — a forged cookie is caught at the
+ * {@link verifyState} step in the `/callback` handler.
+ *
+ * **Contract:** the returned payload is untrusted. Callers MUST NOT
+ * make authorization decisions from it on their own.
+ *
+ * Accepts either a raw `Cookie:` header string (e.g.
+ * `"foo=bar; __oauth_state=<value>"`) or the already-extracted cookie
+ * value (just the signed `<body>.<sig>` part). Returns `null` when the
+ * cookie is missing, malformed, or the payload doesn't match
+ * {@link StatePayload}.
+ */
+export function readStatePayloadUnverified(cookieHeaderOrValue: string): StatePayload | null {
+  if (!cookieHeaderOrValue) return null;
+
+  // If it's a raw Cookie header (has "name=value" pairs separated by `;`
+  // or `=` appears before the first `.`), extract the state-cookie value.
+  let raw = cookieHeaderOrValue;
+  if (raw.includes(";") || (raw.includes("=") && raw.indexOf("=") < raw.indexOf("."))) {
+    let found: string | null = null;
+    for (const part of raw.split(";")) {
+      const [k, ...rest] = part.trim().split("=");
+      if (k === STATE_COOKIE_NAME) {
+        found = rest.join("=");
+        break;
+      }
+    }
+    if (found === null) return null;
+    raw = found;
+  }
+
+  const dot = raw.lastIndexOf(".");
+  if (dot < 1) return null;
+  const body = raw.slice(0, dot);
+  try {
+    const parsed = JSON.parse(b64urlDecode(body).toString("utf-8"));
+    return isStatePayload(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
