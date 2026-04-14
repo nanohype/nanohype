@@ -13,6 +13,10 @@ import { registerProvider } from "./registry.js";
 interface StoredJob {
   job: Job;
   eligibleAt: number;
+  // Flipped on dequeue so the next dequeue doesn't return the same job.
+  // Cleared by fail() when the job gets retried. Acknowledge/failed are
+  // terminal states that also keep the entry out of future dequeues.
+  dequeued: boolean;
   acknowledged: boolean;
   failed: boolean;
 }
@@ -51,6 +55,7 @@ const memoryProvider: QueueProvider = {
     jobs.push({
       job,
       eligibleAt: Date.now() + delay,
+      dequeued: false,
       acknowledged: false,
       failed: false,
     });
@@ -66,13 +71,17 @@ const memoryProvider: QueueProvider = {
 
     const index = jobs.findIndex(
       (entry) =>
-        !entry.acknowledged && !entry.failed && entry.eligibleAt <= now
+        !entry.dequeued &&
+        !entry.acknowledged &&
+        !entry.failed &&
+        entry.eligibleAt <= now
     );
 
     if (index === -1) return null;
 
     const entry = jobs[index]!;
     entry.job.attempts += 1;
+    entry.dequeued = true;
     return { ...entry.job };
   },
 
@@ -88,8 +97,9 @@ const memoryProvider: QueueProvider = {
     if (!entry) return;
 
     if (entry.job.attempts < entry.job.maxRetries) {
-      // Re-enqueue for retry — mark as eligible again
+      // Re-enqueue for retry — mark as eligible + visible again.
       entry.eligibleAt = Date.now();
+      entry.dequeued = false;
     } else {
       entry.failed = true;
     }

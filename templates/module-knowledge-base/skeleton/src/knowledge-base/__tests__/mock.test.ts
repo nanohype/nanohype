@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 // Import the mock provider module to trigger self-registration
-import "../providers/mock.js";
+import { resetMockState } from "../providers/mock.js";
 import { getProvider } from "../providers/registry.js";
 import type { KnowledgeProvider } from "../providers/types.js";
 
@@ -9,7 +9,8 @@ describe("mock knowledge base provider", () => {
   let provider: KnowledgeProvider;
 
   beforeEach(() => {
-    // Each call returns a fresh instance (factory pattern)
+    // Reset module-level state so each test starts with an empty page store.
+    resetMockState();
     provider = getProvider("mock");
   });
 

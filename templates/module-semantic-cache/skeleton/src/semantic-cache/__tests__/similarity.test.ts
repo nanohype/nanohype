@@ -39,10 +39,11 @@ describe("cosineSimilarity", () => {
     );
   });
 
-  it("throws on zero vector", () => {
-    expect(() => cosineSimilarity([0, 0, 0], [1, 2, 3])).toThrow(
-      /zero vector/,
-    );
+  it("returns 0 when either vector has zero magnitude", () => {
+    // Consistent with module-vector-store — no division-by-zero,
+    // the caller can't reasonably compare directions of a null vector.
+    expect(cosineSimilarity([0, 0, 0], [1, 2, 3])).toBe(0);
+    expect(cosineSimilarity([1, 2, 3], [0, 0, 0])).toBe(0);
   });
 });
 

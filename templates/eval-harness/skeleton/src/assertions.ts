@@ -135,7 +135,10 @@ export function maxTokens(limit: number): AssertionFn {
     const pass = count <= limit;
     return {
       pass,
-      score: pass ? 1 : Math.max(0, 1 - (count - limit) / limit),
+      // On overrun, decay the score as limit/count — that hits 0.5 at 2× over,
+      // 0.1 at 10× over, and never pins to exactly 0 for any finite overshoot.
+      // The previous `1 - (count - limit) / limit` zeroed out at 2× the limit.
+      score: pass ? 1 : limit / count,
       message: pass
         ? `Output is within token limit (${count}/${limit})`
         : `Output exceeds token limit (${count}/${limit})`,

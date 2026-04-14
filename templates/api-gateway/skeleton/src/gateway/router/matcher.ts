@@ -17,7 +17,11 @@ import type { MatchResult } from "./types.js";
  * - Trailing slash normalization: "/api/users/" matches "/api/users"
  */
 export function pathMatches(pattern: string, requestPath: string): boolean {
-  const normalizedPattern = pattern.endsWith("/") ? pattern.slice(0, -1) : pattern;
+  // Strip trailing slash only when the path is longer than root — otherwise
+  // "/" collapses to "" and fails to match a root request.
+  const normalizedPattern = pattern.endsWith("/") && pattern.length > 1
+    ? pattern.slice(0, -1)
+    : pattern;
   const normalizedPath = requestPath.endsWith("/") && requestPath.length > 1
     ? requestPath.slice(0, -1)
     : requestPath;

@@ -58,8 +58,9 @@ export function fromStringStream(
       yield { text, done: false };
     }
 
-    yield { text: "", done: true };
-
+    // Resolve the response BEFORE yielding done — consumers routinely break
+    // out of the iteration on done, which would leave the generator paused
+    // at the yield and the response promise hanging forever.
     const latencyMs = performance.now() - start;
     resolveResponse!({
       text: fullText,
@@ -72,6 +73,8 @@ export function fromStringStream(
       latencyMs,
       cost: 0,
     });
+
+    yield { text: "", done: true };
   }
 
   const iterator = generate();

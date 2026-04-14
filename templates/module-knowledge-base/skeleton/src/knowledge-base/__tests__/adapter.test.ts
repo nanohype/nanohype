@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 // Import mock provider to trigger self-registration
-import "../providers/mock.js";
+import { resetMockState } from "../providers/mock.js";
 import { getProvider } from "../providers/registry.js";
 import { createKnowledgeIngestSource } from "../ingest/adapter.js";
 import type { KnowledgeProvider } from "../providers/types.js";
@@ -10,6 +10,7 @@ describe("knowledge base ingest adapter", () => {
   let provider: KnowledgeProvider;
 
   beforeEach(() => {
+    resetMockState();
     provider = getProvider("mock");
   });
 

@@ -10,6 +10,7 @@ import type { AiProvider } from "../main/providers/types.js";
 
 async function freshRegistry() {
   const mod = await import("../main/providers/registry.js");
+  mod._clearRegistry();
   return mod;
 }
 
@@ -22,9 +23,9 @@ function stubProvider(overrides?: Partial<AiProvider>): AiProvider {
 }
 
 describe("provider registry", () => {
-  beforeEach(() => {
-    const key = Object.keys(import.meta).length;
-    void key;
+  beforeEach(async () => {
+    const mod = await import("../main/providers/registry.js");
+    mod._clearRegistry();
   });
 
   it("registers a factory without throwing", async () => {

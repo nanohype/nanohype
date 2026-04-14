@@ -23,6 +23,7 @@ export function errorHandler(err: Error, c: Context): Response {
     console.error(`[error] ${c.req.method} ${c.req.path}:`, err);
   }
 
+  // Typed AppError: structured response, include validation issues when present.
   if (err instanceof AppError) {
     const body: Record<string, unknown> = {
       error: {
@@ -31,24 +32,29 @@ export function errorHandler(err: Error, c: Context): Response {
         statusCode: err.statusCode,
       },
     };
-
-    // Include validation issues when present
     if (err instanceof ValidationError && err.issues.length > 0) {
       (body.error as Record<string, unknown>).issues = err.issues;
     }
-
     return c.json(body, err.statusCode as any);
   }
 
-  // Unknown errors — hide internal details
+  // Plain Error with a `status` property (ad-hoc throws, library errors).
+  // Propagate the status when present; hide the message on server errors so
+  // internal detail doesn't leak.
+  const rawStatus = (err as Error & { status?: unknown }).status;
+  const status =
+    typeof rawStatus === "number" && rawStatus >= 400 && rawStatus < 600
+      ? rawStatus
+      : 500;
+
   return c.json(
     {
       error: {
         code: "INTERNAL_ERROR",
-        message: "Internal Server Error",
-        statusCode: 500,
+        message: status >= 500 ? "Internal Server Error" : err.message,
+        statusCode: status,
       },
     },
-    500
+    status as any,
   );
 }

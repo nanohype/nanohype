@@ -76,7 +76,9 @@ describe("Processor Registry", () => {
   });
 
   it("throws on unknown modality", () => {
-    expect(() => getProcessorByModality("video" as "video")).not.toThrow();
+    expect(() => getProcessorByModality("video" as "video")).toThrow(
+      "No processor registered for modality",
+    );
   });
 });
 

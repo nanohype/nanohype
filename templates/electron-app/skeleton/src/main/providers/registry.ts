@@ -20,3 +20,8 @@ export function getProvider(name: string): AiProvider {
 export function listProviders(): string[] {
   return [...factories.keys()];
 }
+
+/** Test-only: wipe the registry so each test starts from a clean slate. */
+export function _clearRegistry(): void {
+  factories.clear();
+}

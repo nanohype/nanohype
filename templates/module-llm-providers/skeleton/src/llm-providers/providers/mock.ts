@@ -88,8 +88,9 @@ function createMockProvider(): LlmProvider {
           yield { text: chunk, done: false };
         }
 
-        yield { text: "", done: true };
-
+        // Resolve the response promise before yielding done — consumers
+        // often break the iteration on done, which would leave this
+        // generator paused and the response promise unresolved forever.
         const latencyMs = performance.now() - start;
         const inputText = messages.map((m) => m.content).join(" ");
         const usage = {
@@ -105,6 +106,8 @@ function createMockProvider(): LlmProvider {
           latencyMs,
           cost: 0,
         });
+
+        yield { text: "", done: true };
       }
 
       const iterator = generate();
