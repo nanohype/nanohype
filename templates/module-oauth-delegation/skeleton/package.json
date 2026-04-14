@@ -1,0 +1,53 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "description": "__DESCRIPTION__",
+  "type": "module",
+  "main": "dist/oauth/index.js",
+  "types": "dist/oauth/index.d.ts",
+  "exports": {
+    ".": "./dist/oauth/index.js",
+    "./providers": "./dist/oauth/providers/index.js",
+    "./storage": "./dist/oauth/storage/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsx --watch src/oauth/index.ts",
+    "start": "node dist/oauth/index.js",
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/client-kms": "^3.600.0",
+    "@smithy/node-http-handler": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@aws-sdk/client-dynamodb": { "optional": true },
+    "@aws-sdk/client-kms": { "optional": true },
+    "@smithy/node-http-handler": { "optional": true }
+  },
+  "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.600.0",
+    "@aws-sdk/client-kms": "^3.600.0",
+    "@eslint/js": "^9.20.0",
+    "@smithy/node-http-handler": "^3.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.1.0",
+    "aws-sdk-client-mock": "^4.1.0",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.25.0",
+    "vitest": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
