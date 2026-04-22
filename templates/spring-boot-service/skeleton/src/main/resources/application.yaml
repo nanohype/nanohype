@@ -22,7 +22,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
+          # Prefer OAUTH2_ISSUER_URI in real environments (enables OIDC
+          # discovery). The jwk-set-uri fallback is a lazy placeholder so
+          # SecurityConfig can always build a JwtDecoder bean — the URL is
+          # only fetched when a real JWT arrives, never at startup.
           issuer-uri: ${OAUTH2_ISSUER_URI:}
+          jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://localhost:1/jwks-placeholder}
 
 server:
   port: ${SERVER_PORT:8080}
