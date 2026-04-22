@@ -1,0 +1,108 @@
+apiVersion: nanohype/v1
+kind: composite
+name: spring-boot-microservice
+displayName: "Spring Boot Microservice"
+description: >
+  Java Spring Boot 4 HTTP service on JDK 25 with a Kubernetes deployment
+  and an optional Grafana + Prometheus + Loki observability stack.
+  Production-shaped: OAuth 2.0 resource server, Spring Data JPA with
+  Flyway, Micrometer + OpenTelemetry, Helm chart, HPA, and ingress.
+version: "0.1.0"
+tags: [java, spring-boot, jvm, microservice, api, kubernetes]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used across service, k8s resources, and repo"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: GroupId
+    type: string
+    placeholder: "__GROUP_ID__"
+    description: "Maven groupId (reverse-DNS, dot-separated, lowercase)"
+    prompt: "Maven groupId"
+    default: "com.example"
+    required: true
+
+  - name: JavaPackage
+    type: string
+    placeholder: "__JAVA_PKG__"
+    description: "Root Java package (dot form)"
+    prompt: "Root Java package (dot form)"
+    default: "${GroupId}.app"
+    required: true
+
+  - name: PackageDir
+    type: string
+    placeholder: "__PKG_DIR__"
+    description: >
+      Root Java package as a directory path (slash form). Must be the
+      slash-form of JavaPackage.
+    prompt: "Root Java package (slash form)"
+    default: "com/example/app"
+    required: true
+
+  - name: Database
+    type: string
+    placeholder: "__DATABASE__"
+    description: "Database driver (postgres, mysql, h2)"
+    prompt: "Database driver"
+    default: "postgres"
+
+  - name: Namespace
+    type: string
+    placeholder: "__NAMESPACE__"
+    description: "Kubernetes namespace for deployed resources"
+    prompt: "Kubernetes namespace"
+    default: "default"
+
+  - name: Replicas
+    type: string
+    placeholder: "__REPLICAS__"
+    description: "Kubernetes pod replica count"
+    prompt: "Replicas"
+    default: "2"
+
+  - name: IncludeMonitoring
+    type: bool
+    placeholder: "__INCLUDE_MONITORING__"
+    description: "Include Grafana + Prometheus + Loki observability stack under observability/"
+    prompt: "Include observability stack?"
+    default: false
+
+templates:
+  - template: spring-boot-service
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      GroupId: "${GroupId}"
+      ArtifactId: "${ProjectName}"
+      JavaPackage: "${JavaPackage}"
+      PackageDir: "${PackageDir}"
+      Database: "${Database}"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: k8s-deploy
+    path: k8s
+    variables:
+      ProjectName: "${ProjectName}"
+      Namespace: "${Namespace}"
+      Replicas: "${Replicas}"
+      IncludeIngress: true
+      IncludeHpa: true
+      IncludeHelm: true
+      IncludeCi: true
+
+  - template: monitoring-stack
+    path: observability
+    condition: IncludeMonitoring
+    variables:
+      ProjectName: "${ProjectName}"
+      DeployTarget: "docker-compose"
+      IncludeAlerts: true
