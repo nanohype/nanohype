@@ -1,0 +1,18 @@
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: __PROJECT_NAME__-jwt
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: __PROJECT_NAME__
+    app.kubernetes.io/component: istio-policy
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: __PROJECT_NAME__
+  jwtRules:
+    - issuer: __OIDC_ISSUER__
+      jwksUri: __JWKS_URI__
+      audiences:
+        - __ALLOWED_AUD__
+      forwardOriginalToken: true

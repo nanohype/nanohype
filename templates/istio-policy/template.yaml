@@ -1,0 +1,114 @@
+apiVersion: nanohype/v1
+
+name: istio-policy
+displayName: "Istio Service-Mesh Policy"
+description: >
+  Scaffolds an Istio policy bundle for an HTTP workload on a service mesh:
+  an AuthorizationPolicy that enforces JWT authentication, a
+  RequestAuthentication that configures the JWT issuer + JWKs endpoint,
+  an optional PeerAuthentication enforcing STRICT mTLS, and an optional
+  VirtualService routing template. Designed to drop alongside any
+  containerized service template (spring-boot-service, go-service, ts-service).
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: infrastructure
+tags: [istio, kubernetes, k8s, service-mesh, authorization, oidc, mtls, security]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used for resource names and selector labels"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Namespace
+    type: string
+    placeholder: "__NAMESPACE__"
+    description: "Kubernetes namespace the policy resources are applied to"
+    prompt: "Namespace"
+    default: "default"
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be a valid Kubernetes namespace (lowercase kebab-case)"
+
+  - name: OidcIssuer
+    type: string
+    placeholder: "__OIDC_ISSUER__"
+    description: "OIDC issuer URL that signs inbound JWTs (e.g. https://auth.example.com)"
+    prompt: "OIDC issuer URL"
+    required: true
+
+  - name: JwksUri
+    type: string
+    placeholder: "__JWKS_URI__"
+    description: >
+      JWKs endpoint URL. For standard OIDC providers this is usually
+      {issuer}/.well-known/jwks.json — override if your provider uses a
+      different path.
+    prompt: "JWKs URI"
+    default: "${OidcIssuer}/.well-known/jwks.json"
+    required: true
+
+  - name: AllowedAudience
+    type: string
+    placeholder: "__ALLOWED_AUD__"
+    description: "JWT `aud` claim value required for requests to this service"
+    prompt: "Expected JWT audience"
+    default: "${ProjectName}"
+    required: true
+
+  - name: ServiceHost
+    type: string
+    placeholder: "__SERVICE_HOST__"
+    description: "Fully-qualified service host for the VirtualService"
+    prompt: "Service host"
+    default: "${ProjectName}.${Namespace}.svc.cluster.local"
+
+  - name: GatewayName
+    type: string
+    placeholder: "__GATEWAY_NAME__"
+    description: >
+      Istio Gateway resource name the VirtualService attaches to. Use
+      "mesh" for internal-only (default) or the name of an external
+      ingress gateway (e.g. "istio-system/public-gateway") for
+      externally-reachable traffic.
+    prompt: "Gateway (use 'mesh' for internal-only)"
+    default: "mesh"
+
+  - name: IncludeMTls
+    type: bool
+    placeholder: "__INCLUDE_MTLS__"
+    description: "Include a PeerAuthentication resource enforcing STRICT mTLS"
+    prompt: "Include STRICT mTLS PeerAuthentication?"
+    default: false
+
+  - name: IncludeVirtualService
+    type: bool
+    placeholder: "__INCLUDE_VIRTUAL_SERVICE__"
+    description: "Include a VirtualService routing template"
+    prompt: "Include VirtualService?"
+    default: false
+
+conditionals:
+  - path: "peer-authentication.yaml"
+    when: IncludeMTls
+  - path: "virtual-service.yaml"
+    when: IncludeVirtualService
+
+composition:
+  pairsWith: [spring-boot-service, go-service, ts-service, k8s-deploy]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: kubectl
+    purpose: "Apply Istio policy manifests to the cluster"
+    optional: false
+  - name: istioctl
+    version: ">=1.20"
+    purpose: "Validate Istio resource manifests (`istioctl analyze`) before apply"
+    optional: true

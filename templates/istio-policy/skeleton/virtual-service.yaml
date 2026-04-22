@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: __PROJECT_NAME__
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: __PROJECT_NAME__
+    app.kubernetes.io/component: istio-policy
+spec:
+  hosts:
+    - __SERVICE_HOST__
+  gateways:
+    - __GATEWAY_NAME__
+  http:
+    - name: default
+      route:
+        - destination:
+            host: __SERVICE_HOST__
+            port:
+              number: 8080
+          weight: 100
