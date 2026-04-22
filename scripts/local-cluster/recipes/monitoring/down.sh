@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-# Delete the istio-flavor cluster. Idempotent — no-op if the cluster doesn't
-# exist. Does not touch other kind clusters (identity, plain, etc.).
+# Delete the monitoring-recipe cluster. Idempotent.
 
 set -euo pipefail
 
-FLAVOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$FLAVOR_DIR/../../lib/common.sh"
+RECIPE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$RECIPE_DIR/../../lib/common.sh"
 
 require_tool kind
 
-CLUSTER="$(cluster_name istio)"
+CLUSTER="$(cluster_name monitoring)"
 
 if cluster_exists "$CLUSTER"; then
   info "deleting kind cluster '$CLUSTER'"

@@ -31,10 +31,10 @@ Teardown reclaims everything — kind clusters leave no trace on the host.
 From the repo root:
 
 ```sh
-make -C scripts/local-cluster up FLAVOR=istio       # idempotent
-make -C scripts/local-cluster status FLAVOR=istio
+make -C scripts/local-cluster up RECIPE=istio       # idempotent
+make -C scripts/local-cluster status RECIPE=istio
 make -C scripts/local-cluster validate DIR=/tmp/ias-render
-make -C scripts/local-cluster down FLAVOR=istio
+make -C scripts/local-cluster down RECIPE=istio
 ```
 
 ## What `validate` does

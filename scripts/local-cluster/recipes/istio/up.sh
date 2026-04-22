@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-FLAVOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$FLAVOR_DIR/../../lib/common.sh"
+RECIPE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$RECIPE_DIR/../../lib/common.sh"
 
 require_tool kind "install via: brew install kind"
 require_tool kubectl "install via: brew install kubectl"
@@ -18,7 +18,7 @@ if cluster_exists "$CLUSTER"; then
   pass "kind cluster '$CLUSTER' already exists"
 else
   info "creating kind cluster '$CLUSTER'"
-  kind create cluster --config "$FLAVOR_DIR/kind-config.yaml" >/dev/null
+  kind create cluster --config "$RECIPE_DIR/kind-config.yaml" >/dev/null
   pass "kind cluster created"
 fi
 
@@ -61,5 +61,5 @@ echo ""
 info "cluster ready — next steps:"
 echo "    kubectl config current-context    # should be kind-$CLUSTER"
 echo "    kubectl -n apps apply -f <manifests>"
-echo "    make status FLAVOR=istio"
+echo "    make status RECIPE=istio"
 echo "    make validate DIR=<rendered-dir>"

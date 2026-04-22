@@ -2,7 +2,7 @@
 
 Single-node kind cluster with a pre-created `monitoring` namespace. Intentionally minimal today — the `monitoring-stack` template ships its own Prometheus Operator CRDs via its Helm chart, so the cluster starts empty.
 
-When `monitoring-stack` hardens (tracked as future work; the template owner mentioned this is upcoming), this flavor's `up.sh` will gain operator installation so validations can exercise the full CRD surface without re-applying the whole chart. The README of `monitoring-stack` will be the source of truth for what's needed.
+When `monitoring-stack` hardens (tracked as future work; the template owner mentioned this is upcoming), this recipe's `up.sh` will gain operator installation so validations can exercise the full CRD surface without re-applying the whole chart. The README of `monitoring-stack` will be the source of truth for what's needed.
 
 ## Footprint
 
@@ -19,10 +19,10 @@ When `monitoring-stack` hardens (tracked as future work; the template owner ment
 ## Usage
 
 ```sh
-make -C scripts/local-cluster up FLAVOR=monitoring
-make -C scripts/local-cluster status FLAVOR=monitoring
-make -C scripts/local-cluster validate DIR=/tmp/monitoring-render FLAVOR=monitoring
-make -C scripts/local-cluster down FLAVOR=monitoring
+make -C scripts/local-cluster up RECIPE=monitoring
+make -C scripts/local-cluster status RECIPE=monitoring
+make -C scripts/local-cluster validate DIR=/tmp/monitoring-render RECIPE=monitoring
+make -C scripts/local-cluster down RECIPE=monitoring
 ```
 
 ## Host port mappings

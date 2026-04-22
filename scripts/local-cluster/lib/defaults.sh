@@ -166,10 +166,10 @@ EOF
   esac
 }
 
-# Maps a template/composite name to the flavor its cluster-side validations
+# Maps a template/composite name to the recipe its cluster-side validations
 # run against. Names without cluster concerns return empty string — the
 # verify orchestrator interprets that as "skip cluster validation."
-default_flavor_for() {
+default_recipe_for() {
   case "$1" in
     k8s-deploy|istio-policy)                         echo "istio" ;;
     spring-boot-microservice|identity-aware-service) echo "istio" ;;

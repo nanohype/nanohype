@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Report on the monitoring-flavor cluster.
+# Report on the monitoring-recipe cluster.
 
 set -euo pipefail
 
-FLAVOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$FLAVOR_DIR/../../lib/common.sh"
+RECIPE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$RECIPE_DIR/../../lib/common.sh"
 
 require_tool kind
 require_tool kubectl
@@ -12,7 +12,7 @@ require_tool kubectl
 CLUSTER="$(cluster_name monitoring)"
 
 if ! cluster_exists "$CLUSTER"; then
-  info "cluster '$CLUSTER' does not exist — run: make up FLAVOR=monitoring"
+  info "cluster '$CLUSTER' does not exist — run: make up RECIPE=monitoring"
   exit 0
 fi
 

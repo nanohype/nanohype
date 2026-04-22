@@ -1,4 +1,4 @@
-# kind cluster config for the monitoring flavor.
+# kind cluster config for the monitoring recipe.
 #
 # Single control-plane node sized for a kube-prometheus-style stack.
 # Port mappings expose Grafana (3000) and Prometheus (9090) directly

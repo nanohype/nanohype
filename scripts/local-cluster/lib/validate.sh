@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Validate a rendered manifest tree against the current cluster.
 #
-# Usage: validate.sh <rendered-dir> [<flavor>]
+# Usage: validate.sh <rendered-dir> [<recipe>]
 #
 # Runs kubectl server-side dry-run across every YAML in the tree (server-side
 # so custom resources like Istio's are validated against installed CRDs), then
@@ -13,16 +13,16 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LIB_DIR/common.sh"
 
 RENDERED_DIR="${1:?rendered directory required}"
-FLAVOR="${2:-istio}"
+RECIPE="${2:-istio}"
 
 require_tool kubectl
 require_tool yq "install via: brew install yq"
 
 # Confirm the cluster is up and kubectl is pointed at it.
-CLUSTER="$(cluster_name "$FLAVOR")"
+CLUSTER="$(cluster_name "$RECIPE")"
 CURRENT_CTX="$(kubectl config current-context 2>/dev/null || echo "")"
 if [ "$CURRENT_CTX" != "kind-$CLUSTER" ]; then
-  fail "kubectl context is '$CURRENT_CTX', expected 'kind-$CLUSTER'. Run: make up FLAVOR=$FLAVOR"
+  fail "kubectl context is '$CURRENT_CTX', expected 'kind-$CLUSTER'. Run: make up RECIPE=$RECIPE"
 fi
 
 info "Validating against cluster ${C_BOLD}${CLUSTER}${C_RESET}"
@@ -58,7 +58,7 @@ else
   warn "kubectl dry-run: ${yaml_files} files validated, ${apply_errors} errors"
 fi
 
-# ── Phase 2: istioctl analyze on any Istio-flavored manifests ──
+# ── Phase 2: istioctl analyze on any Istio-typed manifests ──
 
 if ! command -v istioctl >/dev/null 2>&1; then
   warn "istioctl not on PATH — skipping Istio-specific analysis"

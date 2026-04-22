@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Template-aware verification driver.
 #
-# Usage: verify.sh <mode> <name> [--flavor <name>] [--json]
+# Usage: verify.sh <mode> <name> [--recipe <name>] [--json]
 #   mode: "template" or "composite"
 #   name: template or composite name (must exist in the catalog)
 #
@@ -27,17 +27,17 @@ MODE="${1:?'mode required: template|composite'}"
 NAME="${2:?'name required'}"
 shift 2
 
-FLAVOR=""
+RECIPE=""
 FORMAT="text"
 while [ $# -gt 0 ]; do
   case "$1" in
-    --flavor) FLAVOR="$2"; shift 2 ;;
+    --recipe) RECIPE="$2"; shift 2 ;;
     --json) FORMAT="json"; shift ;;
     *) fail "unknown flag: $1" ;;
   esac
 done
 
-[ -z "$FLAVOR" ] && FLAVOR="$(default_flavor_for "$NAME")"
+[ -z "$RECIPE" ] && RECIPE="$(default_recipe_for "$NAME")"
 
 # ── Locate the SDK CLI (built in sdk/dist) ──
 NANOHYPE_CLI="$REPO_ROOT/sdk/dist/bin/nanohype.js"
@@ -57,7 +57,7 @@ record_result() {
 RENDERED_DIR="$(mktemp -d -t "nanohype-verify-${NAME}-XXXXXX")"
 trap 'rm -rf "$RENDERED_DIR"' EXIT
 
-info "Verifying ${C_BOLD}${MODE}/${NAME}${C_RESET} (flavor: ${FLAVOR:-none})"
+info "Verifying ${C_BOLD}${MODE}/${NAME}${C_RESET} (recipe: ${RECIPE:-none})"
 
 mapfile -t defaults < <(scaffold_defaults_for "$NAME")
 if [ "${#defaults[@]}" -eq 0 ]; then
@@ -111,16 +111,16 @@ run_check_mvn() {
 }
 
 run_check_kubectl() {
-  if [ -z "$FLAVOR" ]; then
-    record_result kubectl SKIP "no flavor specified"
-    warn "kubectl: skipped (no flavor)"
+  if [ -z "$RECIPE" ]; then
+    record_result kubectl SKIP "no recipe specified"
+    warn "kubectl: skipped (no recipe)"
     return 0
   fi
-  local cluster; cluster="$(cluster_name "$FLAVOR")"
+  local cluster; cluster="$(cluster_name "$RECIPE")"
   local current_ctx; current_ctx="$(kubectl config current-context 2>/dev/null || echo "")"
   if [ "$current_ctx" != "kind-$cluster" ]; then
     record_result kubectl SKIP "cluster kind-$cluster not active"
-    warn "kubectl: skipped — run: make up FLAVOR=$FLAVOR"
+    warn "kubectl: skipped — run: make up RECIPE=$RECIPE"
     return 0
   fi
 
@@ -234,8 +234,8 @@ done
 # ── Report ──
 if [ "$FORMAT" = "json" ]; then
   # Emit a single JSON object. No external tool needed.
-  printf '{\n  "mode": "%s",\n  "name": "%s",\n  "flavor": "%s",\n  "checks": [\n' \
-    "$MODE" "$NAME" "$FLAVOR"
+  printf '{\n  "mode": "%s",\n  "name": "%s",\n  "recipe": "%s",\n  "checks": [\n' \
+    "$MODE" "$NAME" "$RECIPE"
   local_i=0
   for r in "${results[@]}"; do
     IFS='|' read -r ck st dt <<< "$r"

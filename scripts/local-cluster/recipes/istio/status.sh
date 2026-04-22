@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Report on the istio-flavor cluster: existence, control plane, apps namespace.
+# Report on the istio-recipe cluster: existence, control plane, apps namespace.
 
 set -euo pipefail
 
-FLAVOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$FLAVOR_DIR/../../lib/common.sh"
+RECIPE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$RECIPE_DIR/../../lib/common.sh"
 
 require_tool kind
 require_tool kubectl
@@ -12,7 +12,7 @@ require_tool kubectl
 CLUSTER="$(cluster_name istio)"
 
 if ! cluster_exists "$CLUSTER"; then
-  info "cluster '$CLUSTER' does not exist — run: make up FLAVOR=istio"
+  info "cluster '$CLUSTER' does not exist — run: make up RECIPE=istio"
   exit 0
 fi
 

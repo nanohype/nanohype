@@ -33,10 +33,10 @@ require_tool() {
 }
 
 # ── Cluster naming ──
-# Every flavor's cluster is named nanohype-<flavor>. This is the single source
-# of truth — flavor scripts source this helper rather than hardcoding names.
+# Every recipe's cluster is named nanohype-<recipe>. This is the single source
+# of truth — recipe scripts source this helper rather than hardcoding names.
 cluster_name() {
-  echo "nanohype-${1:?flavor required}"
+  echo "nanohype-${1:?recipe required}"
 }
 
 # ── Existence check ──
@@ -46,8 +46,8 @@ cluster_exists() {
 }
 
 # ── Repo-relative paths ──
-# Flavors source this file from scripts/local-cluster/lib/. Derive the repo
-# root relative to that for locating flavor subdirs and shared resources.
+# Recipes source this file from scripts/local-cluster/lib/. Derive the repo
+# root relative to that for locating recipe subdirs and shared resources.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_CLUSTER_DIR="$(dirname "$SCRIPT_DIR")"
 REPO_ROOT="$(cd "$LOCAL_CLUSTER_DIR/../.." && pwd)"

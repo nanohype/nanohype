@@ -1,4 +1,4 @@
-# kind cluster config for the istio flavor.
+# kind cluster config for the istio recipe.
 #
 # Single control-plane node. Port-forwards expose 80/443 from the
 # Istio ingress gateway to the host so external demos can curl
