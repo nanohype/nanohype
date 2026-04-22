@@ -1,0 +1,113 @@
+apiVersion: nanohype/v1
+
+name: module-spring-security
+displayName: "Spring Security Auth Module"
+description: >
+  Drop-in Spring Security module for a Spring Boot service. Configures a
+  multi-provider SecurityFilterChain supporting OAuth 2.0 JWT resource
+  server (OIDC), header-based API keys with a pluggable validator, and
+  opaque-token introspection — all selectable via @ConfigurationProperties,
+  composable simultaneously, dispatching through Spring Security's native
+  AuthenticationManager. Includes a custom JWT claim-to-authority
+  converter, optional @EnableMethodSecurity configuration, and a test
+  stub for bypassing real token validation in slice and integration tests.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: composable-modules
+tags: [java, spring, spring-security, oauth2, oidc, jwt, api-key, identity, auth]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used in bean names and log identifiers"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: JavaPackage
+    type: string
+    placeholder: "__JAVA_PKG__"
+    description: "Root Java package (dot form) of the consuming project"
+    prompt: "Root Java package (dot form)"
+    default: "com.example.app"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      message: "Must be a valid Java package (e.g. com.example.app)"
+
+  - name: PackageDir
+    type: string
+    placeholder: "__PKG_DIR__"
+    description: >
+      Root Java package as a directory path (slash form). Must be the
+      slash-form of JavaPackage — e.g. if JavaPackage is 'com.example.app'
+      then PackageDir is 'com/example/app'.
+    prompt: "Root Java package (slash form)"
+    default: "com/example/app"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*$"
+      message: "Must be lowercase segments separated by slashes"
+
+  - name: OidcIssuer
+    type: string
+    placeholder: "__OIDC_ISSUER__"
+    description: >
+      Default OIDC issuer URL baked into application.yaml documentation.
+      Override at runtime via the SECURITY_JWT_ISSUER_URI env var.
+    prompt: "OIDC issuer URL"
+    default: "https://auth.example.com"
+
+  - name: AllowedAudience
+    type: string
+    placeholder: "__ALLOWED_AUD__"
+    description: "Default JWT `aud` claim value expected on inbound tokens"
+    prompt: "Expected JWT audience"
+    default: "${ProjectName}"
+
+  - name: IncludeMethodSecurity
+    type: bool
+    placeholder: "__INCLUDE_METHOD_SECURITY__"
+    description: "Enable @PreAuthorize / @PostAuthorize via a MethodSecurityConfig"
+    prompt: "Enable method-level security?"
+    default: true
+
+  - name: IncludeTests
+    type: bool
+    placeholder: "__INCLUDE_TESTS__"
+    description: "Include test helpers (stub JwtDecoder, filter-chain assertions)"
+    prompt: "Include test helpers?"
+    default: true
+
+conditionals:
+  - path: "src/main/java/__PKG_DIR__/security/MethodSecurityConfig.java"
+    when: IncludeMethodSecurity
+  - path: "src/test/java/__PKG_DIR__/security/TestSecurityConfig.java"
+    when: IncludeTests
+  - path: "src/test/java/__PKG_DIR__/security/SecurityConfigTest.java"
+    when: IncludeTests
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Resolve Maven dependencies for the consuming project"
+      run: "mvn -q -DskipTests dependency:resolve"
+      workdir: "."
+
+composition:
+  pairsWith: [spring-boot-service, istio-policy]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: java
+    version: ">=25"
+    purpose: "JDK 25 (latest LTS) for compiling the security module"
+    optional: false
+  - name: mvn
+    version: ">=3.8"
+    purpose: "Maven build tool for dependency resolution"
+    optional: false
