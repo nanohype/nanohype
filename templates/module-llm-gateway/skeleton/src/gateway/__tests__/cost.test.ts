@@ -168,9 +168,15 @@ describe("anomaly detection", () => {
     });
 
     const anomalies = detectAnomalies(entries, 20, 2.0);
-    expect(anomalies.length).toBeGreaterThan(0);
-    expect(anomalies[0].entry.cost).toBe(0.5);
-    expect(anomalies[0].zScore).toBeGreaterThan(2.0);
+
+    // detectAnomalies returns entries in chronological order, not z-score
+    // order, so the injected spike is not guaranteed to be anomalies[0] —
+    // incidental tail draws from the uniform noise can trigger false
+    // positives at earlier window positions. Assert that the spike IS in
+    // the result set (which is what the test name promises).
+    const spike = anomalies.find((a) => a.entry.cost === 0.5);
+    expect(spike).toBeDefined();
+    expect(spike!.zScore).toBeGreaterThan(2.0);
   });
 
   it("returns empty for uniform costs", () => {
