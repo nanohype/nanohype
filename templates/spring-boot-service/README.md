@@ -1,10 +1,10 @@
 # spring-boot-service
 
-Scaffolds a Java [Spring Boot 3](https://spring.io/projects/spring-boot) HTTP service on **JDK 25** (latest LTS) with Spring Web MVC, Spring Boot Actuator, optional Spring Security (OAuth 2.0 resource server with JWT), Spring Data JPA + [Flyway](https://flywaydb.org/) migrations, Micrometer + [OpenTelemetry](https://opentelemetry.io/) instrumentation, and a clean controller / service / repository layering.
+Scaffolds a Java [Spring Boot 4](https://spring.io/projects/spring-boot) HTTP service on **JDK 25** (latest LTS) with Spring Web MVC, Spring Boot Actuator, optional Spring Security (OAuth 2.0 resource server with JWT), Spring Data JPA + [Flyway](https://flywaydb.org/) migrations, Micrometer + [OpenTelemetry](https://opentelemetry.io/) instrumentation, and a clean controller / service / repository layering.
 
 ## What you get
 
-- A Spring Boot 3 application with embedded Tomcat and graceful shutdown
+- A Spring Boot 4 application with embedded Tomcat and graceful shutdown
 - Layered architecture: web controllers, service layer, JPA repositories, domain entities
 - Spring Boot Actuator endpoints: `/actuator/health` (liveness + readiness groups), `/actuator/info`, `/actuator/prometheus`
 - Optional OAuth 2.0 resource server via Spring Security — validates incoming JWT bearer tokens against a configurable issuer
@@ -39,7 +39,7 @@ nanohype placeholders are literal string substitutions — there's no way to der
 
 ```text
 <ProjectName>/
-  pom.xml                                # Maven build, Spring Boot 3 parent, dependencies
+  pom.xml                                # Maven build, Spring Boot 4 parent, dependencies
   Makefile                               # run, test, package, lint, clean, docker
   Dockerfile                             # Multi-stage build (conditional)
   docker-compose.yml                     # App + Postgres for local dev (conditional)

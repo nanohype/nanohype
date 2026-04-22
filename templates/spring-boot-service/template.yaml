@@ -3,7 +3,7 @@ apiVersion: nanohype/v1
 name: spring-boot-service
 displayName: "Spring Boot HTTP Service"
 description: >
-  Scaffolds a Java Spring Boot 3 HTTP service with Spring Web MVC, Spring Boot
+  Scaffolds a Java Spring Boot 4 HTTP service with Spring Web MVC, Spring Boot
   Actuator for health and metrics, optional Spring Security (OAuth 2.0 resource
   server with JWT), Spring Data JPA + Flyway migrations, Micrometer + OpenTelemetry
   instrumentation, structured JSON logging, graceful shutdown, and a repository

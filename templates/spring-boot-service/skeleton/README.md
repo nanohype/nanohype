@@ -2,7 +2,7 @@
 
 __DESCRIPTION__
 
-Spring Boot 3 HTTP service on JDK 25 with Spring Web MVC, Actuator, Spring Data JPA, Flyway migrations, Micrometer + OpenTelemetry, and structured JSON logging.
+Spring Boot 4 HTTP service on JDK 25 with Spring Web MVC, Actuator, Spring Data JPA, Flyway migrations, Micrometer + OpenTelemetry, and structured JSON logging.
 
 **Default database:** `__DATABASE__` (pom.xml ships drivers for `postgres`, `mysql`, and `h2` — switch by setting `SPRING_DATASOURCE_URL`).
 
