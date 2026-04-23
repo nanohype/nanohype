@@ -1,4 +1,4 @@
-## Catalog Quality Audit — 2026-04-05
+# Catalog Quality Audit — 2026-04-05
 
 Comprehensive quality check across build health, SDK correctness, security, architecture, systems thinking, and design pattern consistency. All findings verified with file:line evidence.
 
@@ -24,6 +24,7 @@ Comprehensive quality check across build health, SDK correctness, security, arch
 Only `api-gateway` uses `AbortController` with timeout on `fetch()`. Every other template's external calls can hang indefinitely — circuit breakers don't help because a hung connection never errors (the CB never sees a failure to count).
 
 Affected (non-exhaustive):
+
 - `module-knowledge-base-ts/.../providers/{notion,confluence,coda,google-docs}.ts`
 - `module-search-ts/.../providers/{algolia,meilisearch,typesense}.ts`
 - `module-analytics-ts/.../providers/{mixpanel,amplitude,posthog,segment}.ts`
