@@ -1,0 +1,133 @@
+apiVersion: nanohype/v1
+
+name: spring-boot-service
+displayName: "Spring Boot HTTP Service"
+description: >
+  Scaffolds a Java Spring Boot 4 HTTP service with Spring Web MVC, Spring Boot
+  Actuator for health and metrics, optional Spring Security (OAuth 2.0 resource
+  server with JWT), Spring Data JPA + Flyway migrations, Micrometer + OpenTelemetry
+  instrumentation, structured JSON logging, graceful shutdown, and a repository
+  pattern service layer. Includes a Makefile, GitHub Actions CI, k6 load test
+  scaffolding, Testcontainers integration tests, and optional Docker support.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: applications
+tags: [java, spring-boot, jvm, api, service, rest]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as repo/directory name"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: GroupId
+    type: string
+    placeholder: "__GROUP_ID__"
+    description: "Maven groupId (reverse-DNS, dot-separated, lowercase)"
+    prompt: "Maven groupId"
+    default: "com.example"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      message: "Must be a valid Maven groupId (e.g. com.example.acme)"
+
+  - name: ArtifactId
+    type: string
+    placeholder: "__ARTIFACT_ID__"
+    description: "Maven artifactId (kebab-case)"
+    prompt: "Maven artifactId"
+    default: "${ProjectName}"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README and pom.xml"
+    prompt: "Project description"
+    default: "A Spring Boot HTTP service"
+
+  - name: JavaPackage
+    type: string
+    placeholder: "__JAVA_PKG__"
+    description: "Root Java package (dot form, used in source declarations)"
+    prompt: "Root Java package (dot form)"
+    default: "${GroupId}.app"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$"
+      message: "Must be a valid Java package (e.g. com.example.app)"
+
+  - name: PackageDir
+    type: string
+    placeholder: "__PKG_DIR__"
+    description: >
+      Root Java package as a directory path (slash form, used for the source tree
+      layout). Must be the slash-form of JavaPackage — e.g. if JavaPackage is
+      'com.example.app' then PackageDir is 'com/example/app'.
+    prompt: "Root Java package (slash form)"
+    default: "com/example/app"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9_]*(/[a-z][a-z0-9_]*)*$"
+      message: "Must be lowercase segments separated by slashes (e.g. com/example/app)"
+
+  - name: Database
+    type: string
+    placeholder: "__DATABASE__"
+    description: >
+      Default database driver. Known values: postgres, mysql, h2. Additional
+      drivers can be added by editing pom.xml and application.yaml.
+    prompt: "Database driver"
+    default: "postgres"
+
+  - name: IncludeAuth
+    type: bool
+    placeholder: "__INCLUDE_AUTH__"
+    description: "Include Spring Security with OAuth 2.0 resource server (JWT validation)"
+    prompt: "Include OAuth 2.0 resource server?"
+    default: true
+
+  - name: IncludeDocker
+    type: bool
+    placeholder: "__INCLUDE_DOCKER__"
+    description: "Include Dockerfile and docker-compose.yml"
+    prompt: "Include Docker support?"
+    default: true
+
+conditionals:
+  - path: "src/main/java/__PKG_DIR__/config/SecurityConfig.java"
+    when: IncludeAuth
+  - path: "Dockerfile"
+    when: IncludeDocker
+  - path: "docker-compose.yml"
+    when: IncludeDocker
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Resolve Maven dependencies"
+      run: "mvn -q -DskipTests dependency:resolve"
+      workdir: "."
+
+composition:
+  pairsWith: [k8s-deploy, monitoring-stack, infra-gcp, infra-aws]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: java
+    version: ">=25"
+    purpose: "JDK 25 (latest LTS) for compiling and running the Spring Boot service"
+    optional: false
+  - name: mvn
+    version: ">=3.8"
+    purpose: "Maven build tool for dependency resolution and packaging"
+    optional: false

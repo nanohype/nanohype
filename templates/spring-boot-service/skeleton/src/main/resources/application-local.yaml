@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/__ARTIFACT_ID__
+    username: postgres
+    password: postgres
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    __JAVA_PKG__: DEBUG
+    org.springframework.web: INFO
