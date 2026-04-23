@@ -1,0 +1,79 @@
+apiVersion: nanohype/v1
+
+name: module-auth-go
+displayName: "Auth Middleware Module (Go)"
+description: >
+  Composable authentication middleware module for Go HTTP services with
+  pluggable providers. Ships with reference implementations for JWT
+  (HS256/RS256 with JWKS), Auth0, Clerk, Supabase, and API key validation.
+  The provider registry pattern makes it trivial to add custom auth
+  strategies. Middleware is compatible with chi, gorilla/mux, and any
+  net/http-based router.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: composable-modules
+tags: [auth, middleware, jwt, go, security]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as module directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: GoModule
+    type: string
+    placeholder: "__GO_MODULE__"
+    description: "Full Go module path"
+    prompt: "Go module path"
+    default: "github.com/${Org}/${ProjectName}"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9./-]*$"
+      message: "Must be a valid Go module path"
+
+  - name: Org
+    type: string
+    placeholder: "__ORG__"
+    description: "GitHub organization or username"
+    prompt: "GitHub org/username"
+    required: true
+    validation:
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
+      message: "Must be a valid GitHub org or username"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for README"
+    prompt: "Project description"
+    default: "Composable authentication middleware with pluggable providers"
+
+  - name: AuthProvider
+    type: string
+    placeholder: "__AUTH_PROVIDER__"
+    description: "Default auth provider (jwt, auth0, clerk, supabase, apikey, or a custom name)"
+    prompt: "Default auth provider"
+    default: "jwt"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Tidy Go module dependencies"
+      run: "go mod tidy"
+      workdir: "."
+
+composition:
+  pairsWith: [go-service]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: go
+    version: ">=1.24"
+    purpose: "Go compilation and module management"
+    optional: false
