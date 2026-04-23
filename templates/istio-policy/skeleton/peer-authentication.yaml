@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: __PROJECT_NAME__-mtls
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: __PROJECT_NAME__
+    app.kubernetes.io/component: istio-policy
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: __PROJECT_NAME__
+  mtls:
+    mode: STRICT
