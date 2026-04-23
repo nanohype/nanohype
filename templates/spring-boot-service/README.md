@@ -1,13 +1,12 @@
 # spring-boot-service
 
-Scaffolds a Java [Spring Boot 4](https://spring.io/projects/spring-boot) HTTP service on **JDK 25** (latest LTS) with Spring Web MVC, Spring Boot Actuator, optional Spring Security (OAuth 2.0 resource server with JWT), Spring Data JPA + [Flyway](https://flywaydb.org/) migrations, Micrometer + [OpenTelemetry](https://opentelemetry.io/) instrumentation, and a clean controller / service / repository layering.
+Scaffolds a Java [Spring Boot 4](https://spring.io/projects/spring-boot) HTTP service on **JDK 25** (latest LTS) with Spring Web MVC, Spring Boot Actuator, Spring Data JPA + [Flyway](https://flywaydb.org/) migrations, Micrometer + [OpenTelemetry](https://opentelemetry.io/) instrumentation, and a clean controller / service / repository layering. Auth-neutral — stack [`module-spring-security`](../module-spring-security/) alongside for authentication.
 
 ## What you get
 
 - A Spring Boot 4 application with embedded Tomcat and graceful shutdown
 - Layered architecture: web controllers, service layer, JPA repositories, domain entities
 - Spring Boot Actuator endpoints: `/actuator/health` (liveness + readiness groups), `/actuator/info`, `/actuator/prometheus`
-- Optional OAuth 2.0 resource server via Spring Security — validates incoming JWT bearer tokens against a configurable issuer
 - JPA entity with a Flyway baseline migration (`V1__init.sql`)
 - Micrometer metrics with a Prometheus scrape endpoint and OpenTelemetry tracing (OTLP exporter, configurable endpoint)
 - Structured JSON logging via Logback with trace/span correlation fields
@@ -28,7 +27,6 @@ Scaffolds a Java [Spring Boot 4](https://spring.io/projects/spring-boot) HTTP se
 | `JavaPackage` | string | `<GroupId>.app` | Root Java package, dot form (e.g. `com.example.app`) |
 | `PackageDir` | string | `com/example/app` | Root Java package, slash form — must pair with `JavaPackage` |
 | `Database` | string | `postgres` | Database driver: `postgres`, `mysql`, or `h2` |
-| `IncludeAuth` | bool | `true` | Include Spring Security OAuth 2.0 resource server |
 | `IncludeDocker` | bool | `true` | Include Dockerfile and docker-compose.yml |
 
 ### On the two package variables
@@ -56,7 +54,6 @@ nanohype placeholders are literal string substitutions — there's no way to der
           config/
             OpenApiConfig.java           # springdoc-openapi setup
             ObservabilityConfig.java     # Micrometer + OTel bootstrap
-            SecurityConfig.java          # OAuth 2.0 resource server (conditional)
           web/
             HealthController.java        # Custom /api/v1/hello endpoint
             ExampleController.java       # Example CRUD
@@ -93,6 +90,7 @@ nanohype placeholders are literal string substitutions — there's no way to der
 - [monitoring-stack](../monitoring-stack/) — Prometheus + Grafana + Loki observability stack
 - [infra-gcp](../infra-gcp/) — deploy to Google Cloud Run
 - [infra-aws](../infra-aws/) — deploy to AWS ECS or Lambda
+- [module-spring-security](../module-spring-security/) — authentication (canonical — stack alongside when you need auth)
 
 ## Nests inside
 

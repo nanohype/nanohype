@@ -6,20 +6,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-/**
- * Slice test for the controller layer only. Security filters are disabled
- * (addFilters=false) and the OAuth2 resource server auto-config is excluded
- * because a web slice doesn't supply the HttpSecurity bean that auto-config
- * requires. Authentication flow is covered by the full integration test.
- */
-@WebMvcTest(controllers = HealthController.class,
-    excludeAutoConfiguration = OAuth2ResourceServerAutoConfiguration.class)
-@AutoConfigureMockMvc(addFilters = false)
+@WebMvcTest(HealthController.class)
 class HealthControllerTest {
 
     @Autowired

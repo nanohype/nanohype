@@ -112,8 +112,16 @@ templates:
       JavaPackage: "${JavaPackage}"
       PackageDir: "${PackageDir}"
       Database: "${Database}"
-      IncludeAuth: true
       IncludeDocker: true
+
+  - template: module-spring-security
+    path: "."
+    variables:
+      ProjectName: "${ProjectName}"
+      JavaPackage: "${JavaPackage}"
+      PackageDir: "${PackageDir}"
+      OidcIssuer: "${OidcIssuer}"
+      AllowedAudience: "${AllowedAudience}"
 
   - template: k8s-deploy
     path: k8s
