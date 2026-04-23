@@ -1,0 +1,23 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test output
+*.test
+*.out
+coverage.out
+
+# Dependency directories
+vendor/
+
+# Environment overrides
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
