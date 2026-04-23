@@ -1,0 +1,146 @@
+apiVersion: nanohype/v1
+kind: composite
+name: identity-aware-service
+displayName: "Identity-Aware Spring Boot Microservice"
+description: >
+  Spring Boot 4 microservice on JDK 25 with identity enforced at both the
+  service-mesh edge (Istio RequestAuthentication + AuthorizationPolicy) and
+  the application boundary (Spring Security OAuth 2.0 resource server) —
+  defense in depth against the same OIDC issuer. Deployed via Kubernetes
+  with optional STRICT mTLS, VirtualService routing, and a Grafana +
+  Prometheus + Loki observability bundle.
+version: "0.1.0"
+tags: [java, spring-boot, jvm, microservice, istio, oauth2, identity, kubernetes]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used across service, k8s resources, istio selectors, and repo"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: GroupId
+    type: string
+    placeholder: "__GROUP_ID__"
+    description: "Maven groupId (reverse-DNS, dot-separated, lowercase)"
+    prompt: "Maven groupId"
+    default: "com.example"
+    required: true
+
+  - name: JavaPackage
+    type: string
+    placeholder: "__JAVA_PKG__"
+    description: "Root Java package (dot form)"
+    prompt: "Root Java package (dot form)"
+    default: "${GroupId}.app"
+    required: true
+
+  - name: PackageDir
+    type: string
+    placeholder: "__PKG_DIR__"
+    description: "Root Java package (slash form) — must match JavaPackage"
+    prompt: "Root Java package (slash form)"
+    default: "com/example/app"
+    required: true
+
+  - name: Database
+    type: string
+    placeholder: "__DATABASE__"
+    description: "Database driver (postgres, mysql, h2)"
+    prompt: "Database driver"
+    default: "postgres"
+
+  - name: Namespace
+    type: string
+    placeholder: "__NAMESPACE__"
+    description: "Kubernetes namespace for deployed resources"
+    prompt: "Kubernetes namespace"
+    default: "default"
+
+  - name: Replicas
+    type: string
+    placeholder: "__REPLICAS__"
+    description: "Kubernetes pod replica count"
+    prompt: "Replicas"
+    default: "2"
+
+  - name: OidcIssuer
+    type: string
+    placeholder: "__OIDC_ISSUER__"
+    description: >
+      OIDC issuer URL. Used by both Spring Security (for JWT validation in
+      the app) and Istio RequestAuthentication (for JWT validation at the
+      mesh edge). Same value flows to both — defense in depth.
+    prompt: "OIDC issuer URL"
+    required: true
+
+  - name: AllowedAudience
+    type: string
+    placeholder: "__ALLOWED_AUD__"
+    description: "Expected JWT `aud` claim value"
+    prompt: "Expected JWT audience"
+    default: "${ProjectName}"
+
+  - name: IncludeMTls
+    type: bool
+    placeholder: "__INCLUDE_MTLS__"
+    description: >
+      Include an Istio PeerAuthentication enforcing STRICT mTLS. Only enable
+      when every workload in the namespace is sidecar-injected — STRICT mode
+      rejects non-mesh traffic.
+    prompt: "Enforce STRICT mTLS across the namespace?"
+    default: false
+
+  - name: IncludeMonitoring
+    type: bool
+    placeholder: "__INCLUDE_MONITORING__"
+    description: "Include the Grafana + Prometheus + Loki observability stack"
+    prompt: "Include observability stack?"
+    default: false
+
+templates:
+  - template: spring-boot-service
+    root: true
+    variables:
+      ProjectName: "${ProjectName}"
+      GroupId: "${GroupId}"
+      ArtifactId: "${ProjectName}"
+      JavaPackage: "${JavaPackage}"
+      PackageDir: "${PackageDir}"
+      Database: "${Database}"
+      IncludeAuth: true
+      IncludeDocker: true
+
+  - template: k8s-deploy
+    path: k8s
+    variables:
+      ProjectName: "${ProjectName}"
+      Namespace: "${Namespace}"
+      Replicas: "${Replicas}"
+      IncludeIngress: true
+      IncludeHpa: true
+      IncludeHelm: true
+      IncludeCi: true
+
+  - template: istio-policy
+    path: istio
+    variables:
+      ProjectName: "${ProjectName}"
+      Namespace: "${Namespace}"
+      OidcIssuer: "${OidcIssuer}"
+      AllowedAudience: "${AllowedAudience}"
+      IncludeMTls: "${IncludeMTls}"
+      IncludeVirtualService: true
+      GatewayName: "mesh"
+
+  - template: monitoring-stack
+    path: observability
+    condition: IncludeMonitoring
+    variables:
+      ProjectName: "${ProjectName}"
+      DeployTarget: "docker-compose"
+      IncludeAlerts: true
