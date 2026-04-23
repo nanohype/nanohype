@@ -75,7 +75,11 @@ templates:
     path: apps/api
     variables:
       ProjectName: "${ProjectName}-api"
-      IncludeAuth: true
+
+  - template: module-auth-ts
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
 
   - template: infra-aws
     path: infra

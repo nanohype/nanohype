@@ -144,15 +144,15 @@ Migration files are stored in the `drizzle/` directory and should be committed t
 
 ## Auth
 
-The auth middleware (`src/middleware/auth.ts`) validates JWT Bearer tokens. To protect routes, apply the middleware to specific routes or groups in `src/app.ts`:
+This service ships auth-neutral. For authentication, scaffold `module-auth-ts` alongside this template and apply its middleware in `src/app.ts`:
 
 ```ts
-import { authMiddleware } from "./middleware/auth.js";
+import { createAuthMiddleware } from "__PROJECT_NAME__-auth";
 
-app.use("/api/*", authMiddleware);
+app.use("/api/*", createAuthMiddleware({ provider: "jwt" }));
 ```
 
-The verifier is pluggable. Replace the `verifyToken` function in `auth.ts` to integrate with your auth provider (JWKS, asymmetric keys, external service).
+`module-auth-ts` provides a pluggable provider registry (JWT, Clerk, Auth0, Supabase, API key) with typed helpers for role checks and user extraction. See that module's README for configuration details.
 
 ## Architecture
 

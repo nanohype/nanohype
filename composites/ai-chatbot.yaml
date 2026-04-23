@@ -50,7 +50,6 @@ templates:
     path: apps/api
     variables:
       ProjectName: "${ProjectName}-api"
-      IncludeAuth: true
       IncludeDocker: true
 
   - template: module-auth-ts
