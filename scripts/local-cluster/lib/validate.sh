@@ -36,13 +36,19 @@ apply_errors=0
 yaml_files=0
 
 while IFS= read -r -d '' file; do
-  # Skip Helm chart templates — they have Go template syntax that kubectl
-  # can't parse. Helm lints separately; out of scope for dry-run here.
+  # Path-level skips: Helm template sources (Go template syntax), known
+  # non-k8s locations (CI workflows, docker-compose files).
   case "$file" in
-    */chart/templates/*) continue ;;
-    */chart/Chart.yaml) continue ;;
-    */chart/values.yaml) continue ;;
+    */chart/templates/*|*/chart/Chart.yaml|*/chart/values.yaml) continue ;;
+    */.github/workflows/*) continue ;;
+    */docker-compose.yml|*/docker-compose.yaml|*/compose.yml|*/compose.yaml) continue ;;
   esac
+  # Content-level skip: a YAML with no `apiVersion` + `kind` at root isn't
+  # a k8s manifest (Spring application.yaml, raw configs, etc.). Skip
+  # rather than fail, since it's never going to be kubectl-applicable.
+  if ! grep -qE '^apiVersion:' "$file" || ! grep -qE '^kind:' "$file"; then
+    continue
+  fi
 
   yaml_files=$((yaml_files + 1))
   if ! kubectl apply --dry-run=server -f "$file" 2>&1 | sed 's/^/    /'; then

@@ -126,9 +126,19 @@ run_check_kubectl() {
 
   local errors=0 files=0
   while IFS= read -r -d '' file; do
+    # Path-level skips: Helm template sources (Go template syntax), known
+    # non-k8s locations.
     case "$file" in
       */chart/templates/*|*/chart/Chart.yaml|*/chart/values.yaml) continue ;;
+      */.github/workflows/*) continue ;;
+      */docker-compose.yml|*/docker-compose.yaml|*/compose.yml|*/compose.yaml) continue ;;
     esac
+    # Content-level skip: only files with both apiVersion and kind at the
+    # top level are k8s-applicable. Catches Spring application.yaml,
+    # configs, anything YAML that isn't a manifest.
+    if ! grep -qE '^apiVersion:' "$file" || ! grep -qE '^kind:' "$file"; then
+      continue
+    fi
     files=$((files + 1))
     if ! kubectl apply --dry-run=server -f "$file" >/dev/null 2>&1; then
       errors=$((errors + 1))
