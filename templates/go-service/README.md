@@ -1,11 +1,11 @@
 # go-service
 
-Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for routing, structured middleware, a repository-pattern database layer, [Viper](https://github.com/spf13/viper) for configuration, and [OpenTelemetry](https://opentelemetry.io/docs/languages/go/) for observability.
+Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for routing, structured middleware, a repository-pattern database layer, [Viper](https://github.com/spf13/viper) for configuration, and [OpenTelemetry](https://opentelemetry.io/docs/languages/go/) for observability. Auth-neutral — stack `module-auth-go` alongside for authentication.
 
 ## What you get
 
 - An HTTP server with chi v5 routing and graceful shutdown via signal handling
-- Middleware chain: request logging (`log/slog`), panic recovery, optional auth
+- Middleware chain: request logging (`log/slog`), panic recovery
 - Repository pattern for database abstraction with PostgreSQL (pgx v5) and SQLite (go-sqlite3) implementations
 - Viper-based configuration from environment variables and config files
 - OpenTelemetry tracing setup
@@ -23,7 +23,6 @@ Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for ro
 | `Org` | string | (required) | GitHub org or username |
 | `Description` | string | `A Go HTTP service` | Short project description |
 | `Database` | string | `postgres` | Default database backend |
-| `IncludeAuth` | bool | `true` | Include auth middleware |
 | `IncludeDocker` | bool | `true` | Include Docker support |
 
 ## Project layout
@@ -46,7 +45,8 @@ Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for ro
     middleware/
       logger.go                    # Request logging (slog)
       recovery.go                  # Panic recovery
-      auth.go                      # Auth middleware (conditional)
+      request_id.go                # Request-id propagation
+      max_body.go                  # Body size limit
     config/
       config.go                    # Viper-based config
     telemetry/
@@ -67,6 +67,7 @@ Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for ro
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
 - [eval-harness](../eval-harness/) -- test and evaluation framework
+- [module-auth-go](../module-auth-go/) -- authentication (canonical -- stack alongside when you need auth)
 
 ## Nests inside
 

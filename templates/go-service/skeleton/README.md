@@ -100,7 +100,7 @@ internal/
   handler/                  # HTTP handlers
   service/                  # Business logic
   repository/               # Database abstraction (interface + implementations)
-  middleware/                # chi middleware (logger, recovery, auth)
+  middleware/                # chi middleware (logger, recovery, request-id, body-limit)
   config/                   # Viper-based configuration
   telemetry/                # OpenTelemetry setup
 ```
