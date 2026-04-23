@@ -59,13 +59,13 @@ templates:
       IncludeAuth: true
       IncludeDocker: true
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"
       DatabaseDriver: "postgres"
 
-  - template: module-storage
+  - template: module-storage-ts
     path: packages/storage
     variables:
       ProjectName: "${ProjectName}-storage"

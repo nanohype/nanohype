@@ -77,7 +77,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [infra-aws, infra-fly, module-database, module-auth]
+  pairsWith: [infra-aws, infra-fly, module-database-ts, module-auth-ts]
   nestsInside: [monorepo]
 
 prerequisites:

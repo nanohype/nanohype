@@ -12,7 +12,7 @@ Initial release of the nanohype template catalog.
 
 **Infrastructure:** infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo, monitoring-stack, infra-druid, infra-cloudflare
 
-**Composable Modules:** module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications, module-llm-gateway, module-vector-store, module-semantic-cache, module-llm-observability, module-billing, module-feature-flags
+**Composable Modules:** module-auth-ts, module-database-ts, module-observability-ts, module-storage-ts, module-queue-ts, module-cache-ts, module-rate-limit-ts, module-webhook-ts, module-notifications-ts, module-llm-gateway, module-vector-store, module-semantic-cache, module-llm-observability, module-billing-ts, module-feature-flags-ts
 
 ### Composites (19)
 

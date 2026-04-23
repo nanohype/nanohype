@@ -56,7 +56,7 @@ Background processor with scheduled cron jobs and queue consumption. Includes a 
 
 ## Pairs with
 
-- [module-queue](../module-queue/) -- extended queue providers
+- [module-queue-ts](../module-queue-ts/) -- extended queue providers
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
 - [k8s-deploy](../k8s-deploy/) -- Kubernetes deployment

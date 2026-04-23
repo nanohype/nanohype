@@ -25,9 +25,19 @@ Templates are classified by `category` (catalog grouping) and `persona` (who the
 - **AI Systems** (`ai-systems`) — agentic-loop, rag-pipeline, mcp-server-ts, mcp-server-python, eval-harness, prompt-library, a2a-agent, guardrails, multimodal-pipeline, fine-tune-pipeline, data-pipeline, agent-orchestrator, ci-eval
 - **Applications** (`applications`) — go-cli, ts-service, go-service, next-app, chrome-ext, vscode-ext, slack-bot, discord-bot, electron-app, api-gateway, worker-service
 - **Infrastructure** (`infrastructure`) — infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo, monitoring-stack, infra-druid, infra-cloudflare
-- **Composable Modules** (`composable-modules`) — module-auth, module-database, module-observability, module-storage, module-queue, module-cache, module-rate-limit, module-webhook, module-notifications, module-llm-gateway, module-vector-store, module-semantic-cache, module-llm-observability, module-billing, module-feature-flags, module-llm-providers, module-project-mgmt, module-knowledge-base, module-search, module-analytics, module-media
+- **Composable Modules** (`composable-modules`) — module-analytics-ts, module-auth-ts, module-billing-ts, module-cache-ts, module-database-ts, module-feature-flags-ts, module-knowledge-base-ts, module-llm-gateway, module-llm-observability, module-llm-providers, module-media-ts, module-notifications-ts, module-oauth-delegation-ts, module-observability-ts, module-project-mgmt-ts, module-queue-ts, module-rate-limit-ts, module-search-ts, module-semantic-cache, module-spring-security, module-storage-ts, module-vector-store, module-webhook-ts
 
 Module templates (`module-*`) are designed to be layered into other projects, not used standalone.
+
+### Module naming convention
+
+Modules carry an explicit marker identifying their language or framework runtime:
+
+- **Language suffix** for modules that wrap a language-ecosystem's primitives — `-ts` for TypeScript/Node (module-auth-ts, module-database-ts, etc.), `-java` / `-go` / `-py` for future additions following the same pattern.
+- **Framework name** when the module configures a specific framework and the framework name is more precise than a generic language marker — e.g. `module-spring-security` configures Spring Security specifically, not "auth for Java."
+- **Unsuffixed** for domain-scoped modules that don't have a language-specific implementation — the `module-llm-*` family, `module-vector-store`, `module-semantic-cache`.
+
+The rule: a name should make the runtime assumption obvious from the listing, so a new consumer browsing the catalog can tell what they'd be pulling in without opening the template.
 
 ### Non-engineering personas
 

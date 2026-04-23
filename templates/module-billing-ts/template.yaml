@@ -1,0 +1,57 @@
+apiVersion: nanohype/v1
+
+name: module-billing-ts
+displayName: "Module: Billing"
+description: >
+  Composable usage metering, invoice generation, and payment processing
+  with Stripe. Records usage events with per-metric tracking, aggregates
+  by customer and billing period, generates invoices with tiered pricing,
+  and processes payments through a pluggable provider registry. Ships
+  with a Stripe provider and an in-memory mock for testing.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: composable-modules
+tags: [billing, payments, stripe, metering, invoicing, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Usage metering and billing with Stripe"
+
+  - name: PaymentProvider
+    type: string
+    placeholder: "__PAYMENT_PROVIDER__"
+    description: "Default payment provider (stripe, mock, or a custom name)"
+    prompt: "Payment provider"
+    default: "stripe"
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, module-webhook-ts, module-queue-ts]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the billing module"
+    optional: false

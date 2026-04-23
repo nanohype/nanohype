@@ -67,7 +67,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [module-queue, module-database, agentic-loop]
+  pairsWith: [module-queue-ts, module-database-ts, agentic-loop]
   nestsInside: [monorepo]
 
 prerequisites:

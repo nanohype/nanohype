@@ -49,8 +49,8 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, JWT aut
 
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
-- [module-database](../module-database/) -- extended database layer
-- [module-auth](../module-auth/) -- extended auth providers
+- [module-database-ts](../module-database-ts/) -- extended database layer
+- [module-auth-ts](../module-auth-ts/) -- extended auth providers
 
 ## Nests inside
 

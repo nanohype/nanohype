@@ -10,21 +10,21 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 | Client says... | Start with | Layer in | Deploy with |
 |---|---|---|---|
-| "We need an AI chatbot" | agentic-loop | module-auth, module-database | ts-service + infra-fly |
-| "Search our internal docs" | rag-pipeline | module-storage, module-database | ts-service + infra-aws |
+| "We need an AI chatbot" | agentic-loop | module-auth-ts, module-database-ts | ts-service + infra-fly |
+| "Search our internal docs" | rag-pipeline | module-storage-ts, module-database-ts | ts-service + infra-aws |
 | "Build us an MCP server" | mcp-server-ts | eval-harness | infra-fly |
 | "CLI tool for our platform" | go-cli | eval-harness | infra-fly |
 | "Chrome extension with AI" | chrome-ext | mcp-server-ts | — |
 | "VS Code extension" | vscode-ext | mcp-server-ts, prompt-library | — |
-| "Full-stack AI web app" | next-app | module-auth, module-database, rag-pipeline | infra-vercel |
-| "API service (TypeScript)" | ts-service | module-auth, module-database, module-observability | infra-aws or infra-fly |
+| "Full-stack AI web app" | next-app | module-auth-ts, module-database-ts, rag-pipeline | infra-vercel |
+| "API service (TypeScript)" | ts-service | module-auth-ts, module-database-ts, module-observability-ts | infra-aws or infra-fly |
 | "API service (Go)" | go-service | — (auth + db built in) | infra-aws or infra-fly |
-| "We need background processing" | ts-service | module-queue, module-database | infra-aws |
+| "We need background processing" | ts-service | module-queue-ts, module-database-ts | infra-aws |
 | "Evaluate our LLM outputs" | eval-harness | prompt-library | — |
 | "Manage our prompts" | prompt-library | eval-harness | — |
 | "Multi-agent system" | a2a-agent | agentic-loop, mcp-server-ts | ts-service + infra-aws |
 | "AI safety / content filtering" | guardrails | agentic-loop or ts-service | — |
-| "Process images/audio/video" | multimodal-pipeline | module-storage, rag-pipeline | ts-service + infra-aws |
+| "Process images/audio/video" | multimodal-pipeline | module-storage-ts, rag-pipeline | ts-service + infra-aws |
 | "Deploy to AWS" | infra-aws | — | — |
 | "Deploy to Fly.io" | infra-fly | — | — |
 | "Deploy to GCP" | infra-gcp | — | — |
@@ -38,9 +38,9 @@ A decision guide for selecting and composing templates. Read this to understand 
 |---|---|---|
 | **Proof of concept** | agentic-loop + eval-harness | Days |
 | **Internal tool** | go-cli or chrome-ext + mcp-server-ts | 1-2 weeks |
-| **Customer-facing chatbot** | agentic-loop + ts-service + module-auth + module-database + infra-fly | 2-4 weeks |
-| **Document intelligence** | rag-pipeline + ts-service + module-storage + infra-aws | 2-4 weeks |
-| **Platform with AI features** | next-app + rag-pipeline + module-auth + module-database + module-queue + infra-aws | 4-8 weeks |
+| **Customer-facing chatbot** | agentic-loop + ts-service + module-auth-ts + module-database-ts + infra-fly | 2-4 weeks |
+| **Document intelligence** | rag-pipeline + ts-service + module-storage-ts + infra-aws | 2-4 weeks |
+| **Platform with AI features** | next-app + rag-pipeline + module-auth-ts + module-database-ts + module-queue-ts + infra-aws | 4-8 weeks |
 | **Enterprise AI infrastructure** | monorepo + agentic-loop + mcp-server-ts + guardrails + eval-harness + k8s-deploy | 8+ weeks |
 | **Developer tooling** | vscode-ext or chrome-ext + mcp-server-ts + prompt-library | 2-4 weeks |
 
@@ -53,14 +53,14 @@ A decision guide for selecting and composing templates. Read this to understand 
 | Vector search | rag-pipeline | Full retrieval pipeline with vector store registry |
 | Multi-model support | Any with LlmProvider | Provider registry — swap models at config level |
 | Offline/local models | rag-pipeline (embedding), agentic-loop | Local provider stubs in registry |
-| Real-time updates | module-queue + ts-service | Job processing with webhook delivery |
-| File handling | module-storage | S3/R2/GCS/local abstraction |
-| Auth required | module-auth + ts-service | JWT/Clerk/Auth0/Supabase/API key |
-| Background jobs | module-queue | BullMQ/SQS/in-memory |
-| Caching layer | module-cache | Redis/Valkey/in-memory |
-| Rate limiting | module-rate-limit | Token bucket/sliding window |
-| Observability | module-observability | OpenTelemetry traces + metrics |
-| Database | module-database | Drizzle ORM with Postgres/SQLite/Turso |
+| Real-time updates | module-queue-ts + ts-service | Job processing with webhook delivery |
+| File handling | module-storage-ts | S3/R2/GCS/local abstraction |
+| Auth required | module-auth-ts + ts-service | JWT/Clerk/Auth0/Supabase/API key |
+| Background jobs | module-queue-ts | BullMQ/SQS/in-memory |
+| Caching layer | module-cache-ts | Redis/Valkey/in-memory |
+| Rate limiting | module-rate-limit-ts | Token bucket/sliding window |
+| Observability | module-observability-ts | OpenTelemetry traces + metrics |
+| Database | module-database-ts | Drizzle ORM with Postgres/SQLite/Turso |
 | Content safety | guardrails | Input/output filtering pipeline |
 | Multi-agent coordination | a2a-agent | Agent-to-Agent protocol |
 | CI/CD | infra-fly, infra-aws, k8s-deploy | GitHub Actions workflows included |
@@ -95,14 +95,14 @@ A decision guide for selecting and composing templates. Read this to understand 
 │         │ Composable       │                   │              │
 │         │ Modules          ├───────────────────┘              │
 │         │                  │                                  │
-│         │ module-auth      │  Modules plug into               │
-│         │ module-database  │  applications and                │
+│         │ module-auth-ts      │  Modules plug into               │
+│         │ module-database-ts  │  applications and                │
 │         │ module-observ.   │  AI systems.                     │
-│         │ module-storage   │                                  │
-│         │ module-queue     │  Infrastructure                  │
-│         │ module-cache     │  deploys the result.             │
+│         │ module-storage-ts   │                                  │
+│         │ module-queue-ts     │  Infrastructure                  │
+│         │ module-cache-ts     │  deploys the result.             │
 │         │ module-rate-lim. │                                  │
-│         │ module-webhook   │                                  │
+│         │ module-webhook-ts   │                                  │
 │         │ module-notif.    │                                  │
 │         └──────────────────┘                                  │
 └─────────────────────────────────────────────────────────────┘
@@ -186,23 +186,23 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 ### Composable Modules
 
-**module-auth** — Add this when the service needs authentication. Five built-in providers (JWT, Clerk, Auth0, Supabase, API key). Framework-agnostic middleware that works with both Hono and Express.
+**module-auth-ts** — Add this when the service needs authentication. Five built-in providers (JWT, Clerk, Auth0, Supabase, API key). Framework-agnostic middleware that works with both Hono and Express.
 
-**module-database** — Add this when the service needs persistent storage. Drizzle ORM with PostgreSQL, SQLite, and Turso drivers. Schema definitions, migrations, and connection management.
+**module-database-ts** — Add this when the service needs persistent storage. Drizzle ORM with PostgreSQL, SQLite, and Turso drivers. Schema definitions, migrations, and connection management.
 
-**module-observability** — Add this when the service needs production monitoring. OpenTelemetry traces, metrics, and structured logging with pluggable exporters (console, OTLP, Datadog).
+**module-observability-ts** — Add this when the service needs production monitoring. OpenTelemetry traces, metrics, and structured logging with pluggable exporters (console, OTLP, Datadog).
 
-**module-storage** — Add this when the service needs file/blob storage. Upload, download, list, delete, and signed URLs with local, S3, R2, and GCS backends.
+**module-storage-ts** — Add this when the service needs file/blob storage. Upload, download, list, delete, and signed URLs with local, S3, R2, and GCS backends.
 
-**module-queue** — Add this when the service needs background job processing. In-memory for dev, BullMQ for Redis-backed production, SQS for AWS-native. Priority, retries, delays, graceful shutdown.
+**module-queue-ts** — Add this when the service needs background job processing. In-memory for dev, BullMQ for Redis-backed production, SQS for AWS-native. Priority, retries, delays, graceful shutdown.
 
-**module-cache** — Add this when the service needs caching. In-memory for dev, Redis for distributed, Memcached for legacy. TTL, namespacing, and cache-aside (getOrSet) helper.
+**module-cache-ts** — Add this when the service needs caching. In-memory for dev, Redis for distributed, Memcached for legacy. TTL, namespacing, and cache-aside (getOrSet) helper.
 
-**module-rate-limit** — Add this when the service needs request throttling. Token bucket, sliding window, and fixed window algorithms with in-memory or Redis state stores. Ships with Hono and Express middleware factories.
+**module-rate-limit-ts** — Add this when the service needs request throttling. Token bucket, sliding window, and fixed window algorithms with in-memory or Redis state stores. Ships with Hono and Express middleware factories.
 
-**module-webhook** — Add this when the service sends or receives webhooks. Pluggable signature verification (HMAC-SHA256, HMAC-SHA1), sender with exponential backoff retry, and event logging for debugging.
+**module-webhook-ts** — Add this when the service sends or receives webhooks. Pluggable signature verification (HMAC-SHA256, HMAC-SHA1), sender with exponential backoff retry, and event logging for debugging.
 
-**module-notifications** — Add this when the service sends user notifications. Email (Resend, SendGrid), optional SMS (Twilio), optional push (web-push). Template rendering with variable substitution and batch sending.
+**module-notifications-ts** — Add this when the service sends user notifications. Email (Resend, SendGrid), optional SMS (Twilio), optional push (web-push). Template rendering with variable substitution and batch sending.
 
 **module-llm-gateway** — Add this when the service calls multiple LLM providers. Unified routing with five pluggable strategies (static, round-robin, latency, cost, adaptive epsilon-greedy). Response caching (hash, sliding-TTL), token counting, per-request cost tracking with anomaly detection, and circuit breakers on every provider call.
 
@@ -212,21 +212,21 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-llm-observability** — Add this when you need to answer "how much is this costing us" and "is the AI getting worse." Wraps LLM calls to capture prompt, response, model, latency, and token usage as structured spans. Cost calculator with per-model pricing and anomaly detection. Quality monitor with rolling p50/p95 scores and regression alerts. Pluggable exporters (console, OTLP, JSON file).
 
-**module-billing** — Add this when the service needs usage metering and payments. Tracks API calls, tokens, or custom metrics per customer. Generates invoices from aggregated usage with per-unit, tiered, and flat pricing. Stripe integration for payment collection and webhook lifecycle events. Mock provider for offline development.
+**module-billing-ts** — Add this when the service needs usage metering and payments. Tracks API calls, tokens, or custom metrics per customer. Generates invoices from aggregated usage with per-unit, tiered, and flat pricing. Stripe integration for payment collection and webhook lifecycle events. Mock provider for offline development.
 
-**module-feature-flags** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
+**module-feature-flags-ts** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
 
 **module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface across Anthropic, OpenAI, Groq (always included), plus Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama (conditional). Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
 
-**module-project-mgmt** — Add this when AI agents need to create and manage work items. Unified interface across Linear (GraphQL), Jira (REST), Asana, and Shortcut. Priority mapping, pagination abstraction, comment threading.
+**module-project-mgmt-ts** — Add this when AI agents need to create and manage work items. Unified interface across Linear (GraphQL), Jira (REST), Asana, and Shortcut. Priority mapping, pagination abstraction, comment threading.
 
-**module-knowledge-base** — Add this when pipelines need to ingest from or publish to where documentation lives. Unified interface across Notion, Confluence, Google Docs, and Coda. Content normalized to markdown. Ships with a data-pipeline IngestSource adapter for RAG ingestion from SaaS knowledge bases.
+**module-knowledge-base-ts** — Add this when pipelines need to ingest from or publish to where documentation lives. Unified interface across Notion, Confluence, Google Docs, and Coda. Content normalized to markdown. Ships with a data-pipeline IngestSource adapter for RAG ingestion from SaaS knowledge bases.
 
-**module-search** — Add this when the service needs full-text search. Pluggable backends: Algolia, Typesense, Meilisearch. Hybrid search combiner merges keyword results with vector-store results via reciprocal rank fusion.
+**module-search-ts** — Add this when the service needs full-text search. Pluggable backends: Algolia, Typesense, Meilisearch. Hybrid search combiner merges keyword results with vector-store results via reciprocal rank fusion.
 
-**module-analytics** — Add this when the service needs event tracking. Unified interface across Segment, PostHog, Mixpanel, Amplitude. Buffered batch sends, auto-tracking HTTP middleware for Hono and Express.
+**module-analytics-ts** — Add this when the service needs event tracking. Unified interface across Segment, PostHog, Mixpanel, Amplitude. Buffered batch sends, auto-tracking HTTP middleware for Hono and Express.
 
-**module-media** — Add this when the service handles images or video. Upload, transform, and deliver through Cloudinary, Uploadcare, or imgix. Named transform presets (thumbnail, avatar, hero, og-image), fluent TransformBuilder API, responsive srcset generation.
+**module-media-ts** — Add this when the service handles images or video. Upload, transform, and deliver through Cloudinary, Uploadcare, or imgix. Named transform presets (thumbnail, avatar, hero, og-image), fluent TransformBuilder API, responsive srcset generation.
 
 ### Infrastructure & Observability
 
@@ -242,28 +242,28 @@ Modules are designed to compose. Here are common stacks:
 
 ```text
 ts-service
-└── module-auth (if protected)
+└── module-auth-ts (if protected)
 ```
 
 ### Standard service
 
 ```text
 ts-service
-├── module-auth
-├── module-database
-└── module-observability
+├── module-auth-ts
+├── module-database-ts
+└── module-observability-ts
 ```
 
 ### Production service
 
 ```text
 ts-service
-├── module-auth
-├── module-database
-├── module-observability
-├── module-cache
-├── module-rate-limit
-└── module-queue (if async work)
+├── module-auth-ts
+├── module-database-ts
+├── module-observability-ts
+├── module-cache-ts
+├── module-rate-limit-ts
+└── module-queue-ts (if async work)
 ```
 
 ### AI-powered service
@@ -271,10 +271,10 @@ ts-service
 ```text
 ts-service
 ├── agentic-loop (or rag-pipeline)
-├── module-auth
-├── module-database
-├── module-observability
-├── module-storage (for document uploads)
+├── module-auth-ts
+├── module-database-ts
+├── module-observability-ts
+├── module-storage-ts (for document uploads)
 └── eval-harness (for testing)
 ```
 
@@ -285,7 +285,7 @@ monorepo
 ├── apps/
 │   ├── api (ts-service + modules)
 │   ├── web (next-app)
-│   └── worker (ts-service + module-queue)
+│   └── worker (ts-service + module-queue-ts)
 ├── packages/
 │   ├── ai (agentic-loop)
 │   ├── evals (eval-harness)

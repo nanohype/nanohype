@@ -1,0 +1,77 @@
+apiVersion: nanohype/v1
+
+name: module-notifications-ts
+displayName: "Module: Notifications"
+description: >
+  Composable notification service with pluggable providers for email,
+  SMS, and push. Ships with Resend and SendGrid for email, Twilio
+  for SMS, and web-push for browser notifications. Includes template
+  rendering with variable substitution.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: composable-modules
+tags: [notifications, email, sms, push, typescript]
+
+variables:
+  - name: ProjectName
+    type: string
+    placeholder: "__PROJECT_NAME__"
+    description: "Kebab-case project name, used as package name and directory"
+    prompt: "Project name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short project description for package.json and README"
+    prompt: "Project description"
+    default: "Notification service with pluggable providers"
+
+  - name: EmailProvider
+    type: string
+    placeholder: "__EMAIL_PROVIDER__"
+    description: "Default email provider (resend, sendgrid, or a custom name)"
+    prompt: "Email provider"
+    default: "resend"
+
+  - name: IncludeSms
+    type: bool
+    placeholder: "__INCLUDE_SMS__"
+    description: "Include SMS channel with Twilio provider"
+    prompt: "Include SMS support?"
+    default: false
+
+  - name: IncludePush
+    type: bool
+    placeholder: "__INCLUDE_PUSH__"
+    description: "Include push notification channel with web-push provider"
+    prompt: "Include push notification support?"
+    default: false
+
+conditionals:
+  - path: "src/notifications/channels/sms"
+    when: IncludeSms
+
+  - path: "src/notifications/channels/push"
+    when: IncludePush
+
+hooks:
+  post:
+    - name: install-dependencies
+      description: "Install npm dependencies"
+      run: "npm install"
+      workdir: "."
+
+composition:
+  pairsWith: [ts-service, module-queue-ts, module-auth-ts]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: node
+    version: ">=22"
+    purpose: "Node.js runtime for the notification module"
+    optional: false

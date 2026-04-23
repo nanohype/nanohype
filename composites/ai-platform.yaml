@@ -68,19 +68,19 @@ templates:
     variables:
       ProjectName: "${ProjectName}-pipeline"
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"
       AuthProvider: "jwt"
 
-  - template: module-billing
+  - template: module-billing-ts
     path: packages/billing
     condition: IncludeBilling
     variables:
       ProjectName: "${ProjectName}-billing"
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"

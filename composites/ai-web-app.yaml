@@ -61,19 +61,19 @@ templates:
       LlmProvider: "${LlmProvider}"
       VectorStore: "pgvector"
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"
       AuthProvider: "clerk"
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"
       DatabaseDriver: "postgres"
 
-  - template: module-observability
+  - template: module-observability-ts
     path: packages/observability
     variables:
       ProjectName: "${ProjectName}-otel"

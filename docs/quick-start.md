@@ -11,10 +11,10 @@ A template catalog for AI-focused projects. Each template produces a production-
 | You need... | Start with | Add modules |
 |---|---|---|
 | An AI agent | `agentic-loop` | `eval-harness`, `mcp-server-ts` |
-| Document search / RAG | `rag-pipeline` | `module-vector-store`, `module-storage` |
-| An HTTP API | `ts-service` | `module-auth`, `module-database` |
+| Document search / RAG | `rag-pipeline` | `module-vector-store`, `module-storage-ts` |
+| An HTTP API | `ts-service` | `module-auth-ts`, `module-database-ts` |
 | A Go HTTP API | `go-service` | — (auth + db built in) |
-| A background worker | `worker-service` | `module-queue`, `module-database` |
+| A background worker | `worker-service` | `module-queue-ts`, `module-database-ts` |
 | A CLI tool | `go-cli` | `eval-harness` |
 | A full-stack AI app | Composite: `ai-web-app` or `ai-chatbot` | — |
 | A production platform | Composite: `production-api` | — |
@@ -63,7 +63,7 @@ Composites combine multiple templates into a single project. They handle nesting
 npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
 ```
 
-This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth`, `module-database`, and `infra-fly` into a ready-to-run stack.
+This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth-ts`, `module-database-ts`, and `infra-fly` into a ready-to-run stack.
 
 Available composites:
 

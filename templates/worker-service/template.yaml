@@ -76,7 +76,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [module-queue, infra-aws, infra-fly, k8s-deploy]
+  pairsWith: [module-queue-ts, infra-aws, infra-fly, k8s-deploy]
   nestsInside: [monorepo]
 
 prerequisites:

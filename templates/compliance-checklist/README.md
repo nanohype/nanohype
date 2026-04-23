@@ -31,8 +31,8 @@ compliance/
 ## Pairs with
 
 - [runbook](../runbook/) -- operational procedures supporting controls
-- [module-auth](../module-auth/) -- authentication controls
-- [module-observability](../module-observability/) -- logging and monitoring controls
+- [module-auth-ts](../module-auth-ts/) -- authentication controls
+- [module-observability-ts](../module-observability-ts/) -- logging and monitoring controls
 
 ## Nests inside
 

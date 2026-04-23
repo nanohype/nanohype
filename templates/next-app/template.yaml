@@ -89,7 +89,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [module-auth, module-database, infra-vercel, infra-aws]
+  pairsWith: [module-auth-ts, module-database-ts, infra-vercel, infra-aws]
   nestsInside: [monorepo]
 
 prerequisites:
