@@ -1,3 +1,5 @@
+# llm-wiki — Multi-tenant LLM-maintained knowledge base
+
 ## Overview
 
 Add an `llm-wiki` template to the AI Systems category. Scaffolds a multi-tenant, LLM-maintained knowledge base where agents incrementally build structured markdown wikis from raw sources — knowledge compounds over time rather than being re-derived per query.
@@ -18,7 +20,7 @@ RAG re-derives understanding on every query. The wiki pattern front-loads the wo
 
 Three-layer design per tenant, plus a shared control plane:
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │                  Control Plane                   │
 │  tenant registry · schema registry · auth/authz  │
@@ -102,6 +104,7 @@ llm:
 Three operations, matching the original pattern:
 
 **Ingest** — Process a new source, extract structured knowledge, create/update wiki pages:
+
 1. Hash source content, skip if already ingested (idempotent)
 2. LLM reads source against current wiki state
 3. Creates new pages or updates existing ones (type-checked against schema)
@@ -111,12 +114,14 @@ Three operations, matching the original pattern:
 7. Commits changes (git storage) or writes transaction (sqlite)
 
 **Query** — Search the wiki, synthesize an answer, optionally file discoveries back:
+
 1. Search wiki pages (FTS or git-grep depending on storage)
 2. LLM synthesizes answer from relevant pages
 3. Returns answer with source citations (page → original source chain)
 4. Optionally creates a new "discovery" page if the synthesis reveals new structure
 
 **Lint** — Health check for wiki consistency:
+
 1. Find orphaned pages (no inbound links)
 2. Detect contradictions across pages
 3. Flag stale claims (source age > threshold)
@@ -127,16 +132,19 @@ Three operations, matching the original pattern:
 ### Multi-Tenancy
 
 **Tenant isolation:**
+
 - Each tenant gets its own source store, wiki directory, and schema
 - Tenant registry in control plane (YAML or SQLite)
 - No cross-tenant data access by default
 
 **Access control:**
+
 - Role-based: `admin` (manage tenants, schemas), `editor` (ingest, lint), `reader` (query only)
 - Per-tenant role assignments
 - API key or JWT auth at the control plane
 
 **Operation queue:**
+
 - Ingest and lint operations are queued per tenant
 - Prevents concurrent wiki mutations within a tenant
 - Cross-tenant operations run in parallel
@@ -156,7 +164,7 @@ Three operations, matching the original pattern:
 
 ## Skeleton Structure
 
-```
+```text
 src/
 ├── index.ts                    # entry point — CLI + API bootstrap
 ├── config.ts                   # Zod-validated config from env
@@ -263,12 +271,13 @@ composition:
 
 The three operations map to a natural workflow pattern:
 
-```
+```text
 [Input: sources] → [Scaffold: llm-wiki] → [Agent: ingest] → [Agent: lint] → [Gate: review] → [Output: wiki]
 ```
 
 For ongoing use, a recurring workflow:
-```
+
+```text
 [Input: new sources] → [Agent: ingest] → [Condition: lint score < threshold] → [Agent: lint-fix] → [Output: updated wiki]
 ```
 
