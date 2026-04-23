@@ -182,8 +182,8 @@ The verifier is pluggable. Replace the `verifyToken` function in `auth.ts` to in
 
 - **infra-aws** — Deploy to AWS with ECS, ALB, and RDS
 - **infra-fly** — Deploy to Fly.io
-- **module-database** — Extended database patterns and seed data
-- **module-auth** — Full auth flows (signup, login, refresh)
+- **module-database-ts** — Extended database patterns and seed data
+- **module-auth-ts** — Full auth flows (signup, login, refresh)
 
 ## Nests Inside
 

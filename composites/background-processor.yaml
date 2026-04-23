@@ -39,25 +39,25 @@ templates:
       IncludeAuth: false
       IncludeDocker: true
 
-  - template: module-queue
+  - template: module-queue-ts
     path: packages/queue
     variables:
       ProjectName: "${ProjectName}-queue"
       QueueProvider: "${QueueProvider}"
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"
       DatabaseDriver: "postgres"
 
-  - template: module-storage
+  - template: module-storage-ts
     path: packages/storage
     variables:
       ProjectName: "${ProjectName}-storage"
       StorageProvider: "s3"
 
-  - template: module-observability
+  - template: module-observability-ts
     path: packages/observability
     variables:
       ProjectName: "${ProjectName}-otel"

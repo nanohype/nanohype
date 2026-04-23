@@ -209,7 +209,7 @@ templates:
       IncludeAuth: true
       IncludeDocker: true
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"

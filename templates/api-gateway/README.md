@@ -62,9 +62,9 @@ API gateway with edge routing, per-route authentication, rate limiting, traffic 
 
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
-- [module-auth](../module-auth/) -- extended auth providers
-- [module-rate-limit](../module-rate-limit/) -- pluggable rate limit algorithms
-- [module-cache](../module-cache/) -- response caching layer
+- [module-auth-ts](../module-auth-ts/) -- extended auth providers
+- [module-rate-limit-ts](../module-rate-limit-ts/) -- pluggable rate limit algorithms
+- [module-cache-ts](../module-cache-ts/) -- response caching layer
 
 ## Nests inside
 

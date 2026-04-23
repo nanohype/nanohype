@@ -70,12 +70,12 @@ templates:
       LlmProvider: "${LlmProvider}"
       IncludeAuth: true
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"
 
-  - template: module-analytics
+  - template: module-analytics-ts
     path: packages/analytics
     variables:
       ProjectName: "${ProjectName}-analytics"

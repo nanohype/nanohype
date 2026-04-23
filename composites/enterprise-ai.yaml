@@ -97,30 +97,30 @@ templates:
       IncludeAuth: true
       IncludeDocker: true
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"
       DatabaseDriver: "postgres"
 
-  - template: module-observability
+  - template: module-observability-ts
     path: packages/observability
     variables:
       ProjectName: "${ProjectName}-otel"
       Exporter: "otlp"
 
-  - template: module-queue
+  - template: module-queue-ts
     path: packages/queue
     variables:
       ProjectName: "${ProjectName}-queue"
       QueueProvider: "bullmq"
 
-  - template: module-storage
+  - template: module-storage-ts
     path: packages/storage
     variables:
       ProjectName: "${ProjectName}-storage"

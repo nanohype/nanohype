@@ -60,7 +60,7 @@ Embedding-based LLM response caching using vector similarity search.
 - [ts-service](../ts-service/) -- add semantic caching to a service
 - [agentic-loop](../agentic-loop/) -- cache LLM responses across agent iterations
 - [rag-pipeline](../rag-pipeline/) -- cache retrieval and generation results
-- [module-cache](../module-cache/) -- use alongside exact-match caching for a two-tier strategy
+- [module-cache-ts](../module-cache-ts/) -- use alongside exact-match caching for a two-tier strategy
 
 ## Nests inside
 

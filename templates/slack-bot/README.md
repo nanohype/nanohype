@@ -49,8 +49,8 @@ TypeScript Slack bot with @slack/bolt, AI-powered responses, and a pluggable LLM
 
 ## Pairs with
 
-- [module-queue](../module-queue/) -- background job processing
-- [module-database](../module-database/) -- persistent storage
+- [module-queue-ts](../module-queue-ts/) -- background job processing
+- [module-database-ts](../module-database-ts/) -- persistent storage
 - [agentic-loop](../agentic-loop/) -- tool-calling agent capabilities
 
 ## Nests inside

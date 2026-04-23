@@ -55,7 +55,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [ts-service, agentic-loop, rag-pipeline, module-cache]
+  pairsWith: [ts-service, agentic-loop, rag-pipeline, module-cache-ts]
   nestsInside: [monorepo]
 
 prerequisites:

@@ -57,39 +57,39 @@ templates:
       IncludeAuth: true
       IncludeDocker: true
 
-  - template: module-auth
+  - template: module-auth-ts
     path: packages/auth
     variables:
       ProjectName: "${ProjectName}-auth"
       AuthProvider: "jwt"
 
-  - template: module-database
+  - template: module-database-ts
     path: packages/db
     variables:
       ProjectName: "${ProjectName}-db"
       DatabaseDriver: "${DatabaseDriver}"
 
-  - template: module-observability
+  - template: module-observability-ts
     path: packages/observability
     variables:
       ProjectName: "${ProjectName}-otel"
       Exporter: "otlp"
 
-  - template: module-queue
+  - template: module-queue-ts
     path: packages/queue
     condition: IncludeQueue
     variables:
       ProjectName: "${ProjectName}-queue"
       QueueProvider: "bullmq"
 
-  - template: module-cache
+  - template: module-cache-ts
     path: packages/cache
     condition: IncludeCache
     variables:
       ProjectName: "${ProjectName}-cache"
       CacheProvider: "memory"
 
-  - template: module-rate-limit
+  - template: module-rate-limit-ts
     path: packages/rate-limit
     variables:
       ProjectName: "${ProjectName}-rate-limit"

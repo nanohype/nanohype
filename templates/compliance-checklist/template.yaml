@@ -43,5 +43,5 @@ conditionals:
     when: IncludeEvidenceTemplates
 
 composition:
-  pairsWith: [runbook, module-auth, module-observability]
+  pairsWith: [runbook, module-auth-ts, module-observability-ts]
   nestsInside: [monorepo]

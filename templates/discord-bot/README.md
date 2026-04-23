@@ -49,8 +49,8 @@ TypeScript Discord bot with discord.js v14, AI-powered responses, and a pluggabl
 
 ## Pairs with
 
-- [module-queue](../module-queue/) -- background job processing
-- [module-database](../module-database/) -- persistent storage
+- [module-queue-ts](../module-queue-ts/) -- background job processing
+- [module-database-ts](../module-database-ts/) -- persistent storage
 - [agentic-loop](../agentic-loop/) -- tool-calling agent capabilities
 
 ## Nests inside

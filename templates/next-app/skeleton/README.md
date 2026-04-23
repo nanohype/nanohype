@@ -97,8 +97,8 @@ npx auth secret
 
 ## Pairs With
 
-- **module-auth** — Extended auth providers and flows
-- **module-database** — Extended database patterns
+- **module-auth-ts** — Extended auth providers and flows
+- **module-database-ts** — Extended database patterns
 - **infra-vercel** — Deploy to Vercel
 - **infra-aws** — Deploy to AWS
 

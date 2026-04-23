@@ -2,7 +2,7 @@
 
 Drop-in [Spring Security](https://spring.io/projects/spring-security) module for a Spring Boot 3+ service. Ships a production-shaped multi-provider `SecurityFilterChain` supporting **OAuth 2.0 JWT resource server** (OIDC), **header-based API keys** with a pluggable validator, and **opaque-token introspection** — all selectable via `@ConfigurationProperties`, composable simultaneously, dispatching through Spring Security's native `AuthenticationManager`.
 
-Unlike the TypeScript [`module-auth`](../module-auth/), this module doesn't reinvent an `AuthProvider` interface — Spring Security's `AuthenticationManager` + `AuthenticationProvider` surface is already the registry pattern. The module wires those primitives so you inherit the full Spring Security ecosystem (method security, event publishing, session semantics, the OAuth 2.0 client chain, etc.) out of the box.
+Unlike the TypeScript [`module-auth-ts`](../module-auth-ts/), this module doesn't reinvent an `AuthProvider` interface — Spring Security's `AuthenticationManager` + `AuthenticationProvider` surface is already the registry pattern. The module wires those primitives so you inherit the full Spring Security ecosystem (method security, event publishing, session semantics, the OAuth 2.0 client chain, etc.) out of the box.
 
 ## What you get
 

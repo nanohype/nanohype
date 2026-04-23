@@ -60,21 +60,21 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 
 | Template | Description | Tags |
 |---|---|---|
-| [module-auth](templates/module-auth/) | Authentication middleware with pluggable providers (JWT, Clerk, Auth0, Supabase, API key) | `auth` `middleware` `jwt` |
-| [module-database](templates/module-database/) | Drizzle ORM with pluggable drivers (PostgreSQL, SQLite, Turso) | `database` `drizzle` `orm` |
-| [module-observability](templates/module-observability/) | OpenTelemetry instrumentation with pluggable exporters (console, OTLP, Datadog) | `observability` `opentelemetry` `tracing` |
-| [module-storage](templates/module-storage/) | Blob storage abstraction with pluggable backends (local, S3, R2, GCS) | `storage` `s3` `blob` |
-| [module-queue](templates/module-queue/) | Background job processing with pluggable brokers (in-memory, BullMQ, SQS) | `queue` `jobs` `workers` |
-| [module-cache](templates/module-cache/) | Caching layer with pluggable backends (memory, Redis) | `cache` `redis` `performance` |
-| [module-rate-limit](templates/module-rate-limit/) | Rate limiting with pluggable algorithms (token bucket, sliding window) | `rate-limit` `throttle` `middleware` |
-| [module-webhook](templates/module-webhook/) | Webhook ingestion and delivery with signature verification | `webhook` `events` `middleware` |
-| [module-notifications](templates/module-notifications/) | Multi-channel notifications (email, SMS, push) | `notifications` `email` `messaging` |
+| [module-auth-ts](templates/module-auth-ts/) | Authentication middleware with pluggable providers (JWT, Clerk, Auth0, Supabase, API key) | `auth` `middleware` `jwt` |
+| [module-database-ts](templates/module-database-ts/) | Drizzle ORM with pluggable drivers (PostgreSQL, SQLite, Turso) | `database` `drizzle` `orm` |
+| [module-observability-ts](templates/module-observability-ts/) | OpenTelemetry instrumentation with pluggable exporters (console, OTLP, Datadog) | `observability` `opentelemetry` `tracing` |
+| [module-storage-ts](templates/module-storage-ts/) | Blob storage abstraction with pluggable backends (local, S3, R2, GCS) | `storage` `s3` `blob` |
+| [module-queue-ts](templates/module-queue-ts/) | Background job processing with pluggable brokers (in-memory, BullMQ, SQS) | `queue` `jobs` `workers` |
+| [module-cache-ts](templates/module-cache-ts/) | Caching layer with pluggable backends (memory, Redis) | `cache` `redis` `performance` |
+| [module-rate-limit-ts](templates/module-rate-limit-ts/) | Rate limiting with pluggable algorithms (token bucket, sliding window) | `rate-limit` `throttle` `middleware` |
+| [module-webhook-ts](templates/module-webhook-ts/) | Webhook ingestion and delivery with signature verification | `webhook` `events` `middleware` |
+| [module-notifications-ts](templates/module-notifications-ts/) | Multi-channel notifications (email, SMS, push) | `notifications` `email` `messaging` |
 | [module-llm-gateway](templates/module-llm-gateway/) | LLM provider gateway with routing and fallback | `llm` `gateway` `ai` |
 | [module-vector-store](templates/module-vector-store/) | Vector store abstraction with pluggable backends | `vectors` `embeddings` `ai` |
 | [module-semantic-cache](templates/module-semantic-cache/) | Semantic caching for LLM responses using embeddings | `cache` `semantic` `ai` |
 | [module-llm-observability](templates/module-llm-observability/) | LLM-specific observability with cost and latency tracking | `observability` `llm` `cost` |
-| [module-billing](templates/module-billing/) | Usage-based billing and subscription management | `billing` `payments` `saas` |
-| [module-feature-flags](templates/module-feature-flags/) | Feature flag management with evaluation rules | `feature-flags` `toggles` `configuration` |
+| [module-billing-ts](templates/module-billing-ts/) | Usage-based billing and subscription management | `billing` `payments` `saas` |
+| [module-feature-flags-ts](templates/module-feature-flags-ts/) | Feature flag management with evaluation rules | `feature-flags` `toggles` `configuration` |
 
 ## How It Works
 

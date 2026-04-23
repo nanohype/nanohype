@@ -71,8 +71,8 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 
 ## Pairs with
 
-- [module-auth](../module-auth/) -- extended auth providers
-- [module-database](../module-database/) -- extended database layer
+- [module-auth-ts](../module-auth-ts/) -- extended auth providers
+- [module-database-ts](../module-database-ts/) -- extended database layer
 - [infra-vercel](../infra-vercel/) -- deploy to Vercel
 - [infra-aws](../infra-aws/) -- deploy to AWS
 

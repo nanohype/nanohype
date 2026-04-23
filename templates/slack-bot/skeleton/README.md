@@ -107,8 +107,8 @@ src/
 
 ## Pairs With
 
-- **module-queue** — Background job processing for long-running AI tasks
-- **module-database** — Persistent conversation history and user preferences
+- **module-queue-ts** — Background job processing for long-running AI tasks
+- **module-database-ts** — Persistent conversation history and user preferences
 - **agentic-loop** — Tool-calling agent capabilities for the bot
 
 ## Nests Inside

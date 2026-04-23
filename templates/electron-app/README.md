@@ -57,8 +57,8 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
 ## Pairs with
 
 - [mcp-server-ts](../mcp-server-ts/) -- connect to MCP tool servers
-- [module-database](../module-database/) -- local SQLite or shared DB
-- [module-storage](../module-storage/) -- file storage integration
+- [module-database-ts](../module-database-ts/) -- local SQLite or shared DB
+- [module-storage-ts](../module-storage-ts/) -- file storage integration
 
 ## Nests inside
 
