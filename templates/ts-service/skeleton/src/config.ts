@@ -17,16 +17,6 @@ const configSchema = z.object({
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal"])
     .default("info"),
-
-  DATABASE_URL: z.string().min(1, "DATABASE_URL is required").optional(),
-
-  JWT_SECRET: z
-    .string()
-    .optional()
-    .refine((val) => !val || val !== "change-me-in-production", {
-      message:
-        'JWT_SECRET must not equal "change-me-in-production" — set a real secret',
-    }),
 });
 
 export type Config = z.infer<typeof configSchema>;

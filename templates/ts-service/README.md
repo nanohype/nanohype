@@ -1,13 +1,13 @@
 # ts-service
 
-TypeScript HTTP service with Hono framework, pluggable database drivers, and OpenTelemetry instrumentation. Auth-neutral — stack `module-auth-ts` alongside for authentication.
+TypeScript HTTP service with the Hono framework and OpenTelemetry instrumentation. Auth-neutral and persistence-neutral — stack `module-auth-ts` alongside for authentication and `module-database-ts` for a database layer.
 
 ## What you get
 
 - Hono HTTP framework with structured routes and middleware
-- Database driver registry (PostgreSQL, SQLite) with Drizzle ORM
+- Zod-validated request schemas and an OpenAPI 3.1 spec generator
 - OpenTelemetry traces and metrics (console + OTLP exporters)
-- Request logging and error handling middleware
+- Request logging, error handling, idempotency, and body-limit middleware
 - Docker and docker-compose setup (conditional)
 - GitHub Actions CI
 
@@ -18,7 +18,6 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, and Ope
 | `ProjectName` | string | — | Kebab-case project name |
 | `Description` | string | `A TypeScript HTTP service` | Project description |
 | `Framework` | string | `hono` | HTTP framework |
-| `Database` | string | `postgres` | Database driver (postgres/sqlite/none or custom) |
 | `IncludeDocker` | bool | `true` | Include Dockerfile and docker-compose |
 
 ## Project layout
@@ -30,14 +29,15 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, and Ope
     app.ts                # Hono app setup
     routes/
       health.ts           # Health check
-      example.ts          # Example CRUD routes
+      example.ts          # Example CRUD routes (in-memory)
     middleware/
       logger.ts           # Request logging
       error-handler.ts    # Error handling
-    db/
-      client.ts           # Database client
-      schema.ts           # Drizzle schema
-      drivers/            # Pluggable driver registry
+      idempotency.ts      # Idempotency-Key middleware
+    schemas/
+      example.ts          # Zod request validation schemas
+    services/
+      example.ts          # Business logic (in-memory store)
     telemetry/
       index.ts            # OpenTelemetry setup
 ```
@@ -46,8 +46,8 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, and Ope
 
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
-- [module-database-ts](../module-database-ts/) -- extended database layer
-- [module-auth-ts](../module-auth-ts/) -- authentication (canonical — stack alongside when you need auth)
+- [module-auth-ts](../module-auth-ts/) -- authentication (canonical -- stack alongside when you need auth)
+- [module-database-ts](../module-database-ts/) -- database layer (canonical -- stack alongside when you need persistence)
 
 ## Nests inside
 
