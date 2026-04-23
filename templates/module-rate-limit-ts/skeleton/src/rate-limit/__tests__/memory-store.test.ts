@@ -99,15 +99,14 @@ describe("in-memory rate limit store", () => {
   });
 
   it("expires keys after TTL", async () => {
-    // Set with a very short TTL
-    await store.set("ephemeral", "value", 1);
+    // TTL is in milliseconds. Use a window wide enough to survive an
+    // awaited get() without racing against expiry on a slow runner.
+    await store.set("ephemeral", "value", 50);
 
-    // Should still exist immediately
     const immediate = await store.get("ephemeral");
     expect(immediate).toBe("value");
 
-    // Wait for TTL to expire
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 75));
 
     const expired = await store.get("ephemeral");
     expect(expired).toBeNull();
