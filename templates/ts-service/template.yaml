@@ -5,10 +5,11 @@ displayName: "TypeScript HTTP Service"
 description: >
   Scaffolds a production-ready TypeScript HTTP service using the Hono
   framework. Includes pluggable database adapters (Postgres, SQLite) via
-  a registry pattern, Drizzle ORM for schema and migrations, JWT-based
-  auth middleware, structured request logging, error handling, and
-  OpenTelemetry instrumentation with traces and metrics. Ships with
-  optional Docker and Docker Compose configurations.
+  a registry pattern, Drizzle ORM for schema and migrations, structured
+  request logging, error handling, and OpenTelemetry instrumentation
+  with traces and metrics. Ships with optional Docker and Docker Compose
+  configurations. For authentication, stack `module-auth-ts` alongside
+  this template.
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -47,13 +48,6 @@ variables:
     prompt: "Database"
     default: "postgres"
 
-  - name: IncludeAuth
-    type: bool
-    placeholder: "__INCLUDE_AUTH__"
-    description: "Include JWT authentication middleware"
-    prompt: "Include auth middleware?"
-    default: true
-
   - name: IncludeDocker
     type: bool
     placeholder: "__INCLUDE_DOCKER__"
@@ -62,8 +56,6 @@ variables:
     default: true
 
 conditionals:
-  - path: "src/middleware/auth.ts"
-    when: IncludeAuth
   - path: "Dockerfile"
     when: IncludeDocker
   - path: "docker-compose.yml"

@@ -1,12 +1,11 @@
 # ts-service
 
-TypeScript HTTP service with Hono framework, pluggable database drivers, JWT auth middleware, and OpenTelemetry instrumentation.
+TypeScript HTTP service with Hono framework, pluggable database drivers, and OpenTelemetry instrumentation. Auth-neutral — stack `module-auth-ts` alongside for authentication.
 
 ## What you get
 
 - Hono HTTP framework with structured routes and middleware
 - Database driver registry (PostgreSQL, SQLite) with Drizzle ORM
-- JWT auth middleware with pluggable verifier (conditional)
 - OpenTelemetry traces and metrics (console + OTLP exporters)
 - Request logging and error handling middleware
 - Docker and docker-compose setup (conditional)
@@ -20,7 +19,6 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, JWT aut
 | `Description` | string | `A TypeScript HTTP service` | Project description |
 | `Framework` | string | `hono` | HTTP framework |
 | `Database` | string | `postgres` | Database driver (postgres/sqlite/none or custom) |
-| `IncludeAuth` | bool | `true` | Include JWT auth middleware |
 | `IncludeDocker` | bool | `true` | Include Dockerfile and docker-compose |
 
 ## Project layout
@@ -36,7 +34,6 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, JWT aut
     middleware/
       logger.ts           # Request logging
       error-handler.ts    # Error handling
-      auth.ts             # (optional) JWT auth
     db/
       client.ts           # Database client
       schema.ts           # Drizzle schema
@@ -50,7 +47,7 @@ TypeScript HTTP service with Hono framework, pluggable database drivers, JWT aut
 - [infra-aws](../infra-aws/) -- deploy to AWS
 - [infra-fly](../infra-fly/) -- deploy to Fly.io
 - [module-database-ts](../module-database-ts/) -- extended database layer
-- [module-auth-ts](../module-auth-ts/) -- extended auth providers
+- [module-auth-ts](../module-auth-ts/) -- authentication (canonical — stack alongside when you need auth)
 
 ## Nests inside
 

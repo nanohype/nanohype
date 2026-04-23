@@ -56,8 +56,12 @@ templates:
     path: apps/api
     variables:
       ProjectName: "${ProjectName}-api"
-      IncludeAuth: true
       IncludeDocker: true
+
+  - template: module-auth-ts
+    path: packages/auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
 
   - template: module-database-ts
     path: packages/db

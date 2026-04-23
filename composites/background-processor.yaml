@@ -36,7 +36,6 @@ templates:
     path: apps/worker
     variables:
       ProjectName: "${ProjectName}-worker"
-      IncludeAuth: false
       IncludeDocker: true
 
   - template: module-queue-ts
