@@ -43,8 +43,15 @@ templates:
       ProjectName: "${ProjectName}"
       GoModule: "${GoModule}"
       Org: "${Org}"
-      IncludeAuth: true
       IncludeDocker: true
+
+  - template: module-auth-go
+    path: auth
+    variables:
+      ProjectName: "${ProjectName}-auth"
+      GoModule: "${GoModule}/auth"
+      Org: "${Org}"
+      AuthProvider: "jwt"
 
   - template: eval-harness
     path: evals

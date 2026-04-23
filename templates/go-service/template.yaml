@@ -4,10 +4,11 @@ name: go-service
 displayName: "Go HTTP Service"
 description: >
   Scaffolds a Go HTTP service using chi v5 for routing, structured middleware
-  (logging, panic recovery, optional auth), a repository-pattern database layer
-  with PostgreSQL and SQLite implementations, Viper-based configuration, and
-  OpenTelemetry instrumentation. Includes graceful shutdown with signal handling,
-  a Makefile, GitHub Actions CI, and optional Docker support.
+  (logging, panic recovery), a repository-pattern database layer with PostgreSQL
+  and SQLite implementations, Viper-based configuration, and OpenTelemetry
+  instrumentation. Includes graceful shutdown with signal handling, a Makefile,
+  GitHub Actions CI, and optional Docker support. Auth-neutral — stack
+  `module-auth-go` alongside when you need authentication.
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -60,13 +61,6 @@ variables:
     prompt: "Database backend"
     default: "postgres"
 
-  - name: IncludeAuth
-    type: bool
-    placeholder: "__INCLUDE_AUTH__"
-    description: "Include auth middleware"
-    prompt: "Include auth middleware?"
-    default: true
-
   - name: IncludeDocker
     type: bool
     placeholder: "__INCLUDE_DOCKER__"
@@ -75,8 +69,6 @@ variables:
     default: true
 
 conditionals:
-  - path: "internal/middleware/auth.go"
-    when: IncludeAuth
   - path: "Dockerfile"
     when: IncludeDocker
   - path: "docker-compose.yml"
@@ -90,7 +82,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [infra-aws, infra-fly, eval-harness]
+  pairsWith: [infra-aws, infra-fly, eval-harness, module-auth-go]
   nestsInside: [monorepo]
 
 prerequisites:
