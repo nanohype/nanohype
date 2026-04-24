@@ -54,9 +54,7 @@ function isSensitiveHeader(name: string): boolean {
  * `***`. Authorization headers that start with "Bearer" preserve the
  * scheme prefix for debuggability: `Bearer ***`.
  */
-export function maskHeaders(
-  headers: Record<string, string>,
-): Record<string, string> {
+export function maskHeaders(headers: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
 
   for (const [name, value] of Object.entries(headers)) {

@@ -1,10 +1,11 @@
 import { Hono } from "hono";
+import type { z } from "zod";
 import { validate } from "../middleware/validate.js";
 import { CreateItemSchema, UpdateItemSchema } from "../schemas/example.js";
-import {
-  ExampleService,
-  InMemoryItemRepository,
-} from "../services/example.js";
+import { ExampleService, InMemoryItemRepository } from "../services/example.js";
+
+type CreateItemInput = z.infer<typeof CreateItemSchema>;
+type UpdateItemInput = z.infer<typeof UpdateItemSchema>;
 
 // ── Example CRUD Routes ──────────────────────────────────────────────
 //
@@ -28,14 +29,14 @@ exampleRoutes.get("/items", async (c) => {
 // ── Get by ID ────────────────────────────────────────────────────────
 
 exampleRoutes.get("/items/:id", async (c) => {
-  const item = await service.getItem(c.req.param("id"));
+  const item = await service.getItem(c.req.param("id")!);
   return c.json(item);
 });
 
 // ── Create ───────────────────────────────────────────────────────────
 
 exampleRoutes.post("/items", validate(CreateItemSchema), async (c) => {
-  const body = c.get("validatedBody");
+  const body = c.get("validatedBody") as CreateItemInput;
   const item = await service.createItem(body);
   return c.json(item, 201);
 });
@@ -43,14 +44,14 @@ exampleRoutes.post("/items", validate(CreateItemSchema), async (c) => {
 // ── Update ───────────────────────────────────────────────────────────
 
 exampleRoutes.patch("/items/:id", validate(UpdateItemSchema), async (c) => {
-  const body = c.get("validatedBody");
-  const item = await service.updateItem(c.req.param("id"), body);
+  const body = c.get("validatedBody") as UpdateItemInput;
+  const item = await service.updateItem(c.req.param("id")!, body);
   return c.json(item);
 });
 
 // ── Delete ───────────────────────────────────────────────────────────
 
 exampleRoutes.delete("/items/:id", async (c) => {
-  await service.deleteItem(c.req.param("id"));
+  await service.deleteItem(c.req.param("id")!);
   return c.json({ deleted: true });
 });

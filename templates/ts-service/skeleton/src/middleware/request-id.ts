@@ -8,10 +8,7 @@ import type { Context, Next } from "hono";
 // handlers and echoed back in the response header.
 //
 
-export async function requestId(
-  c: Context,
-  next: Next
-): Promise<void> {
+export async function requestId(c: Context, next: Next): Promise<void> {
   const requestId = c.req.header("X-Request-Id") ?? crypto.randomUUID();
   c.set("requestId", requestId);
   c.header("X-Request-Id", requestId);

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { json } from "./helpers.js";
 import { Hono } from "hono";
 import { idempotency } from "../middleware/idempotency.js";
 
@@ -25,11 +26,7 @@ function buildApp(options?: { ttlMs?: number }) {
   return app;
 }
 
-function post(
-  app: Hono,
-  body: unknown,
-  headers?: Record<string, string>
-) {
+function post(app: Hono, body: unknown, headers?: Record<string, string>) {
   return app.request("/items", {
     method: "POST",
     headers: {
@@ -40,12 +37,7 @@ function post(
   });
 }
 
-function put(
-  app: Hono,
-  id: string,
-  body: unknown,
-  headers?: Record<string, string>
-) {
+function put(app: Hono, id: string, body: unknown, headers?: Record<string, string>) {
   return app.request(`/items/${id}`, {
     method: "PUT",
     headers: {
@@ -61,13 +53,17 @@ function put(
 describe("idempotency middleware", () => {
   it("first POST with key returns 201", async () => {
     const app = buildApp();
-    const res = await post(app, { name: "Widget" }, {
-      "Idempotency-Key": "key-001",
-    });
+    const res = await post(
+      app,
+      { name: "Widget" },
+      {
+        "Idempotency-Key": "key-001",
+      }
+    );
 
     expect(res.status).toBe(201);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("id", "abc-123");
     expect(body).toHaveProperty("name", "Widget");
   });
@@ -81,7 +77,7 @@ describe("idempotency middleware", () => {
       "Idempotency-Key": "key-002",
     });
     expect(res1.status).toBe(201);
-    const body1 = await res1.json();
+    const body1 = await json(res1);
 
     // Second request — same key, same body
     const res2 = await post(app, payload, {
@@ -89,7 +85,7 @@ describe("idempotency middleware", () => {
     });
     expect(res2.status).toBe(201);
 
-    const body2 = await res2.json();
+    const body2 = await json(res2);
     expect(body2).toEqual(body1);
 
     // Verify replayed header
@@ -100,18 +96,26 @@ describe("idempotency middleware", () => {
     const app = buildApp();
 
     // First request
-    const res1 = await post(app, { name: "Widget" }, {
-      "Idempotency-Key": "key-003",
-    });
+    const res1 = await post(
+      app,
+      { name: "Widget" },
+      {
+        "Idempotency-Key": "key-003",
+      }
+    );
     expect(res1.status).toBe(201);
 
     // Second request — same key, different body
-    const res2 = await post(app, { name: "Gadget" }, {
-      "Idempotency-Key": "key-003",
-    });
+    const res2 = await post(
+      app,
+      { name: "Gadget" },
+      {
+        "Idempotency-Key": "key-003",
+      }
+    );
     expect(res2.status).toBe(409);
 
-    const body = await res2.json();
+    const body = await json(res2);
     expect(body.error.code).toBe("IDEMPOTENCY_CONFLICT");
   });
 
@@ -125,7 +129,7 @@ describe("idempotency middleware", () => {
 
     expect(res.status).toBe(200);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("items");
 
     // No replayed header on GET
@@ -178,7 +182,7 @@ describe("idempotency middleware", () => {
     const res = await post(app, { name: "NoKey" });
     expect(res.status).toBe(201);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("name", "NoKey");
   });
 });

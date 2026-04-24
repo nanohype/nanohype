@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { json } from "./helpers.js";
 import { Hono } from "hono";
 import { errorHandler } from "../middleware/error-handler.js";
 
@@ -13,7 +14,7 @@ describe("errorHandler", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(500);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.message).toBe("Internal Server Error");
   });
 
@@ -29,7 +30,7 @@ describe("errorHandler", () => {
     const res = await app.request("/not-found");
     expect(res.status).toBe(404);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.message).toBe("Not Found");
   });
 
@@ -45,7 +46,7 @@ describe("errorHandler", () => {
     const res = await app.request("/bad");
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.message).toBe("Invalid input");
   });
 
@@ -63,7 +64,7 @@ describe("errorHandler", () => {
     const res = await app.request("/crash");
     expect(res.status).toBe(502);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.message).toBe("Internal Server Error");
     expect(JSON.stringify(body)).not.toContain("secret");
   });

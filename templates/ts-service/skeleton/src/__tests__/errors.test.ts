@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { json } from "./helpers.js";
 import { Hono } from "hono";
 import {
   AppError,
@@ -80,7 +81,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("VALIDATION_ERROR");
     expect(body.error.message).toBe("Name is required");
     expect(body.error.statusCode).toBe(400);
@@ -95,7 +96,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(404);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("NOT_FOUND");
     expect(body.error.message).toBe("Item not found");
     expect(body.error.statusCode).toBe(404);
@@ -110,7 +111,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(409);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("CONFLICT");
     expect(body.error.message).toBe("Duplicate entry");
     expect(body.error.statusCode).toBe(409);
@@ -125,7 +126,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(408);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("TIMEOUT");
     expect(body.error.message).toBe("Upstream timed out");
     expect(body.error.statusCode).toBe(408);
@@ -140,7 +141,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(500);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("INTERNAL_ERROR");
     expect(body.error.message).toBe("Internal Server Error");
     expect(body.error.statusCode).toBe(500);
@@ -161,7 +162,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("VALIDATION_ERROR");
     expect(body.error.issues).toHaveLength(2);
     expect(body.error.issues[0]).toEqual({
@@ -183,7 +184,7 @@ describe("errorHandler with domain errors", () => {
     const res = await app.request("/fail");
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("VALIDATION_ERROR");
     expect(body.error).not.toHaveProperty("issues");
   });

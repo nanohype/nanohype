@@ -49,7 +49,5 @@ export function initTelemetry(): void {
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);
 
-  console.log(
-    `[telemetry] Initialized (exporter: ${otlpEndpoint ? "otlp" : "console"})`
-  );
+  console.log(`[telemetry] Initialized (exporter: ${otlpEndpoint ? "otlp" : "console"})`);
 }

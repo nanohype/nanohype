@@ -12,31 +12,28 @@ import { z, type ZodTypeAny, type ZodObject, type ZodRawShape } from "zod";
 
 // ── Zod-to-JSON-Schema Conversion ──────────────────────────────────
 
-// NOTE: This function accesses Zod's internal `_def` property to unwrap
-// optionals, defaults, effects, pipelines, and arrays. These internals are
-// not part of Zod's public API and may change in Zod v4. If upgrading Zod,
-// verify that `_def.innerType`, `_def.schema`, `_def.out`, and `_def.type`
-// still exist on the respective Zod class instances.
+// Walks a Zod schema via the internal `_def` property. Zod v4 exposes
+// the same shape through `_def.innerType` / `_def.in` / `_def.out` / etc.;
+// verify these still exist before bumping major.
 function zodTypeToJsonSchema(schema: ZodTypeAny): Record<string, unknown> {
-  // Unwrap optionals, defaults, and effects
+  // Unwrap optionals and defaults.
   if (schema instanceof z.ZodOptional || schema instanceof z.ZodDefault) {
     return zodTypeToJsonSchema((schema as any)._def.innerType);
   }
 
-  if (schema instanceof z.ZodEffects) {
-    // .transform() — we cannot introspect the output type at the schema
-    // level, so fall back to a generic string type. Callers who need a
+  // Zod v4 unified `.transform()` and `.pipe()` under two classes —
+  // `ZodTransform` for `.transform()` and `ZodPipe` for `.pipe()`.
+  if (schema instanceof z.ZodTransform) {
+    // `.transform()` — output type cannot be introspected at the schema
+    // level. Fall back to a generic string type; callers who need a
     // precise output type should use .pipe() instead.
     return { type: "string" };
   }
 
-  if (schema instanceof z.ZodPipeline) {
-    // For .pipe() chains, expose the output schema (e.g. z.coerce.number()
-    // piped through z.number() should appear as "integer" in the spec).
+  if (schema instanceof z.ZodPipe) {
+    // For `.pipe()` chains, expose the output schema (e.g.
+    // z.coerce.number().pipe(z.number().int()) appears as "integer").
     const out = zodTypeToJsonSchema((schema as any)._def.out);
-    // Promote "number" to "integer" for query params that pipe through
-    // z.number().int() or z.coerce.number() — the common pattern for
-    // integer query parameters.
     if (out.type === "number") {
       return { ...out, type: "integer" };
     }
@@ -70,9 +67,7 @@ function zodTypeToJsonSchema(schema: ZodTypeAny): Record<string, unknown> {
   return {};
 }
 
-function zodObjectToJsonSchema(
-  schema: ZodObject<ZodRawShape>
-): Record<string, unknown> {
+function zodObjectToJsonSchema(schema: ZodObject<ZodRawShape>): Record<string, unknown> {
   const shape = schema.shape;
   const properties: Record<string, unknown> = {};
   const required: string[] = [];
@@ -82,9 +77,7 @@ function zodObjectToJsonSchema(
     properties[key] = zodTypeToJsonSchema(fieldSchema);
 
     // A field is required unless it's ZodOptional or ZodDefault
-    const isOptional =
-      fieldSchema instanceof z.ZodOptional ||
-      fieldSchema instanceof z.ZodDefault;
+    const isOptional = fieldSchema instanceof z.ZodOptional || fieldSchema instanceof z.ZodDefault;
     if (!isOptional) {
       required.push(key);
     }
@@ -122,10 +115,7 @@ interface RouteDefinition {
 }
 
 // Import schemas for route definitions
-import {
-  CreateItemSchema,
-  UpdateItemSchema,
-} from "./schemas/example.js";
+import { CreateItemSchema, UpdateItemSchema } from "./schemas/example.js";
 
 const routes: RouteDefinition[] = [
   {

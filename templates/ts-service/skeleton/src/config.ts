@@ -8,15 +8,9 @@ import { z } from "zod";
 //
 
 const configSchema = z.object({
-  PORT: z
-    .string()
-    .default("3000")
-    .transform(Number)
-    .pipe(z.number().int().min(1).max(65535)),
+  PORT: z.string().default("3000").transform(Number).pipe(z.number().int().min(1).max(65535)),
 
-  LOG_LEVEL: z
-    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
 });
 
 export type Config = z.infer<typeof configSchema>;

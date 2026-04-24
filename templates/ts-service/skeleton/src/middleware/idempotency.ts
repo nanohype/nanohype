@@ -95,8 +95,7 @@ export function idempotency(options?: IdempotencyOptions) {
             {
               error: {
                 code: "IDEMPOTENCY_CONFLICT",
-                message:
-                  "Idempotency-Key has already been used with a different request body",
+                message: "Idempotency-Key has already been used with a different request body",
                 statusCode: 409,
               },
             },
@@ -143,8 +142,7 @@ export function idempotency(options?: IdempotencyOptions) {
 
       const res = c.res;
       const responseBody = await res.clone().text();
-      const contentType =
-        res.headers.get("Content-Type") ?? "application/json";
+      const contentType = res.headers.get("Content-Type") ?? "application/json";
 
       // Replace the sentinel with the real cached response
       store.set(idempotencyKey, {

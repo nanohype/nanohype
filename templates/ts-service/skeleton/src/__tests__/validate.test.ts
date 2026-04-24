@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { json } from "./helpers.js";
 import { Hono } from "hono";
 import { z } from "zod";
 import { validate } from "../middleware/validate.js";
@@ -37,7 +38,7 @@ describe("validate middleware", () => {
     const res = await post(app, { name: "widget", count: 5 });
 
     expect(res.status).toBe(201);
-    const body = await res.json();
+    const body = await json(res);
     expect(body.received).toEqual({ name: "widget", count: 5 });
   });
 
@@ -46,7 +47,7 @@ describe("validate middleware", () => {
     const res = await post(app, { name: "widget" });
 
     expect(res.status).toBe(201);
-    const body = await res.json();
+    const body = await json(res);
     expect(body.received).toEqual({ name: "widget" });
   });
 
@@ -55,7 +56,7 @@ describe("validate middleware", () => {
     const res = await post(app, { count: 3 });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
     expect(body.issues).toBeInstanceOf(Array);
     expect(body.issues.length).toBeGreaterThan(0);
@@ -66,7 +67,7 @@ describe("validate middleware", () => {
     const res = await post(app, { name: "widget", count: "not-a-number" });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
     expect(body.issues.some((i: { path: string }) => i.path === "count")).toBe(true);
   });
@@ -76,7 +77,7 @@ describe("validate middleware", () => {
     const res = await post(app, { name: "" });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
     expect(body.issues.some((i: { message: string }) => i.message === "Name is required")).toBe(
       true
@@ -92,7 +93,7 @@ describe("validate middleware", () => {
     });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Invalid JSON");
   });
 
@@ -101,7 +102,7 @@ describe("validate middleware", () => {
     const res = await post(app, { name: 123 });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body.issues.some((i: { path: string }) => i.path === "name")).toBe(true);
   });
 
@@ -119,7 +120,7 @@ describe("validate middleware", () => {
     });
 
     expect(res.status).toBe(400);
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
   });
 });

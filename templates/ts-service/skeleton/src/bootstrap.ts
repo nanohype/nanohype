@@ -24,7 +24,7 @@ export function validateBootstrap(): void {
         `\n  Unresolved placeholder in ${label}: ${value}\n\n` +
           "  This project was scaffolded from a nanohype template but\n" +
           "  some variables were not replaced. Re-run the scaffolding\n" +
-          "  tool or replace placeholders manually.\n",
+          "  tool or replace placeholders manually.\n"
       );
       process.exit(1);
     }
