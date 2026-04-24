@@ -48,7 +48,7 @@ src/test/java/<PackageDir>/security/
 
 ## Required Maven dependencies
 
-Add to your consuming project's `pom.xml` (already present in [`spring-boot-service`](../spring-boot-service/)):
+Add to your consuming project's `pom.xml`. [`spring-boot-service`](../spring-boot-service/) ships auth-neutral and does **not** include these by default — stack this module and add the deps at the same time.
 
 ```xml
 <dependency>

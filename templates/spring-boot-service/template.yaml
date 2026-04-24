@@ -4,11 +4,12 @@ name: spring-boot-service
 displayName: "Spring Boot HTTP Service"
 description: >
   Scaffolds a Java Spring Boot 4 HTTP service with Spring Web MVC, Spring Boot
-  Actuator for health and metrics, optional Spring Security (OAuth 2.0 resource
-  server with JWT), Spring Data JPA + Flyway migrations, Micrometer + OpenTelemetry
-  instrumentation, structured JSON logging, graceful shutdown, and a repository
-  pattern service layer. Includes a Makefile, GitHub Actions CI, k6 load test
-  scaffolding, Testcontainers integration tests, and optional Docker support.
+  Actuator for health and metrics, Spring Data JPA + Flyway migrations, Micrometer
+  + OpenTelemetry instrumentation, structured JSON logging, graceful shutdown, and
+  a repository pattern service layer. Includes a Makefile, GitHub Actions CI, k6
+  load test scaffolding, Testcontainers integration tests, and optional Docker
+  support. Auth-neutral — stack `module-spring-security` alongside when you need
+  authentication.
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -89,13 +90,6 @@ variables:
     prompt: "Database driver"
     default: "postgres"
 
-  - name: IncludeAuth
-    type: bool
-    placeholder: "__INCLUDE_AUTH__"
-    description: "Include Spring Security with OAuth 2.0 resource server (JWT validation)"
-    prompt: "Include OAuth 2.0 resource server?"
-    default: true
-
   - name: IncludeDocker
     type: bool
     placeholder: "__INCLUDE_DOCKER__"
@@ -104,8 +98,6 @@ variables:
     default: true
 
 conditionals:
-  - path: "src/main/java/__PKG_DIR__/config/SecurityConfig.java"
-    when: IncludeAuth
   - path: "Dockerfile"
     when: IncludeDocker
   - path: "docker-compose.yml"
@@ -119,7 +111,7 @@ hooks:
       workdir: "."
 
 composition:
-  pairsWith: [k8s-deploy, monitoring-stack, infra-gcp, infra-aws]
+  pairsWith: [k8s-deploy, monitoring-stack, infra-gcp, infra-aws, module-spring-security]
   nestsInside: [monorepo]
 
 prerequisites:

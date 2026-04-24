@@ -38,7 +38,6 @@ src/main/java/__PKG_DIR__/
   config/
     OpenApiConfig.java           # springdoc-openapi
     ObservabilityConfig.java     # Micrometer + OTel setup
-    SecurityConfig.java          # OAuth 2.0 resource server
   web/                           # REST controllers + exception handler
   service/                       # @Transactional business logic
   domain/                        # JPA entities
@@ -54,7 +53,9 @@ src/main/resources/
 
 All configuration is driven by environment variables — see `.env.example`. The `local` profile loads Postgres on `localhost:5432` for dev.
 
-For production: set `OAUTH2_ISSUER_URI` to your OIDC issuer so the resource server validates JWTs against its JWK set.
+## Authentication
+
+This service ships auth-neutral. Stack [`module-spring-security`](../module-spring-security/) alongside to add OAuth 2.0 JWT / API-key / opaque-token authentication with a pluggable multi-provider filter chain. The module drops its sources into `src/main/java/<PackageDir>/security/` and expects you to add the Spring Security Maven dependencies documented in that module's README.
 
 ## Observability
 

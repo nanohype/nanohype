@@ -5,8 +5,9 @@ displayName: "Spring Boot Microservice"
 description: >
   Java Spring Boot 4 HTTP service on JDK 25 with a Kubernetes deployment
   and an optional Grafana + Prometheus + Loki observability stack.
-  Production-shaped: OAuth 2.0 resource server, Spring Data JPA with
-  Flyway, Micrometer + OpenTelemetry, Helm chart, HPA, and ingress.
+  Production-shaped: Spring Security via module-spring-security (JWT /
+  API-key / opaque-token), Spring Data JPA with Flyway, Micrometer +
+  OpenTelemetry, Helm chart, HPA, and ingress.
 version: "0.1.0"
 tags: [java, spring-boot, jvm, microservice, api, kubernetes]
 
@@ -85,8 +86,14 @@ templates:
       JavaPackage: "${JavaPackage}"
       PackageDir: "${PackageDir}"
       Database: "${Database}"
-      IncludeAuth: true
       IncludeDocker: true
+
+  - template: module-spring-security
+    path: "."
+    variables:
+      ProjectName: "${ProjectName}"
+      JavaPackage: "${JavaPackage}"
+      PackageDir: "${PackageDir}"
 
   - template: k8s-deploy
     path: k8s
