@@ -32,3 +32,6 @@ tmp/
 
 # Generated lock files in template skeletons
 **/skeleton/package-lock.json
+
+# Template doctor report artifact
+scripts/template-doctor/.report.tsv
