@@ -20,10 +20,7 @@ export class AppError extends Error {
 export class ValidationError extends AppError {
   readonly issues: Array<{ path: string; message: string }>;
 
-  constructor(
-    message: string,
-    issues: Array<{ path: string; message: string }> = []
-  ) {
+  constructor(message: string, issues: Array<{ path: string; message: string }> = []) {
     super(message, 400, "VALIDATION_ERROR");
     this.issues = issues;
   }

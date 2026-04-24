@@ -43,9 +43,7 @@ export function errorHandler(err: Error, c: Context): Response {
   // internal detail doesn't leak.
   const rawStatus = (err as Error & { status?: unknown }).status;
   const status =
-    typeof rawStatus === "number" && rawStatus >= 400 && rawStatus < 600
-      ? rawStatus
-      : 500;
+    typeof rawStatus === "number" && rawStatus >= 400 && rawStatus < 600 ? rawStatus : 500;
 
   return c.json(
     {
@@ -55,6 +53,6 @@ export function errorHandler(err: Error, c: Context): Response {
         statusCode: status,
       },
     },
-    status as any,
+    status as any
   );
 }

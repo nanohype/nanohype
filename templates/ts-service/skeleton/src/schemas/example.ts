@@ -21,16 +21,8 @@ export const ItemIdSchema = z.object({
 });
 
 export const QueryItemSchema = z.object({
-  limit: z
-    .string()
-    .transform(Number)
-    .pipe(z.number().int().min(1).max(100))
-    .optional(),
-  offset: z
-    .string()
-    .transform(Number)
-    .pipe(z.number().int().min(0))
-    .optional(),
+  limit: z.string().transform(Number).pipe(z.number().int().min(1).max(100)).optional(),
+  offset: z.string().transform(Number).pipe(z.number().int().min(0)).optional(),
 });
 
 export type CreateItemInput = z.infer<typeof CreateItemSchema>;

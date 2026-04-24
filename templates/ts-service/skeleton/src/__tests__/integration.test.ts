@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { json } from "./helpers.js";
 import { app } from "../app.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -26,7 +27,7 @@ describe("POST /api/items", () => {
 
     expect(res.status).toBe(201);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("id");
     expect(body).toHaveProperty("name", "Test Widget");
     expect(body).toHaveProperty("description", "A test item");
@@ -39,7 +40,7 @@ describe("POST /api/items", () => {
 
     expect(res.status).toBe(201);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("name", "Minimal Item");
   });
 
@@ -48,7 +49,7 @@ describe("POST /api/items", () => {
 
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
     expect(body.issues).toBeInstanceOf(Array);
     expect(body.issues.length).toBeGreaterThan(0);
@@ -59,7 +60,7 @@ describe("POST /api/items", () => {
 
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
   });
 
@@ -72,7 +73,7 @@ describe("POST /api/items", () => {
 
     expect(res.status).toBe(400);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("error", "Invalid JSON");
   });
 });
@@ -81,13 +82,13 @@ describe("GET /api/items/:id", () => {
   it("returns 200 for an existing item", async () => {
     // Create an item first
     const createRes = await post("/api/items", { name: "Fetchable Item" });
-    const created = await createRes.json();
+    const created = await json(createRes);
 
     const res = await app.request(`/api/items/${created.id}`);
 
     expect(res.status).toBe(200);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("id", created.id);
     expect(body).toHaveProperty("name", "Fetchable Item");
   });
@@ -98,7 +99,7 @@ describe("GET /api/items/:id", () => {
 
     expect(res.status).toBe(404);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body.error.code).toBe("NOT_FOUND");
     expect(body.error.statusCode).toBe(404);
   });
@@ -110,7 +111,7 @@ describe("GET /health", () => {
 
     expect(res.status).toBe(200);
 
-    const body = await res.json();
+    const body = await json(res);
     expect(body).toHaveProperty("status", "ok");
     expect(body).toHaveProperty("service");
     expect(body).toHaveProperty("timestamp");
@@ -125,7 +126,7 @@ describe("GET /readyz", () => {
     // Default state is not ready (503) unless markReady was called
     // by another test or the bootstrap. Both 200 and 503 are valid
     // depending on test ordering, but we verify the response shape.
-    const body = await res.json();
+    const body = await json(res);
 
     if (res.status === 503) {
       expect(body).toHaveProperty("status", "not_ready");

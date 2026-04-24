@@ -1,0 +1,4 @@
+# Markdown files in the skeleton contain __PLACEHOLDER__ tokens that
+# prettier would rewrite as **bold** (double underscore is markdown
+# emphasis syntax). Keep markdown out of prettier's reach.
+*.md

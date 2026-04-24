@@ -16,10 +16,7 @@ export const httpRequestTotal = meter.createCounter("http_request_total", {
 });
 
 /** HTTP request duration in milliseconds, labeled by method, path, and status. */
-export const httpRequestDuration = meter.createHistogram(
-  "http_request_duration_ms",
-  {
-    description: "HTTP request latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const httpRequestDuration = meter.createHistogram("http_request_duration_ms", {
+  description: "HTTP request latency in milliseconds",
+  unit: "ms",
+});

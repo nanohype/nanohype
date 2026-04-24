@@ -9,10 +9,7 @@ import { httpRequestTotal, httpRequestDuration } from "../metrics.js";
 // silently discard data when no provider is registered.
 //
 
-export async function metricsMiddleware(
-  c: Context,
-  next: Next,
-): Promise<void> {
+export async function metricsMiddleware(c: Context, next: Next): Promise<void> {
   const start = performance.now();
 
   await next();
