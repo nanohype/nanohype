@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 # Report renderer. Reads findings from $REPORT_FILE and produces the
 # human-readable summary. Sourced by run.sh after all checks have
 # executed.

@@ -34,6 +34,8 @@ Individual templates are building blocks. Composites are the blueprints that ass
 | `client-engagement` | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook | 5 | Non-engineering client engagement workflows |
 | `product-launch` | Next.js app, design system, tokens, test plan, acceptance criteria, PRD, campaign, runbook | 10 | Cross-functional product launches spanning eng through marketing |
 | `research-to-prototype` | PRD, agentic loop prototype, optional test plan | 3 | Research-driven prototyping from idea to validated POC |
+| `spring-boot-microservice` | Spring Boot 4 HTTP service on JDK 25 with K8s deploy, optional Grafana + Prometheus + Loki | 4 | Java services that need production posture out of the gate |
+| `identity-aware-service` | Spring Boot 4 service with Istio mesh-edge auth + Spring Security resource server | 5 | Defense-in-depth identity against a shared OIDC issuer |
 
 ---
 

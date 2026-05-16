@@ -5,7 +5,7 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
 ## What you get
 
 - Electron 33 with main/renderer process separation
-- React 19 chat UI in the renderer with armature design tokens
+- React 19 chat UI in the renderer with CSS-variable design tokens
 - IPC bridge via contextBridge + preload for secure AI calls
 - esbuild for main process bundling, Vite for renderer
 - Anthropic and OpenAI provider abstraction with pluggable registry

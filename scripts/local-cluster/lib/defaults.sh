@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
 # Scaffold-variable defaults for `make verify` runs. Keep these conservative:
 # every value here is meant to be a benign placeholder that lets the template
 # render and compile/validate. Real users bring their own values at scaffold

@@ -28,7 +28,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && eslint 'src/**/*.ts' '__tests__/**/*.ts'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepublishOnly": "npm run build"
@@ -37,9 +37,12 @@
     "js-yaml": "^4.1.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.8.0",
+    "eslint": "^10.4.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "typescript-eslint": "^8.59.3",
+    "vitest": "^4.1.6"
   }
 }

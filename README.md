@@ -6,7 +6,7 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 
 ## Templates
 
-48 templates across four categories, plus 15 composable modules.
+Templates span four engineering categories plus composable modules. Beyond engineering, the catalog also carries cross-functional templates and agent briefs for design, QA, product, marketing, sales, operations, and customer success — see [Cross-Functional Templates](#cross-functional-templates) below.
 
 ### AI Systems
 
@@ -41,6 +41,7 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [electron-app](templates/electron-app/) | Electron desktop application with IPC and auto-updates | `typescript` `electron` `desktop` |
 | [api-gateway](templates/api-gateway/) | API gateway with routing, rate limiting, and upstream management | `typescript` `gateway` `api` |
 | [worker-service](templates/worker-service/) | Background worker service with job processing | `typescript` `worker` `jobs` |
+| [spring-boot-service](templates/spring-boot-service/) | Spring Boot 4 HTTP service on JDK 25 with Spring Data JPA, Flyway, Micrometer + OTel, structured logging | `java` `spring-boot` `api` |
 
 ### Infrastructure
 
@@ -53,6 +54,7 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [infra-druid](templates/infra-druid/) | Apache Druid cluster with ingestion and query configuration | `druid` `analytics` `infrastructure` |
 | [infra-cloudflare](templates/infra-cloudflare/) | Cloudflare Workers with KV, D1, and R2 | `cloudflare` `workers` `infrastructure` |
 | [k8s-deploy](templates/k8s-deploy/) | Kubernetes manifests and Helm chart with Ingress, HPA, and CI/CD | `kubernetes` `helm` `deployment` |
+| [istio-policy](templates/istio-policy/) | Istio policy bundle — AuthorizationPolicy, RequestAuthentication, JWT issuer + JWKs wiring | `istio` `service-mesh` `auth` |
 | [monorepo](templates/monorepo/) | Turborepo/pnpm workspace with shared packages and CI | `monorepo` `turborepo` `pnpm` |
 | [monitoring-stack](templates/monitoring-stack/) | Observability infrastructure with metrics, logs, and traces | `monitoring` `observability` `infrastructure` |
 
@@ -61,6 +63,7 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | Template | Description | Tags |
 |---|---|---|
 | [module-auth-ts](templates/module-auth-ts/) | Authentication middleware with pluggable providers (JWT, Clerk, Auth0, Supabase, API key) | `auth` `middleware` `jwt` |
+| [module-auth-go](templates/module-auth-go/) | Go HTTP auth middleware with pluggable providers (JWT/JWKS, Auth0, Clerk, Supabase, API key) | `auth` `go` `middleware` |
 | [module-database-ts](templates/module-database-ts/) | Drizzle ORM with pluggable drivers (PostgreSQL, SQLite, Turso) | `database` `drizzle` `orm` |
 | [module-observability-ts](templates/module-observability-ts/) | OpenTelemetry instrumentation with pluggable exporters (console, OTLP, Datadog) | `observability` `opentelemetry` `tracing` |
 | [module-storage-ts](templates/module-storage-ts/) | Blob storage abstraction with pluggable backends (local, S3, R2, GCS) | `storage` `s3` `blob` |
@@ -69,12 +72,26 @@ A tool-agnostic template catalog for AI-focused projects. Each template is a sel
 | [module-rate-limit-ts](templates/module-rate-limit-ts/) | Rate limiting with pluggable algorithms (token bucket, sliding window) | `rate-limit` `throttle` `middleware` |
 | [module-webhook-ts](templates/module-webhook-ts/) | Webhook ingestion and delivery with signature verification | `webhook` `events` `middleware` |
 | [module-notifications-ts](templates/module-notifications-ts/) | Multi-channel notifications (email, SMS, push) | `notifications` `email` `messaging` |
+| [module-oauth-delegation-ts](templates/module-oauth-delegation-ts/) | Outbound OAuth 2.0 with PKCE, HMAC-signed state cookies, per-user token storage, refresh-before-expiry | `oauth` `delegation` `pkce` |
+| [module-search-ts](templates/module-search-ts/) | Full-text search with pluggable backends (Algolia, Typesense, Meilisearch) | `search` `full-text` `algolia` |
+| [module-knowledge-base-ts](templates/module-knowledge-base-ts/) | Knowledge base providers (Notion, Confluence, Google Docs, Coda) normalized to markdown | `knowledge-base` `notion` `confluence` |
+| [module-project-mgmt-ts](templates/module-project-mgmt-ts/) | Project management providers (Linear, Jira, Asana, Shortcut) | `linear` `jira` `pm` |
+| [module-analytics-ts](templates/module-analytics-ts/) | Product analytics with pluggable backends (Segment, PostHog, Mixpanel, Amplitude) | `analytics` `events` `posthog` |
+| [module-media-ts](templates/module-media-ts/) | Media processing and delivery (Cloudinary, Uploadcare, imgix) | `media` `images` `cdn` |
 | [module-llm-gateway](templates/module-llm-gateway/) | LLM provider gateway with routing and fallback | `llm` `gateway` `ai` |
+| [module-llm-providers](templates/module-llm-providers/) | Shared LLM provider pack (Anthropic, OpenAI, Groq core; Bedrock/Azure/Vertex/HF/Ollama optional) | `llm` `providers` `ai` |
 | [module-vector-store](templates/module-vector-store/) | Vector store abstraction with pluggable backends | `vectors` `embeddings` `ai` |
 | [module-semantic-cache](templates/module-semantic-cache/) | Semantic caching for LLM responses using embeddings | `cache` `semantic` `ai` |
 | [module-llm-observability](templates/module-llm-observability/) | LLM-specific observability with cost and latency tracking | `observability` `llm` `cost` |
 | [module-billing-ts](templates/module-billing-ts/) | Usage-based billing and subscription management | `billing` `payments` `saas` |
 | [module-feature-flags-ts](templates/module-feature-flags-ts/) | Feature flag management with evaluation rules | `feature-flags` `toggles` `configuration` |
+| [module-spring-security](templates/module-spring-security/) | Drop-in Spring Security module — OIDC JWT resource server, header API keys, multi-provider filter chain | `java` `spring-security` `oidc` |
+
+### Cross-Functional Templates
+
+Beyond engineering, the catalog ships templates and agent briefs for design, QA, product, marketing, sales, operations, and customer success. Examples: `prd-template`, `test-plan`, `design-system`, `brand-guidelines`, `runbook`, `incident-postmortem`, `onboarding-playbook`, `proposal-template`. Agent briefs (`brief-*`) scaffold structured instruction documents instead of static files — one per non-engineering persona.
+
+See [the catalog reference](docs/catalog.md) for the decision matrix and the full per-persona breakdown.
 
 ## How It Works
 
@@ -111,6 +128,11 @@ Pre-configured multi-template stacks in `composites/`:
 | [cost-optimized-ai](composites/cost-optimized-ai.yaml) | LLM gateway with cost-aware routing, semantic caching, and cost tracking |
 | [ai-platform](composites/ai-platform.yaml) | Full AI platform with service, gateway, vectors, pipeline, auth, billing, monitoring |
 | [agent-team](composites/agent-team.yaml) | Multi-agent system with orchestrator, specialized agents, evals, and MCP tools |
+| [spring-boot-microservice](composites/spring-boot-microservice.yaml) | Spring Boot 4 service on JDK 25 with K8s deploy and optional Grafana + Prometheus + Loki |
+| [identity-aware-service](composites/identity-aware-service.yaml) | Spring Boot 4 service with Istio mesh-edge auth plus Spring Security resource server (defense in depth) |
+| [client-engagement](composites/client-engagement.yaml) | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook (non-engineering) |
+| [product-launch](composites/product-launch.yaml) | Cross-functional launch spanning eng through marketing — Next.js app, design system, PRD, campaign, runbook |
+| [research-to-prototype](composites/research-to-prototype.yaml) | PRD + agentic-loop prototype + optional test plan — idea to validated POC |
 
 Composites define which templates to scaffold, where to nest them, and how variables flow across templates. See the [composite contract](docs/spec/composite-contract.md) for the specification.
 

@@ -21,10 +21,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4.53.2
 
       - name: Find and validate templates
         run: |
@@ -69,10 +69,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4.53.2
 
       - name: Run catalog validation
         run: npm run validate:catalog
