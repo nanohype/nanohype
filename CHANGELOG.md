@@ -35,6 +35,7 @@
 - `mikefarah/yq` action pinned to `v4.53.2` (was tracking `master`).
 - SDK CI gains `npm audit --audit-level=high --omit=dev` so production advisories fail PRs.
 - `scripts/local-cluster/lib/defaults.sh` and `scripts/template-doctor/lib/report.sh` now set `-euo pipefail` for consistency with the rest of the script set.
+- ESLint adopted in `sdk/` with the `typescript-eslint` strict + recommended ruleset. SDK `lint` script now runs `tsc --noEmit && eslint 'src/**/*.ts' '__tests__/**/*.ts'` (previously aliased to typecheck only). Aligns with the rest of the nanohype org's lint posture.
 
 ### Docs
 
