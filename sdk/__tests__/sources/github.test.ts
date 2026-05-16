@@ -4,11 +4,15 @@ import { GitHubSource } from '../../src/sources/github.js';
 const mockFetch = vi.fn();
 
 beforeEach(() => {
+  // vitest 4's `vi.restoreAllMocks()` no longer clears call state on
+  // top-level `vi.fn()` instances — reset between tests explicitly so
+  // `mock.calls` and `toHaveBeenCalledTimes` start clean.
+  mockFetch.mockReset();
   vi.stubGlobal('fetch', mockFetch);
 });
 
 afterEach(() => {
-  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 function jsonResponse(data: unknown, status = 200): Response {

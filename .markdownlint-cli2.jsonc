@@ -10,7 +10,9 @@
     // Allow inline HTML (SVG embeds, etc.)
     "MD033": false,
     // Allow bare URLs
-    "MD034": false
+    "MD034": false,
+    // Don't enforce table column padding style (compact vs aligned)
+    "MD060": false
   },
   "globs": [
     "**/*.md",

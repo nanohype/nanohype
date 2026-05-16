@@ -160,7 +160,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **discord-bot** — Reach for this when the client wants AI in Discord. discord.js v14 with slash commands, message handlers, and embed-formatted responses. Per-channel conversation context with typing indicators.
 
-**electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — API keys stay in the main process. React UI with armature design tokens. esbuild for main, Vite for renderer.
+**electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — API keys stay in the main process. React UI with CSS-variable design tokens. esbuild for main, Vite for renderer.
 
 **api-gateway** — Reach for this when you need an edge layer in front of multiple backend services. Reverse proxy with per-route rate limiting, JWT/API key auth, request/response transformation, canary traffic splitting, and upstream health checking. Per-upstream circuit breakers.
 
