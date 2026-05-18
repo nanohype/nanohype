@@ -1,0 +1,84 @@
+apiVersion: nanohype/v1
+
+name: eks-addon
+displayName: "EKS / AKS GitOps Addon (Helm)"
+description: >
+  Scaffolds a new Helm-based addon into nanohype/eks-gitops or
+  nanohype/aks-gitops. Produces the
+  addons/<category>/<name>/values.yaml + per-env delta files
+  (values-{dev,staging,production}.yaml) following the eks-gitops
+  Helm values pattern (base + delta-only). The Kustomize variant
+  (used by storage-classes, priority-classes, karpenter-resources)
+  needs a different layout and is not covered here.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: infrastructure
+tags: [kubernetes, helm, argocd, gitops, eks, aks, nanohype]
+
+variables:
+  - name: AddonName
+    type: string
+    placeholder: "__ADDON_NAME__"
+    description: "Kebab-case addon name. Becomes the directory name under addons/<category>/."
+    prompt: "Addon name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Category
+    type: string
+    placeholder: "__CATEGORY__"
+    description: "Sync-wave category. One of: bootstrap, networking, security, observability, operations, argo-platform."
+    prompt: "Category"
+    default: "operations"
+
+  - name: ChartRepo
+    type: string
+    placeholder: "__CHART_REPO__"
+    description: "Upstream Helm chart repository URL (artifacthub link or OCI registry)."
+    prompt: "Chart repo URL"
+    required: true
+
+  - name: ChartName
+    type: string
+    placeholder: "__CHART_NAME__"
+    description: "Upstream chart name (as it appears in helm search results)."
+    prompt: "Chart name"
+    required: true
+
+  - name: ChartVersion
+    type: string
+    placeholder: "__CHART_VERSION__"
+    description: "Current stable chart version (pin to specific — never floating). Look up with: helm search repo <chart>."
+    prompt: "Chart version"
+    required: true
+
+  - name: SyncWave
+    type: string
+    placeholder: "__SYNC_WAVE__"
+    description: "ArgoCD sync wave. Categories: bootstrap (0,2), networking (1), karpenter (5), security (10-12), policies (20-21), observability (30-33), operations (40-44), argo-platform (50-52)."
+    prompt: "Sync wave"
+    default: "40"
+
+conditionals: []
+
+composition:
+  pairsWith: [landing-zone-component]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: helm
+    version: ">=3.0"
+    purpose: "Render and lint values locally against the upstream chart"
+    optional: false
+  - name: kustomize
+    version: ">=5.0"
+    purpose: "Build per-env overlays via task validate"
+    optional: false
+  - name: yamllint
+    purpose: "Required by eks-gitops CI's lint:yaml job"
+    optional: false
+
+hooks: {}
