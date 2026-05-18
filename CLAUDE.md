@@ -22,9 +22,9 @@ Templates are classified by `category` (catalog grouping) and `persona` (who the
 
 ### Engineering (persona: engineering)
 
-- **AI Systems** (`ai-systems`) — agentic-loop, rag-pipeline, mcp-server-ts, mcp-server-python, eval-harness, prompt-library, a2a-agent, guardrails, multimodal-pipeline, fine-tune-pipeline, data-pipeline, agent-orchestrator, ci-eval
+- **AI Systems** (`ai-systems`) — agentic-loop, rag-pipeline, mcp-server-ts, mcp-server-python, eval-harness, prompt-library, a2a-agent, agent-fleet, guardrails, multimodal-pipeline, fine-tune-pipeline, data-pipeline, agent-orchestrator, ci-eval
 - **Applications** (`applications`) — go-cli, ts-service, go-service, next-app, chrome-ext, vscode-ext, slack-bot, discord-bot, electron-app, api-gateway, worker-service
-- **Infrastructure** (`infrastructure`) — infra-aws, infra-fly, infra-gcp, infra-vercel, k8s-deploy, monorepo, monitoring-stack, infra-druid, infra-cloudflare
+- **Infrastructure** (`infrastructure`) — k8s-app-tenant (primary), landing-zone-component, eks-addon, k8s-deploy (generic-cluster), monorepo, monitoring-stack, infra-druid, infra-aws (escape hatch), infra-fly, infra-gcp, infra-vercel, infra-cloudflare
 - **Composable Modules** (`composable-modules`) — module-analytics-ts, module-auth-go, module-auth-ts, module-billing-ts, module-cache-ts, module-database-ts, module-feature-flags-ts, module-knowledge-base-ts, module-llm-gateway, module-llm-observability, module-llm-providers, module-media-ts, module-notifications-ts, module-oauth-delegation-ts, module-observability-ts, module-project-mgmt-ts, module-queue-ts, module-rate-limit-ts, module-search-ts, module-semantic-cache, module-spring-security, module-storage-ts, module-vector-store, module-webhook-ts
 
 Module templates (`module-*`) are designed to be layered into other projects, not used standalone.
