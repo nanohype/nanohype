@@ -1,0 +1,7 @@
+# Production delta from values.yaml. ONLY include keys that differ from base.
+
+# Common prod overrides:
+# - higher replica count (3+)
+# - stricter resource limits
+# - longer retention periods
+# - tighter security context (if base allows looser for dev)

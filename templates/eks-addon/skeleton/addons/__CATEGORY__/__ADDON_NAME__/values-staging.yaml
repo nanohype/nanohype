@@ -1,0 +1,3 @@
+# Staging delta from values.yaml. ONLY include keys that differ from base.
+
+# Staging usually mirrors production with slightly lower resources.

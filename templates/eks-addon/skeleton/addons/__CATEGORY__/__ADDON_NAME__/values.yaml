@@ -1,0 +1,32 @@
+# __ADDON_NAME__ — base Helm values shared across all environments.
+#
+# Per-env deltas live in values-{dev,staging,production}.yaml. Those files
+# contain ONLY the differences from this file (never full copies).
+#
+# Chart: __CHART_NAME__ from __CHART_REPO__ pinned to __CHART_VERSION__.
+# Update the chart version explicitly via the ApplicationSet entry that
+# references this addon.
+
+# Replace with the chart's actual top-level keys.
+# Look at the upstream chart's values.yaml as the starting point.
+
+# Common patterns:
+#
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
+#
+# replicaCount: 2
+#
+# serviceAccount:
+#   create: true
+#   annotations:
+#     eks.amazonaws.com/role-arn: arn:aws:iam::<account-id>:role/<role-name>
+#
+# Cluster-wide defaults that should be the same across dev/staging/prod
+# go here. Anything that differs per environment (replica count, log level,
+# resource sizes, instance types) goes in the per-env delta files.

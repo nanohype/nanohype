@@ -1,0 +1,51 @@
+# AgentFleet — composes kagent Agent + ModelConfig + KEDA scaler.
+# Apply AFTER the Platform CR (from k8s-app-tenant) and the ModelGateway CR
+# (modelgateway.yaml in this same directory) reconcile.
+#
+# The operator reconciles:
+#   - kagent Agent + ModelConfig + ToolServer resources
+#   - KEDA ScaledObject per spec.scaling.trigger
+#   - per-fleet NetworkPolicy
+#   - tenant ServiceAccount annotated for IRSA (Platform reconciler owns the role-arn)
+#   - optional ResourceClaimTemplate for DRA accelerators (when spec.compute != none)
+
+apiVersion: agents.stxkxs.io/v1alpha1
+kind: AgentFleet
+metadata:
+  name: __FLEET_NAME__
+  namespace: tenants-__TENANT__
+spec:
+  tenant: __TENANT__
+  platform: __APP_NAME__
+
+  modelRoute: __ROUTE_NAME__         # references ModelGateway.spec.routes[].name
+
+  agents:
+    # Each agent entry produces a kagent Agent CR + ModelConfig binding.
+    # Add more entries here as the fleet's persona structure grows.
+    - name: __FLEET_NAME__-primary
+      modelFamily: __MODEL_FAMILY__
+      modelId: __MODEL_ID__
+      systemPrompt: |
+        # Replace this with the agent's system prompt.
+        # Keep prompt caching in mind — the static prefix should be
+        # large enough to amortize, and ${dynamic} parts go at the end.
+
+  scaling:
+    trigger: __SCALE_TRIGGER__         # sqs | cpu | cron
+    minReplicas: 1
+    maxReplicas: 10
+    # Tune the trigger-specific settings to fit the workload:
+    #   sqs:  queueName + targetQueueLength
+    #   cpu:  cpuTargetUtilization (default 70%)
+    #   cron: schedule + desiredReplicas
+    triggerConfig: {}
+
+  compute: __COMPUTE__                 # none | nvidia-l40s | nvidia-h100 | neuron
+
+  observability:
+    # The operator injects the agents.tenant and agents.platform attrs from
+    # the Platform CR. Add the AI-specific ones here.
+    otelResourceAttributes:
+      agents.model_family: __MODEL_FAMILY__
+      agents.model_id: __MODEL_ID__

@@ -1,0 +1,35 @@
+# ModelGateway — declares the agentgateway route + Bedrock model resolution.
+# Apply BEFORE AgentFleet (AgentFleet.spec.modelRoute references this).
+
+apiVersion: agents.stxkxs.io/v1alpha1
+kind: ModelGateway
+metadata:
+  name: __APP_NAME__-gateway
+  namespace: tenants-__TENANT__
+spec:
+  tenant: __TENANT__
+
+  routes:
+    - name: __ROUTE_NAME__
+      modelFamily: __MODEL_FAMILY__
+      modelId: __MODEL_ID__
+
+      # Bedrock Guardrails — set guardrailIdentifier + version once you've
+      # provisioned the guardrail in landing-zone (terraform/components/
+      # bedrock-guardrails). Comment out the block until then.
+      # guardrails:
+      #   guardrailIdentifier: <guardrail-id>
+      #   guardrailVersion: "1"
+
+      # Per-route rate limit — defends downstream Bedrock quota.
+      # tokensPerMinute / requestsPerMinute. Omit either side to disable that limit.
+      rateLimit:
+        tokensPerMinute: 100000
+        requestsPerMinute: 60
+
+  # Region preference order — agentgateway resolves to the first region where
+  # the model is live. Should match the LLM_POLICY default (us-west-2 first).
+  regions:
+    - us-west-2
+    - us-east-1
+    - eu-central-1

@@ -23,7 +23,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 
 ## Project layout
 
-```
+```text
 <app>/
   chart/
     Chart.yaml
