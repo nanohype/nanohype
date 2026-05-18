@@ -39,7 +39,7 @@ Apps land at wave ≥100 (handled by `k8s-app-tenant`).
 
 ## Project layout
 
-```
+```text
 eks-gitops/                          # (or aks-gitops/)
   addons/
     __CATEGORY__/

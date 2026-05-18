@@ -23,7 +23,7 @@ AWS variant only for now; GCP and Azure follow the same shape and can be added b
 
 ## Project layout
 
-```
+```text
 landing-zone/
   components/
     aws/

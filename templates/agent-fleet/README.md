@@ -23,7 +23,7 @@ The AI-workload composite scaffolding for nanohype-org apps. Produces an `AgentF
 
 ## Project layout
 
-```
+```text
 <app>/
   agentfleet.yaml                  # AgentFleet CR (apply after Platform is Ready)
   modelgateway.yaml                # ModelGateway CR (route + Guardrails + rate limits)
