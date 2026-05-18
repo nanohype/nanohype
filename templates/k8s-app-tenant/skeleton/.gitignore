@@ -1,0 +1,13 @@
+# Helm
+chart/charts/
+chart/Chart.lock
+
+# Rendered output (if you ever run helm template > rendered/)
+rendered/
+
+# Editor + OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

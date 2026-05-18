@@ -1,0 +1,98 @@
+apiVersion: nanohype/v1
+
+name: k8s-app-tenant
+displayName: "K8s App as Platform Tenant"
+description: >
+  Primary scaffolding for a nanohype-org k8s-native application. Produces
+  a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
+  ready to register against nanohype/eks-gitops or nanohype/aks-gitops,
+  and a Platform CR (agents.stxkxs.io/v1alpha1) declaring the tenant
+  boundary for the eks-agent-platform operator to reconcile. Use this for
+  every k8s-native deliverable unless an explicit escape hatch
+  (aws-lambda, fly, vercel, cloudflare) is justified.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: infrastructure
+tags: [kubernetes, k8s, helm, argocd, platform, nanohype]
+
+variables:
+  - name: AppName
+    type: string
+    placeholder: "__APP_NAME__"
+    description: "Kebab-case app name. Used as chart name, namespace, Platform CR name, and service account name."
+    prompt: "App name"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case starting with a letter"
+
+  - name: Description
+    type: string
+    placeholder: "__DESCRIPTION__"
+    description: "Short app description for Chart.yaml and README."
+    prompt: "Description"
+    default: "k8s-native Platform tenant"
+
+  - name: Tenant
+    type: string
+    placeholder: "__TENANT__"
+    description: "Owning team. Drives the namespace prefix (tenants-<team>), ArgoCD AppProject, and per-tenant resource quotas."
+    prompt: "Owning team"
+    required: true
+    validation:
+      pattern: "^[a-z][a-z0-9-]*$"
+      message: "Must be lowercase kebab-case"
+
+  - name: Image
+    type: string
+    placeholder: "__IMAGE__"
+    description: "Container image base (no tag — tag pinned per-env in values-{env}.yaml)."
+    prompt: "Container image"
+    required: true
+
+  - name: Port
+    type: string
+    placeholder: "__PORT__"
+    description: "Container port the app listens on."
+    prompt: "Container port"
+    default: "8080"
+
+  - name: GitopsRepo
+    type: string
+    placeholder: "__GITOPS_REPO__"
+    description: "Target gitops repo for the ApplicationSet entry."
+    prompt: "Gitops repo (org/repo)"
+    default: "nanohype/eks-gitops"
+    validation:
+      pattern: "^[a-z0-9-]+/[a-z0-9-]+$"
+      message: "Must be org/repo (e.g., nanohype/eks-gitops)"
+
+  - name: SyncWave
+    type: string
+    placeholder: "__SYNC_WAVE__"
+    description: "ArgoCD sync wave for this app's ApplicationSet entry. Apps typically deploy after addons (wave >= 100)."
+    prompt: "Sync wave"
+    default: "100"
+
+conditionals: []
+
+composition:
+  pairsWith: [ts-service, go-service, next-app, mcp-server-ts, mcp-server-python, agentic-loop]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: helm
+    version: ">=3.0"
+    purpose: "Render and lint the chart locally before pushing"
+    optional: false
+  - name: kubectl
+    version: ">=1.28"
+    purpose: "Apply the Platform CR during initial tenant setup (before ArgoCD takes over via the ApplicationSet)"
+    optional: false
+  - name: kustomize
+    version: ">=5.0"
+    purpose: "Build per-env overlays consumed by the ApplicationSet entry"
+    optional: false
+
+hooks: {}

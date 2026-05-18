@@ -1,0 +1,10 @@
+# Dev delta — only differences from values.yaml.
+image:
+  tag: dev
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi

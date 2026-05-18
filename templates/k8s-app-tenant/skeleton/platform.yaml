@@ -1,0 +1,35 @@
+# Platform CR — declares the tenant boundary. Apply this ONCE during initial
+# tenant setup. The eks-agent-platform operator reconciles:
+#   - Namespace (with Pod Security Standards baseline label)
+#   - ResourceQuota + LimitRange
+#   - Default-deny NetworkPolicy
+#   - ArgoCD AppProject scoped to this Platform
+#   - Per-Platform IRSA role with the policies named in spec.irsa.policies
+#   - KMS grants on the data CMK + log CMK
+#   - S3 bucket policy on spec.storage.bucket
+#
+# After this is Ready (Platform.status.phase), the chart's ApplicationSet
+# entry in __GITOPS_REPO__ takes over.
+
+apiVersion: agents.stxkxs.io/v1alpha1
+kind: Platform
+metadata:
+  name: __APP_NAME__
+  namespace: tenants-__TENANT__
+spec:
+  tenant: __TENANT__
+
+  irsa:
+    serviceAccount: __APP_NAME__
+    # Add the AWS managed-or-inline policy ARNs this app's pod needs to assume
+    # via IRSA. Common patterns: bedrock-invoke, secretsmanager-read, s3-rw,
+    # dynamodb-rw, sqs-rw. The operator applies + grants accordingly.
+    policies: []
+
+  resourceQuota:
+    cpu: "2"
+    memory: 4Gi
+
+  storage:
+    bucket: __APP_NAME__-artifacts
+    kmsKey: cmk-data

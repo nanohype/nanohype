@@ -1,0 +1,5 @@
+# Staging delta — only differences from values.yaml.
+image:
+  tag: staging
+
+replicaCount: 2
