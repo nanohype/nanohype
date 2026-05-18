@@ -1,0 +1,53 @@
+# Copy this entry into the appropriate ApplicationSet in __GITOPS_REPO__.
+# Match the existing ApplicationSet matrix-generator shape — typically
+# `applicationsets/apps-tenants.yaml` (or create one if it doesn't exist yet).
+#
+# Reference: the ApplicationSet template uses the cluster secret labels
+# (environment, provider) and per-app overrides (chart path, sync wave).
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenant-__APP_NAME__
+  namespace: argocd
+spec:
+  generators:
+    - matrix:
+        generators:
+          - clusters:
+              selector:
+                matchLabels:
+                  argocd.argoproj.io/secret-type: cluster
+          - list:
+              elements:
+                - name: __APP_NAME__
+                  path: apps/__APP_NAME__/chart
+                  syncWave: "__SYNC_WAVE__"
+  template:
+    metadata:
+      name: '{{ "{{name}}" }}-{{ "{{ index .metadata.labels \"environment\" }}" }}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ "{{syncWave}}" }}'
+    spec:
+      project: tenant-__TENANT__
+      sources:
+        - repoURL: https://github.com/__GITOPS_REPO__.git
+          targetRevision: main
+          path: '{{ "{{path}}" }}'
+          helm:
+            valueFiles:
+              - $values/{{ "{{path}}" }}/values.yaml
+              - $values/{{ "{{path}}" }}/values-{{ "{{ index .metadata.labels \"environment\" }}" }}.yaml
+        - repoURL: https://github.com/__GITOPS_REPO__.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: '{{ "{{server}}" }}'
+        namespace: tenants-__TENANT__
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false   # Platform reconciler owns the Namespace
+          - ServerSideApply=true

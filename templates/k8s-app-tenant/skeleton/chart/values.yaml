@@ -1,0 +1,91 @@
+# Base values for __APP_NAME__. Per-environment deltas live in values-{dev,staging,production}.yaml.
+
+image:
+  repository: __IMAGE__
+  tag: ""           # pinned per-environment in values-{env}.yaml
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: __PORT__
+  targetPort: __PORT__
+
+serviceAccount:
+  create: true
+  # `eks.amazonaws.com/role-arn` annotation is filled by the Platform reconciler.
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+probes:
+  liveness:
+    httpGet:
+      path: /healthz
+      port: __PORT__
+    initialDelaySeconds: 10
+    periodSeconds: 30
+  readiness:
+    httpGet:
+      path: /readyz
+      port: __PORT__
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# Default-deny + egress allow-list. Add entries per the app's actual needs.
+networkPolicy:
+  enabled: true
+  egress:
+    # DNS to kube-system CoreDNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    # HTTPS egress to the internet (Bedrock, GitHub, etc.)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 169.254.0.0/16   # link-local / IMDS — must NOT be reachable from pods
+      ports:
+        - protocol: TCP
+          port: 443
+
+# OTel resource attrs propagate through traces/logs/metrics. The cluster-level
+# OTel Collector tags downstream exporters using these.
+otel:
+  enabled: true
+  resourceAttributes:
+    agents.tenant: __TENANT__
+    agents.platform: __APP_NAME__
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
