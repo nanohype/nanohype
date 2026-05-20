@@ -18,7 +18,7 @@ If you're a human reading this looking for "how do I use the templates," skip do
 
 ## The stack
 
-Six public repos form the system. Five are the deploy substrate; the sixth (`spastic`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
+Six public repos form the system. Five are the deploy substrate; the sixth (`jaunty`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
 
 | Repo | Role | Agent entry point |
 |---|---|---|
@@ -28,7 +28,7 @@ Six public repos form the system. Five are the deploy substrate; the sixth (`spa
 | [`nanohype/aks-gitops`](https://github.com/nanohype/aks-gitops) | Same for AKS | `aks-gitops/AGENTS.md` |
 | [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs | `eks-agent-platform/AGENTS.md` |
 | [`nanohype/kx`](https://github.com/nanohype/kx) | Local kind workspace that mirrors `eks-gitops`. Run the same charts locally before deploying | `kx/AGENTS.md` |
-| [`nanohype/spastic`](https://github.com/nanohype/spastic) | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.spastic/skills/` | `spastic/skills/README.md` |
+| [`nanohype/jaunty`](https://github.com/nanohype/jaunty) | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.jaunty/skills/` | `jaunty/skills/README.md` |
 
 The boundary between layers:
 
@@ -134,20 +134,20 @@ Full integration snippets for Claude Desktop, Claude API tool-use, and AWS Bedro
 
 ## Reference client
 
-[`spastic`](https://github.com/nanohype/spastic) is the open-source reference implementation of "AI client consuming this Platform Reference to produce shipped software." Clone it to study, fork it to extend, or — most likely — install it and configure a personal **skill overlay** to layer your opinions on top without forking.
+[`jaunty`](https://github.com/nanohype/jaunty) is the open-source reference implementation of "AI client consuming this Platform Reference to produce shipped software." Clone it to study, fork it to extend, or — most likely — install it and configure a personal **skill overlay** to layer your opinions on top without forking.
 
-Spastic runs the same workflows against two transports:
+Jaunty runs the same workflows against two transports:
 
 - **Managed Agents** (default) — Anthropic-hosted REST API. Sessions + sandboxes live on Anthropic infrastructure.
 - **Local** — `@anthropic-ai/claude-agent-sdk` in-process. Workflows run against your local filesystem.
 
-Pick by setting `SPASTIC_RUNTIME=managed-agents | local`. The two are behaviorally 1:1 for the application-level workflow flow; transport-level trade-offs (durability, sandboxing, deploy step, threading) are documented in [`spastic/docs/transports.md`](https://github.com/nanohype/spastic/blob/main/docs/transports.md).
+Pick by setting `JAUNTY_RUNTIME=managed-agents | local`. The two are behaviorally 1:1 for the application-level workflow flow; transport-level trade-offs (durability, sandboxing, deploy step, threading) are documented in [`jaunty/docs/transports.md`](https://github.com/nanohype/jaunty/blob/main/docs/transports.md).
 
-The overlay system. Spastic ships baseline skills (`quality-check`, `factory-preamble`, `intake-guide`, role briefs) as markdown files in `spastic/skills/`. When loading a skill, spastic walks four locations in priority order — `$SPASTIC_SKILLS_DIR` → `~/.spastic/skills/` → `<cwd>/.spastic/skills/` → bundled — and the first match wins as the base. `<skill>.append.md` files from every layer get concatenated for additive overlays. Result: anyone can clone spastic and run a competent factory; your personal overlay at `~/.spastic/skills/` produces *your* factory.
+The overlay system. Jaunty ships baseline skills (`quality-check`, `factory-preamble`, `intake-guide`, role briefs) as markdown files in `jaunty/skills/`. When loading a skill, jaunty walks four locations in priority order — `$JAUNTY_SKILLS_DIR` → `~/.jaunty/skills/` → `<cwd>/.jaunty/skills/` → bundled — and the first match wins as the base. `<skill>.append.md` files from every layer get concatenated for additive overlays. Result: anyone can clone jaunty and run a competent factory; your personal overlay at `~/.jaunty/skills/` produces *your* factory.
 
-What spastic does, broadly:
+What jaunty does, broadly:
 
-1. Accepts an intake brief conforming to [`spastic.schema.json`](https://github.com/nanohype/spastic/blob/main/spastic.schema.json)
+1. Accepts an intake brief conforming to [`jaunty.schema.json`](https://github.com/nanohype/jaunty/blob/main/jaunty.schema.json)
 2. Loads the public standards via the SDK (and adds private review-process layers on top)
 3. Selects templates from the catalog based on the brief
 4. Renders the selected templates + plans the multi-template composition
@@ -167,7 +167,7 @@ The minimum-viable client:
 5. **Conform to the platform-tenant contract**: produce a Helm chart in `<app>/chart/` + ApplicationSet entry + Platform CR. The shape is in `standards/platform-tenant-contract.json`.
 6. **Hit the bar**: ensure the rendered output exposes the four phases (build/lint/test/docs), uses current-stable versions, ships with OTel resource attrs, and passes the nine quality-rubric dimensions.
 
-That's the conformant client. Everything spastic does on top — multi-agent orchestration, merge-gate enforcement, evidence-bound verdicts — is the choreography that makes the bar consistently reachable, not a separate bar.
+That's the conformant client. Everything jaunty does on top — multi-agent orchestration, merge-gate enforcement, evidence-bound verdicts — is the choreography that makes the bar consistently reachable, not a separate bar.
 
 ## Versioning
 

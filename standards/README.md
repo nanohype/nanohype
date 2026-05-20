@@ -5,7 +5,7 @@ The production bar every build on the nanohype stack meets. This directory conta
 Use these standards as:
 
 - The guardrails an external AI client (Bedrock agent, custom orchestrator, Claude API session) must obey when producing software on this stack.
-- The contract the [reference client `spastic`](https://github.com/nanohype/spastic) implements (and that other clients can implement against).
+- The contract the [reference client `jaunty`](https://github.com/nanohype/jaunty) implements (and that other clients can implement against).
 - The validation surface for the SDK's `loadStandards()` helper and the `@nanohype/mcp` server's `list_standards` / `get_standard` tools.
 
 What is **not** here: the merge-gate choreography, the role weights and per-dimension assignments, the agent roster, the factory preamble prompt, and the orchestration code that produces consistent output against this bar. Those live in the reference client.
