@@ -16,6 +16,7 @@ Primary scaffold for any new k8s-native app. Produces:
 - `platform.yaml` — `Platform` CR
 
 Variables (PascalCase):
+
 - `AppName` — kebab-case app name
 - `Namespace` — defaults to `AppName`
 - `Image` — container image base
@@ -31,6 +32,7 @@ Reference: existing `templates/k8s-deploy/` skeleton; eks-gitops `addons/<catego
 Scaffold for AI workloads — adds AgentFleet CR + ModelConfig + KEDA scaler on top of (or alongside) `k8s-app-tenant`.
 
 Variables:
+
 - `FleetName`
 - `Models` — list of {family, modelId, route}
 - `ScaleTrigger` — `sqs` | `cpu` | `cron`
@@ -43,12 +45,14 @@ Reference: `eks-agent-platform/ARCHITECTURE.md` AgentFleet CRD field shape; `age
 Scaffold a new OpenTofu component for `nanohype/landing-zone`.
 
 Variables:
+
 - `ComponentName` — snake_case
 - `Cloud` — `aws` | `gcp` | `azure`
 - `Multitenant` — bool (adds `var.tenants = map(object({...}))` + `for_each` skeleton)
 - `Dependencies` — list of component names to wire via `live/_envcommon/`
 
 Produces:
+
 - `components/{cloud}/{ComponentName}/{main,variables,outputs,versions}.tf`
 - `modules/tenant/` skeleton if `Multitenant`
 - `live/_envcommon/{cloud}/{ComponentName}.hcl`
@@ -60,12 +64,14 @@ Reference: landing-zone `CLAUDE.md` "File Structure" section; existing component
 Scaffold a new addon for `nanohype/eks-gitops`.
 
 Variables:
+
 - `AddonName`
 - `Category` — `bootstrap` | `networking` | `security` | `observability` | `operations` | `argo-platform`
 - `AddonType` — `helm` | `kustomize`
 - `SyncWave` — int
 
 Produces:
+
 - For Helm: `addons/{Category}/{AddonName}/values.yaml` + `values-{dev,staging,production}.yaml`
 - For Kustomize: `addons/{Category}/{AddonName}/base/` + `overlays/{dev,staging,production}/`
 

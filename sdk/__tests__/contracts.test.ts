@@ -4,10 +4,12 @@ import { LocalSource } from '../src/sources/local.js';
 import { loadAllContracts, loadContract, KNOWN_CONTRACT_REPOS } from '../src/contracts.js';
 import { NanohypeError } from '../src/errors.js';
 
-const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
+// Fixture mirrors the org layout (a nanohype/ dir with sibling repo dirs)
+// so the contract loader is exercised without a real sibling checkout.
+const FIXTURE_ROOT = resolve(import.meta.dirname, 'fixtures', 'contracts', 'nanohype');
 
 describe('loadContract', () => {
-  const source = new LocalSource({ rootDir: CATALOG_ROOT });
+  const source = new LocalSource({ rootDir: FIXTURE_ROOT });
 
   it("loads nanohype's own AGENTS.md from the catalog root", async () => {
     const c = await loadContract(source, 'nanohype');
@@ -32,7 +34,7 @@ describe('loadContract', () => {
 });
 
 describe('loadAllContracts', () => {
-  const source = new LocalSource({ rootDir: CATALOG_ROOT });
+  const source = new LocalSource({ rootDir: FIXTURE_ROOT });
 
   it('returns one entry per known repo', async () => {
     const all = await loadAllContracts(source);

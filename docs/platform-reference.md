@@ -44,7 +44,7 @@ If you find yourself producing cloud resources inside an application chart, you'
 
 The machine-readable index of every template and composite is committed at the repo root as [`catalog.json`](../catalog.json). Stable GitHub raw URL for fetch-from-anywhere consumers:
 
-```
+```text
 https://raw.githubusercontent.com/nanohype/nanohype/main/catalog.json
 ```
 
