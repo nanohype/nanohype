@@ -1,11 +1,15 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import yaml from 'js-yaml';
 import type {
+  Catalog,
   CatalogEntry,
   CompositeCatalogEntry,
   CompositeManifest,
+  ContractRepo,
   SkeletonFile,
+  Standard,
+  StandardName,
   TemplateManifest,
 } from '../types.js';
 import type { CatalogSource, LocalSourceOptions } from '../source.js';
@@ -131,6 +135,44 @@ export class LocalSource implements CatalogSource {
     }
 
     return manifest;
+  }
+
+  async fetchCatalogManifest(): Promise<Catalog> {
+    const path = join(this.rootDir, 'catalog.json');
+    let text: string;
+    try {
+      text = await readFile(path, 'utf-8');
+    } catch {
+      throw new NanohypeError(`catalog.json not found at ${path}`);
+    }
+    return JSON.parse(text) as Catalog;
+  }
+
+  async fetchStandard(name: StandardName): Promise<Standard> {
+    const path = join(this.rootDir, 'standards', `${name}.json`);
+    let text: string;
+    try {
+      text = await readFile(path, 'utf-8');
+    } catch {
+      throw new NanohypeError(`Standard '${name}' not found at ${path}`);
+    }
+    return JSON.parse(text) as Standard;
+  }
+
+  async fetchContract(repo: ContractRepo): Promise<string> {
+    // `rootDir` points at the nanohype repo; sibling repos live alongside it
+    // in the same parent (the local workspace mirrors the github org layout).
+    // For the `nanohype` repo itself the AGENTS.md is at rootDir/AGENTS.md;
+    // for the others it's at ../<repo>/AGENTS.md.
+    const path =
+      repo === 'nanohype'
+        ? join(this.rootDir, 'AGENTS.md')
+        : resolve(dirname(this.rootDir), repo, 'AGENTS.md');
+    try {
+      return await readFile(path, 'utf-8');
+    } catch {
+      throw new NanohypeError(`AGENTS.md for repo '${repo}' not found at ${path}`);
+    }
   }
 
   /**

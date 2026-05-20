@@ -2,7 +2,10 @@
 
 A tool-agnostic template catalog for AI-focused projects. Each template is a self-contained, scaffoldable starting point — consumable by any scaffolding tool that reads the [template contract](docs/spec/template-contract.md).
 
-**New here?** Start with the [Quick Start guide](docs/quick-start.md) — find the right template, scaffold it, and run it in under 2 minutes.
+**New here?**
+
+- **Building an AI client** (Bedrock agent, Claude session, custom orchestrator) and want to ship software on this stack? Start with the [Platform Reference](docs/platform-reference.md) and the per-repo [AGENTS.md](AGENTS.md).
+- **Scaffolding a project locally**? Start with the [Quick Start guide](docs/quick-start.md) — find the right template, scaffold it, and run it in under 2 minutes.
 
 ## Templates
 

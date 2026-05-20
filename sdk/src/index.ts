@@ -12,6 +12,21 @@ export type {
   CompositeManifest,
   CompositeCatalogEntry,
   CompositeRenderResult,
+  // Platform Reference types
+  Catalog,
+  CatalogTemplate,
+  CatalogComposite,
+  Contract,
+  ContractRepo,
+  LanguageToolchainStandard,
+  LLMPolicyStandard,
+  PlatformTenantContractStandard,
+  QualityRubricDimensionsStandard,
+  Standard,
+  StandardName,
+  Standards,
+  Toolchain,
+  VersionCurrencyStandard,
 } from './types.js';
 
 export type {
@@ -36,3 +51,8 @@ export { validateManifest, validateCompositeManifest } from './validator.js';
 export { resolveVariables } from './resolver.js';
 export { renderTemplate } from './renderer.js';
 export { renderComposite } from './composite.js';
+
+// Platform Reference loaders
+export { loadCatalog } from './catalog.js';
+export { loadStandard, loadStandards } from './standards.js';
+export { loadContract, loadAllContracts, KNOWN_CONTRACT_REPOS } from './contracts.js';

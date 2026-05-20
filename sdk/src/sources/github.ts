@@ -1,9 +1,13 @@
 import yaml from 'js-yaml';
 import type {
+  Catalog,
   CatalogEntry,
   CompositeCatalogEntry,
   CompositeManifest,
+  ContractRepo,
   SkeletonFile,
+  Standard,
+  StandardName,
   TemplateManifest,
 } from '../types.js';
 import type { CatalogSource, GitHubSourceOptions } from '../source.js';
@@ -189,5 +193,42 @@ export class GitHubSource implements CatalogSource {
     }
 
     return manifest;
+  }
+
+  async fetchCatalogManifest(): Promise<Catalog> {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${this.repo}/${this.ref}/catalog.json`,
+      { headers: this.headers() },
+    );
+    if (!res.ok) throw new NanohypeError(`catalog.json not found: ${res.status}`);
+    return (await res.json()) as Catalog;
+  }
+
+  async fetchStandard(name: StandardName): Promise<Standard> {
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${this.repo}/${this.ref}/standards/${name}.json`,
+      { headers: this.headers() },
+    );
+    if (!res.ok) throw new NanohypeError(`Standard '${name}' not found: ${res.status}`);
+    return (await res.json()) as Standard;
+  }
+
+  async fetchContract(repo: ContractRepo): Promise<string> {
+    // The nanohype repo's AGENTS.md lives in `this.repo`; each other repo
+    // is a sibling under the same GitHub org (`<org>/<repo>`). When the
+    // configured `this.repo` is `<org>/nanohype` we resolve siblings as
+    // `<org>/<repo>`. Otherwise we still target the configured ref on the
+    // explicit repo path (an MCP server pointed at a fork's `nanohype` will
+    // pull contracts from the matching forked siblings, which is correct).
+    const [org] = this.repo.split('/');
+    const targetRepo = repo === 'nanohype' ? this.repo : `${org}/${repo}`;
+    const res = await fetch(
+      `https://raw.githubusercontent.com/${targetRepo}/${this.ref}/AGENTS.md`,
+      { headers: this.headers() },
+    );
+    if (!res.ok) {
+      throw new NanohypeError(`AGENTS.md for repo '${repo}' not found: ${res.status}`);
+    }
+    return await res.text();
   }
 }
