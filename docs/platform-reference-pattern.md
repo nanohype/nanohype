@@ -7,7 +7,7 @@ The structure described in [`docs/platform-reference.md`](platform-reference.md)
 You have:
 
 1. **Multiple repos** that together constitute a stack — templates, infra, control planes, app catalogs, local dev workspaces, etc.
-2. **A reference client** that knows how to use them together (in nanohype's case, `jaunty`)
+2. **A reference client** that knows how to use them together (in nanohype's case, `fab`)
 3. **Stuff you want to keep private** — orchestration, taste, choreography that makes the reference client distinctive
 4. **Other potential clients** (Bedrock agents, custom orchestrators, partners, future contractors) you'd like to be able to consume the stack the same way the reference client does — without giving away the private parts
 
