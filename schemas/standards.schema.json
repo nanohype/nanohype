@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nanohype.dev/schemas/standards.schema.json",
+  "title": "nanohype Standards Manifest",
+  "description": "Validates a single standards file under nanohype/standards/. Each file declares its kind, version, and a content payload whose shape depends on the kind.",
+  "type": "object",
+  "required": ["kind", "version", "title", "summary", "content"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "nanohype/standards/language-toolchain",
+        "nanohype/standards/version-currency",
+        "nanohype/standards/platform-tenant-contract",
+        "nanohype/standards/llm-policy",
+        "nanohype/standards/quality-rubric-dimensions"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "description": "Major version of this standard. Bump on any breaking shape change. Agents should pin to the version range they were built for."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 4
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 20,
+      "description": "One-paragraph description suitable for an agent's tool-result text. Should answer 'what is this and when do I read it?'."
+    },
+    "content": {
+      "type": "object",
+      "description": "Payload whose shape depends on kind. See per-kind definitions below."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/language-toolchain" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["toolchains"],
+            "properties": {
+              "toolchains": {
+                "type": "object",
+                "propertyNames": {
+                  "enum": ["typescript", "go", "python", "rust", "java", "kotlin", "csharp"]
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "required": ["install", "build", "lint", "test", "docs", "lockfile", "manifest", "registry", "versionLookup"],
+                  "properties": {
+                    "install": { "type": "string" },
+                    "build": { "type": "string" },
+                    "lint": { "type": "string" },
+                    "test": { "type": "string" },
+                    "docs": { "type": "string" },
+                    "typecheck": { "type": "string" },
+                    "lockfile": { "type": "string" },
+                    "manifest": { "type": "string" },
+                    "registry": { "type": "string" },
+                    "versionLookup": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/version-currency" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["rules", "registries", "accepted_pin_reasons"],
+            "properties": {
+              "rules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "summary": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                  }
+                }
+              },
+              "registries": { "type": "object", "additionalProperties": { "type": "string" } },
+              "accepted_pin_reasons": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/platform-tenant-contract" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["required_artifacts", "platform_cr_shape", "otel_resource_attrs", "do_not"],
+            "properties": {
+              "required_artifacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["path", "description"],
+                  "properties": {
+                    "path": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "platform_cr_shape": { "type": "object" },
+              "otel_resource_attrs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["name", "required", "description"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "required": { "type": "boolean" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "do_not": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/llm-policy" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["primary_provider", "models", "regions_preferred", "sdk_by_language", "requirements"],
+            "properties": {
+              "primary_provider": { "type": "string" },
+              "models": {
+                "type": "object",
+                "required": ["default", "escalation", "light"],
+                "properties": {
+                  "default": { "type": "string" },
+                  "escalation": { "type": "string" },
+                  "light": { "type": "string" }
+                }
+              },
+              "regions_preferred": { "type": "array", "items": { "type": "string" } },
+              "sdk_by_language": { "type": "object", "additionalProperties": { "type": "string" } },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "summary": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/quality-rubric-dimensions" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["dimensions"],
+            "properties": {
+              "dimensions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "name", "summary"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                    "name": { "type": "string" },
+                    "summary": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

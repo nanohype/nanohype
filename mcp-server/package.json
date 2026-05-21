@@ -1,7 +1,7 @@
 {
-  "name": "@nanohype/sdk",
-  "version": "0.2.0",
-  "description": "Reference implementation of the nanohype template rendering contract, catalog discovery, and Platform Reference loaders",
+  "name": "@nanohype/mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing the nanohype Platform Reference (catalog + standards + per-repo contracts) as resources and tools",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -11,11 +11,10 @@
     }
   },
   "bin": {
-    "nanohype": "./dist/bin/nanohype.js"
+    "nanohype-mcp": "./dist/index.js"
   },
   "files": [
     "dist",
-    "schemas",
     "src",
     "tsconfig.json"
   ],
@@ -28,21 +27,15 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
-    "lint": "tsc --noEmit && eslint 'src/**/*.ts' '__tests__/**/*.ts'",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "js-yaml": "^4.1.1"
+    "@modelcontextprotocol/sdk": "^1.20.0",
+    "@nanohype/sdk": "file:../sdk"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.8.0",
-    "eslint": "^10.4.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.6"
   }
 }

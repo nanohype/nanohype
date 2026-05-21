@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nanohype.dev/schemas/catalog.schema.json",
+  "title": "nanohype Catalog Manifest",
+  "description": "Generated index of every template and composite in this repo. Produced by scripts/generate-catalog.mjs by walking templates/*/template.yaml and composites/*.yaml. Stable, machine-readable surface for AI clients discovering what's available.",
+  "type": "object",
+  "required": ["kind", "version", "generated_at", "templates", "composites"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "const": "nanohype/catalog"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "description": "Catalog schema version. Bump on shape change."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when the catalog was last generated. CI verifies the committed catalog is in sync with the source files."
+    },
+    "templates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/CatalogTemplate" }
+    },
+    "composites": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/CatalogComposite" }
+    }
+  },
+  "$defs": {
+    "CatalogTemplate": {
+      "type": "object",
+      "required": ["name", "displayName", "description", "version", "category", "tags", "kind", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "displayName": { "type": "string" },
+        "description": { "type": "string" },
+        "version": { "type": "string" },
+        "category": { "type": "string" },
+        "persona": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["template", "brief"]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^templates/[a-z][a-z0-9-]*$"
+        }
+      }
+    },
+    "CatalogComposite": {
+      "type": "object",
+      "required": ["name", "displayName", "description", "version", "tags", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "displayName": { "type": "string" },
+        "description": { "type": "string" },
+        "version": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^composites/[a-z][a-z0-9-]*\\.yaml$"
+        }
+      }
+    }
+  }
+}

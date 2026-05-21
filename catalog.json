@@ -1,0 +1,2159 @@
+{
+  "$schema": "./schemas/catalog.schema.json",
+  "kind": "nanohype/catalog",
+  "version": "1",
+  "generated_at": "2026-05-18T03:17:13.000Z",
+  "templates": [
+    {
+      "name": "a2a-agent",
+      "displayName": "A2A Agent",
+      "description": "Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript. A2A is the open protocol for multi-agent interoperability — the agent-level equivalent of MCP (which operates at the tool level). The generated project can expose skills to other agents via an A2A server, discover and invoke capabilities on remote agents via an A2A client, and use an LLM provider for reasoning about which skill to execute. Supports HTTP and WebSocket transports, optional agent discovery with an Agent Card served at /.well-known/agent.json, and a pluggable provider registry for LLM backends.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "agent",
+        "a2a",
+        "multi-agent",
+        "protocol",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/a2a-agent"
+    },
+    {
+      "name": "acceptance-criteria",
+      "displayName": "Acceptance Criteria",
+      "description": "Scaffolds an acceptance criteria framework using Given/When/Then BDD structure. Includes a reusable template for writing criteria, example Gherkin feature files, and an optional definition of done checklist. Provides a consistent format for capturing expected behavior across features and user stories.",
+      "version": "0.1.0",
+      "category": "qa",
+      "persona": [
+        "qa"
+      ],
+      "tags": [
+        "testing",
+        "qa",
+        "bdd",
+        "gherkin",
+        "acceptance-criteria"
+      ],
+      "kind": "template",
+      "path": "templates/acceptance-criteria"
+    },
+    {
+      "name": "agent-fleet",
+      "displayName": "Agent Fleet (kagent + AgentFleet CR)",
+      "description": "Scaffolds the AI-workload composite on top of a Platform tenant. Produces an AgentFleet CR (agents.stxkxs.io/v1alpha1) composing kagent Agent + ModelConfig + KEDA scaler + optional DRA accelerator, plus a ModelGateway CR declaring the agentgateway route with Bedrock model resolution and Guardrails. Pairs with k8s-app-tenant — the Platform CR there owns the tenant boundary; this composes the AI pieces inside that boundary.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "kubernetes",
+        "kagent",
+        "bedrock",
+        "agents",
+        "agentgateway",
+        "keda",
+        "nanohype"
+      ],
+      "kind": "template",
+      "path": "templates/agent-fleet"
+    },
+    {
+      "name": "agent-orchestrator",
+      "displayName": "Agent Orchestrator",
+      "description": "Multi-agent orchestrator that decomposes tasks via an LLM-powered planner agent, routes subtasks to specialized agents based on capability matching, and aggregates results. Agents communicate through a shared context with namespacing and a handoff protocol that creates an audit trail of agent-to-agent transitions. Supports Anthropic and OpenAI as LLM providers for orchestration reasoning.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "agent",
+        "orchestrator",
+        "multi-agent",
+        "llm",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/agent-orchestrator"
+    },
+    {
+      "name": "agentic-loop",
+      "displayName": "Agentic Loop",
+      "description": "Scaffolds a TypeScript agentic loop that sends messages to an LLM, detects tool-call requests in the response, executes them via a typed tool registry, appends results, and repeats until the model stops calling tools or an iteration limit is reached. Supports Anthropic and OpenAI as LLM providers, an optional conversation memory subsystem with token-aware truncation, and an optional eval harness for assertion-based testing against fixture files.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "agent",
+        "llm",
+        "tools",
+        "agentic",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/agentic-loop"
+    },
+    {
+      "name": "api-gateway",
+      "displayName": "API Gateway",
+      "description": "Scaffolds an API gateway with edge routing, per-route auth and rate limiting, traffic management (canary splits, health checking), and per-upstream circuit breakers. Built on Hono with native fetch proxying, JWT/API key validation via jose, and OpenTelemetry instrumentation.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "hono",
+        "api-gateway",
+        "proxy",
+        "rate-limit",
+        "auth"
+      ],
+      "kind": "template",
+      "path": "templates/api-gateway"
+    },
+    {
+      "name": "battle-cards",
+      "displayName": "Competitive Battle Cards",
+      "description": "Scaffolds a competitive intelligence package with feature comparison matrices, positioning statements, win/loss analysis templates, and objection handling guides. Gives sales and marketing teams structured ammunition for competitive deals.",
+      "version": "0.1.0",
+      "category": "sales",
+      "persona": [
+        "sales"
+      ],
+      "tags": [
+        "competitive",
+        "battle-cards",
+        "sales",
+        "positioning",
+        "objections"
+      ],
+      "kind": "template",
+      "path": "templates/battle-cards"
+    },
+    {
+      "name": "brand-guidelines",
+      "displayName": "Brand Guidelines",
+      "description": "Scaffolds brand guideline documentation covering color palette definitions, typography scale, logo usage rules, and optional voice and tone guidelines. Provides a structured reference for maintaining brand consistency across all touchpoints and teams.",
+      "version": "0.1.0",
+      "category": "design",
+      "persona": [
+        "design"
+      ],
+      "tags": [
+        "brand",
+        "guidelines",
+        "typography",
+        "color",
+        "voice-tone"
+      ],
+      "kind": "template",
+      "path": "templates/brand-guidelines"
+    },
+    {
+      "name": "brief-campaign-plan",
+      "displayName": "Campaign Plan Brief",
+      "description": "Scaffolds an agent brief for producing a marketing campaign plan. The rendered brief instructs an agent to define campaign strategy, identify distribution channels, craft messaging pillars, set KPIs and measurement criteria, and produce a structured campaign plan with timeline and budget allocation.",
+      "version": "0.1.0",
+      "category": "marketing",
+      "persona": [
+        "marketing"
+      ],
+      "tags": [
+        "brief",
+        "campaign",
+        "marketing",
+        "strategy",
+        "kpi"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-campaign-plan"
+    },
+    {
+      "name": "brief-design-review",
+      "displayName": "Design Review Brief",
+      "description": "Scaffolds an agent brief for conducting a comprehensive design review. The rendered brief instructs an agent to audit visual consistency, design token coverage, accessibility compliance, and component-level coherence against a design system. Produces a structured findings report with prioritized recommendations.",
+      "version": "0.1.0",
+      "category": "design",
+      "persona": [
+        "design"
+      ],
+      "tags": [
+        "brief",
+        "design-review",
+        "accessibility",
+        "design-system",
+        "audit"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-design-review"
+    },
+    {
+      "name": "brief-onboarding-playbook",
+      "displayName": "Onboarding Playbook Brief",
+      "description": "Scaffolds an agent brief for producing a customer onboarding playbook. The rendered brief instructs an agent to define onboarding stages, set milestone criteria, create health scoring rubrics, design intervention triggers, and produce a playbook that guides customer success teams from signup through time-to-value.",
+      "version": "0.1.0",
+      "category": "customer-success",
+      "persona": [
+        "customer-success"
+      ],
+      "tags": [
+        "brief",
+        "onboarding",
+        "customer-success",
+        "playbook",
+        "milestones"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-onboarding-playbook"
+    },
+    {
+      "name": "brief-prd",
+      "displayName": "Product Requirements Document Brief",
+      "description": "Scaffolds an agent brief for drafting a product requirements document. The rendered brief instructs an agent to analyze a problem space, define functional and non-functional requirements, write user stories, establish success metrics, and produce a complete PRD ready for engineering handoff.",
+      "version": "0.1.0",
+      "category": "product",
+      "persona": [
+        "product"
+      ],
+      "tags": [
+        "brief",
+        "prd",
+        "product",
+        "requirements",
+        "user-stories"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-prd"
+    },
+    {
+      "name": "brief-proposal",
+      "displayName": "Proposal Brief",
+      "description": "Scaffolds an agent brief for drafting a client-facing proposal. The rendered brief instructs an agent to analyze client needs, define a solution approach, structure pricing and timeline, articulate differentiators, and produce a polished proposal document ready for client delivery.",
+      "version": "0.1.0",
+      "category": "sales",
+      "persona": [
+        "sales"
+      ],
+      "tags": [
+        "brief",
+        "proposal",
+        "sales",
+        "client",
+        "engagement"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-proposal"
+    },
+    {
+      "name": "brief-runbook",
+      "displayName": "Runbook Brief",
+      "description": "Scaffolds an agent brief for producing an operational runbook. The rendered brief instructs an agent to analyze a service's architecture, document dependencies and failure modes, create step-by-step operational procedures, define escalation paths, and produce a runbook suitable for on-call engineers.",
+      "version": "0.1.0",
+      "category": "operations",
+      "persona": [
+        "operations"
+      ],
+      "tags": [
+        "brief",
+        "runbook",
+        "operations",
+        "incident",
+        "on-call"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-runbook"
+    },
+    {
+      "name": "brief-test-strategy",
+      "displayName": "Test Strategy Brief",
+      "description": "Scaffolds an agent brief for producing a comprehensive test strategy. The rendered brief instructs an agent to analyze a codebase, identify critical paths, recommend tooling, define coverage targets, and produce a layered test strategy document organized by test type and priority.",
+      "version": "0.1.0",
+      "category": "qa",
+      "persona": [
+        "qa"
+      ],
+      "tags": [
+        "brief",
+        "testing",
+        "strategy",
+        "qa",
+        "coverage"
+      ],
+      "kind": "brief",
+      "path": "templates/brief-test-strategy"
+    },
+    {
+      "name": "campaign-brief",
+      "displayName": "Campaign Brief",
+      "description": "Scaffolds a marketing campaign brief with objectives, audience segments, messaging matrix, channel plan, and timeline. Provides a structured package that aligns creative, media, and stakeholders around campaign strategy and execution.",
+      "version": "0.1.0",
+      "category": "marketing",
+      "persona": [
+        "marketing"
+      ],
+      "tags": [
+        "campaign",
+        "marketing",
+        "messaging",
+        "channels",
+        "timeline"
+      ],
+      "kind": "template",
+      "path": "templates/campaign-brief"
+    },
+    {
+      "name": "change-management",
+      "displayName": "Change Management",
+      "description": "Scaffolds a change management package with a change request template, impact assessment matrix, and approval workflow configuration. Optionally includes a rollback plan with triggers and verification steps. Designed for operations and engineering teams managing controlled changes to production systems.",
+      "version": "0.1.0",
+      "category": "operations",
+      "persona": [
+        "operations"
+      ],
+      "tags": [
+        "change-management",
+        "change-request",
+        "impact-assessment",
+        "approval",
+        "rollback"
+      ],
+      "kind": "template",
+      "path": "templates/change-management"
+    },
+    {
+      "name": "chrome-ext",
+      "displayName": "Chrome Extension (React + Vite)",
+      "description": "Scaffolds a Chrome extension using Manifest V3 with a React sidepanel for AI-powered interactions. Includes a Vite-based build system with multi-entry compilation for sidepanel, background service worker, content script, and options page. Supports Anthropic and OpenAI as LLM providers with streaming chat in the sidepanel.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "chrome-extension",
+        "react",
+        "vite",
+        "typescript",
+        "ai",
+        "browser"
+      ],
+      "kind": "template",
+      "path": "templates/chrome-ext"
+    },
+    {
+      "name": "ci-eval",
+      "displayName": "CI Eval Pipeline",
+      "description": "GitHub Actions workflow for eval-gated deployments. Runs LLM evaluation suites on every pull request, compares scores against a stored baseline, posts a markdown report as a PR comment, and fails the check if any suite regresses beyond a configurable threshold. Ships with a CLI for local runs, baseline management, and score comparison.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "ci",
+        "eval",
+        "github-actions",
+        "llm",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/ci-eval"
+    },
+    {
+      "name": "compliance-checklist",
+      "displayName": "Compliance Checklist",
+      "description": "Scaffolds a compliance management package with control inventory, audit trail tracking, and remediation workflows. Optionally includes evidence collection templates. Supports SOC 2, ISO 27001, HIPAA, and other frameworks through configurable control definitions.",
+      "version": "0.1.0",
+      "category": "operations",
+      "persona": [
+        "operations"
+      ],
+      "tags": [
+        "compliance",
+        "audit",
+        "soc2",
+        "controls",
+        "remediation"
+      ],
+      "kind": "template",
+      "path": "templates/compliance-checklist"
+    },
+    {
+      "name": "component-inventory",
+      "displayName": "Component Inventory",
+      "description": "Scaffolds a component inventory with structured status tracking, ownership metadata, and an optional accessibility checklist. Provides a single registry for tracking every UI component from proposal through deprecation, with framework-specific implementation notes and audit history.",
+      "version": "0.1.0",
+      "category": "design",
+      "persona": [
+        "design"
+      ],
+      "tags": [
+        "components",
+        "inventory",
+        "accessibility",
+        "design",
+        "audit"
+      ],
+      "kind": "template",
+      "path": "templates/component-inventory"
+    },
+    {
+      "name": "content-calendar",
+      "displayName": "Content Calendar",
+      "description": "Scaffolds an editorial content calendar with content pillars, distribution matrix, and publishing cadence. Supports weekly, biweekly, and monthly rhythms. Optionally includes a social media playbook with platform-specific guidance.",
+      "version": "0.1.0",
+      "category": "marketing",
+      "persona": [
+        "marketing"
+      ],
+      "tags": [
+        "content",
+        "editorial",
+        "calendar",
+        "distribution",
+        "social"
+      ],
+      "kind": "template",
+      "path": "templates/content-calendar"
+    },
+    {
+      "name": "data-pipeline",
+      "displayName": "Data Pipeline",
+      "description": "Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document ingestion from files and web pages, configurable chunking strategies (recursive, fixed-size, semantic), embedding generation, and output adapters for indexing. No LangChain — all components are built from first principles using provider SDKs directly. Supports multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web), embedding providers (OpenAI), and output formats (JSONL, console). Output is compatible with module-vector-store's VectorDocument shape.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "etl",
+        "embeddings",
+        "pipeline",
+        "data",
+        "chunking",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/data-pipeline"
+    },
+    {
+      "name": "design-system",
+      "displayName": "Design System",
+      "description": "Scaffolds a design system specification with foundational principles, a component catalog structure, usage guidelines, and optional token sync configuration. Provides the structural backbone for maintaining a consistent visual language across products and teams.",
+      "version": "0.1.0",
+      "category": "design",
+      "persona": [
+        "design"
+      ],
+      "tags": [
+        "design-system",
+        "components",
+        "tokens",
+        "figma",
+        "design"
+      ],
+      "kind": "template",
+      "path": "templates/design-system"
+    },
+    {
+      "name": "design-tokens",
+      "displayName": "Design Tokens",
+      "description": "Scaffolds a design token system with base primitives, semantic aliases, theme configuration, and optional dark mode definitions. Tokens follow a three-tier architecture: base values define raw primitives, semantic tokens map intent to base values, and themes override semantic tokens for different contexts.",
+      "version": "0.1.0",
+      "category": "design",
+      "persona": [
+        "design"
+      ],
+      "tags": [
+        "tokens",
+        "design",
+        "theming",
+        "dark-mode",
+        "css-variables"
+      ],
+      "kind": "template",
+      "path": "templates/design-tokens"
+    },
+    {
+      "name": "discord-bot",
+      "displayName": "Discord Bot",
+      "description": "Scaffolds a TypeScript Discord bot using discord.js v14 with GatewayIntentBits for guilds, messages, and message content. Includes slash command registration and handling, a messageCreate handler with AI-powered responses, a pluggable LLM provider registry (Anthropic and OpenAI), and embed-based rich formatting for structured AI output.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "discord",
+        "bot",
+        "ai",
+        "chatbot"
+      ],
+      "kind": "template",
+      "path": "templates/discord-bot"
+    },
+    {
+      "name": "eks-addon",
+      "displayName": "EKS / AKS GitOps Addon (Helm)",
+      "description": "Scaffolds a new Helm-based addon into nanohype/eks-gitops or nanohype/aks-gitops. Produces the addons/<category>/<name>/values.yaml + per-env delta files (values-{dev,staging,production}.yaml) following the eks-gitops Helm values pattern (base + delta-only). The Kustomize variant (used by storage-classes, priority-classes, karpenter-resources) needs a different layout and is not covered here.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "kubernetes",
+        "helm",
+        "argocd",
+        "gitops",
+        "eks",
+        "aks",
+        "nanohype"
+      ],
+      "kind": "template",
+      "path": "templates/eks-addon"
+    },
+    {
+      "name": "electron-app",
+      "displayName": "Electron Desktop App (React + esbuild)",
+      "description": "Scaffolds an Electron desktop application with a React 19 renderer for AI-powered chat. The main process holds API keys and routes AI calls through IPC, keeping secrets out of the renderer. Uses esbuild for main process bundling and Vite for the renderer. Supports Anthropic and OpenAI as LLM providers with a pluggable registry.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "electron",
+        "desktop",
+        "react",
+        "typescript",
+        "ai",
+        "esbuild",
+        "vite"
+      ],
+      "kind": "template",
+      "path": "templates/electron-app"
+    },
+    {
+      "name": "eval-harness",
+      "displayName": "Eval Harness",
+      "description": "Scaffolds a standalone TypeScript evaluation framework for testing LLM outputs. Loads eval suites from YAML files, runs each case against an LLM provider, applies composable assertions (string matching, regex, JSON schema, token limits, custom predicates), and reports results to the console or as structured JSON. Works with any LLM system — Anthropic and OpenAI providers included out of the box.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "eval",
+        "testing",
+        "llm",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/eval-harness"
+    },
+    {
+      "name": "fine-tune-pipeline",
+      "displayName": "Fine-Tune Pipeline",
+      "description": "Scaffolds a TypeScript CLI for fine-tuning LLMs. Handles end-to-end dataset preparation (JSONL formatting, schema validation, train/val/test splitting), training job submission via a provider registry (OpenAI fine-tuning API included out of the box), and post-training evaluation that compares base model vs fine-tuned model outputs side by side. The provider registry is pluggable — add new training backends by creating a single file that self-registers at import time.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "fine-tuning",
+        "llm",
+        "training",
+        "dataset",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/fine-tune-pipeline"
+    },
+    {
+      "name": "go-cli",
+      "displayName": "Go CLI Application",
+      "description": "Scaffolds a Go CLI application using Cobra for command structure, Viper for configuration management, and log/slog for structured logging. Produces a buildable binary with a root command, version subcommand, config file support, and a Makefile. Optionally includes GoReleaser configuration and a GitHub Actions release workflow.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "go",
+        "cli",
+        "cobra",
+        "viper",
+        "slog"
+      ],
+      "kind": "template",
+      "path": "templates/go-cli"
+    },
+    {
+      "name": "go-service",
+      "displayName": "Go HTTP Service",
+      "description": "Scaffolds a Go HTTP service using chi v5 for routing, structured middleware (logging, panic recovery), a repository-pattern database layer with PostgreSQL and SQLite implementations, Viper-based configuration, and OpenTelemetry instrumentation. Includes graceful shutdown with signal handling, a Makefile, GitHub Actions CI, and optional Docker support. Auth-neutral — stack `module-auth-go` alongside when you need authentication.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "go",
+        "chi",
+        "api",
+        "service",
+        "rest"
+      ],
+      "kind": "template",
+      "path": "templates/go-service"
+    },
+    {
+      "name": "guardrails",
+      "displayName": "AI Safety Guardrails",
+      "description": "Input/output safety filters for AI systems. Pluggable filter pipeline that sits between user and LLM boundaries, inspecting and filtering both directions. Ships with prompt-injection detection, PII redaction, content-policy enforcement, and token-limit guards. The filter registry pattern makes it trivial to add custom safety filters.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "ai",
+        "safety",
+        "guardrails",
+        "filters",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/guardrails"
+    },
+    {
+      "name": "incident-postmortem",
+      "displayName": "Incident Postmortem",
+      "description": "Scaffolds a structured postmortem with incident summary, timeline reconstruction, root cause analysis using the 5 Whys method, impact assessment, and lessons learned. Optionally includes a follow-up action tracker. Designed for SRE and engineering teams conducting blameless postmortems after production incidents.",
+      "version": "0.1.0",
+      "category": "operations",
+      "persona": [
+        "operations"
+      ],
+      "tags": [
+        "postmortem",
+        "incident",
+        "root-cause",
+        "timeline",
+        "action-items",
+        "sre"
+      ],
+      "kind": "template",
+      "path": "templates/incident-postmortem"
+    },
+    {
+      "name": "infra-aws",
+      "displayName": "AWS CDK Infrastructure",
+      "description": "Scaffolds an AWS CDK (TypeScript) infrastructure project for deploying AI services. Supports Lambda or ECS Fargate compute targets with API Gateway or Application Load Balancer, optional VPC networking, RDS PostgreSQL database, and CloudWatch monitoring with alarms. Produces a deployable CDK app with modular constructs, snapshot tests, and standard CDK toolchain scripts.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "aws",
+        "cdk",
+        "infrastructure",
+        "typescript",
+        "iac"
+      ],
+      "kind": "template",
+      "path": "templates/infra-aws"
+    },
+    {
+      "name": "infra-cloudflare",
+      "displayName": "Cloudflare Workers Deployment",
+      "description": "Scaffolds a Cloudflare Workers project with wrangler.toml configuration, a TypeScript fetch handler entry point, deploy scripts with environment selection, and an optional GitHub Actions CI/CD workflow for preview deploys on pull requests and production deploys on push to main. Includes commented R2 and D1 binding sections ready to uncomment.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "cloudflare",
+        "workers",
+        "edge",
+        "serverless",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/infra-cloudflare"
+    },
+    {
+      "name": "infra-druid",
+      "displayName": "Apache Druid OLAP Cluster",
+      "description": "Scaffolds an Apache Druid OLAP cluster as a Helm chart for Kubernetes. Includes all six Druid services (router, broker, coordinator, overlord, historical, task) as StatefulSets with per-component runtime properties, JVM tuning, and resource limits. Uses Kubernetes-native service discovery (no ZooKeeper), configurable metadata storage and deep storage backends, optional cert-manager TLS certificates, and optional Prometheus metrics emitter.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "druid",
+        "olap",
+        "analytics",
+        "kubernetes",
+        "helm",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/infra-druid"
+    },
+    {
+      "name": "infra-fly",
+      "displayName": "Fly.io Deployment",
+      "description": "Scaffolds a Fly.io deployment configuration with fly.toml, multi-stage Dockerfile, deploy scripts, and optional Postgres and Redis provisioning. Includes a GitHub Actions CI/CD workflow for automatic deploys on push to main. Designed to pair with service templates for a complete deploy pipeline.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "fly",
+        "deployment",
+        "infrastructure",
+        "docker"
+      ],
+      "kind": "template",
+      "path": "templates/infra-fly"
+    },
+    {
+      "name": "infra-gcp",
+      "displayName": "GCP Cloud Run Deployment",
+      "description": "Scaffolds a GCP deployment configuration using gcloud CLI. Deploys to Cloud Run with a multi-stage Dockerfile, deploy scripts, and optional Cloud SQL PostgreSQL, Cloud Monitoring dashboards, and GitHub Actions CI/CD workflow. Designed to pair with service templates for a complete deploy pipeline.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "gcp",
+        "cloud-run",
+        "deployment",
+        "infrastructure",
+        "docker"
+      ],
+      "kind": "template",
+      "path": "templates/infra-gcp"
+    },
+    {
+      "name": "infra-vercel",
+      "displayName": "Vercel Deployment",
+      "description": "Scaffolds a Vercel deployment configuration with vercel.json, environment variable setup, deploy scripts, and an optional GitHub Actions CI/CD workflow for preview deploys on pull requests and production deploys on push to main. Designed to pair with Next.js and TypeScript service templates for a complete deploy pipeline.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "vercel",
+        "deployment",
+        "infrastructure",
+        "ci-cd"
+      ],
+      "kind": "template",
+      "path": "templates/infra-vercel"
+    },
+    {
+      "name": "istio-policy",
+      "displayName": "Istio Service-Mesh Policy",
+      "description": "Scaffolds an Istio policy bundle for an HTTP workload on a service mesh: an AuthorizationPolicy that enforces JWT authentication, a RequestAuthentication that configures the JWT issuer + JWKs endpoint, an optional PeerAuthentication enforcing STRICT mTLS, and an optional VirtualService routing template. Designed to drop alongside any containerized service template (spring-boot-service, go-service, ts-service).",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "istio",
+        "kubernetes",
+        "k8s",
+        "service-mesh",
+        "authorization",
+        "oidc",
+        "mtls",
+        "security"
+      ],
+      "kind": "template",
+      "path": "templates/istio-policy"
+    },
+    {
+      "name": "k8s-app-tenant",
+      "displayName": "K8s App as Platform Tenant",
+      "description": "Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm chart with per-environment values, an ArgoCD ApplicationSet entry ready to register against nanohype/eks-gitops or nanohype/aks-gitops, and a Platform CR (agents.stxkxs.io/v1alpha1) declaring the tenant boundary for the eks-agent-platform operator to reconcile. Use this for every k8s-native deliverable unless an explicit escape hatch (aws-lambda, fly, vercel, cloudflare) is justified.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "kubernetes",
+        "k8s",
+        "helm",
+        "argocd",
+        "platform",
+        "nanohype"
+      ],
+      "kind": "template",
+      "path": "templates/k8s-app-tenant"
+    },
+    {
+      "name": "k8s-deploy",
+      "displayName": "Kubernetes Deployment",
+      "description": "Scaffolds a Kubernetes deployment with raw manifests and an optional Helm chart. Includes Deployment, Service, and ConfigMap resources with production-grade defaults: resource limits, liveness and readiness probes, non-root security context, configurable replicas, and namespace awareness. Optionally adds Ingress, HorizontalPodAutoscaler, a Helm chart for parameterized deploys, and a GitHub Actions CI/CD workflow.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "kubernetes",
+        "k8s",
+        "deployment",
+        "helm",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/k8s-deploy"
+    },
+    {
+      "name": "landing-zone-component",
+      "displayName": "Landing-zone Component (OpenTofu/Terragrunt)",
+      "description": "Scaffolds a new component into nanohype/landing-zone. Produces the components/<cloud>/<name>/ Tofu root module (main.tf, variables.tf, outputs.tf, versions.tf) plus the live/_envcommon/<cloud>/<name>.hcl dependency-wiring file. Optionally adds a modules/tenant/ submodule for multi-tenant components (used by druid, pipeline, gateway, llm, mlops, rag, governance). AWS variant for now; gcp and azure follow the same shape and can be added by copying.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "opentofu",
+        "terragrunt",
+        "aws",
+        "landing-zone",
+        "nanohype"
+      ],
+      "kind": "template",
+      "path": "templates/landing-zone-component"
+    },
+    {
+      "name": "launch-checklist",
+      "displayName": "Launch Checklist",
+      "description": "Scaffolds a structured launch package with go/no-go criteria organized by functional area, a stakeholder sign-off matrix, monitoring setup guidance, and rollback plan. Optionally includes an internal and external communications plan. Designed for product and engineering teams coordinating multi-team launches.",
+      "version": "0.1.0",
+      "category": "product",
+      "persona": [
+        "product"
+      ],
+      "tags": [
+        "launch",
+        "checklist",
+        "go-no-go",
+        "sign-off",
+        "monitoring",
+        "rollback",
+        "comms"
+      ],
+      "kind": "template",
+      "path": "templates/launch-checklist"
+    },
+    {
+      "name": "llm-wiki",
+      "displayName": "LLM Wiki",
+      "description": "Multi-tenant LLM-maintained knowledge base. Agents incrementally build structured markdown wikis from raw sources — knowledge compounds over time rather than being re-derived per query.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "knowledge-base",
+        "llm",
+        "wiki",
+        "multi-tenant",
+        "rag-alternative"
+      ],
+      "kind": "template",
+      "path": "templates/llm-wiki"
+    },
+    {
+      "name": "mcp-server-python",
+      "displayName": "MCP Server (Python)",
+      "description": "Scaffolds a Model Context Protocol server in Python using the official mcp SDK and FastMCP. Produces a working server with example tools and resources, configurable for stdio or streamable-http transport. Uses Pydantic for input validation and structlog for structured logging.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "mcp",
+        "python",
+        "ai",
+        "tools",
+        "server"
+      ],
+      "kind": "template",
+      "path": "templates/mcp-server-python"
+    },
+    {
+      "name": "mcp-server-ts",
+      "displayName": "MCP Server (TypeScript)",
+      "description": "Scaffolds a Model Context Protocol server in TypeScript using the official @modelcontextprotocol/sdk. Produces a working server with example tools and optional resource endpoints, configurable for stdio or streamable-http transport. Includes MCP Inspector integration for interactive debugging during development.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "mcp",
+        "typescript",
+        "ai",
+        "tools",
+        "server"
+      ],
+      "kind": "template",
+      "path": "templates/mcp-server-ts"
+    },
+    {
+      "name": "module-analytics-ts",
+      "displayName": "Module: Product Analytics",
+      "description": "Event tracking and product analytics with pluggable backends. Ships with providers for Segment (HTTP batch API), PostHog (batch capture), Mixpanel (batch track + engage), and Amplitude (HTTP V2 batch). All providers use native fetch (no heavy SDKs). Includes an instance-scoped event buffer with interval and capacity flushing, plus Hono and Express middleware factories for automatic request tracking. Factory-based registry, circuit breakers, and OTel metrics.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "analytics",
+        "tracking",
+        "segment",
+        "posthog",
+        "mixpanel",
+        "amplitude",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-analytics-ts"
+    },
+    {
+      "name": "module-auth-go",
+      "displayName": "Auth Middleware Module (Go)",
+      "description": "Composable authentication middleware module for Go HTTP services with pluggable providers. Ships with reference implementations for JWT (HS256/RS256 with JWKS), Auth0, Clerk, Supabase, and API key validation. The provider registry pattern makes it trivial to add custom auth strategies. Middleware is compatible with chi, gorilla/mux, and any net/http-based router.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "auth",
+        "middleware",
+        "jwt",
+        "go",
+        "security"
+      ],
+      "kind": "template",
+      "path": "templates/module-auth-go"
+    },
+    {
+      "name": "module-auth-ts",
+      "displayName": "Auth Middleware Module",
+      "description": "Composable authentication middleware module with pluggable providers. Ships with reference implementations for JWT, Clerk, Auth0, Supabase, and API key validation. The provider registry pattern makes it trivial to add custom auth strategies. Middleware is compatible with both Hono and Express request handlers.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "auth",
+        "middleware",
+        "jwt",
+        "typescript",
+        "security"
+      ],
+      "kind": "template",
+      "path": "templates/module-auth-ts"
+    },
+    {
+      "name": "module-billing-ts",
+      "displayName": "Module: Billing",
+      "description": "Composable usage metering, invoice generation, and payment processing with Stripe. Records usage events with per-metric tracking, aggregates by customer and billing period, generates invoices with tiered pricing, and processes payments through a pluggable provider registry. Ships with a Stripe provider and an in-memory mock for testing.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "billing",
+        "payments",
+        "stripe",
+        "metering",
+        "invoicing",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-billing-ts"
+    },
+    {
+      "name": "module-cache-ts",
+      "displayName": "Module: Pluggable Cache",
+      "description": "Composable caching with pluggable backends. Ships with an in-memory provider for development, a Redis provider for distributed caching, and a Memcached provider for legacy infrastructure. Supports TTL, namespacing, and a cache-aside helper for read-through patterns.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "cache",
+        "caching",
+        "redis",
+        "memcached",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-cache-ts"
+    },
+    {
+      "name": "module-database-ts",
+      "displayName": "Database Module (Drizzle ORM)",
+      "description": "Composable database connection and query layer built on Drizzle ORM with pluggable drivers. Ships with PostgreSQL (node-postgres), SQLite (better-sqlite3), and Turso (libSQL) drivers that self-register through a driver registry. Provides a singleton database client with lazy initialization, typed Drizzle schema definitions, and a migration runner powered by drizzle-kit. Designed to be dropped into any TypeScript service as a standalone data-access module.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "database",
+        "drizzle",
+        "orm",
+        "typescript",
+        "sql"
+      ],
+      "kind": "template",
+      "path": "templates/module-database-ts"
+    },
+    {
+      "name": "module-feature-flags-ts",
+      "displayName": "Module: Feature Flags",
+      "description": "Composable feature flags with pluggable flag stores and AI variant tracking. Ships with in-memory, Redis, and JSON file stores. Supports percentage rollout with deterministic hashing, user allowlists, and property-based targeting rules. Includes a variant tracker for observability pairing.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "feature-flags",
+        "rollout",
+        "targeting",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-feature-flags-ts"
+    },
+    {
+      "name": "module-knowledge-base-ts",
+      "displayName": "Module: Knowledge Base",
+      "description": "Knowledge base integration with pluggable providers. Ships with Notion, Confluence, Google Docs, and Coda providers out of the box, plus an in-memory mock for testing. All providers normalize content to markdown. Includes a data-pipeline IngestSource adapter for bridging pages into document ingestion workflows. Factory-based registry, circuit breakers per instance, OTel metrics, and native fetch throughout.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "knowledge-base",
+        "notion",
+        "confluence",
+        "google-docs",
+        "coda",
+        "markdown",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-knowledge-base-ts"
+    },
+    {
+      "name": "module-llm-gateway",
+      "displayName": "Module: LLM Gateway",
+      "description": "Unified LLM gateway with pluggable routing strategies, response caching, and cost tracking. Ships with Anthropic, OpenAI, and Groq providers, five routing strategies (static, round-robin, latency, cost, adaptive), three caching modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost anomaly detection using z-score analysis.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "llm",
+        "gateway",
+        "routing",
+        "caching",
+        "cost-tracking",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-llm-gateway"
+    },
+    {
+      "name": "module-llm-observability",
+      "displayName": "Module: LLM Observability",
+      "description": "AI-specific telemetry module layered on OpenTelemetry. Wraps any async LLM call with trace capture, records per-request cost from a shared pricing table, monitors response quality with sliding-window statistics (avg, p50, p95, trend), and exports spans to pluggable backends (console, OTLP, JSON file). Factory-based architecture with no module-level mutable state — all tracers, calculators, and monitors are instance-scoped via createLlmObserver().",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "llm",
+        "observability",
+        "tracing",
+        "cost-tracking",
+        "quality",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-llm-observability"
+    },
+    {
+      "name": "module-llm-providers",
+      "displayName": "Module: LLM Providers",
+      "description": "Shared LLM provider pack — the canonical interface for all AI templates. Ships with Anthropic, OpenAI, and Groq providers out of the box, plus optional Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama providers. Factory-based registry, streaming, token counting via js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "llm",
+        "providers",
+        "anthropic",
+        "openai",
+        "groq",
+        "streaming",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-llm-providers"
+    },
+    {
+      "name": "module-media-ts",
+      "displayName": "Module: Media Processing",
+      "description": "Media processing and delivery with pluggable providers. Ships with providers for Cloudinary (Upload API + URL-based transforms), Uploadcare (REST API + CDN delivery with on-the-fly transforms), and imgix (URL-based transforms with signed URLs and responsive srcset generation), plus an in-memory mock for testing. Includes a fluent immutable TransformBuilder, named transform presets, factory-based registry, per-instance circuit breakers, OTel metrics, and native fetch throughout.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "media",
+        "images",
+        "cloudinary",
+        "uploadcare",
+        "imgix",
+        "transforms",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-media-ts"
+    },
+    {
+      "name": "module-notifications-ts",
+      "displayName": "Module: Notifications",
+      "description": "Composable notification service with pluggable providers for email, SMS, and push. Ships with Resend and SendGrid for email, Twilio for SMS, and web-push for browser notifications. Includes template rendering with variable substitution.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "notifications",
+        "email",
+        "sms",
+        "push",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-notifications-ts"
+    },
+    {
+      "name": "module-oauth-delegation-ts",
+      "displayName": "OAuth Delegation Module",
+      "description": "Composable outbound OAuth 2.0 delegation module. Handles the Authorization Code flow with PKCE, HMAC-signed state cookies, durable per-user token storage, and automatic refresh-before-expiry. Ships reference adapters for Notion, Google (Drive/Calendar/Analytics), Atlassian (Confluence), Slack, and HubSpot, plus in-memory and DynamoDB+KMS envelope-encrypted storage backends. Complements module-auth-ts — that verifies inbound requests, this delegates outbound calls on a user's behalf.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "oauth",
+        "oauth2",
+        "pkce",
+        "delegation",
+        "integrations",
+        "typescript",
+        "security"
+      ],
+      "kind": "template",
+      "path": "templates/module-oauth-delegation-ts"
+    },
+    {
+      "name": "module-observability-ts",
+      "displayName": "Observability Module (OpenTelemetry)",
+      "description": "Composable OpenTelemetry instrumentation module for TypeScript services. Provides one-call SDK initialization with pluggable exporters (console, OTLP, Datadog), structured logging with trace context propagation, and optional metrics and tracing helpers. Designed to be layered into any TypeScript service as a drop-in telemetry layer.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "observability",
+        "opentelemetry",
+        "tracing",
+        "metrics",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-observability-ts"
+    },
+    {
+      "name": "module-project-mgmt-ts",
+      "displayName": "Module: Project Management",
+      "description": "Project management integration with pluggable providers. Ships with Linear (GraphQL), Jira (REST v3), Asana (REST), and Shortcut (REST) providers out of the box plus a mock provider for testing. Factory-based registry, unified priority mapping, cursor pagination, circuit breakers, and OTel metrics. All providers use native fetch — no SDK dependencies.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "project-management",
+        "linear",
+        "jira",
+        "asana",
+        "shortcut",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-project-mgmt-ts"
+    },
+    {
+      "name": "module-queue-ts",
+      "displayName": "Module: Background Job Queue",
+      "description": "Composable background job processing with pluggable brokers. Ships with an in-memory provider for development and testing, a BullMQ provider for Redis-backed queues, and an AWS SQS provider for cloud-native workloads. Uses a self-registering provider registry so custom brokers can be added without modifying core code.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "queue",
+        "jobs",
+        "background",
+        "typescript",
+        "workers"
+      ],
+      "kind": "template",
+      "path": "templates/module-queue-ts"
+    },
+    {
+      "name": "module-rate-limit-ts",
+      "displayName": "Module: Rate Limiting",
+      "description": "Composable rate limiting with pluggable algorithms and state stores. Ships with token bucket, sliding window, and fixed window algorithms. In-memory store for development, Redis for distributed deployments. Includes middleware factories for Hono and Express.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "rate-limit",
+        "throttle",
+        "middleware",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-rate-limit-ts"
+    },
+    {
+      "name": "module-search-ts",
+      "displayName": "Module: Full-Text Search",
+      "description": "Full-text search with pluggable backends. Ships with providers for Algolia (REST API), Typesense (HTTP API), and Meilisearch (HTTP API), plus an in-memory mock with basic TF-IDF text matching and facet counting. Includes a reciprocal rank fusion combiner for hybrid keyword + vector search. Factory-based registry, circuit breakers, OTel metrics, and native fetch throughout (no heavy SDKs).",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "search",
+        "full-text",
+        "algolia",
+        "typesense",
+        "meilisearch",
+        "hybrid",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-search-ts"
+    },
+    {
+      "name": "module-semantic-cache",
+      "displayName": "Module: Semantic Cache",
+      "description": "Embedding-based LLM response caching using vector similarity search. Stores prompt embeddings alongside cached responses and retrieves them by cosine similarity instead of exact key match. Ships with an OpenAI embedding provider and an in-memory vector store for development. Includes a gateway adapter for drop-in integration with LLM gateway caching strategies.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "semantic-cache",
+        "embeddings",
+        "vector-search",
+        "llm",
+        "caching",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-semantic-cache"
+    },
+    {
+      "name": "module-spring-security",
+      "displayName": "Spring Security Auth Module",
+      "description": "Drop-in Spring Security module for a Spring Boot service. Configures a multi-provider SecurityFilterChain supporting OAuth 2.0 JWT resource server (OIDC), header-based API keys with a pluggable validator, and opaque-token introspection — all selectable via @ConfigurationProperties, composable simultaneously, dispatching through Spring Security's native AuthenticationManager. Includes a custom JWT claim-to-authority converter, optional @EnableMethodSecurity configuration, and a test stub for bypassing real token validation in slice and integration tests.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "java",
+        "spring",
+        "spring-security",
+        "oauth2",
+        "oidc",
+        "jwt",
+        "api-key",
+        "identity",
+        "auth"
+      ],
+      "kind": "template",
+      "path": "templates/module-spring-security"
+    },
+    {
+      "name": "module-storage-ts",
+      "displayName": "Blob Storage Module",
+      "description": "Composable blob storage abstraction with pluggable backends. Ships with providers for local filesystem, AWS S3, Cloudflare R2 (S3-compatible), and Google Cloud Storage. Uses a self-registering provider pattern so custom backends can be added without modifying core code. Handles streams for large files and supports signed URL generation.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "storage",
+        "s3",
+        "blob",
+        "typescript",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/module-storage-ts"
+    },
+    {
+      "name": "module-vector-store",
+      "displayName": "Vector Store Module",
+      "description": "Pluggable vector database abstraction for embedding storage and similarity search. Ships with providers for in-memory (Map-backed with cosine similarity), PostgreSQL with pgvector, Qdrant (HTTP API), and Pinecone (SDK). Includes a composable filter expression compiler that translates logical predicates into backend-native query formats. Uses the self-registering provider pattern so custom backends can be added without modifying core code.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "vector-store",
+        "embeddings",
+        "similarity-search",
+        "typescript",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/module-vector-store"
+    },
+    {
+      "name": "module-webhook-ts",
+      "displayName": "Module: Webhooks",
+      "description": "Composable webhook infrastructure. Receive webhooks with pluggable signature verification, send webhooks with exponential backoff retry, and log all events for debugging. Ships with HMAC-SHA256 and HMAC-SHA1 signature providers.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "webhook",
+        "events",
+        "http",
+        "retry",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-webhook-ts"
+    },
+    {
+      "name": "monitoring-stack",
+      "displayName": "Monitoring Stack",
+      "description": "Standalone observability bundle with Grafana, Prometheus, and Loki. Ships a working docker-compose setup with auto-provisioned datasources, pre-built service and system dashboards, alert rules for errors, latency, CPU, memory, and disk, plus an alternative Helm chart for Kubernetes deployment. Single command to start, batteries included.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "monitoring",
+        "observability",
+        "grafana",
+        "prometheus",
+        "loki",
+        "infrastructure"
+      ],
+      "kind": "template",
+      "path": "templates/monitoring-stack"
+    },
+    {
+      "name": "monorepo",
+      "displayName": "Turborepo Monorepo",
+      "description": "Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScript base config, ESLint setup, Turborepo pipeline definitions for build/test/lint/dev, and GitHub Actions CI. Optionally includes shared utility and UI library packages under packages/.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "monorepo",
+        "turborepo",
+        "pnpm",
+        "typescript",
+        "workspace"
+      ],
+      "kind": "template",
+      "path": "templates/monorepo"
+    },
+    {
+      "name": "multimodal-pipeline",
+      "displayName": "Multimodal Pipeline",
+      "description": "Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, detects modality automatically, routes each input through a modality-specific processor, sends the result to a vision or audio-capable LLM (Anthropic Claude, OpenAI GPT-4o), and returns structured output with Zod-validated schemas. No heavy frameworks — all components are built from first principles using provider SDKs directly. Processors and LLM providers use a self-registering registry pattern for easy extension.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "multimodal",
+        "vision",
+        "audio",
+        "video",
+        "llm",
+        "ai",
+        "structured-output"
+      ],
+      "kind": "template",
+      "path": "templates/multimodal-pipeline"
+    },
+    {
+      "name": "next-app",
+      "displayName": "Next.js AI Application",
+      "description": "Scaffolds a Next.js 15 application with App Router, streaming AI chat, and a pluggable provider registry. Includes Tailwind CSS styling, a chat UI with message streaming, server-side AI calls via route handlers, structured JSON logging, and optional auth, database (Drizzle + Postgres), and Docker configurations.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "nextjs",
+        "react",
+        "ai",
+        "chat",
+        "tailwind"
+      ],
+      "kind": "template",
+      "path": "templates/next-app"
+    },
+    {
+      "name": "okr-framework",
+      "displayName": "OKR Framework",
+      "description": "Scaffolds an OKR structure with company, team, and individual levels, key result templates, review cadence configuration, and scoring calibration. Optionally includes a scoring rubric with calibration examples. Designed for product and leadership teams establishing goal-setting practices.",
+      "version": "0.1.0",
+      "category": "product",
+      "persona": [
+        "product"
+      ],
+      "tags": [
+        "okr",
+        "objectives",
+        "key-results",
+        "goals",
+        "scoring",
+        "review-cadence"
+      ],
+      "kind": "template",
+      "path": "templates/okr-framework"
+    },
+    {
+      "name": "onboarding-playbook",
+      "displayName": "Customer Onboarding Playbook",
+      "description": "Scaffolds a customer onboarding playbook with milestone definitions, success criteria, health checks, and sales-to-CS handoff checklists. Supports self-serve, guided, and enterprise onboarding workflows. Optionally includes a health scoring model for proactive account management.",
+      "version": "0.1.0",
+      "category": "customer-success",
+      "persona": [
+        "customer-success"
+      ],
+      "tags": [
+        "onboarding",
+        "customer-success",
+        "milestones",
+        "health-scoring",
+        "handoff"
+      ],
+      "kind": "template",
+      "path": "templates/onboarding-playbook"
+    },
+    {
+      "name": "prd-template",
+      "displayName": "Product Requirements Document",
+      "description": "Scaffolds a structured PRD with problem statement, user stories, success metrics, constraints, and milestones. Produces a complete requirements package that aligns engineering, design, and stakeholders around what to build and why. Optionally includes dedicated user story and success metrics documents.",
+      "version": "0.1.0",
+      "category": "product",
+      "persona": [
+        "product"
+      ],
+      "tags": [
+        "prd",
+        "requirements",
+        "product",
+        "user-stories",
+        "metrics"
+      ],
+      "kind": "template",
+      "path": "templates/prd-template"
+    },
+    {
+      "name": "prompt-library",
+      "displayName": "Prompt Library",
+      "description": "Scaffolds a versioned prompt management system using YAML files with structured frontmatter for metadata, model configuration, and typed variables. Includes an optional TypeScript SDK for loading, validating, and rendering prompts programmatically, plus a validation test suite that checks all prompt files against a JSON Schema.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "prompts",
+        "yaml",
+        "versioning",
+        "llm",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/prompt-library"
+    },
+    {
+      "name": "proposal-template",
+      "displayName": "Sales Proposal",
+      "description": "Scaffolds a client-facing sales proposal with executive summary, solution overview, pricing structure, delivery timeline, and terms. Produces a professional proposal document with supporting data files for pricing and scheduling.",
+      "version": "0.1.0",
+      "category": "sales",
+      "persona": [
+        "sales"
+      ],
+      "tags": [
+        "proposal",
+        "sales",
+        "pricing",
+        "timeline",
+        "services"
+      ],
+      "kind": "template",
+      "path": "templates/proposal-template"
+    },
+    {
+      "name": "qbr-template",
+      "displayName": "Quarterly Business Review",
+      "description": "Scaffolds a QBR package with account health dashboards, usage metrics frameworks, expansion opportunity tracking, and risk assessments. Supports quarterly and monthly review cadences. Optionally includes expansion tracking for upsell and cross-sell pipeline management.",
+      "version": "0.1.0",
+      "category": "customer-success",
+      "persona": [
+        "customer-success"
+      ],
+      "tags": [
+        "qbr",
+        "customer-success",
+        "metrics",
+        "risk-assessment",
+        "expansion"
+      ],
+      "kind": "template",
+      "path": "templates/qbr-template"
+    },
+    {
+      "name": "rag-pipeline",
+      "displayName": "RAG Pipeline",
+      "description": "Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript. Implements document ingestion, configurable chunking strategies, embedding generation, vector storage, similarity retrieval, and LLM-powered answer generation with source citations. No LangChain — all components are built from first principles using the provider SDKs directly. Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone), embedding providers (OpenAI, Cohere), and LLM providers (Anthropic, OpenAI) for generation.",
+      "version": "0.1.0",
+      "category": "ai-systems",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "rag",
+        "embeddings",
+        "vector-search",
+        "llm",
+        "retrieval",
+        "ai"
+      ],
+      "kind": "template",
+      "path": "templates/rag-pipeline"
+    },
+    {
+      "name": "release-checklist",
+      "displayName": "Release Checklist",
+      "description": "Scaffolds a structured release checklist covering pre-release validation, deployment verification, rollback criteria, and a sign-off matrix. Produces actionable Markdown checklists and a YAML sign-off matrix with role-based approval tracking. Designed to standardize the release process across teams and ensure consistent quality gates.",
+      "version": "0.1.0",
+      "category": "qa",
+      "persona": [
+        "qa"
+      ],
+      "tags": [
+        "testing",
+        "qa",
+        "release",
+        "checklist",
+        "deployment"
+      ],
+      "kind": "template",
+      "path": "templates/release-checklist"
+    },
+    {
+      "name": "research-framework",
+      "displayName": "Research Framework",
+      "description": "Scaffolds a product research framework with hypothesis canvas, interview guides, and synthesis templates. Supports generative and evaluative research workflows. Optionally includes a structured competitive analysis. Designed to feed insights directly into PRDs and product strategy.",
+      "version": "0.1.0",
+      "category": "product",
+      "persona": [
+        "product"
+      ],
+      "tags": [
+        "research",
+        "interviews",
+        "competitive-analysis",
+        "hypothesis",
+        "synthesis"
+      ],
+      "kind": "template",
+      "path": "templates/research-framework"
+    },
+    {
+      "name": "runbook",
+      "displayName": "Operations Runbook",
+      "description": "Scaffolds an operations runbook with service overview, dependency map, operational procedures, and escalation paths. Optionally includes an incident response playbook. Designed for on-call engineers and SRE teams managing production services.",
+      "version": "0.1.0",
+      "category": "operations",
+      "persona": [
+        "operations"
+      ],
+      "tags": [
+        "runbook",
+        "operations",
+        "incident-response",
+        "escalation",
+        "sre"
+      ],
+      "kind": "template",
+      "path": "templates/runbook"
+    },
+    {
+      "name": "slack-bot",
+      "displayName": "Slack Bot",
+      "description": "Scaffolds a TypeScript Slack bot using @slack/bolt with Socket Mode for local development and HTTP for production. Includes AI-powered message and app-mention handlers, an optional /ask slash command, a pluggable LLM provider registry (Anthropic and OpenAI), and thread-aware conversation context for multi-turn AI responses.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "slack",
+        "bot",
+        "ai",
+        "chatbot"
+      ],
+      "kind": "template",
+      "path": "templates/slack-bot"
+    },
+    {
+      "name": "spring-boot-service",
+      "displayName": "Spring Boot HTTP Service",
+      "description": "Scaffolds a Java Spring Boot 4 HTTP service with Spring Web MVC, Spring Boot Actuator for health and metrics, Spring Data JPA + Flyway migrations, Micrometer + OpenTelemetry instrumentation, structured JSON logging, graceful shutdown, and a repository pattern service layer. Includes a Makefile, GitHub Actions CI, k6 load test scaffolding, Testcontainers integration tests, and optional Docker support. Auth-neutral — stack `module-spring-security` alongside when you need authentication.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "java",
+        "spring-boot",
+        "jvm",
+        "api",
+        "service",
+        "rest"
+      ],
+      "kind": "template",
+      "path": "templates/spring-boot-service"
+    },
+    {
+      "name": "test-automation",
+      "displayName": "Test Automation",
+      "description": "Scaffolds a test automation framework using Playwright for browser testing. Includes a page object model, test fixtures, data factories, example specs, and CI configuration. Produces a runnable test suite with structured reporting, parallel execution support, and a clean separation between test infrastructure and test logic.",
+      "version": "0.1.0",
+      "category": "qa",
+      "persona": [
+        "qa",
+        "engineering"
+      ],
+      "tags": [
+        "testing",
+        "qa",
+        "automation",
+        "playwright",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/test-automation"
+    },
+    {
+      "name": "test-plan",
+      "displayName": "Test Plan",
+      "description": "Scaffolds a comprehensive test plan document covering scope, approach, environments, test matrix, risk assessment, and entry/exit criteria. Produces a structured Markdown plan with a companion YAML test matrix and an optional risk matrix. Designed as the QA planning artifact that pairs with acceptance criteria and test automation templates.",
+      "version": "0.1.0",
+      "category": "qa",
+      "persona": [
+        "qa"
+      ],
+      "tags": [
+        "testing",
+        "qa",
+        "test-plan",
+        "risk",
+        "planning"
+      ],
+      "kind": "template",
+      "path": "templates/test-plan"
+    },
+    {
+      "name": "ts-service",
+      "displayName": "TypeScript HTTP Service",
+      "description": "Scaffolds a production-ready TypeScript HTTP service using the Hono framework. Ships with structured request logging, error handling, Zod request validation, and OpenTelemetry instrumentation (traces + metrics). Optional Docker and Docker Compose configurations. The template is auth-neutral and persistence-neutral — stack `module-auth-ts` alongside when you need authentication, and `module-database-ts` when you need a database layer.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "hono",
+        "api",
+        "service",
+        "rest"
+      ],
+      "kind": "template",
+      "path": "templates/ts-service"
+    },
+    {
+      "name": "vscode-ext",
+      "displayName": "VS Code Extension (TypeScript + esbuild)",
+      "description": "Scaffolds a VS Code extension with TypeScript and esbuild bundling. Optionally includes a React-based webview panel that communicates with the extension host via postMessage, and an AI integration layer with Anthropic and OpenAI providers using the shared registry pattern. Uses esbuild for fast builds and supports the standard VS Code extension development workflow.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "vscode",
+        "extension",
+        "typescript",
+        "ai",
+        "editor"
+      ],
+      "kind": "template",
+      "path": "templates/vscode-ext"
+    },
+    {
+      "name": "worker-service",
+      "displayName": "TypeScript Worker Service",
+      "description": "Background processor with scheduled cron jobs and queue consumption. Features a lightweight cron scheduler with standard 5-field expression parsing, a poll-based queue consumer with pluggable providers, a circuit breaker for resilience, OpenTelemetry metrics, and a minimal Hono health server for Kubernetes probes. Graceful shutdown drains both cron and queue work before exit.",
+      "version": "0.1.0",
+      "category": "applications",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "typescript",
+        "worker",
+        "cron",
+        "queue",
+        "background",
+        "jobs"
+      ],
+      "kind": "template",
+      "path": "templates/worker-service"
+    }
+  ],
+  "composites": [
+    {
+      "name": "agent-team",
+      "displayName": "Agent Team",
+      "description": "Multi-agent system with a central orchestrator, specialized agents for research and writing, an evaluation harness, and MCP tool server. Agents coordinate through the orchestrator, each with distinct roles and capabilities.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "agents",
+        "orchestrator",
+        "multi-agent",
+        "mcp"
+      ],
+      "path": "composites/agent-team.yaml"
+    },
+    {
+      "name": "ai-chatbot",
+      "displayName": "AI Chatbot",
+      "description": "Full-stack AI chatbot with agentic loop, HTTP service, authentication, evaluation harness, and deployment.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "chatbot",
+        "fullstack",
+        "typescript"
+      ],
+      "path": "composites/ai-chatbot.yaml"
+    },
+    {
+      "name": "ai-platform",
+      "displayName": "AI Platform",
+      "description": "Full AI platform with HTTP service, LLM gateway, vector store, data pipeline, auth, billing, and monitoring. Everything needed to ship a production AI product with usage-based billing and operational visibility.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "platform",
+        "fullstack",
+        "billing",
+        "typescript"
+      ],
+      "path": "composites/ai-platform.yaml"
+    },
+    {
+      "name": "ai-web-app",
+      "displayName": "AI Web Application",
+      "description": "Full-stack web application with Next.js frontend, RAG pipeline, authentication, database, and deployment.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "nextjs",
+        "fullstack",
+        "rag",
+        "typescript"
+      ],
+      "path": "composites/ai-web-app.yaml"
+    },
+    {
+      "name": "background-processor",
+      "displayName": "Background Processor",
+      "description": "Async job processing service with queue, database, storage, observability, and deployment. For workloads that don't need synchronous responses.",
+      "version": "0.1.0",
+      "tags": [
+        "queue",
+        "worker",
+        "async",
+        "service"
+      ],
+      "path": "composites/background-processor.yaml"
+    },
+    {
+      "name": "chrome-ai-extension",
+      "displayName": "Chrome AI Extension",
+      "description": "Chrome extension with AI sidepanel backed by MCP tool servers and optional prompt library.",
+      "version": "0.1.0",
+      "tags": [
+        "chrome",
+        "extension",
+        "ai",
+        "mcp"
+      ],
+      "path": "composites/chrome-ai-extension.yaml"
+    },
+    {
+      "name": "client-engagement",
+      "displayName": "Client Engagement",
+      "description": "Non-engineering client engagement package. Sales proposal with competitive battle cards, brand guidelines, marketing campaign brief, and optional customer onboarding playbook. Zero engineering templates — proves the catalog works for non-code workflows.",
+      "version": "0.1.0",
+      "tags": [
+        "sales",
+        "marketing",
+        "design",
+        "customer-success",
+        "engagement"
+      ],
+      "path": "composites/client-engagement.yaml"
+    },
+    {
+      "name": "cost-optimized-ai",
+      "displayName": "Cost-Optimized AI Stack",
+      "description": "Minimize LLM costs with intelligent routing, response caching, and cost monitoring. Routes to the cheapest provider that meets quality thresholds, caches similar prompts to avoid redundant calls, and tracks spend with anomaly detection.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "cost",
+        "optimization",
+        "caching"
+      ],
+      "path": "composites/cost-optimized-ai.yaml"
+    },
+    {
+      "name": "document-intelligence",
+      "displayName": "Document Intelligence",
+      "description": "Document search and question-answering system with RAG pipeline, HTTP service, file storage, database, and deployment.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "rag",
+        "documents",
+        "search",
+        "typescript"
+      ],
+      "path": "composites/document-intelligence.yaml"
+    },
+    {
+      "name": "enterprise-ai",
+      "displayName": "Enterprise AI Infrastructure",
+      "description": "Full enterprise AI stack with agents, tool servers, safety guardrails, evaluation, prompt management, observability, and Kubernetes deployment.",
+      "version": "0.1.0",
+      "tags": [
+        "enterprise",
+        "ai",
+        "kubernetes",
+        "agents",
+        "guardrails"
+      ],
+      "path": "composites/enterprise-ai.yaml"
+    },
+    {
+      "name": "eval-suite",
+      "displayName": "AI Evaluation Suite",
+      "description": "Standalone evaluation infrastructure with test harness, versioned prompts, and guardrails validation. For teams that need to test AI systems without building them.",
+      "version": "0.1.0",
+      "tags": [
+        "eval",
+        "testing",
+        "prompts",
+        "ai",
+        "quality"
+      ],
+      "path": "composites/eval-suite.yaml"
+    },
+    {
+      "name": "go-microservice",
+      "displayName": "Go Microservice",
+      "description": "Go HTTP service with observability and deployment. Lightweight, single-binary, production-ready.",
+      "version": "0.1.0",
+      "tags": [
+        "go",
+        "microservice",
+        "api",
+        "deployment"
+      ],
+      "path": "composites/go-microservice.yaml"
+    },
+    {
+      "name": "identity-aware-service",
+      "displayName": "Identity-Aware Spring Boot Microservice",
+      "description": "Spring Boot 4 microservice on JDK 25 with identity enforced at both the service-mesh edge (Istio RequestAuthentication + AuthorizationPolicy) and the application boundary (Spring Security OAuth 2.0 resource server) — defense in depth against the same OIDC issuer. Deployed via Kubernetes with optional STRICT mTLS, VirtualService routing, and a Grafana + Prometheus + Loki observability bundle.",
+      "version": "0.1.0",
+      "tags": [
+        "java",
+        "spring-boot",
+        "jvm",
+        "microservice",
+        "istio",
+        "oauth2",
+        "identity",
+        "kubernetes"
+      ],
+      "path": "composites/identity-aware-service.yaml"
+    },
+    {
+      "name": "internal-tool",
+      "displayName": "Internal Tool",
+      "description": "CLI tool or browser extension backed by MCP servers for internal team use.",
+      "version": "0.1.0",
+      "tags": [
+        "cli",
+        "mcp",
+        "tools",
+        "internal"
+      ],
+      "path": "composites/internal-tool.yaml"
+    },
+    {
+      "name": "mcp-toolkit",
+      "displayName": "MCP Toolkit",
+      "description": "MCP server with evaluation harness, prompt library, and deployment. The standard stack for building tool servers for AI systems.",
+      "version": "0.1.0",
+      "tags": [
+        "mcp",
+        "tools",
+        "ai",
+        "typescript"
+      ],
+      "path": "composites/mcp-toolkit.yaml"
+    },
+    {
+      "name": "multi-agent",
+      "displayName": "Multi-Agent System",
+      "description": "Multi-agent architecture with A2A protocol peers, MCP tool servers, and an orchestrating agent. Agents discover each other, delegate tasks, and share tools.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "agents",
+        "a2a",
+        "mcp",
+        "multi-agent"
+      ],
+      "path": "composites/multi-agent.yaml"
+    },
+    {
+      "name": "product-launch",
+      "displayName": "Product Launch",
+      "description": "Full product launch kit spanning engineering, design, QA, product, marketing, and operations. Scaffolds a Next.js app with auth and analytics alongside a design system, design tokens, test plan, acceptance criteria, PRD, campaign brief, and operational runbook.",
+      "version": "0.1.0",
+      "tags": [
+        "launch",
+        "cross-functional",
+        "product",
+        "design",
+        "qa",
+        "marketing",
+        "operations"
+      ],
+      "path": "composites/product-launch.yaml"
+    },
+    {
+      "name": "production-api",
+      "displayName": "Production API Service",
+      "description": "Production-grade TypeScript API service with auth, database, caching, rate limiting, background jobs, observability, and deployment.",
+      "version": "0.1.0",
+      "tags": [
+        "api",
+        "service",
+        "production",
+        "typescript"
+      ],
+      "path": "composites/production-api.yaml"
+    },
+    {
+      "name": "proof-of-concept",
+      "displayName": "AI Proof of Concept",
+      "description": "Minimal AI agent with evaluation harness. The fastest path to a working prototype with quality gates.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "poc",
+        "agent",
+        "eval"
+      ],
+      "path": "composites/proof-of-concept.yaml"
+    },
+    {
+      "name": "rag-agent",
+      "displayName": "RAG-Powered Agent",
+      "description": "AI agent that uses retrieval-augmented generation as a tool. The agent reasons and acts, the RAG pipeline provides grounded knowledge from a document corpus.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "rag",
+        "agent",
+        "retrieval"
+      ],
+      "path": "composites/rag-agent.yaml"
+    },
+    {
+      "name": "research-to-prototype",
+      "displayName": "Research to Prototype",
+      "description": "Research-driven prototype pipeline. Starts with product research and a PRD, scaffolds an agentic loop prototype, and optionally adds a test plan for validation.",
+      "version": "0.1.0",
+      "tags": [
+        "research",
+        "prototype",
+        "product",
+        "ai",
+        "qa"
+      ],
+      "path": "composites/research-to-prototype.yaml"
+    },
+    {
+      "name": "safe-ai-agent",
+      "displayName": "Safe AI Agent",
+      "description": "AI agent with safety guardrails, evaluation harness, and prompt management. The responsible AI stack — filter inputs, validate outputs, test everything.",
+      "version": "0.1.0",
+      "tags": [
+        "ai",
+        "safety",
+        "guardrails",
+        "agent",
+        "eval"
+      ],
+      "path": "composites/safe-ai-agent.yaml"
+    },
+    {
+      "name": "spring-boot-microservice",
+      "displayName": "Spring Boot Microservice",
+      "description": "Java Spring Boot 4 HTTP service on JDK 25 with a Kubernetes deployment and an optional Grafana + Prometheus + Loki observability stack. Production-shaped: Spring Security via module-spring-security (JWT / API-key / opaque-token), Spring Data JPA with Flyway, Micrometer + OpenTelemetry, Helm chart, HPA, and ingress.",
+      "version": "0.1.0",
+      "tags": [
+        "java",
+        "spring-boot",
+        "jvm",
+        "microservice",
+        "api",
+        "kubernetes"
+      ],
+      "path": "composites/spring-boot-microservice.yaml"
+    },
+    {
+      "name": "vscode-ai-extension",
+      "displayName": "VS Code AI Extension",
+      "description": "VS Code extension with AI provider integration, MCP tool servers, and versioned prompt management.",
+      "version": "0.1.0",
+      "tags": [
+        "vscode",
+        "extension",
+        "ai",
+        "mcp"
+      ],
+      "path": "composites/vscode-ai-extension.yaml"
+    }
+  ]
+}
