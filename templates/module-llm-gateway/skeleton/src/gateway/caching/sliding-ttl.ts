@@ -9,10 +9,14 @@ export { computeCacheKey } from "./key.js";
 //
 // Same SHA-256 cache key as the hash strategy. The difference is
 // that TTL extends on each cache hit — frequently accessed entries
-// stay cached longer. In-memory Map store with lazy expiration.
+// stay cached longer. In-memory Map store with lazy expiration and a
+// MAX_ENTRIES cap: a hit re-inserts the key (moving it to the end of
+// the insertion order), so eviction on set() drops the least-recently
+// used entry rather than the most popular one.
 //
 
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MAX_ENTRIES = Number(process.env.GATEWAY_CACHE_MAX_ENTRIES ?? 10_000);
 
 interface CacheEntry {
   cached: CachedResponse;
@@ -35,8 +39,10 @@ export function createSlidingTtlStrategy(): CachingStrategy {
         return undefined;
       }
 
-      // Extend TTL on hit
+      // Extend TTL on hit and mark as most-recently used by re-inserting.
       entry.expiresAt = Date.now() + entry.ttlMs;
+      store.delete(key);
+      store.set(key, entry);
       return entry.cached;
     },
 
@@ -46,7 +52,15 @@ export function createSlidingTtlStrategy(): CachingStrategy {
         response: { ...response, cached: true },
         cachedAt: new Date().toISOString(),
       };
+      store.delete(key);
       store.set(key, { cached, ttlMs: ttl, expiresAt: Date.now() + ttl });
+
+      // Bound the store: evict the least-recently-used entry over the cap.
+      while (store.size > MAX_ENTRIES) {
+        const oldest = store.keys().next().value;
+        if (oldest === undefined) break;
+        store.delete(oldest);
+      }
     },
 
     async invalidate(key: string): Promise<void> {

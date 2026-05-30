@@ -34,6 +34,10 @@ export interface TokenUsage {
   inputTokens: number;
   /** Output (completion) tokens generated. */
   outputTokens: number;
+  /** Cached input tokens read from a prompt-cache hit, when reported. */
+  cacheReadTokens?: number;
+  /** Input tokens written to the prompt cache, when reported. */
+  cacheWriteTokens?: number;
 }
 
 /** Pricing per 1M tokens in USD. */

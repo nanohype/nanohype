@@ -112,5 +112,5 @@ export const ObserverConfigSchema = z.object({
   exporterName: z.string().optional(),
   costTracking: z.boolean().optional(),
   qualityThreshold: z.number().optional(),
-  defaultTags: z.record(z.string()).optional(),
+  defaultTags: z.record(z.string(), z.string()).optional(),
 });

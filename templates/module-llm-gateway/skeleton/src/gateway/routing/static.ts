@@ -4,10 +4,11 @@ import { registerStrategy } from "./registry.js";
 
 // ── Static Routing Strategy ─────────────────────────────────────────
 //
-// Fixed priority list — always selects the first available provider
-// in the order they were configured. Falls through to the next
-// provider if the first is unavailable. This is the simplest
-// strategy and a good default for single-provider setups.
+// Fixed priority list — always selects the first provider in the order
+// they were configured. The gateway then handles fallback: if the
+// selected provider's call fails it tries the remaining providers in
+// order (see createGateway's chat()). This is the simplest strategy and
+// a good default for single-provider setups.
 //
 
 export function createStaticStrategy(): RoutingStrategy {

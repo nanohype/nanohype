@@ -11,7 +11,7 @@
     "./storage": "./dist/oauth/storage/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "dev": "tsx --watch src/oauth/index.ts",
     "start": "node dist/oauth/index.js",
@@ -20,12 +20,16 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "audit:prod": "npm audit --audit-level=high --omit=dev"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.600.0",
-    "@aws-sdk/client-kms": "^3.600.0",
-    "@smithy/node-http-handler": "^3.0.0"
+    "@aws-sdk/client-dynamodb": "^3.1030.0",
+    "@aws-sdk/client-kms": "^3.1030.0",
+    "@smithy/node-http-handler": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-dynamodb": { "optional": true },
@@ -33,21 +37,21 @@
     "@smithy/node-http-handler": { "optional": true }
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.600.0",
-    "@aws-sdk/client-kms": "^3.600.0",
-    "@eslint/js": "^9.20.0",
-    "@smithy/node-http-handler": "^3.0.0",
-    "@types/node": "^22.0.0",
-    "@vitest/coverage-v8": "^3.1.0",
+    "@aws-sdk/client-dynamodb": "^3.1030.0",
+    "@aws-sdk/client-kms": "^3.1030.0",
+    "@eslint/js": "^10.0.1",
+    "@smithy/node-http-handler": "^4.0.0",
+    "@types/node": "^24.12.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "aws-sdk-client-mock": "^4.1.0",
-    "eslint": "^9.20.0",
+    "eslint": "^10.2.0",
     "prettier": "^3.5.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
-    "vitest": "^3.1.0"
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

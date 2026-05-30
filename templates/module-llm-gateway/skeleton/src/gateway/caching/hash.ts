@@ -9,10 +9,13 @@ export { computeCacheKey } from "./key.js";
 //
 // SHA-256 of model + prompt + JSON(params) as the cache key. Fixed
 // TTL (default 1 hour). In-memory Map store. Entries are evicted
-// lazily on access when their TTL expires.
+// lazily on access when their TTL expires, and the store is bounded
+// to MAX_ENTRIES — the oldest-inserted entry is evicted on set() when
+// the cap is reached, so an unbounded prompt space can't leak memory.
 //
 
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MAX_ENTRIES = Number(process.env.GATEWAY_CACHE_MAX_ENTRIES ?? 10_000);
 
 interface CacheEntry {
   cached: CachedResponse;
@@ -43,7 +46,17 @@ export function createHashStrategy(): CachingStrategy {
         response: { ...response, cached: true },
         cachedAt: new Date().toISOString(),
       };
+      // Re-inserting moves the key to the end of the insertion order, so a
+      // refreshed entry isn't treated as the oldest on the next eviction.
+      store.delete(key);
       store.set(key, { cached, expiresAt: Date.now() + ttl });
+
+      // Bound the store: evict the oldest-inserted entry once over the cap.
+      while (store.size > MAX_ENTRIES) {
+        const oldest = store.keys().next().value;
+        if (oldest === undefined) break;
+        store.delete(oldest);
+      }
     },
 
     async invalidate(key: string): Promise<void> {

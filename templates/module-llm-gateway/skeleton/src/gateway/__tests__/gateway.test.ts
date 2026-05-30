@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { GatewayProvider } from "../providers/types.js";
 import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
 
@@ -39,18 +39,12 @@ function createTestProvider(name: string): GatewayProvider {
 describe("gateway integration", () => {
   it("calls provider on cache miss and returns from cache on second call", async () => {
     // Register a test provider directly
-    const { registerProvider, getProvider, listProviders } = await import(
-      "../providers/registry.js"
-    );
+    const { registerProvider, listProviders } = await import("../providers/registry.js");
 
     // Avoid double-registration errors by checking first
     if (!listProviders().includes("test-gw")) {
       registerProvider("test-gw", () => createTestProvider("test-gw"));
     }
-
-    // Register minimal routing and caching strategies
-    const { registerStrategy } = await import("../routing/registry.js");
-    const { registerCachingStrategy } = await import("../caching/registry.js");
 
     // Ensure strategies are registered (barrels may have already loaded them)
     try {
@@ -88,6 +82,71 @@ describe("gateway integration", () => {
     // Cost tracking should have recorded the first call
     const costs = gateway.getCosts();
     expect(costs.totalRequests).toBe(1); // Only the non-cached call is recorded
+
+    await gateway.close();
+  });
+
+  it("falls through to the next provider when the first fails", async () => {
+    const { registerProvider, listProviders } = await import("../providers/registry.js");
+
+    if (!listProviders().includes("fail-first")) {
+      registerProvider("fail-first", (): GatewayProvider => ({
+        name: "fail-first",
+        pricing: { input: 1, output: 1 },
+        async chat(): Promise<GatewayResponse> {
+          throw new Error("provider down");
+        },
+        countTokens: (text: string) => Math.ceil(text.length / 4),
+      }));
+    }
+    if (!listProviders().includes("fallback-ok")) {
+      registerProvider("fallback-ok", () => createTestProvider("fallback-ok"));
+    }
+
+    const { createGateway } = await import("../index.js");
+
+    const gateway = createGateway({
+      providers: ["fail-first", "fallback-ok"],
+      routingStrategy: "static",
+      cachingStrategy: "none",
+    });
+
+    const messages: ChatMessage[] = [{ role: "user", content: "Need a fallback" }];
+    const response = await gateway.chat(messages);
+
+    // Static routing picks "fail-first" first; its failure falls through to
+    // the next configured provider, so the response comes from "fallback-ok".
+    expect(response.provider).toBe("fallback-ok");
+    expect(response.text).toContain("fallback-ok");
+
+    await gateway.close();
+  });
+
+  it("throws when every provider in the fallback chain fails", async () => {
+    const { registerProvider, listProviders } = await import("../providers/registry.js");
+
+    const downProvider = (name: string): GatewayProvider => ({
+      name,
+      pricing: { input: 1, output: 1 },
+      async chat(): Promise<GatewayResponse> {
+        throw new Error(`${name} is down`);
+      },
+      countTokens: (text: string) => Math.ceil(text.length / 4),
+    });
+
+    if (!listProviders().includes("down-a")) registerProvider("down-a", () => downProvider("down-a"));
+    if (!listProviders().includes("down-b")) registerProvider("down-b", () => downProvider("down-b"));
+
+    const { createGateway } = await import("../index.js");
+
+    const gateway = createGateway({
+      providers: ["down-a", "down-b"],
+      routingStrategy: "static",
+      cachingStrategy: "none",
+    });
+
+    const messages: ChatMessage[] = [{ role: "user", content: "all down" }];
+    await expect(gateway.chat(messages)).rejects.toThrow("is down");
 
     await gateway.close();
   });

@@ -20,7 +20,7 @@ const response = await gateway.chat([
 ]);
 
 console.log(response.text);       // "The capital of France is Paris."
-console.log(response.provider);   // "anthropic"
+console.log(response.provider);   // "bedrock"
 console.log(response.cost);       // 0.000135
 console.log(response.cached);     // false
 
@@ -44,22 +44,26 @@ gateway.close();
 
 | Provider | Backend | Default Model | Pricing (input/output per 1M) |
 |----------|---------|---------------|-------------------------------|
+| `bedrock` | Claude Sonnet on Bedrock (Converse + cachePoint) | `anthropic.claude-sonnet-4-6` | $3 / $15 |
 | `anthropic` | Claude Sonnet | `claude-sonnet-4-6` | $3 / $15 |
 | `openai` | GPT-4o | `gpt-4o` | $2.50 / $10 |
 | `groq` | Llama 3 70B | `llama-3.3-70b-versatile` | $0.59 / $0.79 |
 | `mock` | In-memory | `mock-model` | $0 / $0 |
 
-Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds.
+`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every call carries an explicit `AbortSignal.timeout` (`LLM_REQUEST_TIMEOUT_MS`, default 30s) so a hung socket trips the circuit breaker instead of hanging.
+
+Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds. If a provider call fails, the gateway falls through to the next configured provider in order before surfacing the error.
 
 ## Routing Strategies
 
 | Strategy | Behavior |
 |----------|----------|
-| `static` | Fixed priority list, always picks the first available provider |
+| `static` | Fixed priority list, always picks the first provider; the gateway falls through to the next on failure |
 | `round-robin` | Rotates through providers in order |
 | `latency` | Picks provider with lowest p50 latency from a sliding window of 100 calls |
 | `cost` | Picks cheapest provider that meets an 80% success rate quality threshold |
 | `adaptive` | Epsilon-greedy: exploits the best-known provider 90% of the time, explores randomly 10%. Falls back to static with < 10 data points |
+| `linucb` | Contextual bandit (ridge regression per provider) that routes on request features — task type, token estimate, latency budget, quality. Falls back to static with < 10 data points |
 
 ## Caching Strategies
 
@@ -130,8 +134,8 @@ registerProvider(myProvider);
 ## Architecture
 
 - **Gateway facade** -- `createGateway()` returns a `Gateway` object that orchestrates provider selection, caching, and cost tracking behind a single `chat()` method. Application code never touches provider internals or strategy state.
-- **Provider registry with self-registration** -- each provider module (anthropic, openai, groq, mock) calls `registerProvider()` at import time. Adding a custom provider is one `registerProvider()` call.
-- **Routing strategy registry** -- five built-in strategies self-register. The gateway delegates provider selection to the active strategy, which receives the full list of available providers and request context.
+- **Provider registry with self-registration** -- each provider module (bedrock, anthropic, openai, groq, mock) calls `registerProvider()` at import time. Adding a custom provider is one `registerProvider()` call.
+- **Routing with gateway-level fallback** -- six built-in strategies self-register. The gateway delegates provider selection to the active strategy, then tries the selected provider followed by the remaining configured providers in order, so a single provider failure doesn't fail the request.
 - **Caching strategy registry** -- three built-in strategies self-register. The gateway checks cache before routing and stores responses after successful calls.
 - **Cost tracker** -- records every non-cached request with attribution tags. Supports filtered queries with breakdowns by model, user, and project.
 - **Anomaly detection** -- z-score analysis on a rolling cost window flags entries that deviate significantly from the mean, surfacing unexpected spend before it compounds.
@@ -141,7 +145,8 @@ registerProvider(myProvider);
 
 ## Production Readiness
 
-- [ ] Set all provider API keys (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`)
+- [ ] Default `bedrock` provider authenticates via IRSA — grant the pod role `bedrock:InvokeModel` for your model(s); no API key needed
+- [ ] Set API keys only for the key-based providers you enable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`)
 - [ ] Choose a routing strategy appropriate for your workload (adaptive for multi-provider, static for single)
 - [ ] Configure caching strategy and TTL for your latency/freshness tradeoff
 - [ ] Set up cost alerts using anomaly detection with appropriate thresholds

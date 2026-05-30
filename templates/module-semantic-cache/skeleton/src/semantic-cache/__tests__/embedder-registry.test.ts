@@ -25,13 +25,23 @@ function stubProvider(name: string): EmbeddingProvider {
 describe("embedding provider registry", () => {
   const unique = () => `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  it("registers a provider and retrieves it by name", () => {
+  it("registers a factory and resolves it by name", () => {
     const name = unique();
     const provider = stubProvider(name);
 
-    registerEmbeddingProvider(provider);
+    registerEmbeddingProvider(name, () => provider);
 
     expect(getEmbeddingProvider(name)).toBe(provider);
+  });
+
+  it("invokes the factory on every get, yielding fresh instances", () => {
+    const name = unique();
+
+    registerEmbeddingProvider(name, () => stubProvider(name));
+
+    const first = getEmbeddingProvider(name);
+    const second = getEmbeddingProvider(name);
+    expect(first).not.toBe(second);
   });
 
   it("throws when retrieving an unregistered provider", () => {
@@ -42,9 +52,9 @@ describe("embedding provider registry", () => {
 
   it("throws when registering a duplicate provider name", () => {
     const name = unique();
-    registerEmbeddingProvider(stubProvider(name));
+    registerEmbeddingProvider(name, () => stubProvider(name));
 
-    expect(() => registerEmbeddingProvider(stubProvider(name))).toThrow(
+    expect(() => registerEmbeddingProvider(name, () => stubProvider(name))).toThrow(
       /already registered/,
     );
   });
@@ -53,8 +63,8 @@ describe("embedding provider registry", () => {
     const a = unique();
     const b = unique();
 
-    registerEmbeddingProvider(stubProvider(a));
-    registerEmbeddingProvider(stubProvider(b));
+    registerEmbeddingProvider(a, () => stubProvider(a));
+    registerEmbeddingProvider(b, () => stubProvider(b));
 
     const names = listEmbeddingProviders();
     expect(names).toContain(a);

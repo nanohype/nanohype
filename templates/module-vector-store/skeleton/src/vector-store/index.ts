@@ -68,7 +68,7 @@ export class VectorStore {
 /** Zod schema for validating createVectorStore arguments. */
 const CreateVectorStoreSchema = z.object({
   providerName: z.string().min(1, "providerName must be a non-empty string"),
-  config: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.unknown()).default({}),
 });
 
 /**

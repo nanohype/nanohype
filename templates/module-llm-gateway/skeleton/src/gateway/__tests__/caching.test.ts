@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { GatewayResponse } from "../types.js";
 import type { CacheContext } from "../caching/types.js";
 

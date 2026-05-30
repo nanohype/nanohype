@@ -108,5 +108,6 @@ class MemoryVectorCacheStore implements VectorCacheStore {
   }
 }
 
-// Self-register — the factory creates a fresh instance per init() cycle
-registerVectorStore(new MemoryVectorCacheStore());
+// Self-register a factory — each createSemanticCache() gets a fresh,
+// isolated in-memory store.
+registerVectorStore("memory", () => new MemoryVectorCacheStore());

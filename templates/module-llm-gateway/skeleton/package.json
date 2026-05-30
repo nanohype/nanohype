@@ -14,34 +14,39 @@
     "./tokens": "./dist/gateway/tokens/counter.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "dev": "tsx --watch src/gateway/index.ts",
     "start": "node dist/gateway/index.js",
     "lint": "eslint src/",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
-    "@opentelemetry/api": "^1.9.0",
+    "@anthropic-ai/sdk": "^0.89.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
+    "@opentelemetry/api": "^1.9.1",
     "groq-sdk": "^0.15.0",
     "js-tiktoken": "^1.0.0",
-    "openai": "^4.85.0",
-    "zod": "^3.24.0"
+    "openai": "^6.34.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
-    "@types/node": "^22.0.0",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
-    "vitest": "^3.1.0"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.2",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.0",
+    "prettier": "^3.8.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

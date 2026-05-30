@@ -8,8 +8,8 @@
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { validateBootstrap } from "./bootstrap.js";
-import { getEmbeddingProvider, listEmbeddingProviders } from "./embedder/index.js";
-import { getVectorStore, listVectorStores } from "./store/index.js";
+import { getEmbeddingProvider } from "./embedder/index.js";
+import { getVectorStore } from "./store/index.js";
 import {
   cacheLookupTotal,
   cacheOperationDuration,
@@ -17,7 +17,7 @@ import {
 } from "./metrics.js";
 import type { EmbeddingProvider } from "./embedder/types.js";
 import type { VectorCacheStore } from "./store/types.js";
-import type { SemanticCacheConfig, CacheVector, CacheHit } from "./types.js";
+import type { SemanticCacheConfig, CacheVector } from "./types.js";
 
 // Re-export everything consumers need
 export {
@@ -110,8 +110,8 @@ export async function createSemanticCache(
 
   validateBootstrap();
 
-  const embeddingProviderName = config.embeddingProvider ?? "__EMBEDDING_PROVIDER__";
-  const vectorBackendName = config.vectorBackend ?? "__VECTOR_BACKEND__";
+  const embeddingProviderName = config.embeddingProvider ?? "bedrock";
+  const vectorBackendName = config.vectorBackend ?? "memory";
   const similarityThreshold = config.similarityThreshold ?? DEFAULT_SIMILARITY_THRESHOLD;
   const defaultTtlMs = config.defaultTtlMs ?? DEFAULT_TTL_MS;
 

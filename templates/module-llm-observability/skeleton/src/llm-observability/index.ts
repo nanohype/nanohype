@@ -14,7 +14,7 @@ import { createLlmTracer, TracedError } from "./tracer/index.js";
 import { createQualityMonitor } from "./quality/monitor.js";
 import { getExporter } from "./exporters/index.js";
 import { ObserverConfigSchema } from "./types.js";
-import type { ObserverConfig, LlmResponse, LlmSpan, CostEntry } from "./types.js";
+import type { ObserverConfig, LlmResponse, LlmSpan } from "./types.js";
 import type { LlmExporter } from "./exporters/types.js";
 import type { QualityStats, QualityWindow } from "./quality/types.js";
 

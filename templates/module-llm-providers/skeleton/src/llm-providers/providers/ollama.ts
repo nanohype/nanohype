@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { LlmProvider } from "./types.js";
 import type {
   ChatMessage,
@@ -23,6 +24,28 @@ import { logger } from "../logger.js";
 //
 
 const DEFAULT_MODEL = "llama3.2";
+
+// Never trust raw model output — validate the JSON before reading fields.
+// Ollama mirrors the OpenAI chat-completions shape; the parts we read are
+// optional because a degraded server can omit them.
+const completionSchema = z.object({
+  choices: z
+    .array(z.object({ message: z.object({ content: z.string() }).partial() }))
+    .optional(),
+  usage: z
+    .object({
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+    })
+    .partial()
+    .optional(),
+});
+
+const streamChunkSchema = z.object({
+  choices: z
+    .array(z.object({ delta: z.object({ content: z.string() }).partial() }))
+    .optional(),
+});
 
 function getBaseUrl(): string {
   return (process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1").replace(/\/$/, "");
@@ -65,7 +88,7 @@ function createOllamaProvider(): LlmProvider {
           throw new Error(`Ollama API error: ${res.status} ${res.statusText}`);
         }
 
-        return res.json();
+        return completionSchema.parse(await res.json());
       });
 
       const latencyMs = performance.now() - start;
@@ -149,15 +172,18 @@ function createOllamaProvider(): LlmProvider {
             const data = trimmed.slice(6);
             if (data === "[DONE]") continue;
 
+            let raw: unknown;
             try {
-              const chunk = JSON.parse(data);
-              const delta = chunk.choices?.[0]?.delta?.content;
-              if (delta) {
-                fullText += delta;
-                yield { text: delta, done: false };
-              }
+              raw = JSON.parse(data);
             } catch {
-              // Skip malformed SSE lines
+              continue; // Skip malformed SSE lines
+            }
+            const parsed = streamChunkSchema.safeParse(raw);
+            if (!parsed.success) continue; // Skip off-shape SSE payloads
+            const delta = parsed.data.choices?.[0]?.delta?.content;
+            if (delta) {
+              fullText += delta;
+              yield { text: delta, done: false };
             }
           }
         }

@@ -23,6 +23,22 @@ interface QdrantConfig extends VectorStoreConfig {
   dimensions?: number;
 }
 
+/** The subset of the Qdrant REST response shape this provider reads. */
+interface QdrantResponse {
+  status?: number;
+  result?: {
+    status?: string;
+    count?: number;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/** An Error carrying the originating HTTP status, for retry classification. */
+interface QdrantError extends Error {
+  status: number;
+}
+
 class QdrantProvider implements VectorStoreProvider {
   readonly name = "qdrant";
   private baseUrl = "http://localhost:6333";
@@ -132,7 +148,7 @@ class QdrantProvider implements VectorStoreProvider {
     method: string,
     path: string,
     body?: Record<string, unknown>,
-  ): Promise<Record<string, unknown>> {
+  ): Promise<QdrantResponse> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
@@ -149,12 +165,14 @@ class QdrantProvider implements VectorStoreProvider {
 
     if (!response.ok && response.status !== 404) {
       const text = await response.text();
-      const error = new Error(`Qdrant ${method} ${path} failed: ${response.status} ${text}`);
-      (error as Record<string, unknown>).status = response.status;
+      const error = new Error(
+        `Qdrant ${method} ${path} failed: ${response.status} ${text}`,
+      ) as QdrantError;
+      error.status = response.status;
       throw error;
     }
 
-    return (await response.json()) as Record<string, unknown>;
+    return (await response.json()) as QdrantResponse;
   }
 }
 

@@ -30,4 +30,8 @@ describe("notionProvider", () => {
     expect(grant.refreshToken).toBeUndefined();
     expect(grant.raw).toMatchObject({ bot_id: "b1", workspace_id: "w1" });
   });
+
+  it("rejects a token response missing access_token at the boundary", () => {
+    expect(() => notionProvider.parseTokenResponse({ bot_id: "b1" })).toThrow();
+  });
 });
