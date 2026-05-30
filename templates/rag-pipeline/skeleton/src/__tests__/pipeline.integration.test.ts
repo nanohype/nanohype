@@ -326,7 +326,6 @@ describe("RAG pipeline integration", () => {
 
   it("uses different chunking strategies and produces valid pipeline output", async () => {
     const longText = Array(20).fill(DOCUMENT_A).join("\n\n");
-    const config = makeConfig();
 
     for (const strategy of ["fixed", "recursive"] as const) {
       const chunker = createChunker({ strategy, size: 50, overlap: 10 });
