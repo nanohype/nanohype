@@ -9,7 +9,7 @@
 #   - tenant ServiceAccount annotated for IRSA (Platform reconciler owns the role-arn)
 #   - optional ResourceClaimTemplate for DRA accelerators (when spec.compute != none)
 
-apiVersion: agents.stxkxs.io/v1alpha1
+apiVersion: agents.nanohype.dev/v1alpha1
 kind: AgentFleet
 metadata:
   name: __FLEET_NAME__

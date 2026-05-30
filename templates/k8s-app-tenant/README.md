@@ -6,7 +6,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 
 - **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-dev.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for Deployment, Service, ServiceAccount (IRSA-annotated by the Platform reconciler), and NetworkPolicy (default-deny + explicit egress allow-list)
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/` (or aks-gitops)
-- **Platform CR** in `platform.yaml` (`agents.stxkxs.io/v1alpha1`) declaring the tenant boundary — the operator reconciles Namespace, ResourceQuota, default-deny NetworkPolicy, ArgoCD AppProject, IRSA role, KMS grants, and S3 bucket policy from this CR
+- **Platform CR** in `platform.yaml` (`platform.nanohype.dev/v1alpha1`) declaring the tenant boundary — the operator reconciles Namespace, ResourceQuota, default-deny NetworkPolicy, ArgoCD AppProject, IRSA role, KMS grants, and S3 bucket policy from this CR
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
 ## Variables

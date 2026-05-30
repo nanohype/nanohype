@@ -11,7 +11,7 @@
 # After this is Ready (Platform.status.phase), the chart's ApplicationSet
 # entry in __GITOPS_REPO__ takes over.
 
-apiVersion: agents.stxkxs.io/v1alpha1
+apiVersion: platform.nanohype.dev/v1alpha1
 kind: Platform
 metadata:
   name: __APP_NAME__

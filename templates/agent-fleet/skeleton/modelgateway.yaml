@@ -1,7 +1,7 @@
 # ModelGateway — declares the agentgateway route + Bedrock model resolution.
 # Apply BEFORE AgentFleet (AgentFleet.spec.modelRoute references this).
 
-apiVersion: agents.stxkxs.io/v1alpha1
+apiVersion: agents.nanohype.dev/v1alpha1
 kind: ModelGateway
 metadata:
   name: __APP_NAME__-gateway
