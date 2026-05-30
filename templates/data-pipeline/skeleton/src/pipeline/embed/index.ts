@@ -13,6 +13,8 @@ export {
   listEmbeddingProviders,
 } from "./registry.js";
 
-// Import provider modules to trigger registration
+// Import provider modules to trigger registration. Bedrock (Titan v2) is the
+// org default; openai is an alternate.
+import "./bedrock.js";
 import "./openai.js";
 import "./mock.js";

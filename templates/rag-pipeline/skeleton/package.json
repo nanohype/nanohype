@@ -9,34 +9,39 @@
     "query": "tsx src/index.ts query",
     "build": "tsc",
     "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0",
-    "openai": "^4.85.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
+    "@anthropic-ai/sdk": "^0.89.0",
     "cohere-ai": "^7.0.0",
-    "chromadb": "^1.9.0",
     "pg": "^8.13.0",
     "@qdrant/js-client-rest": "^1.12.0",
     "@pinecone-database/pinecone": "^4.0.0",
-    "zod": "^3.24.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^17.4.2",
+    "openai": "^4.104.0",
+    "chromadb": "^1.10.5",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
-    "@types/node": "^22.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.2",
     "@types/pg": "^8.11.0",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
-    "vitest": "^3.1.0"
+    "eslint": "^10.2.0",
+    "prettier": "^3.8.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

@@ -25,8 +25,8 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3000
-
 USER node
 
+# Default to the CLI entry (ingest/query subcommands). Override CMD to run a
+# specific subcommand or a long-lived service wrapper.
 CMD ["node", "dist/index.js"]

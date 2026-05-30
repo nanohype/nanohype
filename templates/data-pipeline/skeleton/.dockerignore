@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.git
+.github
+.env
+.env.*
+*.test.ts
+src/**/__tests__
+output
+npm-debug.log*
+.DS_Store

@@ -8,9 +8,11 @@ description: >
   embedding generation, vector storage, similarity retrieval, and
   LLM-powered answer generation with source citations. No LangChain —
   all components are built from first principles using the provider
-  SDKs directly. Supports multiple vector stores (pgvector, Chroma,
-  Qdrant, Pinecone), embedding providers (OpenAI, Cohere), and LLM
-  providers (Anthropic, OpenAI) for generation.
+  SDKs directly. Defaults to AWS Bedrock (Claude via Converse with prompt
+  caching for generation, Titan v2 for embeddings, on IRSA — no keys).
+  Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone),
+  alternate embedding providers (OpenAI, Cohere), and alternate LLM
+  providers (Anthropic, OpenAI).
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -45,16 +47,16 @@ variables:
   - name: EmbeddingProvider
     type: string
     placeholder: "__EMBEDDING_PROVIDER__"
-    description: "Provider for generating text embeddings (e.g. openai, cohere)"
+    description: "Provider for text embeddings — bedrock (Titan v2, default), openai, or cohere"
     prompt: "Embedding provider"
-    default: "openai"
+    default: "bedrock"
 
   - name: LlmProvider
     type: string
     placeholder: "__LLM_PROVIDER__"
-    description: "LLM provider for answer generation (e.g. anthropic, openai)"
+    description: "LLM provider for answer generation — bedrock (default), anthropic, or openai"
     prompt: "LLM provider"
-    default: "anthropic"
+    default: "bedrock"
 
   - name: ChunkStrategy
     type: string
@@ -91,6 +93,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
+    version: ">=24"
     purpose: "Node.js runtime for TypeScript execution"
     optional: false

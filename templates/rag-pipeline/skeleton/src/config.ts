@@ -18,8 +18,10 @@ const chunkingSchema = z.object({
 
 const embeddingSchema = z.object({
   provider: z.string().default("__EMBEDDING_PROVIDER__"),
-  model: z.string().default("text-embedding-3-small"),
-  dimensions: z.coerce.number().int().positive().default(1536),
+  // Defaults target Bedrock Titan Text v2 (1024-dim). For OpenAI, set
+  // EMBEDDING_MODEL=text-embedding-3-small and EMBEDDING_DIMENSIONS=1536.
+  model: z.string().default("amazon.titan-embed-text-v2:0"),
+  dimensions: z.coerce.number().int().positive().default(1024),
   batchSize: z.coerce.number().int().positive().default(128),
 });
 
@@ -38,7 +40,9 @@ const generationSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
-  model: z.string().default("claude-sonnet-4-20250514"),
+  // Bedrock model id (the org default). For the direct Anthropic API use
+  // "claude-sonnet-4-6"; for OpenAI use e.g. "gpt-4o".
+  model: z.string().default("anthropic.claude-sonnet-4-6"),
   temperature: z.coerce.number().min(0).max(2).default(0.1),
   maxTokens: z.coerce.number().int().positive().default(1024),
 });

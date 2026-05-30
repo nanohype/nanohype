@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { json } from "./helpers.js";
 import { app } from "../app.js";
+import { markReady, setReadinessProbe } from "../routes/readiness.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -119,20 +120,27 @@ describe("GET /health", () => {
 });
 
 describe("GET /readyz", () => {
-  it("returns 503 when not marked ready", async () => {
-    // In test context, markReady() is not called — service starts not ready
+  // These run in order: the service starts not-ready (markReady() has not been
+  // called in test context), so each case sets the state it asserts on.
+  it("returns 503 before the service is marked ready", async () => {
     const res = await app.request("/readyz");
+    expect(res.status).toBe(503);
+    expect(await json(res)).toHaveProperty("status", "not_ready");
+  });
 
-    // Default state is not ready (503) unless markReady was called
-    // by another test or the bootstrap. Both 200 and 503 are valid
-    // depending on test ordering, but we verify the response shape.
-    const body = await json(res);
+  it("returns 503 when the dependency probe fails", async () => {
+    markReady();
+    setReadinessProbe(() => false);
+    const res = await app.request("/readyz");
+    expect(res.status).toBe(503);
+    expect(await json(res)).toHaveProperty("status", "not_ready");
+  });
 
-    if (res.status === 503) {
-      expect(body).toHaveProperty("status", "not_ready");
-    } else {
-      expect(res.status).toBe(200);
-      expect(body).toHaveProperty("status", "ready");
-    }
+  it("returns 200 once started and the dependency probe passes", async () => {
+    markReady();
+    setReadinessProbe(() => true);
+    const res = await app.request("/readyz");
+    expect(res.status).toBe(200);
+    expect(await json(res)).toHaveProperty("status", "ready");
   });
 });

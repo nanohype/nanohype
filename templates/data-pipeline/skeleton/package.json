@@ -8,31 +8,36 @@
     "run": "tsx src/pipeline/index.ts",
     "build": "tsc",
     "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "openai": "^4.85.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
+    "openai": "^6.34.0",
     "pdf-parse": "^1.1.1",
-    "cheerio": "^1.0.0",
-    "@opentelemetry/api": "^1.9.0",
-    "zod": "^3.24.0",
-    "dotenv": "^16.4.0"
+    "cheerio": "^1.2.0",
+    "@opentelemetry/api": "^1.9.1",
+    "zod": "^4.3.6",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
-    "@types/node": "^22.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.2",
     "@types/pdf-parse": "^1.1.4",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
-    "vitest": "^3.1.0"
+    "eslint": "^10.2.0",
+    "prettier": "^3.8.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.4"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   }
 }

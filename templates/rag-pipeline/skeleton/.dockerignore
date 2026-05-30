@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+.git
+.github
+.env
+.env.*
+*.test.ts
+src/__tests__
+chroma_data
+docs
+npm-debug.log*
+.DS_Store

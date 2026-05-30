@@ -20,3 +20,8 @@ export const httpRequestDuration = meter.createHistogram("http_request_duration_
   description: "HTTP request latency in milliseconds",
   unit: "ms",
 });
+
+/** Total HTTP responses with a server-error (5xx) status — the "errors" of RED. */
+export const httpErrorsTotal = meter.createCounter("http_errors_total", {
+  description: "Total number of HTTP responses with a 5xx status",
+});

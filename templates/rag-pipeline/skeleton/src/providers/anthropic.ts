@@ -9,6 +9,8 @@ import type { LlmProvider } from "./types.js";
 import { registerLlmProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
+const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+
 class AnthropicLlm implements LlmProvider {
   private readonly client: Anthropic;
   private readonly cb = createCircuitBreaker();
@@ -20,7 +22,7 @@ class AnthropicLlm implements LlmProvider {
         "ANTHROPIC_API_KEY environment variable is required when using the Anthropic provider",
       );
     }
-    this.client = new Anthropic({ apiKey: key });
+    this.client = new Anthropic({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
   }
 
   async generate(

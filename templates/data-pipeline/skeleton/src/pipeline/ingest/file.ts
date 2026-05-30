@@ -66,7 +66,7 @@ class FileSource implements IngestSource {
 
   private async loadSingleFile(filePath: string): Promise<Document | null> {
     const ext = extname(filePath).toLowerCase();
-    let content: string | null = null;
+    let content: string | null;
 
     if (TEXT_EXTENSIONS.has(ext) || DATA_EXTENSIONS.has(ext)) {
       content = await loadTextFile(filePath);

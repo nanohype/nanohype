@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import type { Document } from "../types.js";
 import type { IngestSource } from "./types.js";
 import { registerSource } from "./registry.js";
+import { guardUrl } from "./url-guard.js";
 import { logger } from "../logger.js";
 
 function contentHash(text: string): string {
@@ -22,6 +23,10 @@ class WebSource implements IngestSource {
 
   async load(url: string): Promise<Document[]> {
     try {
+      // SSRF guard — reject loopback / RFC1918 / link-local / cloud-metadata
+      // before the fetch. Throws UrlGuardError (handled by the catch below).
+      await guardUrl(url);
+
       const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
 
       if (!response.ok) {

@@ -7,9 +7,10 @@ description: >
   document ingestion from files and web pages, configurable chunking
   strategies (recursive, fixed-size, semantic), embedding generation,
   and output adapters for indexing. No LangChain — all components are
-  built from first principles using provider SDKs directly. Supports
-  multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web),
-  embedding providers (OpenAI), and output formats (JSONL, console).
+  built from first principles using provider SDKs directly. Defaults to
+  AWS Bedrock Titan v2 embeddings (on IRSA — no keys), with OpenAI as an
+  alternate. Supports multiple ingest sources (PDF, Markdown, plain text,
+  JSON, CSV, web — SSRF-guarded) and output formats (JSONL, console).
   Output is compatible with module-vector-store's VectorDocument shape.
 version: "0.1.0"
 license: Apache-2.0
@@ -38,9 +39,9 @@ variables:
   - name: EmbeddingProvider
     type: string
     placeholder: "__EMBEDDING_PROVIDER__"
-    description: "Provider for generating text embeddings (e.g. openai)"
+    description: "Provider for text embeddings — bedrock (Titan v2, default) or openai"
     prompt: "Embedding provider"
-    default: "openai"
+    default: "bedrock"
 
   - name: ChunkStrategy
     type: string
@@ -79,6 +80,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
+    version: ">=24"
     purpose: "Node.js runtime for TypeScript execution"
     optional: false

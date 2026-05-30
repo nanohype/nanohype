@@ -10,6 +10,8 @@ import type { LlmProvider, EmbeddingProvider } from "./types.js";
 import { registerLlmProvider, registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
+const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+
 class OpenAILlm implements LlmProvider {
   private readonly client: OpenAI;
   private readonly cb = createCircuitBreaker();
@@ -21,7 +23,7 @@ class OpenAILlm implements LlmProvider {
         "OPENAI_API_KEY environment variable is required when using the OpenAI provider",
       );
     }
-    this.client = new OpenAI({ apiKey: key });
+    this.client = new OpenAI({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
   }
 
   async generate(
@@ -70,7 +72,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
         "OPENAI_API_KEY environment variable is required for OpenAI embeddings",
       );
     }
-    this.client = new OpenAI({ apiKey: key });
+    this.client = new OpenAI({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
     this.model = model;
     this.dims = dims;
     this.batchSize = batchSize;

@@ -5,7 +5,7 @@
  * LLM, embedding, and vector store.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   registerLlmProvider,
   getLlmProvider,

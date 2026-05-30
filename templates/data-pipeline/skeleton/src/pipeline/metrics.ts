@@ -32,3 +32,12 @@ export const pipelineDuration = meter.createHistogram(
     unit: "ms",
   },
 );
+
+/** Terminal stage errors, labeled by stage (ingest/transform/embed/output) — the
+ *  "errors" of RED. Incremented when a stage fails after retries are exhausted. */
+export const pipelineErrorsTotal = meter.createCounter(
+  "pipeline_errors_total",
+  {
+    description: "Total terminal stage errors, labeled by stage",
+  },
+);

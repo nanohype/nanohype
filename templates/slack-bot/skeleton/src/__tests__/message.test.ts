@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
 import { registerProvider, getProvider } from "../providers/registry.js";
 import type { LlmProvider, ChatMessage } from "../providers/types.js";
 
@@ -11,10 +11,10 @@ import type { LlmProvider, ChatMessage } from "../providers/types.js";
  */
 
 describe("provider registry", () => {
-  let mockChat: ReturnType<typeof vi.fn>;
+  let mockChat: Mock<LlmProvider["chat"]>;
 
   beforeEach(() => {
-    mockChat = vi.fn();
+    mockChat = vi.fn<LlmProvider["chat"]>();
 
     const mockProvider: LlmProvider = {
       chat: mockChat,
