@@ -59,7 +59,7 @@ function emit(level: LogLevel, message: string, fields?: Record<string, unknown>
  * Structured logger that propagates OpenTelemetry trace context.
  *
  * Usage:
- *   logger.info("span captured", { model: "claude-sonnet-4-20250514", durationMs: 340 });
+ *   logger.info("span captured", { model: "claude-sonnet-4-6", durationMs: 340 });
  */
 export const logger = {
   debug: (message: string, fields?: Record<string, unknown>) =>

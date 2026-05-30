@@ -1,7 +1,10 @@
 // ── Cost Types ─────────────────────────────────────────────────────
 
-// Re-export CostEntry from the shared types for convenience
-export type { CostEntry } from "../types.js";
+// Import for local use below, and re-export from the shared types for convenience.
+// (A bare `export ... from` re-export does not create a local binding, so
+// CostEntry must be imported to be referenced in this file.)
+import type { CostEntry } from "../types.js";
+export type { CostEntry };
 
 /** Filters for querying cost entries. */
 export interface CostFilters {

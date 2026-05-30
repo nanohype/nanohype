@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createLlmTracer } from "../tracer/index.js";
+import { createLlmTracer, TracedError } from "../tracer/index.js";
 import type { LlmResponse } from "../types.js";
 
 // ── LLM Tracer Tests ───────────────────────────────────────────────
@@ -7,7 +7,7 @@ import type { LlmResponse } from "../types.js";
 function makeResponse(overrides: Partial<LlmResponse> = {}): LlmResponse {
   return {
     text: "Hello, world!",
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     provider: "anthropic",
     inputTokens: 100,
     outputTokens: 50,
@@ -24,7 +24,7 @@ describe("LLM tracer", () => {
     );
 
     expect(response.text).toBe("Hello, world!");
-    expect(span.model).toBe("claude-sonnet-4-20250514");
+    expect(span.model).toBe("claude-sonnet-4-6");
     expect(span.provider).toBe("anthropic");
     expect(span.inputTokens).toBe(100);
     expect(span.outputTokens).toBe(50);
@@ -48,18 +48,25 @@ describe("LLM tracer", () => {
     expect(span.durationMs).toBeLessThan(200);
   });
 
-  it("captures errors without throwing", async () => {
+  it("throws a TracedError carrying the error span — never a fake response", async () => {
     const tracer = createLlmTracer({ serviceName: "test-service" });
 
-    const { response, span } = await tracer.trace(async () => {
-      throw new Error("LLM provider timeout");
-    });
+    let caught: unknown;
+    try {
+      await tracer.trace(async () => {
+        throw new Error("LLM provider timeout");
+      });
+    } catch (err) {
+      caught = err;
+    }
 
-    expect(span.success).toBe(false);
-    expect(span.error).toBe("LLM provider timeout");
-    expect(span.model).toBe("unknown");
-    expect(span.provider).toBe("unknown");
-    expect(response.text).toBe("");
+    expect(caught).toBeInstanceOf(TracedError);
+    const traced = caught as TracedError;
+    // The error span is still captured (the observer exports it), but the
+    // original failure propagates rather than becoming an empty "success".
+    expect(traced.span.success).toBe(false);
+    expect(traced.span.error).toBe("LLM provider timeout");
+    expect(traced.cause).toBeInstanceOf(Error);
   });
 
   it("merges default tags with per-call tags", async () => {

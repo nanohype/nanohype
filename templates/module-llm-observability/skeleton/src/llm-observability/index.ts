@@ -10,7 +10,7 @@
 import { validateBootstrap } from "./bootstrap.js";
 import { logger } from "./logger.js";
 import { createLlmMetrics } from "./metrics.js";
-import { createLlmTracer } from "./tracer/index.js";
+import { createLlmTracer, TracedError } from "./tracer/index.js";
 import { createQualityMonitor } from "./quality/monitor.js";
 import { getExporter } from "./exporters/index.js";
 import { ObserverConfigSchema } from "./types.js";
@@ -92,7 +92,26 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
     fn: () => Promise<LlmResponse>,
     tags: Record<string, string> = {},
   ): Promise<LlmResponse> {
-    const { response, span } = await tracer.trace(fn, tags);
+    let response: LlmResponse;
+    let span: LlmSpan;
+    try {
+      ({ response, span } = await tracer.trace(fn, tags));
+    } catch (err) {
+      // The call failed. Still export the error span + record the failed trace
+      // for observability, then propagate the real error — never return a
+      // fabricated empty response.
+      if (err instanceof TracedError) {
+        exporter.exportSpan(err.span);
+        llmMetrics.recordTrace(
+          err.span.model,
+          err.span.provider,
+          err.span.durationMs,
+          false,
+        );
+        throw err.cause;
+      }
+      throw err;
+    }
 
     // Calculate and attach cost if enabled
     if (costEnabled && calculateCostFn && span.success) {

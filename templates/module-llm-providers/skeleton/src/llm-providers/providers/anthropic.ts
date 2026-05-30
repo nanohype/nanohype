@@ -23,7 +23,7 @@ import { logger } from "../logger.js";
 // Auth: ANTHROPIC_API_KEY environment variable (read by the SDK).
 //
 
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+const DEFAULT_MODEL = "claude-sonnet-4-6";
 
 function createAnthropicProvider(): LlmProvider {
   let client: Anthropic | null = null;
