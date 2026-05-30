@@ -24,7 +24,12 @@ import type { ChunkStrategy } from "./transform/types.js";
 import type { EmbeddingProvider } from "./embed/types.js";
 import type { OutputAdapter } from "./output/types.js";
 import { logger } from "./logger.js";
-import { pipelineDocumentsProcessed, pipelineChunksCreated, pipelineDuration } from "./metrics.js";
+import {
+  pipelineDocumentsProcessed,
+  pipelineChunksCreated,
+  pipelineDuration,
+  pipelineErrorsTotal,
+} from "./metrics.js";
 
 export interface OrchestratorOptions {
   /** Ingest source for loading documents. */
@@ -70,6 +75,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
       itemId: config.sourcePath,
       message: String(err),
     });
+    pipelineErrorsTotal.add(1, { stage: "ingest" });
     logger.error("Ingest failed completely", { error: String(err) });
   }
 
@@ -102,6 +108,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
         itemId: doc.id,
         message: String(err),
       });
+      pipelineErrorsTotal.add(1, { stage: "transform" });
       logger.warn("Transform failed for document", { docId: doc.id, error: String(err) });
     }
   }
@@ -155,6 +162,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
           message: String(err),
         });
       }
+      pipelineErrorsTotal.add(batch.length, { stage: "embed" });
       logger.warn("Embed failed for batch", {
         batchIdx,
         batchSize: batch.length,
@@ -196,6 +204,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
             message: String(err),
           });
         }
+        pipelineErrorsTotal.add(batch.length, { stage: "index" });
         logger.warn("Index write failed for batch", { error: String(err) });
       }
     }
@@ -207,6 +216,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
       itemId: "adapter",
       message: String(err),
     });
+    pipelineErrorsTotal.add(1, { stage: "index" });
     logger.error("Index adapter error", { error: String(err) });
   }
 

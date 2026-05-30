@@ -12,6 +12,8 @@ import type { EmbeddingProvider } from "./types.js";
 import { registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
+const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
+
 class OpenAIEmbedder implements EmbeddingProvider {
   readonly name = "openai";
 
@@ -42,7 +44,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
   private async getClient(): Promise<InstanceType<typeof import("openai").default>> {
     if (!this.client) {
       const OpenAI = (await import("openai")).default;
-      this.client = new OpenAI({ apiKey: this.apiKey });
+      this.client = new OpenAI({ apiKey: this.apiKey, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
     }
     return this.client;
   }

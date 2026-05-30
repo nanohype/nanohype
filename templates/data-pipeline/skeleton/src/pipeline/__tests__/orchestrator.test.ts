@@ -6,7 +6,7 @@
  * and that per-document error handling works as expected.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { runPipeline } from "../orchestrator.js";
 import type { IngestSource } from "../ingest/types.js";
 import type { ChunkStrategy } from "../transform/types.js";
