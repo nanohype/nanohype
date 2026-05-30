@@ -24,6 +24,10 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ include "app.serviceAccountName" . }}
+      # Headroom for SIGTERM-driven graceful shutdown (drain in-flight work, flush
+      # OTel). Bump for slow drains (e.g. queue consumers). A preStop sleep can be
+      # added here if the app needs endpoint-deregistration lag before SIGTERM.
+      terminationGracePeriodSeconds: 30
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -42,7 +46,14 @@ spec:
               value: {{ $v | quote }}
             {{- end }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://otel-collector.observability.svc.cluster.local:4317"
+              value: "http://otel-collector.observability.svc.cluster.local:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+          {{- if .Values.externalSecret.enabled }}
+          envFrom:
+            - secretRef:
+                name: {{ include "app.fullname" . }}-secrets
+          {{- end }}
           livenessProbe:
             {{- toYaml .Values.probes.liveness | nindent 12 }}
           readinessProbe:

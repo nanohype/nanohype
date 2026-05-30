@@ -1,0 +1,71 @@
+{
+  "title": "__APP_NAME__ — RED",
+  "uid": "__APP_NAME__-red",
+  "tags": ["nanohype", "__TENANT__"],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {}
+      },
+      {
+        "name": "metric",
+        "type": "constant",
+        "label": "Metric prefix (underscored service name)",
+        "query": "__APP_NAME__",
+        "current": { "text": "__APP_NAME__", "value": "__APP_NAME__" },
+        "hide": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request rate (req/s)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(${metric}_requests_total[5m]))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Error ratio",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(${metric}_errors_total[5m])) / clamp_min(sum(rate(${metric}_requests_total[5m])), 1)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Request duration p95 (s)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum(rate(${metric}_request_duration_seconds_bucket[5m])) by (le))"
+        }
+      ]
+    }
+  ]
+}

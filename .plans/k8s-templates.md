@@ -1,117 +1,48 @@
-# K8s-native template additions
+# k8s/infra templates — quality + CRD-group correctness
 
-Tactical plan for Phase 2.3 + 2.4 of master plan (`/Users/bs/.claude/plans/so-i-want-to-snazzy-sun.md`).
+Master plan: `~/.claude/plans/wiggly-yawning-gem.md` (Phase 1 + 2). All repos local.
 
-Status: NOT STARTED.
+Status: **Phase 1 + 2 COMPLETE** — all 7 k8s/infra templates pass `validate.sh`,
+schemas + standards validate, k8s-app-tenant chart `helm lint`s clean (toggles on + off),
+catalog regenerated. Group rename verified zero remaining `agents.stxkxs.io` in
+templates/standards/catalog/docs.
 
-## New templates to create
+## Kind-aware group mapping (operator ground truth)
+- Tenant, Platform → `platform.nanohype.dev/v1alpha1`
+- AgentFleet, ModelGateway, AgentSandbox, SandboxPool, BatchJob → `agents.nanohype.dev/v1alpha1`
+- BudgetPolicy, EvalSuite → `governance.nanohype.dev/v1alpha1`
 
-### `templates/k8s-app-tenant/`
+Canonical specs verified against `eks-agent-platform/operators/api/{platform,agents,governance}/v1alpha1/*_types.go`:
+- PlatformSpec: `{displayName?, persona(enum), tenant, budget.name, identity.{allowedModelFamilies|allowedModels, extraPolicyArns}, compliance.{soc2,hipaa}?, isolation? (namespace|vcluster)}`
+- BudgetPolicySpec: `{platformRef.name, monthlyUsd, alertThresholdsPercent[], killSwitchEnabled}`
+- AgentFleetSpec: `{platformRef.name, agents[]{name,systemPrompt,modelRoute,tools[]?,replicas?}, scaling{enabled,min?,max?,queueDepthTrigger?,queueUrl?(SQS-URL regex)}, compute?{acceleratorClaim.name,resources?}}`
+- ModelGatewaySpec: `{platformRef.name, routes[]{name,modelFamily(enum anthropic|meta|mistral|cohere|amazon-titan|amazon-nova|stability),modelId,crossRegionProfile?,rateLimit?(int rpm),guardrailRef.name?}, defaultGuardrailRef.name?}`
 
-Primary scaffold for any new k8s-native app. Produces:
+## Phase 1
+- [x] **agent-fleet** (non-functional today)
+  - [x] skeleton/modelgateway.yaml → valid ModelGatewaySpec, group `agents.nanohype.dev/v1alpha1`
+  - [x] skeleton/agentfleet.yaml → valid AgentFleetSpec, group `agents.nanohype.dev/v1alpha1`
+  - [x] template.yaml: fix description group; drop `ScaleTrigger`; tighten `ModelFamily` (enum); reword `RouteName`
+  - [x] README.md + skeleton/README.md: CR field names, IRSA via Platform.spec.identity, wait-phase Ready (not Programmed), OTel attrs operator-injected
+- [x] **k8s-app-tenant** (primary path)
+  - [x] _helpers.tpl: `index .Values.otel.resourceAttributes "agents.tenant"` (render bug)
+  - [x] platform.yaml: valid Platform + required BudgetPolicy (governance group)
+  - [x] template.yaml: add `Persona`, `MonthlyUsd` vars; fix group string + narrative
+  - [x] deployment.yaml: OTLP :4317→:4318 + protocol; terminationGracePeriod + preStop
+  - [x] serviceaccount.yaml + values.yaml: render role-arn from `aws.platformRoleArn`
+  - [x] back-port externalsecret.yaml / prometheusrule.yaml / grafana-dashboard.yaml (+ dashboards/__APP_NAME__.json), toggleable, optional default false
+  - [x] README.md: fix group + reconcile narrative
+- [x] **k8s-deploy**: replace `:latest` with pinned `__IMAGE_TAG__` from CI SHA; `kubectl set image` over brittle sed
+- [x] **monitoring-stack**: bump Grafana/Prometheus/Loki tags to current stable (verify), keep pinned
+- [x] **infra-druid**: optional networkpolicy.yaml; verify DruidVersion currency
+- [x] **eks-addon / istio-policy**: minor doc notes only
+- [x] **label-key decision**: grep selectors for `agents.stxkxs.io/{tenant,platform}` labels before any rename; if renamed, do template + 4 tenant charts in lockstep
 
-- `chart/Chart.yaml`, `chart/values.yaml`, `chart/values-{dev,staging,production}.yaml`
-- `chart/templates/{deployment,service,serviceaccount,networkpolicy}.yaml`
-- `gitops/applicationset-entry.yaml` (matches eks-gitops ApplicationSet template style)
-- `platform.yaml` — `Platform` CR
+## Phase 2
+- [x] standards/platform-tenant-contract.json: platform_cr_shape.apiVersion → platform.nanohype.dev/v1alpha1
+- [x] catalog.json: agent-fleet + k8s-app-tenant descriptions (drop agents.stxkxs.io)
 
-Variables (PascalCase):
-
-- `AppName` — kebab-case app name
-- `Namespace` — defaults to `AppName`
-- `Image` — container image base
-- `Port`
-- `IrsaPolicies` — list of AWS managed/inline policies the Platform reconciler should attach
-- `ExposeIngress` — bool
-- `HasCronJobs` — bool conditional
-
-Reference: existing `templates/k8s-deploy/` skeleton; eks-gitops `addons/<category>/<name>/` Helm values pattern; eks-agent-platform `Platform` CR shape in `ARCHITECTURE.md`.
-
-### `templates/agent-fleet/`
-
-Scaffold for AI workloads — adds AgentFleet CR + ModelConfig + KEDA scaler on top of (or alongside) `k8s-app-tenant`.
-
-Variables:
-
-- `FleetName`
-- `Models` — list of {family, modelId, route}
-- `ScaleTrigger` — `sqs` | `cpu` | `cron`
-- `Compute` — accelerator class (`none` | `nvidia-l40s` | `nvidia-h100` | `neuron`)
-
-Reference: `eks-agent-platform/ARCHITECTURE.md` AgentFleet CRD field shape; `agents.nanohype.dev/v1alpha1` API group.
-
-### `templates/landing-zone-component/`
-
-Scaffold a new OpenTofu component for `nanohype/landing-zone`.
-
-Variables:
-
-- `ComponentName` — snake_case
-- `Cloud` — `aws` | `gcp` | `azure`
-- `Multitenant` — bool (adds `var.tenants = map(object({...}))` + `for_each` skeleton)
-- `Dependencies` — list of component names to wire via `live/_envcommon/`
-
-Produces:
-
-- `components/{cloud}/{ComponentName}/{main,variables,outputs,versions}.tf`
-- `modules/tenant/` skeleton if `Multitenant`
-- `live/_envcommon/{cloud}/{ComponentName}.hcl`
-
-Reference: landing-zone `CLAUDE.md` "File Structure" section; existing components in `components/aws/`.
-
-### `templates/eks-addon/`
-
-Scaffold a new addon for `nanohype/eks-gitops`.
-
-Variables:
-
-- `AddonName`
-- `Category` — `bootstrap` | `networking` | `security` | `observability` | `operations` | `argo-platform`
-- `AddonType` — `helm` | `kustomize`
-- `SyncWave` — int
-
-Produces:
-
-- For Helm: `addons/{Category}/{AddonName}/values.yaml` + `values-{dev,staging,production}.yaml`
-- For Kustomize: `addons/{Category}/{AddonName}/base/` + `overlays/{dev,staging,production}/`
-
-Reference: eks-gitops `CLAUDE.md` Helm Values Pattern + Kustomize Addons sections.
-
-## Template rewrites
-
-### `templates/infra-aws/`
-
-Reframe README as "Lambda / edge / serverless escape hatch — primary path is `k8s-app-tenant`". Skeleton unchanged (still scaffolds an AWS CDK project) but framed as opt-in for cases where running a pod isn't the right shape.
-
-### `templates/k8s-deploy/`
-
-Decide during execution: rewrite to align with eks-gitops conventions, OR delete in favor of `k8s-app-tenant`. Lean toward delete + redirect — having two "deploy to k8s" templates dilutes the canonical path.
-
-## Catalog updates
-
-- `CLAUDE.md` — list new templates under the appropriate categories (infrastructure / ai-systems)
-- `docs/spec/template-contract.md` — verify the contract supports any new field shapes used by the new templates
-- `schemas/template.schema.json` — same
-
-## Verification
-
-```sh
-cd /Users/bs/codes/nanohype/nanohype
-npm run validate:catalog                                               # all templates including new ones validate
-./scripts/validate.sh templates/k8s-app-tenant                         # full per-template validation
-./scripts/validate.sh templates/agent-fleet
-./scripts/validate.sh templates/landing-zone-component
-./scripts/validate.sh templates/eks-addon
-
-# SDK dry-render against sample variables
-cd sdk && npm test
-```
-
-## Order of operations
-
-1. `k8s-app-tenant` (foundation — other migrations need this first)
-2. `landing-zone-component` (referenced by per-tenant scaffolds)
-3. `eks-addon` (referenced when migration surfaces new addon needs)
-4. `agent-fleet` (composes with `k8s-app-tenant` for AI workloads)
-5. `infra-aws` README rewrite
-6. `k8s-deploy` decision + execution
+## Verify
+- [x] `./scripts/validate.sh templates/<name>` per template; `npm run validate:catalog`
+- [x] render k8s-app-tenant chart; `helm lint` + `helm template` with optional toggles on/off
+- [x] CR shapes verified field-by-field against operator Go types (no live cluster for server dry-run — fix-it-forward)

@@ -34,7 +34,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: __PROJECT_NAME__
-          image: __PROJECT_NAME__:latest
+          image: __PROJECT_NAME__:0.1.0   # pinned; CI rewrites to the build SHA tag before apply
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

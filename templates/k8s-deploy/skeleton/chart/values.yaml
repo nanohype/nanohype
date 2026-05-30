@@ -2,7 +2,7 @@ replicaCount: __REPLICAS__
 
 image:
   repository: __PROJECT_NAME__
-  tag: latest
+  tag: ""              # defaults to Chart.appVersion; CI overrides with the build SHA tag
   pullPolicy: IfNotPresent
 
 nameOverride: ""

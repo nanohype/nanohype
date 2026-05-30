@@ -26,6 +26,8 @@
 #   create: true
 #   annotations:
 #     eks.amazonaws.com/role-arn: arn:aws:iam::<account-id>:role/<role-name>
+#   # The role ARN is an output of the landing-zone component that owns this
+#   # addon's IRSA role — wire it from there; never hand-author account IDs here.
 #
 # Cluster-wide defaults that should be the same across dev/staging/prod
 # go here. Anything that differs per environment (replica count, log level,

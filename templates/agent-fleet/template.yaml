@@ -50,9 +50,12 @@ variables:
   - name: ModelFamily
     type: string
     placeholder: "__MODEL_FAMILY__"
-    description: "Bedrock model family. Used for ModelConfig + OTel tagging."
+    description: "Bedrock model family for the ModelGateway route. One of: anthropic, meta, mistral, cohere, amazon-titan, amazon-nova, stability."
     prompt: "Model family"
     default: "anthropic"
+    validation:
+      pattern: "^(anthropic|meta|mistral|cohere|amazon-titan|amazon-nova|stability)$"
+      message: "Must be a Bedrock model family the operator accepts"
 
   - name: ModelId
     type: string
@@ -64,19 +67,12 @@ variables:
   - name: RouteName
     type: string
     placeholder: "__ROUTE_NAME__"
-    description: "ModelGateway route name. Referenced by AgentFleet.spec.modelRoute."
+    description: "ModelGateway route name. Referenced by each AgentFleet.spec.agents[].modelRoute."
     prompt: "Model route name"
     required: true
     validation:
       pattern: "^[a-z][a-z0-9-]*$"
       message: "Must be lowercase kebab-case"
-
-  - name: ScaleTrigger
-    type: string
-    placeholder: "__SCALE_TRIGGER__"
-    description: "KEDA scale trigger type. Options: sqs (depth-based), cpu (utilization), cron (schedule)."
-    prompt: "Scale trigger"
-    default: "cpu"
 
   - name: Compute
     type: string

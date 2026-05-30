@@ -31,8 +31,8 @@ helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | 
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-agents.nanohype.dev/tenant: {{ .Values.otel.resourceAttributes "agents.tenant" | default "unknown" | quote }}
-agents.nanohype.dev/platform: {{ .Values.otel.resourceAttributes "agents.platform" | default .Chart.Name | quote }}
+agents.nanohype.dev/tenant: {{ (index .Values.otel.resourceAttributes "agents.tenant") | default "unknown" | quote }}
+agents.nanohype.dev/platform: {{ (index .Values.otel.resourceAttributes "agents.platform") | default .Chart.Name | quote }}
 {{- end -}}
 
 {{/*

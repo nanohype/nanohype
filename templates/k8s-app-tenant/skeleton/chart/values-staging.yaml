@@ -3,3 +3,10 @@ image:
   tag: staging
 
 replicaCount: 2
+
+# Set from landing-zone's __APP_NAME__-platform component (staging):
+#   terraform output -raw irsa_role_arn
+# aws:
+#   platformRoleArn: ""
+# externalSecret:
+#   remoteRefSecret: __APP_NAME__/staging/app-secrets

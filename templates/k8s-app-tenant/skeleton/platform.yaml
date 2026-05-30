@@ -1,35 +1,60 @@
-# Platform CR — declares the tenant boundary. Apply this ONCE during initial
-# tenant setup. The eks-agent-platform operator reconciles:
-#   - Namespace (with Pod Security Standards baseline label)
-#   - ResourceQuota + LimitRange
-#   - Default-deny NetworkPolicy
-#   - ArgoCD AppProject scoped to this Platform
-#   - Per-Platform IRSA role with the policies named in spec.irsa.policies
-#   - KMS grants on the data CMK + log CMK
-#   - S3 bucket policy on spec.storage.bucket
+# Platform CR — declares the tenant boundary. Apply this ONCE during initial tenant
+# setup (kubectl apply -f platform.yaml). Two CRs:
+#   - BudgetPolicy (governance.nanohype.dev) — referenced by Platform.spec.budget (required)
+#   - Platform     (platform.nanohype.dev)   — the tenant declaration
 #
-# After this is Ready (Platform.status.phase), the chart's ApplicationSet
-# entry in __GITOPS_REPO__ takes over.
+# The eks-agent-platform operator reconciles from the Platform CR:
+#   - Namespace tenants-__TENANT__ (Pod Security Standards baseline label)
+#   - ResourceQuota + LimitRange
+#   - Default-deny NetworkPolicy (the chart layers app-specific egress on top)
+#   - ArgoCD AppProject scoped to this Platform
+#   - Per-Platform IRSA role: a baseline policy + spec.identity.extraPolicyArns,
+#     scoped to the families in spec.identity.allowedModelFamilies
+# BudgetPolicy drives the spend kill-switch (fires at 120% of monthlyUsd when
+# killSwitchEnabled).
+#
+# The chart's OWN ServiceAccount role-arn is separate: it comes from the
+# landing-zone __APP_NAME__-platform component via aws.platformRoleArn in per-env
+# values — NOT from this CR.
+#
+# Once Platform.status.phase is Ready, the ApplicationSet entry in __GITOPS_REPO__
+# takes over reconciling the chart.
 
+---
+apiVersion: governance.nanohype.dev/v1alpha1
+kind: BudgetPolicy
+metadata:
+  name: __APP_NAME__
+  namespace: tenants-__TENANT__
+spec:
+  platformRef:
+    name: __APP_NAME__
+  # Soft monthly cap (USD). The kill-switch fires at 120% when enabled.
+  monthlyUsd: "__MONTHLY_USD__"
+  alertThresholdsPercent: [50, 80, 100]
+  killSwitchEnabled: true
+---
 apiVersion: platform.nanohype.dev/v1alpha1
 kind: Platform
 metadata:
   name: __APP_NAME__
   namespace: tenants-__TENANT__
 spec:
+  displayName: __APP_NAME__
+  # persona ∈ sales-ops | support | finance | ops | founder | eng | marketing |
+  # legal | generic — drives default guardrails, dashboards, and fleet shape.
+  persona: __PERSONA__
   tenant: __TENANT__
-
-  irsa:
-    serviceAccount: __APP_NAME__
-    # Add the AWS managed-or-inline policy ARNs this app's pod needs to assume
-    # via IRSA. Common patterns: bedrock-invoke, secretsmanager-read, s3-rw,
-    # dynamodb-rw, sqs-rw. The operator applies + grants accordingly.
-    policies: []
-
-  resourceQuota:
-    cpu: "2"
-    memory: 4Gi
-
-  storage:
-    bucket: __APP_NAME__-artifacts
-    kmsKey: cmk-data
+  budget:
+    name: __APP_NAME__
+  identity:
+    # Bedrock access. allowedModelFamilies and allowedModels are mutually
+    # exclusive — families are expanded to model ARNs by the controller.
+    allowedModelFamilies:
+      - anthropic
+    # Extra managed IAM policies attached on top of the per-tenant baseline.
+    extraPolicyArns: []
+  compliance:
+    soc2: true
+    hipaa: false
+  isolation: namespace   # or vcluster for hard isolation

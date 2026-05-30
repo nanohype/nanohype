@@ -3,7 +3,7 @@ namespace: monitoring
 grafana:
   image:
     repository: grafana/grafana
-    tag: "11.4.0"
+    tag: "13.0.1"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -26,7 +26,7 @@ grafana:
 prometheus:
   image:
     repository: prom/prometheus
-    tag: "v2.54.1"
+    tag: "v3.11.3"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -45,7 +45,7 @@ prometheus:
 loki:
   image:
     repository: grafana/loki
-    tag: "3.3.2"
+    tag: "3.7.2"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

@@ -4,6 +4,11 @@ image:
 
 replicaCount: 1
 
+# Set from landing-zone's __APP_NAME__-platform component (dev):
+#   terraform output -raw irsa_role_arn
+# aws:
+#   platformRoleArn: ""
+
 resources:
   requests:
     cpu: 50m
