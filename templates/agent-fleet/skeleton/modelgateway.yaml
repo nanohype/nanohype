@@ -1,5 +1,11 @@
-# ModelGateway — declares the agentgateway route + Bedrock model resolution.
-# Apply BEFORE AgentFleet (AgentFleet.spec.modelRoute references this).
+# ModelGateway — declares the agentgateway route(s) + Bedrock model resolution.
+# Apply BEFORE the AgentFleet: each agent's spec.agents[].modelRoute references a
+# route name declared here. Owned by the Platform named in spec.platformRef.
+#
+# The operator reconciles one agentgateway Route per entry, resolves the Bedrock
+# model (optionally via a cross-region inference profile), attaches the guardrail,
+# and enforces the per-route rate limit. status.endpoint is the cluster-internal
+# hostname the fleet's agents call.
 
 apiVersion: agents.nanohype.dev/v1alpha1
 kind: ModelGateway
@@ -7,29 +13,31 @@ metadata:
   name: __APP_NAME__-gateway
   namespace: tenants-__TENANT__
 spec:
-  tenant: __TENANT__
+  # The owning Platform (rendered by k8s-app-tenant). Must already be Ready.
+  platformRef:
+    name: __APP_NAME__
 
   routes:
     - name: __ROUTE_NAME__
+      # modelFamily ∈ anthropic | meta | mistral | cohere | amazon-titan |
+      # amazon-nova | stability
       modelFamily: __MODEL_FAMILY__
       modelId: __MODEL_ID__
 
-      # Bedrock Guardrails — set guardrailIdentifier + version once you've
-      # provisioned the guardrail in landing-zone (terraform/components/
-      # bedrock-guardrails). Comment out the block until then.
-      # guardrails:
-      #   guardrailIdentifier: <guardrail-id>
-      #   guardrailVersion: "1"
+      # Cross-region inference profile (e.g. us.anthropic.claude-sonnet-4-6).
+      # Leave empty to pin to the gateway's home region. Per LLM policy, prefer
+      # the us.* profile so capacity spans us-west-2 / us-east-1.
+      crossRegionProfile: ""
 
-      # Per-route rate limit — defends downstream Bedrock quota.
-      # tokensPerMinute / requestsPerMinute. Omit either side to disable that limit.
-      rateLimit:
-        tokensPerMinute: 100000
-        requestsPerMinute: 60
+      # Requests-per-minute cap enforced at the gateway — defends downstream
+      # Bedrock quota. Omit or set 0 to disable.
+      rateLimit: 60
 
-  # Region preference order — agentgateway resolves to the first region where
-  # the model is live. Should match the LLM_POLICY default (us-west-2 first).
-  regions:
-    - us-west-2
-    - us-east-1
-    - eu-central-1
+      # Per-route Bedrock Guardrail override (by name; provisioned in
+      # landing-zone). Falls back to spec.defaultGuardrailRef when unset.
+      # guardrailRef:
+      #   name: <guardrail-name>
+
+  # Applies to any route that does not set its own guardrailRef.
+  # defaultGuardrailRef:
+  #   name: <guardrail-name>

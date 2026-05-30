@@ -4,29 +4,30 @@ The AI-workload composite scaffolding for nanohype-org apps. Produces an `AgentF
 
 ## What you get
 
-- **`agentfleet.yaml`** — `AgentFleet` (`agents.nanohype.dev/v1alpha1`) composing kagent `Agent` + `ModelConfig` + KEDA `ScaledObject`, with optional DRA accelerator class for NVIDIA/Neuron workloads
-- **`modelgateway.yaml`** — `ModelGateway` declaring the agentgateway `Route`, Bedrock model ID resolution, Bedrock Guardrails attachment point, and per-route rate limits
-- **`README.md`** documenting the apply order (Platform first, then ModelGateway, then AgentFleet) and the OTel attributes the AI workload must emit
+- **`modelgateway.yaml`** — `ModelGateway` (`agents.nanohype.dev/v1alpha1`) declaring one or more named agentgateway routes, each resolving a Bedrock `modelFamily` + `modelId` (optionally via a cross-region inference profile), a per-route requests-per-minute rate limit, and an optional Guardrail reference
+- **`agentfleet.yaml`** — `AgentFleet` (`agents.nanohype.dev/v1alpha1`) composing one or more kagent `Agent`s (each bound to a gateway route via `modelRoute`) behind a KEDA `ScaledObject`, with an optional DRA accelerator claim
+- **`README.md`** documenting the apply order (Platform first, then ModelGateway, then AgentFleet) and the OTel attributes the AI workload emits
+
+Both CRs derive their namespace, ownership, and IRSA from the Platform via `spec.platformRef` — neither carries a tenant or identity of its own.
 
 ## Variables
 
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `FleetName` | string | (required) | AgentFleet CR name + label selector |
-| `Tenant` | string | (required) | Owning team — must match the Platform CR's `spec.tenant` |
-| `AppName` | string | (required) | Companion Platform tenant name (matches `k8s-app-tenant`'s `AppName`) |
-| `ModelFamily` | string | `anthropic` | Bedrock model family — drives `ModelConfig` + OTel tagging |
-| `ModelId` | string | `anthropic.claude-sonnet-4-6` | Full Bedrock model ID |
-| `RouteName` | string | (required) | ModelGateway route name referenced by `AgentFleet.spec.modelRoute` |
-| `ScaleTrigger` | string | `cpu` | KEDA scaler — `sqs`, `cpu`, or `cron` |
-| `Compute` | string | `none` | Accelerator — `none`, `nvidia-l40s`, `nvidia-h100`, `neuron` |
+| `Tenant` | string | (required) | Owning team — sets the `tenants-<team>` namespace, matching the Platform |
+| `AppName` | string | (required) | Companion Platform tenant name (matches `k8s-app-tenant`'s `AppName`); used as `spec.platformRef.name` |
+| `ModelFamily` | string | `anthropic` | Bedrock model family for the gateway route — `anthropic`, `meta`, `mistral`, `cohere`, `amazon-titan`, `amazon-nova`, `stability` |
+| `ModelId` | string | `anthropic.claude-sonnet-4-6` | Bedrock model ID (or inference-profile ID) for the gateway route |
+| `RouteName` | string | (required) | ModelGateway route name referenced by each `AgentFleet.spec.agents[].modelRoute` |
+| `Compute` | string | `none` | Accelerator — `none` (CPU), `nvidia-l40s`, `nvidia-h100`, `neuron`. Non-`none` references an `AcceleratorClaim` CR by name |
 
 ## Project layout
 
 ```text
 <app>/
-  agentfleet.yaml                  # AgentFleet CR (apply after Platform is Ready)
-  modelgateway.yaml                # ModelGateway CR (route + Guardrails + rate limits)
+  modelgateway.yaml                # ModelGateway CR (routes + rate limits + guardrail)
+  agentfleet.yaml                  # AgentFleet CR (kagent agents + KEDA scaler)
   README.md                        # apply order + OTel guidance
 ```
 
@@ -34,7 +35,7 @@ Drop these alongside the `k8s-app-tenant`-produced `platform.yaml`.
 
 ## Pairs with
 
-- `k8s-app-tenant` — the Platform tenant boundary this composite lives inside. The Platform CR's IRSA role gains the `bedrock-invoke` policy when used with this template
+- `k8s-app-tenant` — the Platform tenant boundary this composite lives inside. The Platform CR's `spec.identity.allowedModelFamilies` must include this fleet's `ModelFamily` so the per-Platform IRSA role can invoke it
 - `agentic-loop` — the application skeleton for the agent code itself
 - `mcp-server-ts` / `mcp-server-python` — MCP server scaffolds that often pair with an AgentFleet
 
@@ -46,24 +47,19 @@ Drop these alongside the `k8s-app-tenant`-produced `platform.yaml`.
 
 Requires the target cluster to have:
 
-- `nanohype/eks-agent-platform` operator running (provides `AgentFleet`, `ModelGateway` CRDs)
+- `nanohype/eks-agent-platform` operator running (provides the `AgentFleet`, `ModelGateway` CRDs)
 - `kagent` + `agentgateway` installed via `nanohype/eks-gitops` `addons/argo-platform/`
-- For `nvidia-*` Compute: NVIDIA DRA driver from `eks-gitops/addons/operations/` and a matching `DeviceClass` provisioned by `landing-zone/components/aws/accelerator-pools`
+- For `nvidia-*` Compute: NVIDIA DRA driver from `eks-gitops/addons/operations/` and a matching `AcceleratorClaim`/`DeviceClass` provisioned by `landing-zone/components/aws/accelerator-pools`
 - For `neuron` Compute: AWS Neuron device plugin from `eks-gitops/addons/operations/`
 
 ## Apply order
 
-1. Platform CR (from `k8s-app-tenant`) — `kubectl apply -f platform.yaml`, wait for `Ready`
-2. ModelGateway CR — `kubectl apply -f modelgateway.yaml`, wait for `Programmed`
-3. AgentFleet CR — `kubectl apply -f agentfleet.yaml`, wait for `Ready`
+1. Platform CR (from `k8s-app-tenant`) — `kubectl apply -f platform.yaml`, wait for `status.phase: Ready`
+2. ModelGateway CR — `kubectl apply -f modelgateway.yaml`, wait for `status.phase: Ready`
+3. AgentFleet CR — `kubectl apply -f agentfleet.yaml`, wait for `status.phase: Ready`
 
-The operator wires kagent agents to the agentgateway route on AgentFleet reconcile; pods are KEDA-scaled per `ScaleTrigger`.
+On AgentFleet reconcile the operator wires each kagent agent to its gateway route and creates a KEDA `ScaledObject` from `spec.scaling` — an SQS-depth trigger when `queueUrl` is set, CPU utilization otherwise.
 
-## Required OTel resource attributes
+## OTel resource attributes
 
-The agent's OTel SDK must set these (`k8s-app-tenant` chart already wires `agents.tenant` and `agents.platform`; this template adds the AI ones):
-
-- `agents.model_family: __MODEL_FAMILY__`
-- `agents.model_id: __MODEL_ID__`
-
-Cluster-level Collector tags Bedrock invocation spans + per-invocation cost from these attributes for the finance / ops Grafana dashboards.
+The `k8s-app-tenant` chart wires `agents.tenant` and `agents.platform` onto every pod. For AI workloads the agentgateway runtime additionally tags each Bedrock invocation span with `agents.model_family` and `agents.model_id` (resolved from the route the agent calls), which the cluster-level Collector uses for per-invocation cost attribution on the finance / ops Grafana dashboards. No extra fields are needed in the AgentFleet CR.

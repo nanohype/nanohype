@@ -39,10 +39,10 @@ variables:
     placeholder: "__DRUID_VERSION__"
     description: "Apache Druid version for the container image"
     prompt: "Druid version"
-    default: "36.0.0"
+    default: "37.0.0"
     validation:
       pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
-      message: "Must be a valid semver (e.g. 36.0.0)"
+      message: "Must be a valid semver (e.g. 37.0.0)"
 
   - name: MetadataDriver
     type: string

@@ -1,0 +1,36 @@
+{{- if .Values.prometheusRule.enabled -}}
+{{- $metric := include "app.name" . | replace "-" "_" -}}
+# Example RED-metric alert for __APP_NAME__. The OTel metrics the app emits arrive
+# in Mimir with the service.name as the metric prefix (dashes → underscores per the
+# OTLP→Prometheus naming convention). Replace this example with the app's real SLOs.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: {{ include "app.name" . }}.red
+      interval: 1m
+      rules:
+        - alert: {{ include "app.name" . | title | nospace }}HighErrorRate
+          # Error ratio over 5m exceeds 5%. Tune the threshold + metric names to the
+          # app's actual RED instrumentation.
+          expr: |
+            sum(rate({{ $metric }}_errors_total[5m]))
+              / clamp_min(sum(rate({{ $metric }}_requests_total[5m])), 1)
+              > 0.05
+          for: 10m
+          labels:
+            severity: page
+            service: {{ include "app.name" . }}
+          annotations:
+            summary: {{ include "app.name" . }} error rate above 5% for 10m
+            description: |
+              Error ratio is {{ "{{" }} $value | printf "%.3f" {{ "}}" }} over the last 5m.
+              Check recent rollouts, upstream dependency health, and the pod logs.
+{{- end }}

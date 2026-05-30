@@ -1,0 +1,63 @@
+{{- if .Values.networkPolicy.enabled -}}
+# Default-deny for the Druid cluster: the six services talk to each other freely,
+# while DNS, deep storage (HTTPS), and the metadata DB are the only egress allowed —
+# everything else is denied. Opt-in (networkPolicy.enabled). Add client ingress
+# sources via networkPolicy.extraIngress and extra destinations via extraEgress.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "__PROJECT_NAME__.fullname" . }}
+  labels:
+    {{- include "__PROJECT_NAME__.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Intra-cluster Druid service mesh (router ↔ broker ↔ coordinator ↔ overlord ↔ historical).
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 14 }}
+    {{- with .Values.networkPolicy.extraIngress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Intra-cluster Druid service mesh
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 14 }}
+    # Deep storage over HTTPS (S3 / GCS / Azure blob). IMDS blocked.
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 169.254.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+    # Metadata store (PostgreSQL 5432 / MySQL 3306 — set networkPolicy.metadataPort).
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.metadataPort }}
+    {{- with .Values.networkPolicy.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

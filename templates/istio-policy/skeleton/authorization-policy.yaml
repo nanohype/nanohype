@@ -11,6 +11,10 @@ spec:
     matchLabels:
       app.kubernetes.io/name: __PROJECT_NAME__
   action: ALLOW
+  # ALLOW semantics: once this policy selects a workload, any request that does NOT
+  # match a rule below is denied. The rule admits only callers presenting a valid
+  # JWT from __OIDC_ISSUER__ with the expected audience — unauthenticated and
+  # otherwise-unmatched traffic is rejected by default.
   rules:
     - from:
         - source:

@@ -67,16 +67,19 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
 
-      - name: Update image tag
+      - name: Render deploy image
         run: |
-          cd k8s
-          sed -i "s|image: .*|image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }}|" deployment.yaml
+          # Rewrite only the named container's image (not every `image:` line) and
+          # emit a rendered manifest — robust where a blanket sed is not.
+          kubectl set image -f k8s/deployment.yaml \
+            __PROJECT_NAME__=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }} \
+            --local -o yaml > k8s/deployment.rendered.yaml
 
       - name: Apply manifests
         run: |
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.rendered.yaml
           kubectl apply -f k8s/service.yaml
 
       - name: Wait for rollout

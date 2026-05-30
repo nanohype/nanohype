@@ -14,8 +14,17 @@ service:
 
 serviceAccount:
   create: true
-  # `eks.amazonaws.com/role-arn` annotation is filled by the Platform reconciler.
+  # Extra annotations merged onto the ServiceAccount. The IRSA role ARN itself
+  # comes from `aws.platformRoleArn` (below) — set it per-env from the landing-zone
+  # <app>-platform component's `irsa_role_arn` output.
   annotations: {}
+
+# AWS wiring. platformRoleArn is the IRSA role the pod's ServiceAccount assumes.
+# landing-zone's <app>-platform component owns it; set it per-env in
+# values-{env}.yaml from `terraform output -raw irsa_role_arn`. Empty → no
+# role-arn annotation is rendered (fine until the substrate exists).
+aws:
+  platformRoleArn: ""
 
 resources:
   requests:
@@ -77,6 +86,31 @@ networkPolicy:
       ports:
         - protocol: TCP
           port: 443
+
+# Secret material via External Secrets Operator (the eks-gitops external-secrets
+# addon provisions the `aws-secrets-manager` ClusterSecretStore). Off by default —
+# enable once the app has secrets at <app>/<env>/app-secrets in AWS Secrets
+# Manager. The ExternalSecret extracts every property into a k8s Secret the
+# Deployment mounts via envFrom. Never put secret values in chart values.
+externalSecret:
+  enabled: false
+  secretStore: aws-secrets-manager
+  refreshInterval: 1h
+  remoteRefSecret: __APP_NAME__/dev/app-secrets   # override per-env in values-{env}.yaml
+
+# PrometheusRule (kube-prometheus-stack → Mimir). Off by default — enable once the
+# app emits RED metrics via OTel. Ships one example alert keyed on
+# `__APP_NAME___requests_total`; replace the rules with the app's real SLOs.
+prometheusRule:
+  enabled: false
+  selector:
+    release: kube-prometheus-stack
+
+# Grafana dashboard ConfigMap (discovered by the Grafana sidecar via the
+# `grafana_dashboard` label). Off by default — enable once
+# chart/dashboards/__APP_NAME__.json holds a real dashboard.
+grafanaDashboard:
+  enabled: false
 
 # OTel resource attrs propagate through traces/logs/metrics. The cluster-level
 # OTel Collector tags downstream exporters using these.

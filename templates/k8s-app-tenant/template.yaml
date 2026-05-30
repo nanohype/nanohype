@@ -6,7 +6,8 @@ description: >
   Primary scaffolding for a nanohype-org k8s-native application. Produces
   a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
   ready to register against nanohype/eks-gitops or nanohype/aks-gitops,
-  and a Platform CR (platform.nanohype.dev/v1alpha1) declaring the tenant
+  and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required
+  BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant
   boundary for the eks-agent-platform operator to reconcile. Use this for
   every k8s-native deliverable unless an explicit escape hatch
   (aws-lambda, fly, vercel, cloudflare) is justified.
@@ -43,6 +44,26 @@ variables:
     validation:
       pattern: "^[a-z][a-z0-9-]*$"
       message: "Must be lowercase kebab-case"
+
+  - name: Persona
+    type: string
+    placeholder: "__PERSONA__"
+    description: "Platform persona — drives default guardrails, dashboards, and fleet shape. One of: sales-ops, support, finance, ops, founder, eng, marketing, legal, generic."
+    prompt: "Persona"
+    default: "generic"
+    validation:
+      pattern: "^(sales-ops|support|finance|ops|founder|eng|marketing|legal|generic)$"
+      message: "Must be a persona the operator accepts"
+
+  - name: MonthlyUsd
+    type: string
+    placeholder: "__MONTHLY_USD__"
+    description: "Soft monthly Bedrock spend cap (USD) for the BudgetPolicy. Kill-switch fires at 120%."
+    prompt: "Monthly budget (USD)"
+    default: "2500"
+    validation:
+      pattern: "^[0-9]+$"
+      message: "Must be a whole-dollar amount"
 
   - name: Image
     type: string

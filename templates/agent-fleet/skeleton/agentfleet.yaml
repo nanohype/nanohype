@@ -1,13 +1,15 @@
-# AgentFleet — composes kagent Agent + ModelConfig + KEDA scaler.
-# Apply AFTER the Platform CR (from k8s-app-tenant) and the ModelGateway CR
-# (modelgateway.yaml in this same directory) reconcile.
+# AgentFleet — provisions one or more kagent Agents behind a KEDA-scaled runtime.
+# Apply AFTER the Platform CR (from k8s-app-tenant) and the ModelGateway
+# (modelgateway.yaml in this directory) are Ready. Ownership, namespace, and IRSA
+# come from the Platform via spec.platformRef — the AgentFleet carries no tenant
+# or identity of its own.
 #
-# The operator reconciles:
-#   - kagent Agent + ModelConfig + ToolServer resources
-#   - KEDA ScaledObject per spec.scaling.trigger
-#   - per-fleet NetworkPolicy
-#   - tenant ServiceAccount annotated for IRSA (Platform reconciler owns the role-arn)
-#   - optional ResourceClaimTemplate for DRA accelerators (when spec.compute != none)
+# The operator reconciles, per fleet:
+#   - a kagent Agent + ModelConfig for each spec.agents[] entry
+#   - a KEDA ScaledObject from spec.scaling (SQS-depth trigger when queueUrl is
+#     set, CPU-utilization otherwise)
+#   - a per-fleet NetworkPolicy
+#   - an optional ResourceClaimTemplate when spec.compute requests an accelerator
 
 apiVersion: agents.nanohype.dev/v1alpha1
 kind: AgentFleet
@@ -15,37 +17,37 @@ metadata:
   name: __FLEET_NAME__
   namespace: tenants-__TENANT__
 spec:
-  tenant: __TENANT__
-  platform: __APP_NAME__
-
-  modelRoute: __ROUTE_NAME__         # references ModelGateway.spec.routes[].name
+  # The owning Platform (rendered by k8s-app-tenant). Must already be Ready.
+  platformRef:
+    name: __APP_NAME__
 
   agents:
-    # Each agent entry produces a kagent Agent CR + ModelConfig binding.
-    # Add more entries here as the fleet's persona structure grows.
+    # Each entry becomes a kagent Agent + ModelConfig. modelRoute must name a
+    # route declared on the ModelGateway. Add more entries as the fleet's
+    # persona structure grows.
     - name: __FLEET_NAME__-primary
-      modelFamily: __MODEL_FAMILY__
-      modelId: __MODEL_ID__
+      modelRoute: __ROUTE_NAME__
       systemPrompt: |
-        # Replace this with the agent's system prompt.
-        # Keep prompt caching in mind — the static prefix should be
-        # large enough to amortize, and ${dynamic} parts go at the end.
+        You are __FLEET_NAME__-primary. Replace this with the agent's
+        instructions. Keep the static prefix large and stable so Bedrock
+        prompt caching amortizes; append any per-request context at the end.
+      # kagent ToolServer references this agent may call. e.g. [{name: my-tools}]
+      tools: []
 
   scaling:
-    trigger: __SCALE_TRIGGER__         # sqs | cpu | cron
-    minReplicas: 1
-    maxReplicas: 10
-    # Tune the trigger-specific settings to fit the workload:
-    #   sqs:  queueName + targetQueueLength
-    #   cpu:  cpuTargetUtilization (default 70%)
-    #   cron: schedule + desiredReplicas
-    triggerConfig: {}
+    enabled: true
+    min: 1
+    max: 10
+    # SQS depth-based scaling: uncomment queueUrl with the fleet's queue and
+    # tune queueDepthTrigger. Without queueUrl the operator emits a
+    # CPU-utilization trigger. The tenant IRSA role needs
+    # sqs:GetQueueAttributes on the queue.
+    queueDepthTrigger: 10
+    # queueUrl: https://sqs.us-west-2.amazonaws.com/000000000000/__FLEET_NAME__
 
-  compute: __COMPUTE__                 # none | nvidia-l40s | nvidia-h100 | neuron
-
-  observability:
-    # The operator injects the agents.tenant and agents.platform attrs from
-    # the Platform CR. Add the AI-specific ones here.
-    otelResourceAttributes:
-      agents.model_family: __MODEL_FAMILY__
-      agents.model_id: __MODEL_ID__
+  # Accelerator (DRA). CPU-only fleets (Compute=__COMPUTE__) leave this off. To
+  # request an accelerator, provision an AcceleratorClaim CR (via
+  # landing-zone/components/aws/accelerator-pools) and reference it by name:
+  # compute:
+  #   acceleratorClaim:
+  #     name: <accelerator-claim-name>

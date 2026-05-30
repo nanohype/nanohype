@@ -24,6 +24,16 @@ deepStorage:
   bucket: ""           # Deep storage bucket name
   indexLogsBucket: ""   # Index logs bucket name
 
+# Default-deny NetworkPolicy for the Druid cluster (opt-in). When enabled the six
+# services talk to each other; DNS, deep storage (HTTPS), and the metadata DB are
+# the only egress allowed. Add query-client ingress via extraIngress and extra
+# destinations via extraEgress.
+networkPolicy:
+  enabled: false
+  metadataPort: 5432   # PostgreSQL; use 3306 for MySQL
+  extraIngress: []
+  extraEgress: []
+
 # --- Router ---
 
 router:
