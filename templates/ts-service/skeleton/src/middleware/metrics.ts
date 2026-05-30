@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import { httpRequestTotal, httpRequestDuration } from "../metrics.js";
+import { httpRequestTotal, httpRequestDuration, httpErrorsTotal } from "../metrics.js";
 
 // ── Metrics Middleware ─────────────────────────────────────────────
 //
@@ -23,4 +23,7 @@ export async function metricsMiddleware(c: Context, next: Next): Promise<void> {
 
   httpRequestTotal.add(1, labels);
   httpRequestDuration.record(durationMs, labels);
+  if (c.res.status >= 500) {
+    httpErrorsTotal.add(1, labels);
+  }
 }
