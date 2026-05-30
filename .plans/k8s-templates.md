@@ -38,7 +38,7 @@ Variables:
 - `ScaleTrigger` — `sqs` | `cpu` | `cron`
 - `Compute` — accelerator class (`none` | `nvidia-l40s` | `nvidia-h100` | `neuron`)
 
-Reference: `eks-agent-platform/ARCHITECTURE.md` AgentFleet CRD field shape; `agents.stxkxs.io/v1alpha1` API group.
+Reference: `eks-agent-platform/ARCHITECTURE.md` AgentFleet CRD field shape; `agents.nanohype.dev/v1alpha1` API group.
 
 ### `templates/landing-zone-component/`
 

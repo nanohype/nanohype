@@ -4,7 +4,7 @@ The AI-workload composite scaffolding for nanohype-org apps. Produces an `AgentF
 
 ## What you get
 
-- **`agentfleet.yaml`** — `AgentFleet` (`agents.stxkxs.io/v1alpha1`) composing kagent `Agent` + `ModelConfig` + KEDA `ScaledObject`, with optional DRA accelerator class for NVIDIA/Neuron workloads
+- **`agentfleet.yaml`** — `AgentFleet` (`agents.nanohype.dev/v1alpha1`) composing kagent `Agent` + `ModelConfig` + KEDA `ScaledObject`, with optional DRA accelerator class for NVIDIA/Neuron workloads
 - **`modelgateway.yaml`** — `ModelGateway` declaring the agentgateway `Route`, Bedrock model ID resolution, Bedrock Guardrails attachment point, and per-route rate limits
 - **`README.md`** documenting the apply order (Platform first, then ModelGateway, then AgentFleet) and the OTel attributes the AI workload must emit
 
