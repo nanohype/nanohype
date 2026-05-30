@@ -44,7 +44,7 @@ describe("countTokens", () => {
   });
 
   it("counts different models consistently when both fall back", () => {
-    const a = countTokens("Hello", "claude-sonnet-4-20250514");
+    const a = countTokens("Hello", "claude-sonnet-4-6");
     const b = countTokens("Hello", "some-unknown-model");
     // Both fall back to gpt-4o encoding, should be equal
     expect(a).toBe(b);

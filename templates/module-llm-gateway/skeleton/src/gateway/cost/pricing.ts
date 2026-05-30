@@ -14,7 +14,7 @@ export interface ModelPricing {
 
 export const DEFAULT_PRICING: Record<string, ModelPricing> = {
   // Anthropic
-  "claude-sonnet-4-20250514": { input: 3, output: 15 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
   "claude-haiku-4-20250514": { input: 0.8, output: 4 },
   "claude-opus-4-20250514": { input: 15, output: 75 },
 

@@ -12,7 +12,7 @@ import { countTokens } from "../tokens/counter.js";
 // responses into the unified GatewayResponse shape.
 //
 
-const DEFAULT_MODEL = "claude-sonnet-4-20250514";
+const DEFAULT_MODEL = "claude-sonnet-4-6";
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic {

@@ -34,7 +34,7 @@ console.log(cached.cached);       // true
 // Query costs
 const costs = gateway.getCosts({ tags: { user: "alice" } });
 console.log(costs.totalCost);     // 0.000135
-console.log(costs.byModel);       // { "claude-sonnet-4-20250514": 0.000135 }
+console.log(costs.byModel);       // { "claude-sonnet-4-6": 0.000135 }
 
 // Shut down
 gateway.close();
@@ -44,7 +44,7 @@ gateway.close();
 
 | Provider | Backend | Default Model | Pricing (input/output per 1M) |
 |----------|---------|---------------|-------------------------------|
-| `anthropic` | Claude Sonnet | `claude-sonnet-4-20250514` | $3 / $15 |
+| `anthropic` | Claude Sonnet | `claude-sonnet-4-6` | $3 / $15 |
 | `openai` | GPT-4o | `gpt-4o` | $2.50 / $10 |
 | `groq` | Llama 3 70B | `llama-3.3-70b-versatile` | $0.59 / $0.79 |
 | `mock` | In-memory | `mock-model` | $0 / $0 |

@@ -79,7 +79,7 @@ export interface StreamResponse extends AsyncIterable<StreamChunk> {
 
 /** Default pricing per 1M tokens for known models. */
 export const DEFAULT_PRICING: Record<string, Pricing> = {
-  "claude-sonnet-4-20250514": { input: 3, output: 15 },
+  "claude-sonnet-4-6": { input: 3, output: 15 },
   "claude-opus-4-20250514": { input: 15, output: 75 },
   "claude-haiku-4-5-20251001": { input: 0.8, output: 4 },
   "gpt-4o": { input: 2.5, output: 10 },

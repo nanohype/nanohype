@@ -16,6 +16,13 @@ import type { CacheVector, CacheHit } from "../types.js";
 class MemoryVectorCacheStore implements VectorCacheStore {
   readonly name = "memory";
   private entries = new Map<string, CacheVector>();
+  private readonly maxEntries: number;
+
+  // Bound the cache so a stream of distinct prompts (every miss is upserted)
+  // can't grow memory without limit until TTL. Default 1000; override per store.
+  constructor(maxEntries = 1000) {
+    this.maxEntries = maxEntries;
+  }
 
   private isExpired(entry: CacheVector): boolean {
     return Date.now() >= entry.expiresAt;
@@ -39,7 +46,24 @@ class MemoryVectorCacheStore implements VectorCacheStore {
   }
 
   async upsert(entry: CacheVector): Promise<void> {
+    // Re-insert moves the key to the most-recently-used end of the Map.
+    this.entries.delete(entry.id);
     this.entries.set(entry.id, entry);
+    this.evictIfNeeded();
+  }
+
+  /**
+   * Keep the cache bounded: prune expired entries, then evict the oldest
+   * (least-recently-written) until within maxEntries. Map preserves insertion
+   * order, so the first key is the oldest.
+   */
+  private evictIfNeeded(): void {
+    this.pruneExpired();
+    while (this.entries.size > this.maxEntries) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest === undefined) break;
+      this.entries.delete(oldest);
+    }
   }
 
   async search(embedding: number[], threshold: number): Promise<CacheHit | undefined> {

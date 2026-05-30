@@ -11,7 +11,7 @@ import { z } from "zod";
 export interface LlmResponse {
   /** Generated text content. */
   text: string;
-  /** Model identifier (e.g., "claude-sonnet-4-20250514"). */
+  /** Model identifier (e.g., "claude-sonnet-4-6"). */
   model: string;
   /** Provider name (e.g., "anthropic", "openai"). */
   provider: string;

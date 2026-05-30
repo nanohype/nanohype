@@ -36,11 +36,11 @@ console.log(`\nTotal tokens: ${final.usage.outputTokens}`);
 
 | Provider | SDK | Default Model | Auth | Always Included |
 |----------|-----|---------------|------|-----------------|
-| `anthropic` | @anthropic-ai/sdk | claude-sonnet-4-20250514 | `ANTHROPIC_API_KEY` | Yes |
+| `anthropic` | @anthropic-ai/sdk | claude-sonnet-4-6 | `ANTHROPIC_API_KEY` | Yes |
 | `openai` | openai | gpt-4o | `OPENAI_API_KEY` | Yes |
 | `groq` | groq-sdk | llama-3.3-70b-versatile | `GROQ_API_KEY` | Yes |
 | `mock` | none | mock-model | none | Yes |
-| `bedrock` | @aws-sdk/client-bedrock-runtime | anthropic.claude-sonnet-4-20250514-v1:0 | IAM / AWS credentials | Conditional |
+| `bedrock` | @aws-sdk/client-bedrock-runtime | anthropic.claude-sonnet-4-6 | IAM / AWS credentials | Conditional |
 | `azure-openai` | openai (reused) | gpt-4o | `AZURE_OPENAI_API_KEY` + `AZURE_OPENAI_ENDPOINT` | Conditional |
 | `vertex` | @google-cloud/vertexai | gemini-2.0-flash | Google ADC | Conditional |
 | `huggingface` | @huggingface/inference | meta-llama/Llama-3.3-70B-Instruct | `HF_TOKEN` | Conditional |

@@ -12,7 +12,7 @@ function makeSpan(overrides: Partial<LlmSpan> = {}): LlmSpan {
     startedAt: new Date().toISOString(),
     endedAt: new Date().toISOString(),
     durationMs: 200,
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     provider: "anthropic",
     inputTokens: 1000,
     outputTokens: 500,
@@ -37,7 +37,7 @@ describe("pricing", () => {
   });
 
   it("looks up pricing for known models", () => {
-    const pricing = getModelPricing("claude-sonnet-4-20250514");
+    const pricing = getModelPricing("claude-sonnet-4-6");
     expect(pricing.input).toBe(3);
     expect(pricing.output).toBe(15);
   });
@@ -55,14 +55,14 @@ describe("cost calculator", () => {
 
     const entry = calculator.record(makeSpan());
     expect(entry.cost).toBeGreaterThan(0);
-    expect(entry.model).toBe("claude-sonnet-4-20250514");
+    expect(entry.model).toBe("claude-sonnet-4-6");
     expect(entry.provider).toBe("anthropic");
   });
 
   it("queries with no filters returns all entries", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-20250514", inputTokens: 100, outputTokens: 50 }));
+    calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 100, outputTokens: 50 }));
     calculator.record(makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }));
 
     const summary = calculator.query();
@@ -83,7 +83,7 @@ describe("cost calculator", () => {
   it("filters by model", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-20250514" }));
+    calculator.record(makeSpan({ model: "claude-sonnet-4-6" }));
     calculator.record(makeSpan({ model: "gpt-4o", provider: "openai" }));
 
     const summary = calculator.query({ model: "gpt-4o" });
@@ -93,11 +93,11 @@ describe("cost calculator", () => {
   it("breaks down cost by model", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-20250514", inputTokens: 1000, outputTokens: 500 }));
+    calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 }));
     calculator.record(makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 }));
 
     const summary = calculator.query();
-    expect(summary.byModel["claude-sonnet-4-20250514"]).toBeGreaterThan(0);
+    expect(summary.byModel["claude-sonnet-4-6"]).toBeGreaterThan(0);
     expect(summary.byModel["gpt-4o"]).toBeGreaterThan(0);
   });
 
@@ -145,7 +145,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01 + Math.random() * 0.001,
@@ -158,7 +158,7 @@ describe("anomaly detection", () => {
     entries.push({
       timestamp: new Date(baseTimestamp.getTime() + 25000).toISOString(),
       provider: "anthropic",
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       inputTokens: 10000,
       outputTokens: 5000,
       cost: 0.5,
@@ -186,7 +186,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,
@@ -204,7 +204,7 @@ describe("anomaly detection", () => {
       {
         timestamp: new Date().toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,

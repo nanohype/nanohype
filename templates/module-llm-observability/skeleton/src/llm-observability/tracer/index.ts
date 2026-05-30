@@ -13,6 +13,22 @@ import type { TracerOptions } from "./types.js";
 export type { TracerOptions, SpanContext } from "./types.js";
 
 /**
+ * Thrown by the tracer when the wrapped LLM call fails. Carries the captured
+ * error span (so the observer can still export it and record metrics) and the
+ * original error as `cause`. The tracer never swallows a failure into a fake
+ * success response — callers always see the real error.
+ */
+export class TracedError extends Error {
+  constructor(
+    public readonly span: LlmSpan,
+    public readonly cause: unknown,
+  ) {
+    super(cause instanceof Error ? cause.message : String(cause));
+    this.name = "TracedError";
+  }
+}
+
+/**
  * Create an LLM tracer instance. All state is scoped to the
  * returned object — no module-level mutable state.
  */
@@ -75,7 +91,9 @@ export function createLlmTracer(options: TracerOptions) {
         tags: mergedTags,
       };
 
-      return { response: { text: "", model: "unknown", provider: "unknown", inputTokens: 0, outputTokens: 0 }, span };
+      // Surface the failure — hand the error span to the caller for export, but
+      // never fabricate a success-shaped (empty-text) response.
+      throw new TracedError(span, error);
     }
   }
 

@@ -25,7 +25,7 @@ import { logger } from "../logger.js";
 // format). Uses IAM auth via standard AWS credential chain.
 //
 
-const DEFAULT_MODEL = "anthropic.claude-sonnet-4-20250514-v1:0";
+const DEFAULT_MODEL = "anthropic.claude-sonnet-4-6";
 
 /** Determine request body format based on model ID prefix. */
 function buildRequestBody(
@@ -122,7 +122,7 @@ function createBedrockProvider(): LlmProvider {
     return client;
   }
 
-  const pricing: Pricing = getPricing("claude-sonnet-4-20250514");
+  const pricing: Pricing = getPricing("claude-sonnet-4-6");
 
   return {
     name: "bedrock",
