@@ -1,4 +1,4 @@
-import { metrics, type Counter, type Histogram } from "@opentelemetry/api";
+import { metrics } from "@opentelemetry/api";
 
 // ── LLM Metrics ────────────────────────────────────────────────────
 //

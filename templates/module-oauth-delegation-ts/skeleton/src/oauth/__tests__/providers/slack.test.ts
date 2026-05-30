@@ -38,4 +38,11 @@ describe("slackProvider", () => {
     });
     expect(grant.accessToken).toBe("xoxb-bot");
   });
+
+  it("rejects a malformed nested token response at the boundary", () => {
+    // authed_user.access_token must be a string if present.
+    expect(() =>
+      slackProvider.parseTokenResponse({ ok: true, authed_user: { access_token: 42 } }),
+    ).toThrow();
+  });
 });

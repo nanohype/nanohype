@@ -3,31 +3,37 @@ import type { EmbeddingProvider } from "./types.js";
 // ── Embedding Provider Registry ────────────────────────────────────
 //
 // Central registry for embedding providers. Each provider module
-// self-registers by calling registerEmbeddingProvider() at import
-// time. Consumer code calls getEmbeddingProvider() to obtain the
-// active provider.
+// self-registers a factory by calling registerEmbeddingProvider() at
+// import time. getEmbeddingProvider() invokes the factory, so every
+// createSemanticCache() call gets a fresh provider instance (its own
+// circuit breaker and SDK client).
 //
 
-const providers = new Map<string, EmbeddingProvider>();
+export type EmbeddingProviderFactory = () => EmbeddingProvider;
 
-export function registerEmbeddingProvider(provider: EmbeddingProvider): void {
-  if (providers.has(provider.name)) {
-    throw new Error(`Embedding provider "${provider.name}" is already registered`);
+const factories = new Map<string, EmbeddingProviderFactory>();
+
+export function registerEmbeddingProvider(
+  name: string,
+  factory: EmbeddingProviderFactory,
+): void {
+  if (factories.has(name)) {
+    throw new Error(`Embedding provider "${name}" is already registered`);
   }
-  providers.set(provider.name, provider);
+  factories.set(name, factory);
 }
 
 export function getEmbeddingProvider(name: string): EmbeddingProvider {
-  const provider = providers.get(name);
-  if (!provider) {
-    const available = Array.from(providers.keys()).join(", ") || "(none)";
+  const factory = factories.get(name);
+  if (!factory) {
+    const available = Array.from(factories.keys()).join(", ") || "(none)";
     throw new Error(
       `Embedding provider "${name}" not found. Available: ${available}`,
     );
   }
-  return provider;
+  return factory();
 }
 
 export function listEmbeddingProviders(): string[] {
-  return Array.from(providers.keys());
+  return Array.from(factories.keys());
 }

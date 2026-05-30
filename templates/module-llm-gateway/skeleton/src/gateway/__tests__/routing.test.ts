@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { GatewayProvider } from "../providers/types.js";
 import type { RoutingContext } from "../routing/types.js";
 

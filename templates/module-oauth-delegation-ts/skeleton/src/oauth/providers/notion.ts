@@ -6,18 +6,23 @@
 // PKCE by default adds meaningful resistance to code-interception
 // attacks even when the redirect is on HTTPS.
 
+import { z } from "zod";
+
 import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 
-interface NotionTokenResponse {
-  access_token: string;
-  token_type?: string;
-  bot_id?: string;
-  workspace_id?: string;
-  workspace_name?: string;
-  workspace_icon?: string;
-  owner?: unknown;
-}
+// Notion issues a single long-lived access token plus workspace metadata.
+// `.passthrough()` keeps `bot_id` / `workspace_*` / `owner` on `raw`.
+const NotionTokenResponseSchema = z
+  .object({
+    access_token: z.string(),
+    token_type: z.string().optional(),
+    bot_id: z.string().optional(),
+    workspace_id: z.string().optional(),
+    workspace_name: z.string().optional(),
+    workspace_icon: z.string().optional(),
+  })
+  .passthrough();
 
 export const notionProvider: OAuthProvider = {
   name: "notion",
@@ -35,10 +40,10 @@ export const notionProvider: OAuthProvider = {
   usePkce: true,
 
   parseTokenResponse(raw) {
-    const r = raw as NotionTokenResponse;
+    const r = NotionTokenResponseSchema.parse(raw);
     const grant: TokenGrant = {
       accessToken: r.access_token,
-      raw: r as unknown as Record<string, unknown>,
+      raw: r as Record<string, unknown>,
     };
     return grant;
   },

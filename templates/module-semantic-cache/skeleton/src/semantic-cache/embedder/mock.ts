@@ -62,5 +62,6 @@ const mockProvider: EmbeddingProvider = {
   },
 };
 
-// Self-register
-registerEmbeddingProvider(mockProvider);
+// Self-register a factory. The provider holds no per-instance state, so a
+// shared object is fine — the factory keeps the registry contract uniform.
+registerEmbeddingProvider("mock", () => mockProvider);

@@ -5,21 +5,18 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.ts"],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
     rules: {
+      // Honor the `_`-prefix convention for intentionally-unused params/vars
+      // (e.g. interface methods that ignore some arguments).
       "@typescript-eslint/no-unused-vars": [
         "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
     },
   },
-  {
-    ignores: ["dist/", "node_modules/"],
-  },
+  { ignores: ["dist/", "node_modules/"] },
 );

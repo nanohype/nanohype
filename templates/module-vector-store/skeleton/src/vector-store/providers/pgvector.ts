@@ -21,7 +21,19 @@ interface PgVectorConfig extends VectorStoreConfig {
   tableName?: string;
   /** Vector dimensions. Default: 1536 (OpenAI ada-002). */
   dimensions?: number;
+  /** Ms to wait for a connection from the pool. Default: 10000. */
+  connectionTimeoutMillis?: number;
+  /** Ms a single statement may run before the server aborts it. Default: 30000. */
+  statementTimeoutMillis?: number;
 }
+
+/**
+ * The table name is interpolated into DDL/DML (Postgres has no bind
+ * parameter for identifiers), so it must be a strict identifier. Values
+ * bound via $N placeholders are still parameterized; only the table name
+ * is validated here.
+ */
+const SAFE_TABLE_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 class PgVectorProvider implements VectorStoreProvider {
   readonly name = "pgvector";
@@ -38,11 +50,34 @@ class PgVectorProvider implements VectorStoreProvider {
       );
     }
 
-    this.tableName = (config.tableName as string) || process.env.PGVECTOR_TABLE_NAME || "embeddings";
+    const tableName =
+      (config.tableName as string) || process.env.PGVECTOR_TABLE_NAME || "embeddings";
+    if (!SAFE_TABLE_RE.test(tableName)) {
+      throw new Error(
+        `Invalid pgvector tableName "${tableName}" — must match /^[a-zA-Z_][a-zA-Z0-9_]*$/`,
+      );
+    }
+    this.tableName = tableName;
     this.dimensions =
       (config.dimensions as number) || Number(process.env.PGVECTOR_DIMENSIONS) || 1536;
 
-    this.pool = new pg.Pool({ connectionString });
+    const connectionTimeoutMillis =
+      (config.connectionTimeoutMillis as number) ||
+      Number(process.env.PGVECTOR_CONNECTION_TIMEOUT_MS) ||
+      10_000;
+    const statementTimeoutMillis =
+      (config.statementTimeoutMillis as number) ||
+      Number(process.env.PGVECTOR_STATEMENT_TIMEOUT_MS) ||
+      30_000;
+
+    // connectionTimeoutMillis caps the wait for a free connection; the
+    // statement_timeout GUC caps how long any single query may run on the
+    // server before it is aborted. Together they bound both ends of a call.
+    this.pool = new pg.Pool({
+      connectionString,
+      connectionTimeoutMillis,
+      statement_timeout: statementTimeoutMillis,
+    });
 
     // Ensure pgvector extension and table exist
     await withRetry(async () => {

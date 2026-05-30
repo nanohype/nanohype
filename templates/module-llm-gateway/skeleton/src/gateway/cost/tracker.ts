@@ -3,10 +3,15 @@
 // Records per-request cost entries with attribution tags and provides
 // query capabilities for cost analysis. Entries are stored in memory
 // with optional tag-based filtering for breakdowns by model, user,
-// project, or any custom dimension.
+// project, or any custom dimension. The in-memory log is bounded to
+// MAX_ENTRIES — the oldest entry is dropped on record() once the cap is
+// reached, so a long-running gateway can't leak memory. Persist to an
+// external store (the README notes this) for durable, unbounded history.
 //
 
 import type { GatewayResponse } from "../types.js";
+
+const MAX_ENTRIES = Number(process.env.GATEWAY_COST_MAX_ENTRIES ?? 100_000);
 
 /** A single cost entry for one gateway request. */
 export interface CostEntry {
@@ -79,6 +84,10 @@ export function createCostTracker() {
       tags,
     };
     entries.push(entry);
+    // Ring-buffer the in-memory log: drop the oldest entries once over the cap.
+    if (entries.length > MAX_ENTRIES) {
+      entries.splice(0, entries.length - MAX_ENTRIES);
+    }
     return entry;
   }
 

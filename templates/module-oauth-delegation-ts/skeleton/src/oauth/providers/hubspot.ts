@@ -6,22 +6,15 @@
 
 import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
-import { expiresAtFromExpiresIn } from "./shared.js";
-
-interface HubSpotTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in?: number;
-  token_type?: string;
-}
+import { expiresAtFromExpiresIn, TokenResponseSchema } from "./shared.js";
 
 function parse(raw: unknown, previous?: TokenGrant): TokenGrant {
-  const r = raw as HubSpotTokenResponse;
+  const r = TokenResponseSchema.parse(raw);
   return {
-    accessToken: r.access_token,
+    accessToken: r.access_token ?? "",
     refreshToken: r.refresh_token ?? previous?.refreshToken,
     expiresAt: expiresAtFromExpiresIn(r.expires_in),
-    raw: r as unknown as Record<string, unknown>,
+    raw: r as Record<string, unknown>,
   };
 }
 

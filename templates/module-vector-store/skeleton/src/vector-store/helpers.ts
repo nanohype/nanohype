@@ -4,6 +4,8 @@
 //
 // - withRetry()    Retries an async operation on transient network errors
 //                  using exponential backoff with jitter.
+// - withTimeout()  Races an async operation against an AbortSignal timeout
+//                  so SDK calls that expose no native timeout still bound.
 // - batchChunk()   Splits an array into fixed-size batches for providers
 //                  that limit upsert payload size.
 //
@@ -75,6 +77,46 @@ export async function withRetry<T>(
 
   // Unreachable, but satisfies the type checker
   throw lastError;
+}
+
+// ── Timeout ────────────────────────────────────────────────────────────
+
+/**
+ * Race an async operation against a timeout.
+ *
+ * For SDK clients that don't expose a per-call AbortSignal, this bounds
+ * the wall-clock time of the call: if it doesn't settle within `ms`, the
+ * returned promise rejects. The underlying operation is not cancelled —
+ * it is abandoned — so callers should still set client-level retry caps.
+ *
+ * @param fn     The async operation to run.
+ * @param ms     Timeout in milliseconds.
+ * @param label  Label used in the timeout error message.
+ */
+export async function withTimeout<T>(
+  fn: (signal: AbortSignal) => Promise<T>,
+  ms: number,
+  label: string,
+): Promise<T> {
+  const signal = AbortSignal.timeout(ms);
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(new Error(`${label} timed out after ${ms}ms`));
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+    signal.addEventListener("abort", onAbort, { once: true });
+    fn(signal).then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (err) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(err);
+      },
+    );
+  });
 }
 
 // ── Batch Chunking ────────────────────────────────────────────────────

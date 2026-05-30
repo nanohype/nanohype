@@ -9,7 +9,7 @@
 //
 
 import type { LlmProvider } from "../providers/types.js";
-import type { ChatMessage, ChatOptions, Pricing } from "../types.js";
+import type { ChatMessage, ChatOptions } from "../types.js";
 
 /** Structural equivalent of GatewayProvider from module-llm-gateway. */
 export interface GatewayProviderShape {

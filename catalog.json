@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-05-30T20:41:09.000Z",
+  "generated_at": "2026-05-30T23:30:18.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -433,7 +433,7 @@
     {
       "name": "data-pipeline",
       "displayName": "Data Pipeline",
-      "description": "Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document ingestion from files and web pages, configurable chunking strategies (recursive, fixed-size, semantic), embedding generation, and output adapters for indexing. No LangChain — all components are built from first principles using provider SDKs directly. Supports multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web), embedding providers (OpenAI), and output formats (JSONL, console). Output is compatible with module-vector-store's VectorDocument shape.",
+      "description": "Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document ingestion from files and web pages, configurable chunking strategies (recursive, fixed-size, semantic), embedding generation, and output adapters for indexing. No LangChain — all components are built from first principles using provider SDKs directly. Defaults to AWS Bedrock Titan v2 embeddings (on IRSA — no keys), with OpenAI as an alternate. Supports multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web — SSRF-guarded) and output formats (JSONL, console). Output is compatible with module-vector-store's VectorDocument shape.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -1096,7 +1096,7 @@
     {
       "name": "module-llm-gateway",
       "displayName": "Module: LLM Gateway",
-      "description": "Unified LLM gateway with pluggable routing strategies, response caching, and cost tracking. Ships with Anthropic, OpenAI, and Groq providers, five routing strategies (static, round-robin, latency, cost, adaptive), three caching modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost anomaly detection using z-score analysis.",
+      "description": "Unified LLM gateway with pluggable routing strategies, response caching, and cost tracking. Ships with Bedrock (Converse + prompt caching, IRSA auth, the default), Anthropic, OpenAI, and Groq providers, gateway-level provider fallback, six routing strategies (static, round-robin, latency, cost, adaptive, linucb), three caching modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost anomaly detection using z-score analysis.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1315,7 +1315,7 @@
     {
       "name": "module-semantic-cache",
       "displayName": "Module: Semantic Cache",
-      "description": "Embedding-based LLM response caching using vector similarity search. Stores prompt embeddings alongside cached responses and retrieves them by cosine similarity instead of exact key match. Ships with an OpenAI embedding provider and an in-memory vector store for development. Includes a gateway adapter for drop-in integration with LLM gateway caching strategies.",
+      "description": "Embedding-based LLM response caching using vector similarity search. Stores prompt embeddings alongside cached responses and retrieves them by cosine similarity instead of exact key match. Ships with a Bedrock Titan embedding provider (default), an OpenAI alternate, and an in-memory vector store for development. Includes a gateway adapter for drop-in integration with LLM gateway caching strategies.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1611,7 +1611,7 @@
     {
       "name": "rag-pipeline",
       "displayName": "RAG Pipeline",
-      "description": "Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript. Implements document ingestion, configurable chunking strategies, embedding generation, vector storage, similarity retrieval, and LLM-powered answer generation with source citations. No LangChain — all components are built from first principles using the provider SDKs directly. Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone), embedding providers (OpenAI, Cohere), and LLM providers (Anthropic, OpenAI) for generation.",
+      "description": "Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript. Implements document ingestion, configurable chunking strategies, embedding generation, vector storage, similarity retrieval, and LLM-powered answer generation with source citations. No LangChain — all components are built from first principles using the provider SDKs directly. Defaults to AWS Bedrock (Claude via Converse with prompt caching for generation, Titan v2 for embeddings, on IRSA — no keys). Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone), alternate embedding providers (OpenAI, Cohere), and alternate LLM providers (Anthropic, OpenAI).",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -1689,7 +1689,7 @@
     {
       "name": "slack-bot",
       "displayName": "Slack Bot",
-      "description": "Scaffolds a TypeScript Slack bot using @slack/bolt with Socket Mode for local development and HTTP for production. Includes AI-powered message and app-mention handlers, an optional /ask slash command, a pluggable LLM provider registry (Anthropic and OpenAI), and thread-aware conversation context for multi-turn AI responses.",
+      "description": "Scaffolds a TypeScript Slack bot using @slack/bolt with Socket Mode for local development and HTTP for production. Includes AI-powered message and app-mention handlers, an optional /ask slash command, a pluggable LLM provider registry (AWS Bedrock by default — Converse with prompt caching, on IRSA, no keys — plus Anthropic and OpenAI alternates), and thread-aware conversation context for multi-turn AI responses.",
       "version": "0.1.0",
       "category": "applications",
       "persona": [

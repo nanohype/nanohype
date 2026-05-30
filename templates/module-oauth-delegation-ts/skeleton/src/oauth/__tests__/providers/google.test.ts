@@ -38,4 +38,13 @@ describe("googleProvider", () => {
     expect(grant.accessToken).toBe("new");
     expect(grant.refreshToken).toBe("keep-me");
   });
+
+  it("rejects a malformed token response at the boundary", () => {
+    // expires_in arrives as a string — the token endpoint is untrusted, so
+    // the schema must reject it rather than silently coerce.
+    expect(() =>
+      googleProvider.parseTokenResponse({ access_token: "x", expires_in: "soon" }),
+    ).toThrow();
+    expect(() => googleProvider.parseTokenResponse("not-json")).toThrow();
+  });
 });

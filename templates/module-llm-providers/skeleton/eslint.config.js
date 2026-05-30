@@ -13,9 +13,16 @@ export default tseslint.config(
       },
     },
     rules: {
+      // Honor the `_`-prefix convention for intentionally-unused
+      // params/vars/caught errors (e.g. interface methods that ignore some
+      // arguments).
       "@typescript-eslint/no-unused-vars": [
         "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
     },
   },

@@ -4,7 +4,7 @@ import {
   getProvider,
   listProviders,
 } from "../providers/registry.js";
-import type { LlmProvider, LlmProviderFactory } from "../providers/types.js";
+import type { LlmProviderFactory } from "../providers/types.js";
 
 // ── Registry Tests ─────────────────────────────────────────────────
 //

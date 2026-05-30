@@ -4,10 +4,12 @@ name: module-llm-gateway
 displayName: "Module: LLM Gateway"
 description: >
   Unified LLM gateway with pluggable routing strategies, response caching,
-  and cost tracking. Ships with Anthropic, OpenAI, and Groq providers,
-  five routing strategies (static, round-robin, latency, cost, adaptive),
-  three caching modes (hash, sliding-TTL, none), token counting via
-  js-tiktoken, and cost anomaly detection using z-score analysis.
+  and cost tracking. Ships with Bedrock (Converse + prompt caching, IRSA
+  auth, the default), Anthropic, OpenAI, and Groq providers, gateway-level
+  provider fallback, six routing strategies (static, round-robin, latency,
+  cost, adaptive, linucb), three caching modes (hash, sliding-TTL, none),
+  token counting via js-tiktoken, and cost anomaly detection using z-score
+  analysis.
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -35,9 +37,9 @@ variables:
   - name: DefaultProvider
     type: string
     placeholder: "__DEFAULT_PROVIDER__"
-    description: "Default LLM provider (anthropic, openai, groq, or a custom name)"
+    description: "Default LLM provider (bedrock, anthropic, openai, groq, or a custom name)"
     prompt: "Default LLM provider"
-    default: "anthropic"
+    default: "bedrock"
 
   - name: RoutingStrategy
     type: string
@@ -59,6 +61,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
+    version: ">=24"
     purpose: "Node.js runtime for the LLM gateway module"
     optional: false

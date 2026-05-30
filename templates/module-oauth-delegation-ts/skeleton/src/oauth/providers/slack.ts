@@ -6,35 +6,44 @@
 // `access_token`. This adapter reads the user-scope path by default;
 // override `parseTokenResponse` if you want the bot token.
 
+import { z } from "zod";
+
 import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { expiresAtFromExpiresIn } from "./shared.js";
 
-interface SlackTokenResponse {
-  ok: boolean;
-  access_token?: string; // bot token
-  refresh_token?: string;
-  expires_in?: number;
-  scope?: string;
-  authed_user?: {
-    id?: string;
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-    scope?: string;
-  };
-  team?: { id?: string; name?: string };
-}
+// Slack's response is nested: user-scope tokens live under `authed_user`,
+// bot tokens at the top level. `.passthrough()` keeps `team` and other
+// extras available on `raw`.
+const SlackTokenResponseSchema = z
+  .object({
+    ok: z.boolean().optional(),
+    access_token: z.string().optional(), // bot token
+    refresh_token: z.string().optional(),
+    expires_in: z.number().optional(),
+    scope: z.string().optional(),
+    authed_user: z
+      .object({
+        id: z.string().optional(),
+        access_token: z.string().optional(),
+        refresh_token: z.string().optional(),
+        expires_in: z.number().optional(),
+        scope: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 function parse(raw: unknown, previous?: TokenGrant): TokenGrant {
-  const r = raw as SlackTokenResponse;
+  const r = SlackTokenResponseSchema.parse(raw);
   const u = r.authed_user ?? {};
   return {
     accessToken: u.access_token ?? r.access_token ?? "",
     refreshToken: u.refresh_token ?? r.refresh_token ?? previous?.refreshToken,
     expiresAt: expiresAtFromExpiresIn(u.expires_in ?? r.expires_in),
     scope: u.scope ?? r.scope,
-    raw: r as unknown as Record<string, unknown>,
+    raw: r as Record<string, unknown>,
   };
 }
 

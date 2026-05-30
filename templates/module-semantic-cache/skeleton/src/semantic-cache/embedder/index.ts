@@ -5,6 +5,7 @@
 // added by importing their module after this one.
 //
 
+import "./bedrock.js";
 import "./openai.js";
 import "./mock.js";
 

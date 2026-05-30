@@ -1,8 +1,13 @@
 import {
   BedrockRuntimeClient,
-  InvokeModelCommand,
-  InvokeModelWithResponseStreamCommand,
+  ConverseCommand,
+  ConverseStreamCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import type {
+  Message,
+  SystemContentBlock,
+} from "@aws-sdk/client-bedrock-runtime";
+import { z } from "zod";
 import type { LlmProvider } from "./types.js";
 import type {
   ChatMessage,
@@ -11,6 +16,7 @@ import type {
   StreamResponse,
   StreamChunk,
   Pricing,
+  TokenUsage,
 } from "../types.js";
 import { getPricing, estimateCost } from "../types.js";
 import { registerProvider } from "./registry.js";
@@ -20,93 +26,67 @@ import { logger } from "../logger.js";
 
 // ── AWS Bedrock Provider ───────────────────────────────────────────
 //
-// Routes requests to the appropriate model format based on model ID
-// prefix. Supports anthropic.* (Claude format) and meta.* (Llama
-// format). Uses IAM auth via standard AWS credential chain.
+// Bedrock via the Converse API — the org-default LLM path. Auth is the
+// AWS credential chain (IRSA on the cluster), never API keys. A
+// cachePoint after the (stable) system prompt amortizes the large prefix
+// across turns — the mandated prompt-caching pattern; cache_read /
+// cache_write tokens flow through to TokenUsage so the hit ratio is
+// observable. Every call carries an explicit request timeout, so a hung
+// Bedrock socket trips the circuit breaker instead of hanging forever.
+// Converse normalizes the model-family quirks (Claude vs. Llama) into one
+// request/response shape, so there is no hand-rolled body marshalling.
 //
 
 const DEFAULT_MODEL = "anthropic.claude-sonnet-4-6";
+const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
-/** Determine request body format based on model ID prefix. */
-function buildRequestBody(
-  modelId: string,
-  messages: ChatMessage[],
-  opts: { maxTokens: number; temperature: number },
-): string {
-  const prefix = modelId.split(".")[0];
+// Never trust raw model output — validate the Converse usage block before
+// reading token counts. Fields are optional because not every model family
+// reports cache or total counts.
+const converseUsageSchema = z
+  .object({
+    inputTokens: z.number().optional(),
+    outputTokens: z.number().optional(),
+    totalTokens: z.number().optional(),
+    cacheReadInputTokens: z.number().optional(),
+    cacheWriteInputTokens: z.number().optional(),
+  })
+  .partial();
 
-  if (prefix === "anthropic") {
-    const systemParts = messages.filter((m) => m.role === "system");
-    const conversationParts = messages.filter((m) => m.role !== "system");
-    const systemPrompt = systemParts.map((m) => m.content).join("\n\n");
-
-    return JSON.stringify({
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: opts.maxTokens,
-      temperature: opts.temperature,
-      ...(systemPrompt ? { system: systemPrompt } : {}),
-      messages: conversationParts.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
-    });
-  }
-
-  if (prefix === "meta") {
-    const prompt = messages.map((m) => {
-      if (m.role === "system") return `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n${m.content}<|eot_id|>`;
-      if (m.role === "user") return `<|start_header_id|>user<|end_header_id|>\n${m.content}<|eot_id|>`;
-      return `<|start_header_id|>assistant<|end_header_id|>\n${m.content}<|eot_id|>`;
-    }).join("") + "<|start_header_id|>assistant<|end_header_id|>\n";
-
-    return JSON.stringify({
-      prompt,
-      max_gen_len: opts.maxTokens,
-      temperature: opts.temperature,
-    });
-  }
-
-  // Fallback: generic body
-  return JSON.stringify({
-    messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    max_tokens: opts.maxTokens,
-    temperature: opts.temperature,
-  });
+function usageFrom(raw: unknown): TokenUsage {
+  const u = converseUsageSchema.parse(raw ?? {});
+  return {
+    inputTokens: u.inputTokens ?? 0,
+    outputTokens: u.outputTokens ?? 0,
+    cacheReadTokens: u.cacheReadInputTokens ?? 0,
+    cacheWriteTokens: u.cacheWriteInputTokens ?? 0,
+  };
 }
 
-/** Parse response body based on model ID prefix. */
-function parseResponseBody(
-  modelId: string,
-  body: string,
-): { text: string; inputTokens: number; outputTokens: number } {
-  const parsed = JSON.parse(body);
-  const prefix = modelId.split(".")[0];
+/** Split messages into the Converse system blocks and conversation turns. */
+function buildConverse(messages: ChatMessage[]): {
+  system: SystemContentBlock[];
+  turns: Message[];
+} {
+  const systemPrompt = messages
+    .filter((m) => m.role === "system")
+    .map((m) => m.content)
+    .join("\n\n");
 
-  if (prefix === "anthropic") {
-    const text = parsed.content
-      ?.filter((b: { type: string }) => b.type === "text")
-      .map((b: { text: string }) => b.text)
-      .join("") ?? "";
-    return {
-      text,
-      inputTokens: parsed.usage?.input_tokens ?? 0,
-      outputTokens: parsed.usage?.output_tokens ?? 0,
-    };
-  }
+  // cachePoint after the (stable) system prompt — the mandated caching
+  // pattern. Omit the block entirely when there is no system prompt.
+  const system: SystemContentBlock[] = systemPrompt
+    ? [{ text: systemPrompt }, { cachePoint: { type: "default" } }]
+    : [];
 
-  if (prefix === "meta") {
-    return {
-      text: parsed.generation ?? "",
-      inputTokens: parsed.prompt_token_count ?? 0,
-      outputTokens: parsed.generation_token_count ?? 0,
-    };
-  }
+  const turns: Message[] = messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({
+      role: m.role === "assistant" ? "assistant" : "user",
+      content: [{ text: m.content }],
+    }));
 
-  return {
-    text: parsed.text ?? parsed.generation ?? JSON.stringify(parsed),
-    inputTokens: 0,
-    outputTokens: 0,
-  };
+  return { system, turns };
 }
 
 function createBedrockProvider(): LlmProvider {
@@ -133,25 +113,35 @@ function createBedrockProvider(): LlmProvider {
       const maxTokens = opts?.maxTokens ?? 4096;
       const temperature = opts?.temperature ?? 1;
 
-      const body = buildRequestBody(model, messages, { maxTokens, temperature });
-
+      const { system, turns } = buildConverse(messages);
       const start = performance.now();
 
       const response = await cb.execute(() =>
         getClient().send(
-          new InvokeModelCommand({
+          new ConverseCommand({
             modelId: model,
-            body: new TextEncoder().encode(body),
-            contentType: "application/json",
-            accept: "application/json",
+            system,
+            messages: turns,
+            inferenceConfig: {
+              maxTokens,
+              temperature,
+              ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
+              ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+            },
           }),
+          // Per-request timeout — a hung Bedrock socket trips the breaker
+          // instead of hanging forever.
+          { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
         ),
       );
 
       const latencyMs = performance.now() - start;
-      const responseBody = new TextDecoder().decode(response.body);
-      const { text, inputTokens, outputTokens } = parseResponseBody(model, responseBody);
-      const usage = { inputTokens, outputTokens };
+      const usage = usageFrom(response.usage);
+      const blocks = response.output?.message?.content ?? [];
+      const text = blocks
+        .map((b) => b.text ?? "")
+        .join("")
+        .trim();
 
       const modelPricing = getPricing(model.replace(/:.*$/, "").replace(/^.*\./, ""));
       const cost = estimateCost(usage, modelPricing);
@@ -174,34 +164,36 @@ function createBedrockProvider(): LlmProvider {
       async function* generate(): AsyncGenerator<StreamChunk> {
         const start = performance.now();
         let fullText = "";
+        let usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
 
-        const body = buildRequestBody(model, messages, { maxTokens, temperature });
+        const { system, turns } = buildConverse(messages);
 
         const response = await getClient().send(
-          new InvokeModelWithResponseStreamCommand({
+          new ConverseStreamCommand({
             modelId: model,
-            body: new TextEncoder().encode(body),
-            contentType: "application/json",
-            accept: "application/json",
+            system,
+            messages: turns,
+            inferenceConfig: {
+              maxTokens,
+              temperature,
+              ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
+              ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+            },
           }),
+          { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
         );
 
-        if (response.body) {
-          for await (const event of response.body) {
-            if (event.chunk?.bytes) {
-              const chunk = JSON.parse(new TextDecoder().decode(event.chunk.bytes));
-              let delta = "";
-
-              if (chunk.type === "content_block_delta" && chunk.delta?.text) {
-                delta = chunk.delta.text;
-              } else if (chunk.generation) {
-                delta = chunk.generation;
-              }
-
-              if (delta) {
-                fullText += delta;
-                yield { text: delta, done: false };
-              }
+        if (response.stream) {
+          // Converse streams typed SDK events — text deltas and a metadata
+          // event carrying usage — so there is no raw model JSON to parse.
+          for await (const event of response.stream) {
+            const delta = event.contentBlockDelta?.delta?.text;
+            if (delta) {
+              fullText += delta;
+              yield { text: delta, done: false };
+            }
+            if (event.metadata?.usage) {
+              usage = usageFrom(event.metadata.usage);
             }
           }
         }
@@ -209,10 +201,14 @@ function createBedrockProvider(): LlmProvider {
         yield { text: "", done: true };
 
         const latencyMs = performance.now() - start;
-        const usage = {
-          inputTokens: countTokens(messages.map((m) => m.content).join(" ")),
-          outputTokens: countTokens(fullText),
-        };
+        // Some model families omit usage from the stream metadata; fall back
+        // to a local estimate so cost is never silently zero.
+        if (usage.inputTokens === 0 && usage.outputTokens === 0) {
+          usage = {
+            inputTokens: countTokens(messages.map((m) => m.content).join(" ")),
+            outputTokens: countTokens(fullText),
+          };
+        }
         const modelPricing = getPricing(model.replace(/:.*$/, "").replace(/^.*\./, ""));
         const cost = estimateCost(usage, modelPricing);
 

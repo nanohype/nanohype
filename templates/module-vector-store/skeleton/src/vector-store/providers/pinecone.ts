@@ -4,13 +4,17 @@ import type { FilterExpression } from "../filters/types.js";
 import type { VectorStoreProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { compileFilter } from "../filters/compiler.js";
-import { withRetry, batchChunk } from "../helpers.js";
+import { withRetry, withTimeout, batchChunk } from "../helpers.js";
 
 // -- Pinecone Provider ---------------------------------------------------
 //
 // Pinecone SDK-based provider. Handles index connection, batched upserts
 // (100 vectors per batch to stay under Pinecone limits), and query with
 // metadata filtering via the Pinecone filter compiler target.
+//
+// The SDK does not expose a per-call AbortSignal, so every operation is
+// wrapped in withTimeout() to bound its wall-clock time, matching the
+// AbortSignal.timeout discipline the qdrant provider applies to fetch.
 //
 
 interface PineconeConfig extends VectorStoreConfig {
@@ -20,6 +24,8 @@ interface PineconeConfig extends VectorStoreConfig {
   index?: string;
   /** Optional namespace within the index. */
   namespace?: string;
+  /** Per-call timeout in milliseconds. Default: 30000. */
+  timeoutMillis?: number;
 }
 
 /** Pinecone limits upserts to 100 vectors per request. */
@@ -30,6 +36,7 @@ class PineconeProvider implements VectorStoreProvider {
   private client: Pinecone | null = null;
   private index: ReturnType<Pinecone["index"]> | null = null;
   private namespace: string | undefined;
+  private timeoutMillis = 30_000;
 
   async init(config: PineconeConfig): Promise<void> {
     const apiKey = (config.apiKey as string) || process.env.PINECONE_API_KEY;
@@ -47,6 +54,8 @@ class PineconeProvider implements VectorStoreProvider {
     }
 
     this.namespace = (config.namespace as string) || process.env.PINECONE_NAMESPACE;
+    this.timeoutMillis =
+      (config.timeoutMillis as number) || Number(process.env.PINECONE_TIMEOUT_MS) || 30_000;
     this.client = new Pinecone({ apiKey });
     this.index = this.client.index(indexName);
   }
@@ -68,7 +77,7 @@ class PineconeProvider implements VectorStoreProvider {
 
     for (const batch of batches) {
       await withRetry(async () => {
-        await ns.upsert(batch);
+        await withTimeout(() => ns.upsert(batch), this.timeoutMillis, "Pinecone upsert");
       });
     }
   }
@@ -92,7 +101,11 @@ class PineconeProvider implements VectorStoreProvider {
 
     const ns = this.getNamespace();
     const response = await withRetry(async () => {
-      return ns.query(queryOptions as Parameters<typeof ns.query>[0]);
+      return withTimeout(
+        () => ns.query(queryOptions as Parameters<typeof ns.query>[0]),
+        this.timeoutMillis,
+        "Pinecone query",
+      );
     });
 
     return (response.matches || []).map((match) => {
@@ -112,14 +125,19 @@ class PineconeProvider implements VectorStoreProvider {
 
     const ns = this.getNamespace();
     await withRetry(async () => {
-      await ns.deleteMany(ids);
+      await withTimeout(() => ns.deleteMany(ids), this.timeoutMillis, "Pinecone delete");
     });
   }
 
   async count(): Promise<number> {
     if (!this.index) throw new Error("Provider not initialized");
 
-    const stats = await this.index.describeIndexStats();
+    const index = this.index;
+    const stats = await withTimeout(
+      () => index.describeIndexStats(),
+      this.timeoutMillis,
+      "Pinecone describeIndexStats",
+    );
     if (this.namespace && stats.namespaces) {
       return stats.namespaces[this.namespace]?.recordCount ?? 0;
     }

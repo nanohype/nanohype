@@ -7,7 +7,7 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider, listProviders } from "./providers/index.js";
+import { getProvider } from "./providers/index.js";
 import { getStrategy } from "./routing/index.js";
 import { getCachingStrategy } from "./caching/index.js";
 import { computeCacheKey } from "./caching/hash.js";
@@ -65,7 +65,7 @@ const CreateGatewaySchema = z.object({
   providers: z.array(z.string().min(1)).min(1, "At least one provider is required"),
   routingStrategy: z.string().optional(),
   cachingStrategy: z.string().optional(),
-  models: z.record(z.string()).optional(),
+  models: z.record(z.string(), z.string()).optional(),
   maxTokens: z.number().positive().optional(),
   temperature: z.number().min(0).max(2).optional(),
 });
@@ -148,25 +148,43 @@ export function createGateway(config: GatewayConfig): Gateway {
       };
       const selectedProvider = routing.select(effectiveProviders, routingContext);
 
-      // Apply model override from config if not set in options
-      if (!chatOpts.model && config.models?.[selectedProvider.name]) {
-        chatOpts.model = config.models[selectedProvider.name];
+      // Build the fallback order: the routed provider first, then the
+      // remaining configured providers in order. If the routed provider's
+      // call fails (provider error or an open circuit breaker), the gateway
+      // tries the next one. recordOutcome fires per attempt so learning
+      // strategies see both the failure and the eventual success.
+      const candidates = [
+        selectedProvider,
+        ...effectiveProviders.filter((p) => p.name !== selectedProvider.name),
+      ];
+
+      let response: GatewayResponse | undefined;
+      let lastError: unknown;
+
+      for (const provider of candidates) {
+        // Apply model override from config if not set in options. Recomputed
+        // per candidate so each provider gets its own configured model.
+        const attemptOpts: ChatOptions = { ...chatOpts };
+        if (!attemptOpts.model && config.models?.[provider.name]) {
+          attemptOpts.model = config.models[provider.name];
+        }
+
+        try {
+          response = await provider.chat(messages, attemptOpts);
+          routing.recordOutcome?.(provider.name, response.latencyMs, true);
+          break;
+        } catch (error) {
+          lastError = error;
+          routing.recordOutcome?.(provider.name, 0, false);
+        }
       }
 
-      // Call the provider
-      let response: GatewayResponse;
-      let success = true;
-
-      try {
-        response = await selectedProvider.chat(messages, chatOpts);
-      } catch (error) {
-        success = false;
-        routing.recordOutcome?.(selectedProvider.name, 0, false);
-        throw error;
+      // All candidates failed — surface the last error.
+      if (!response) {
+        throw lastError instanceof Error
+          ? lastError
+          : new Error(`All providers failed: ${String(lastError)}`);
       }
-
-      // Record outcome for learning strategies
-      routing.recordOutcome?.(selectedProvider.name, response.latencyMs, true);
 
       // Record metrics
       const labels = { provider: response.provider, model: response.model };

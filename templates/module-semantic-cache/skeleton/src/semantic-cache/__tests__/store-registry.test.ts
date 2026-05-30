@@ -28,13 +28,23 @@ function stubStore(name: string): VectorCacheStore {
 describe("vector store registry", () => {
   const unique = () => `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  it("registers a store and retrieves it by name", () => {
+  it("registers a factory and resolves it by name", () => {
     const name = unique();
     const store = stubStore(name);
 
-    registerVectorStore(store);
+    registerVectorStore(name, () => store);
 
     expect(getVectorStore(name)).toBe(store);
+  });
+
+  it("invokes the factory on every get, yielding fresh instances", () => {
+    const name = unique();
+
+    registerVectorStore(name, () => stubStore(name));
+
+    const first = getVectorStore(name);
+    const second = getVectorStore(name);
+    expect(first).not.toBe(second);
   });
 
   it("throws when retrieving an unregistered store", () => {
@@ -45,9 +55,9 @@ describe("vector store registry", () => {
 
   it("throws when registering a duplicate store name", () => {
     const name = unique();
-    registerVectorStore(stubStore(name));
+    registerVectorStore(name, () => stubStore(name));
 
-    expect(() => registerVectorStore(stubStore(name))).toThrow(
+    expect(() => registerVectorStore(name, () => stubStore(name))).toThrow(
       /already registered/,
     );
   });
@@ -56,8 +66,8 @@ describe("vector store registry", () => {
     const a = unique();
     const b = unique();
 
-    registerVectorStore(stubStore(a));
-    registerVectorStore(stubStore(b));
+    registerVectorStore(a, () => stubStore(a));
+    registerVectorStore(b, () => stubStore(b));
 
     const names = listVectorStores();
     expect(names).toContain(a);

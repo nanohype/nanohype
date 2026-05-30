@@ -5,6 +5,7 @@
 // importing their module after this one.
 //
 
+import "./bedrock.js";
 import "./anthropic.js";
 import "./openai.js";
 import "./groq.js";
