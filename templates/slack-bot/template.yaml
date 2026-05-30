@@ -6,8 +6,9 @@ description: >
   Scaffolds a TypeScript Slack bot using @slack/bolt with Socket Mode for
   local development and HTTP for production. Includes AI-powered message
   and app-mention handlers, an optional /ask slash command, a pluggable
-  LLM provider registry (Anthropic and OpenAI), and thread-aware
-  conversation context for multi-turn AI responses.
+  LLM provider registry (AWS Bedrock by default — Converse with prompt
+  caching, on IRSA, no keys — plus Anthropic and OpenAI alternates), and
+  thread-aware conversation context for multi-turn AI responses.
 version: "0.1.0"
 license: Apache-2.0
 persona: [engineering]
@@ -35,9 +36,9 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: "__LLM_PROVIDER__"
-    description: "LLM provider to use for AI responses"
+    description: "Default LLM provider — bedrock (AWS Bedrock, IRSA, prompt-cached), anthropic, or openai"
     prompt: "LLM provider"
-    default: "anthropic"
+    default: "bedrock"
 
   - name: IncludeSlashCommands
     type: bool
@@ -72,6 +73,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
+    version: ">=24"
     purpose: "Node.js runtime for the Slack bot"
     optional: false

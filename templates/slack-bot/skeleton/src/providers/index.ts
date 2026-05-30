@@ -7,7 +7,9 @@
  * environment variable (set via the __LLM_PROVIDER__ placeholder).
  */
 
-// Side-effect imports: each module calls registerProvider() at load time
+// Side-effect imports: each module calls registerProvider() at load time.
+// Bedrock is the org-default LLM path; anthropic/openai are alternates.
+import "./bedrock.js";
 import "./anthropic.js";
 import "./openai.js";
 import "./mock.js";
