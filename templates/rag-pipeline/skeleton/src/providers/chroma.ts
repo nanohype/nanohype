@@ -5,20 +5,31 @@
  */
 
 import { ChromaClient } from "chromadb";
+import type { Collection, Metadata, Where } from "chromadb";
 import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.js";
 import type { VectorStoreConfig } from "../config.js";
 import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
+// The JS Chroma client (v3) is an HTTP client — it talks to a running Chroma
+// server, not an in-process store (the embedded/persistent mode is Python-only).
+// Run one for local dev with `docker run -p 8000:8000 chromadb/chroma`; in a
+// cluster, point chromaUrl at the Chroma service (or use the pgvector backend,
+// which is the durable default).
 class ChromaVectorStore implements VectorStoreProvider {
   private readonly client: ChromaClient;
   private readonly collectionName: string;
-  private collection: Awaited<ReturnType<ChromaClient["getOrCreateCollection"]>> | null = null;
+  private collection: Collection | null = null;
   private readonly cb = createCircuitBreaker();
 
   constructor(config: VectorStoreConfig) {
-    this.client = new ChromaClient({ path: config.chromaPersistDir });
+    const url = new URL(config.chromaUrl);
+    this.client = new ChromaClient({
+      host: url.hostname,
+      port: url.port ? Number(url.port) : url.protocol === "https:" ? 443 : 8000,
+      ssl: url.protocol === "https:",
+    });
     this.collectionName = config.collectionName;
   }
 
@@ -27,6 +38,9 @@ class ChromaVectorStore implements VectorStoreProvider {
       this.client.getOrCreateCollection({
         name: this.collectionName,
         metadata: { "hnsw:space": "cosine" },
+        // We always supply pre-computed embeddings, so no embedding function is
+        // needed; null skips loading the default (which isn't bundled in v3).
+        embeddingFunction: null,
       })
     );
     logger.info("ChromaDB initialized", { collection: this.collectionName });
@@ -41,7 +55,7 @@ class ChromaVectorStore implements VectorStoreProvider {
         ids: documents.map((d) => d.id),
         embeddings: documents.map((d) => d.embedding),
         documents: documents.map((d) => d.content),
-        metadatas: documents.map((d) => d.metadata as Record<string, string>),
+        metadatas: documents.map((d) => d.metadata as Metadata),
       })
     );
   }
@@ -58,7 +72,7 @@ class ChromaVectorStore implements VectorStoreProvider {
       col.query({
         queryEmbeddings: [queryEmbedding],
         nResults: topK,
-        where: filter as Record<string, string> | undefined,
+        where: filter as Where | undefined,
       })
     );
 

@@ -11,6 +11,10 @@ cp .env.example .env
 # Install dependencies
 npm install
 
+# If using the chroma backend, run a Chroma server (its JS client is HTTP-only —
+# there is no embedded mode). Point VECTORSTORE_CHROMA_URL at it.
+docker run -d --rm -p 8000:8000 chromadb/chroma
+
 # Ingest documents from a directory
 npm run ingest -- ./docs
 
