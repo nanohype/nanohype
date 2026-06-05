@@ -145,7 +145,7 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
       backend: "test-integration-vs",
       collectionName: "test",
       pgConnectionString: "",
-      chromaPersistDir: "",
+      chromaUrl: "",
       qdrantUrl: "",
       qdrantApiKey: "",
       pineconeApiKey: "",
