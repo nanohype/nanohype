@@ -18,7 +18,9 @@ import {
   gatewayTokenUsage,
   gatewayCostTotal,
   gatewayCacheTotal,
+  bedrockCacheTotal,
 } from "./metrics.js";
+import { bedrockCacheKinds } from "./providers/bedrock-cache.js";
 import type { GatewayProvider } from "./providers/types.js";
 import type { GatewayConfig, ChatMessage, ChatOptions, GatewayResponse } from "./types.js";
 import type { CostFilters, CostSummary } from "./cost/tracker.js";
@@ -193,6 +195,17 @@ export function createGateway(config: GatewayConfig): Gateway {
       gatewayTokenUsage.add(response.inputTokens, { ...labels, direction: "input" });
       gatewayTokenUsage.add(response.outputTokens, { ...labels, direction: "output" });
       gatewayCostTotal.add(response.cost, labels);
+
+      // Bedrock prompt-cache events (only providers that report cache tokens —
+      // Bedrock via Converse — populate these; distinct from the response cache).
+      if (response.cacheReadTokens !== undefined || response.cacheWriteTokens !== undefined) {
+        for (const kind of bedrockCacheKinds(
+          response.cacheReadTokens ?? 0,
+          response.cacheWriteTokens ?? 0,
+        )) {
+          bedrockCacheTotal.add(1, { ...labels, kind });
+        }
+      }
 
       // Record cost
       costTracker.record(response, chatOpts.tags ?? {});
