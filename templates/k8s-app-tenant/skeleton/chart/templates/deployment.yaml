@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "app.fullname" . }}
+  name: {{ include "tenant-chart-base.fullname" . }}
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+    {{- include "tenant-chart-base.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -13,17 +13,17 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      {{- include "app.selectorLabels" . | nindent 6 }}
+      {{- include "tenant-chart-base.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "app.labels" . | nindent 8 }}
+        {{- include "tenant-chart-base.labels" . | nindent 8 }}
       annotations:
         {{- range $k, $v := .Values.otel.resourceAttributes }}
         resource.opentelemetry.io/{{ $k }}: {{ $v | quote }}
         {{- end }}
     spec:
-      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      serviceAccountName: {{ include "tenant-chart-base.serviceAccountName" . }}
       # Headroom for SIGTERM-driven graceful shutdown (drain in-flight work, flush
       # OTel). Bump for slow drains (e.g. queue consumers). A preStop sleep can be
       # added here if the app needs endpoint-deregistration lag before SIGTERM.
@@ -52,7 +52,7 @@ spec:
           {{- if .Values.externalSecret.enabled }}
           envFrom:
             - secretRef:
-                name: {{ include "app.fullname" . }}-secrets
+                name: {{ include "tenant-chart-base.fullname" . }}-secrets
           {{- end }}
           livenessProbe:
             {{- toYaml .Values.probes.liveness | nindent 12 }}

@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-06-07T02:14:06.000Z",
+  "generated_at": "2026-06-07T02:34:52.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -2063,6 +2063,20 @@
         "multi-agent"
       ],
       "path": "composites/multi-agent.yaml"
+    },
+    {
+      "name": "platform-tenant",
+      "displayName": "Platform Tenant",
+      "description": "One-shot scaffolder for a k8s-native nanohype Platform tenant: the k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values, an ArgoCD ApplicationSet entry, and the Platform + BudgetPolicy CRs) plus the optional AI building blocks as local packages — the LLM gateway and the vector store. The output satisfies the platform-tenant-contract: a chart with the required templates, the gitops entry, and the Platform CR, with the OTel agents.tenant / agents.platform attributes set and no inline IAM. Pair the packages with a ts-service or agentic-loop for the app's own logic.",
+      "version": "0.1.0",
+      "tags": [
+        "kubernetes",
+        "platform",
+        "tenant",
+        "ai",
+        "nanohype"
+      ],
+      "path": "composites/platform-tenant.yaml"
     },
     {
       "name": "product-launch",
