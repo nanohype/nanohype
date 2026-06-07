@@ -43,10 +43,19 @@ export interface GatewayResponse {
   outputTokens: number;
   /** Request latency in milliseconds. */
   latencyMs: number;
-  /** Whether this response was served from cache. */
+  /** Whether this response was served from the gateway's response cache. */
   cached: boolean;
   /** Cost in USD for this request. */
   cost: number;
+  /**
+   * Bedrock prompt-cache input tokens served from cache this call. Distinct from
+   * `cached` (a full gateway response-cache hit) — a prompt-cache read still
+   * generates a fresh response, just from a cached prefix. Set only by providers
+   * that report it (Bedrock via Converse); undefined elsewhere.
+   */
+  cacheReadTokens?: number;
+  /** Bedrock prompt-cache input tokens written to cache this call. */
+  cacheWriteTokens?: number;
 }
 
 /** Configuration for createGateway(). */

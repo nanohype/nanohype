@@ -5,6 +5,7 @@ import {
 import type { GatewayProvider, ProviderPricing } from "./types.js";
 import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
 import { registerProvider } from "./registry.js";
+import { readBedrockCacheTokens } from "./bedrock-cache.js";
 import { createCircuitBreaker } from "./circuit-breaker.js";
 import { countTokens } from "../tokens/counter.js";
 
@@ -77,6 +78,9 @@ const bedrockProvider: GatewayProvider = {
     const usage = response.usage;
     const inputTokens = usage?.inputTokens ?? 0;
     const outputTokens = usage?.outputTokens ?? 0;
+    // Prompt-cache tokens (Converse reports these; the gateway emits
+    // bedrock_cache_total from them — see bedrock-cache.ts).
+    const { cacheReadTokens, cacheWriteTokens } = readBedrockCacheTokens(usage);
 
     const blocks = response.output?.message?.content ?? [];
     const text = blocks
@@ -84,8 +88,11 @@ const bedrockProvider: GatewayProvider = {
       .join("\n")
       .trim();
 
+    // Cache-aware cost: inputTokens is the non-cached input; reads bill at ~10%
+    // of the input rate, writes at ~125% (AWS Bedrock prompt-cache pricing).
     const cost =
-      (inputTokens * this.pricing.input) / 1_000_000 +
+      ((inputTokens + cacheReadTokens * 0.1 + cacheWriteTokens * 1.25) * this.pricing.input) /
+        1_000_000 +
       (outputTokens * this.pricing.output) / 1_000_000;
 
     return {
@@ -95,8 +102,12 @@ const bedrockProvider: GatewayProvider = {
       inputTokens,
       outputTokens,
       latencyMs,
+      // `cached` is a gateway response-cache hit; a prompt-cache read is not one
+      // (the response is freshly generated), so it stays false here.
       cached: false,
       cost,
+      cacheReadTokens,
+      cacheWriteTokens,
     };
   },
 

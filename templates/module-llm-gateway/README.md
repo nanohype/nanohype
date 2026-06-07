@@ -11,7 +11,20 @@ Unified LLM gateway with pluggable routing strategies, response caching, and cos
 - Anomaly detection using z-score analysis on rolling cost windows
 - Token counting via js-tiktoken with model-aware encoding cache
 - Circuit breaker on every provider for fault isolation
-- OTel metrics for request count, latency, token usage, and cost
+- OTel metrics for request count, latency, token usage, cost, and Bedrock prompt-cache effectiveness
+
+## Bedrock prompt caching
+
+The Bedrock provider sends a `cachePoint` after the system prompt, so a stable prefix is
+amortized across turns. Converse reports `cacheReadInputTokens` / `cacheWriteInputTokens`,
+which the provider surfaces on the response (`cacheReadTokens` / `cacheWriteTokens`) and
+prices correctly (reads ~10%, writes ~125% of the input rate). The gateway emits a
+`bedrock_cache_total` counter labeled `kind` (hit / write / miss) so the hit ratio —
+`hit / (hit + write)` — is observable and the prompt-caching mandate is verifiable.
+
+This is measurable only via Converse: the raw InvokeModel API marks the system prompt with
+`cache_control: ephemeral` but does not return cache token counts, so the gateway
+standardizes on Converse for measured caching.
 
 ## Variables
 

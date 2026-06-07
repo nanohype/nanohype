@@ -35,3 +35,13 @@ export const gatewayCostTotal = meter.createCounter("gateway_cost_usd", {
 export const gatewayCacheTotal = meter.createCounter("gateway_cache_total", {
   description: "Gateway cache lookups by result",
 });
+
+/**
+ * Bedrock prompt-cache events, labeled by kind (hit | write | miss). Distinct
+ * from gateway_cache_total — that tracks the gateway's own response cache; this
+ * tracks Bedrock's server-side prompt-prefix cache so the hit ratio
+ * (hit / (hit + write)) is observable and the org's caching mandate is verifiable.
+ */
+export const bedrockCacheTotal = meter.createCounter("bedrock_cache_total", {
+  description: "Bedrock prompt-cache events by kind (hit, write, miss)",
+});
