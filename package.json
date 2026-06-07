@@ -32,7 +32,7 @@
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
     "sync:library": "node scripts/sync-library.mjs",
     "verify:library": "node scripts/sync-library.mjs --check",
-    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**'"
+    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**' '!.plans/**'"
   },
   "devDependencies": {
     "ajv-cli": "^5.0.0",
