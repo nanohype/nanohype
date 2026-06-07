@@ -92,6 +92,18 @@ Nine dimensions every build is graded against. This file names them and summariz
 
 ---
 
+## Testing rubric — `testing-rubric.json`
+
+The org's test baseline: the testing shape, the coverage floor, and the practices a build is held to. Read it when wiring up a project's test runner or grading the testing dimension.
+
+- **Shape** — Testing Trophy: a wide static-analysis base (types + lint), an integration-heavy middle that carries the bulk of confidence, and a thin e2e cap. Integration over isolated unit tests for orchestration code.
+- **Coverage floor** — branches ≥ 60; lines, functions, statements ≥ 75.
+- **Rules** — encode the floor in the runner config (not just a CI flag); 100% on security-critical files; typecheck includes test files; hermetic integration (no live network in the default run); contract tests for every external API; per-package floors allowed but never below the global floor.
+
+The deeper per-language enforcement (how each runner is configured, the REJECT criteria) lives in the reference client's bundled `quality-check` skill.
+
+---
+
 ## Versioning
 
 Each file declares its `version` (a positive integer). Bump the version field on any breaking shape change. Agents that consume these standards should pin to a major version range (the `version` field == major; minor evolution within a major must be backwards-compatible).

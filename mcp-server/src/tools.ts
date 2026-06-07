@@ -16,6 +16,7 @@ const STANDARD_NAMES: StandardName[] = [
   'platform-tenant-contract',
   'llm-policy',
   'quality-rubric-dimensions',
+  'testing-rubric',
 ];
 
 interface ToolDescriptor {

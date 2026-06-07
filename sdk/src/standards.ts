@@ -7,6 +7,7 @@ import type {
   Standard,
   StandardName,
   Standards,
+  TestingRubricStandard,
   VersionCurrencyStandard,
 } from './types.js';
 import { NanohypeError } from './errors.js';
@@ -17,6 +18,7 @@ const ALL_STANDARDS: StandardName[] = [
   'platform-tenant-contract',
   'llm-policy',
   'quality-rubric-dimensions',
+  'testing-rubric',
 ];
 
 const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
@@ -25,6 +27,7 @@ const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
   'platform-tenant-contract': 'nanohype/standards/platform-tenant-contract',
   'llm-policy': 'nanohype/standards/llm-policy',
   'quality-rubric-dimensions': 'nanohype/standards/quality-rubric-dimensions',
+  'testing-rubric': 'nanohype/standards/testing-rubric',
 };
 
 /**
@@ -51,13 +54,13 @@ export async function loadStandard(
 /**
  * Load every published standard in a single bundle.
  *
- * Fires the five fetches in parallel. The return shape exposes each
+ * Fires the fetches in parallel. The return shape exposes each
  * standard under its canonical name so consumers don't have to remember
  * the `kind` discriminator strings (`bundle['language-toolchain']` rather
  * than scanning the union).
  */
 export async function loadStandards(source: CatalogSource): Promise<Standards> {
-  const [toolchain, currency, contract, llm, rubric] = await Promise.all(
+  const [toolchain, currency, contract, llm, rubric, testing] = await Promise.all(
     ALL_STANDARDS.map((name) => loadStandard(source, name)),
   );
   return {
@@ -66,5 +69,6 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     'platform-tenant-contract': contract as PlatformTenantContractStandard,
     'llm-policy': llm as LLMPolicyStandard,
     'quality-rubric-dimensions': rubric as QualityRubricDimensionsStandard,
+    'testing-rubric': testing as TestingRubricStandard,
   };
 }

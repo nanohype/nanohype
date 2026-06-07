@@ -159,7 +159,8 @@ export type StandardName =
   | 'version-currency'
   | 'platform-tenant-contract'
   | 'llm-policy'
-  | 'quality-rubric-dimensions';
+  | 'quality-rubric-dimensions'
+  | 'testing-rubric';
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -239,13 +240,27 @@ export interface QualityRubricDimensionsStandard {
   };
 }
 
+/** Standards file: testing rubric — the org test baseline (shape, coverage floor, practices). */
+export interface TestingRubricStandard {
+  kind: 'nanohype/standards/testing-rubric';
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    shape: string;
+    coverage_floor: { branches: number; lines: number; functions: number; statements: number };
+    rules: { id: string; summary: string; severity?: 'reject' | 'warn' }[];
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
   | VersionCurrencyStandard
   | PlatformTenantContractStandard
   | LLMPolicyStandard
-  | QualityRubricDimensionsStandard;
+  | QualityRubricDimensionsStandard
+  | TestingRubricStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
@@ -258,6 +273,7 @@ export interface Standards {
   'platform-tenant-contract': PlatformTenantContractStandard;
   'llm-policy': LLMPolicyStandard;
   'quality-rubric-dimensions': QualityRubricDimensionsStandard;
+  'testing-rubric': TestingRubricStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */

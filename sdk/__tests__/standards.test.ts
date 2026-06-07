@@ -64,6 +64,15 @@ describe('loadStandard', () => {
     }
   });
 
+  it('loads testing-rubric with a coverage floor and enforcement rules', async () => {
+    const s = await loadStandard(source, 'testing-rubric');
+    if (s.kind !== 'nanohype/standards/testing-rubric') throw new Error('kind narrow');
+    expect(s.content.coverage_floor.branches).toBeGreaterThanOrEqual(60);
+    expect(s.content.coverage_floor.lines).toBeGreaterThanOrEqual(75);
+    expect(s.content.rules.length).toBeGreaterThan(0);
+    expect(s.content.rules.some((r) => r.id === 'typecheck-includes-tests')).toBe(true);
+  });
+
   it('throws NanohypeError when the standard is missing', async () => {
     const broken = new LocalSource({ rootDir: '/tmp/nonexistent-nanohype-standards' });
     await expect(loadStandard(broken, 'llm-policy')).rejects.toBeInstanceOf(NanohypeError);
@@ -84,5 +93,6 @@ describe('loadStandards (bundle)', () => {
     expect(bundle['quality-rubric-dimensions'].kind).toBe(
       'nanohype/standards/quality-rubric-dimensions',
     );
+    expect(bundle['testing-rubric'].kind).toBe('nanohype/standards/testing-rubric');
   });
 });
