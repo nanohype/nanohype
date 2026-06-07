@@ -15,7 +15,8 @@
         "nanohype/standards/version-currency",
         "nanohype/standards/platform-tenant-contract",
         "nanohype/standards/llm-policy",
-        "nanohype/standards/quality-rubric-dimensions"
+        "nanohype/standards/quality-rubric-dimensions",
+        "nanohype/standards/testing-rubric"
       ]
     },
     "version": {
@@ -193,6 +194,43 @@
                     "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
                     "name": { "type": "string" },
                     "summary": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/testing-rubric" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["shape", "coverage_floor", "rules"],
+            "properties": {
+              "shape": { "type": "string" },
+              "coverage_floor": {
+                "type": "object",
+                "required": ["branches", "lines", "functions", "statements"],
+                "properties": {
+                  "branches": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "lines": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "functions": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "statements": { "type": "integer", "minimum": 0, "maximum": 100 }
+                }
+              },
+              "rules": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "summary": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["reject", "warn"] }
                   }
                 }
               }
