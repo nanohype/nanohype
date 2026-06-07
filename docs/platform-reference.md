@@ -20,15 +20,15 @@ If you're a human reading this looking for "how do I use the templates," skip do
 
 Six public repos form the system. Five are the deploy substrate; the sixth (`fab`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
 
-| Repo | Role | Agent entry point |
-|---|---|---|
-| [`nanohype/nanohype`](https://github.com/nanohype/nanohype) | Template catalog + SDK + the public Platform Reference itself (this file) | [`AGENTS.md`](../AGENTS.md) |
-| [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone) | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, per-app `<app>-platform` components | `landing-zone/AGENTS.md` |
-| [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops) | ArgoCD addon catalog for EKS clusters (App-of-Apps pattern) | `eks-gitops/AGENTS.md` |
-| [`nanohype/aks-gitops`](https://github.com/nanohype/aks-gitops) | Same for AKS | `aks-gitops/AGENTS.md` |
-| [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs | `eks-agent-platform/AGENTS.md` |
-| [`nanohype/kx`](https://github.com/nanohype/kx) | Local kind workspace that mirrors `eks-gitops`. Run the same charts locally before deploying | `kx/AGENTS.md` |
-| [`nanohype/fab`](https://github.com/nanohype/fab) | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.fab/skills/` | `fab/skills/README.md` |
+| Repo                                                                            | Role                                                                                                                                                                                                                                                                                                                                                                 | Agent entry point              |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| [`nanohype/nanohype`](https://github.com/nanohype/nanohype)                     | Template catalog + SDK + the public Platform Reference itself (this file)                                                                                                                                                                                                                                                                                            | [`AGENTS.md`](../AGENTS.md)    |
+| [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone)             | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, per-app `<app>-platform` components                                                                                                                                                                                                                                                | `landing-zone/AGENTS.md`       |
+| [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops)                 | ArgoCD addon catalog for EKS clusters (App-of-Apps pattern)                                                                                                                                                                                                                                                                                                          | `eks-gitops/AGENTS.md`         |
+| [`nanohype/aks-gitops`](https://github.com/nanohype/aks-gitops)                 | Same for AKS                                                                                                                                                                                                                                                                                                                                                         | `aks-gitops/AGENTS.md`         |
+| [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs                                                                                                                                                                                                                                                    | `eks-agent-platform/AGENTS.md` |
+| [`nanohype/kx`](https://github.com/nanohype/kx)                                 | Local kind workspace that mirrors `eks-gitops`. Run the same charts locally before deploying                                                                                                                                                                                                                                                                         | `kx/AGENTS.md`                 |
+| [`nanohype/fab`](https://github.com/nanohype/fab)                               | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.fab/skills/` | `fab/skills/README.md`         |
 
 The boundary between layers:
 
@@ -58,13 +58,14 @@ Validated against [`schemas/catalog.schema.json`](../schemas/catalog.schema.json
 
 The production bar every build meets, in machine-readable JSON under [`standards/`](../standards/):
 
-| File | What it declares |
-|---|---|
-| [`language-toolchain.json`](../standards/language-toolchain.json) | Per-language `{install, build, lint, test, docs}` command sets + manifest, lockfile, registry, version-lookup |
-| [`version-currency.json`](../standards/version-currency.json) | EOL policy, version floor, accepted `@pin` reasons, per-language registries |
-| [`platform-tenant-contract.json`](../standards/platform-tenant-contract.json) | The required artifacts (chart, ApplicationSet entry, Platform CR), the minimum Platform CR shape, OTel resource attrs, and what NOT to do |
-| [`llm-policy.json`](../standards/llm-policy.json) | Bedrock-primary, IRSA auth, model tiers (sonnet default / opus escalation / haiku light), region preferences, prompt-caching requirement |
+| File                                                                            | What it declares                                                                                                                                                                         |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`language-toolchain.json`](../standards/language-toolchain.json)               | Per-language `{install, build, lint, test, docs}` command sets + manifest, lockfile, registry, version-lookup                                                                            |
+| [`version-currency.json`](../standards/version-currency.json)                   | EOL policy, version floor, accepted `@pin` reasons, per-language registries                                                                                                              |
+| [`platform-tenant-contract.json`](../standards/platform-tenant-contract.json)   | The required artifacts (chart, ApplicationSet entry, Platform CR), the minimum Platform CR shape, OTel resource attrs, and what NOT to do                                                |
+| [`llm-policy.json`](../standards/llm-policy.json)                               | Bedrock-primary, IRSA auth, model tiers (sonnet default / opus escalation / haiku light), region preferences, prompt-caching requirement                                                 |
 | [`quality-rubric-dimensions.json`](../standards/quality-rubric-dimensions.json) | The nine quality dimensions every build is graded against. Dimension names + summaries only — the weights, reviewer assignments, and merge-gate enforcement live in the reference client |
+| [`testing-rubric.json`](../standards/testing-rubric.json)                       | The testing-strategy bar — per-language coverage floors enforced in-config, the testing-trophy shape, and `security-critical-100` (100% on audit ledgers, auth, and approval gates)      |
 
 Each file is validated against [`schemas/standards.schema.json`](../schemas/standards.schema.json). [`standards/README.md`](../standards/README.md) is the human-readable normative form.
 
@@ -87,7 +88,12 @@ If you're skipping straight to delivery, only `eks-agent-platform/AGENTS.md` is 
 `@nanohype/sdk` is the reference TypeScript implementation of the catalog + standards consumption pattern. Zero runtime dependencies.
 
 ```typescript
-import { LocalSource, loadCatalog, loadStandards, renderTemplate } from "@nanohype/sdk";
+import {
+  LocalSource,
+  loadCatalog,
+  loadStandards,
+  renderTemplate,
+} from "@nanohype/sdk";
 
 // Discovery
 const source = new LocalSource("/path/to/nanohype-repo");
@@ -95,7 +101,9 @@ const catalog = await loadCatalog(source);
 const standards = await loadStandards(source);
 
 // Selection (your client decides which template fits)
-const templateName = catalog.templates.find((t) => t.category === "ai-systems" && t.tags.includes("rag"))?.name;
+const templateName = catalog.templates.find(
+  (t) => t.category === "ai-systems" && t.tags.includes("rag"),
+)?.name;
 
 // Render
 await renderTemplate({
@@ -108,7 +116,7 @@ await renderTemplate({
 
 For agents running remotely without a checkout, use `GitHubSource` instead — same API, fetches manifests from the GitHub API.
 
-`loadStandards()` returns a typed bundle covering all five standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
+`loadStandards()` returns a typed bundle covering all six standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
 
 ## MCP server
 
@@ -120,9 +128,9 @@ For agents running inside Claude Desktop, Claude API tool-use, or an MCP-capable
   "mcpServers": {
     "nanohype": {
       "command": "npx",
-      "args": ["-y", "@nanohype/mcp"]
-    }
-  }
+      "args": ["-y", "@nanohype/mcp"],
+    },
+  },
 }
 ```
 
@@ -143,7 +151,7 @@ Fab runs the same workflows against two transports:
 
 Pick by setting `FAB_RUNTIME=managed-agents | local`. The two are behaviorally 1:1 for the application-level workflow flow; transport-level trade-offs (durability, sandboxing, deploy step, threading) are documented in [`fab/docs/transports.md`](https://github.com/nanohype/fab/blob/main/docs/transports.md).
 
-The overlay system. Fab ships baseline skills (`quality-check`, `factory-preamble`, `intake-guide`, role briefs) as markdown files in `fab/skills/`. When loading a skill, fab walks four locations in priority order — `$FAB_SKILLS_DIR` → `~/.fab/skills/` → `<cwd>/.fab/skills/` → bundled — and the first match wins as the base. `<skill>.append.md` files from every layer get concatenated for additive overlays. Result: anyone can clone fab and run a competent factory; your personal overlay at `~/.fab/skills/` produces *your* factory.
+The overlay system. Fab ships baseline skills (`quality-check`, `factory-preamble`, `intake-guide`, role briefs) as markdown files in `fab/skills/`. When loading a skill, fab walks four locations in priority order — `$FAB_SKILLS_DIR` → `~/.fab/skills/` → `<cwd>/.fab/skills/` → bundled — and the first match wins as the base. `<skill>.append.md` files from every layer get concatenated for additive overlays. Result: anyone can clone fab and run a competent factory; your personal overlay at `~/.fab/skills/` produces _your_ factory.
 
 What fab does, broadly:
 

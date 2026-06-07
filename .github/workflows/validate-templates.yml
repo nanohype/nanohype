@@ -77,6 +77,15 @@ jobs:
       - name: Run catalog validation
         run: npm run validate:catalog
 
+      - name: Validate standards manifests
+        run: npm run validate:standards
+
+      - name: Verify catalog is regenerated (no drift)
+        run: npm run verify:catalog
+
+      - name: Verify vendored library copies are in sync
+        run: npm run verify:library
+
   test-templates:
     name: Test template skeletons
     runs-on: ubuntu-latest
