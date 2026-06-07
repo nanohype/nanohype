@@ -1,0 +1,39 @@
+apiVersion: nanohype/v1
+
+name: tenant-chart-base
+displayName: "Tenant Chart Base (Helm library)"
+description: >
+  A Helm library chart (type: library) that defines the named templates every
+  nanohype Platform-tenant chart shares — the ServiceAccount (IRSA), NetworkPolicy
+  (egress baseline + values-driven ingress), PrometheusRule, Grafana dashboard
+  ConfigMap, and the name/label/selector helpers. Consumer charts vendor it under
+  chart/charts/tenant-chart-base, declare it as a file:// dependency, and replace
+  their copy-pasted templates with one-line `{{ include "tenant-chart-base.*" . }}`
+  wrappers. The named templates run in the consumer's context, so `.Chart`, `.Values`,
+  and `.Release` resolve to the consuming app. Workload topology (Deployments,
+  CronJobs, Services) and the per-tenant ExternalSecret stay in the consumer — those
+  are the legitimate per-app divergences. The catalog's first library chart.
+version: "0.1.0"
+license: Apache-2.0
+persona: [engineering]
+category: infrastructure
+tags: [kubernetes, k8s, helm, library, platform, nanohype]
+
+# A library chart is consumed as-is (vendored into a parent chart); it has no
+# per-instance placeholders — the named templates read the consumer's values at
+# include time.
+variables: []
+
+conditionals: []
+
+composition:
+  pairsWith: [k8s-app-tenant]
+  nestsInside: [monorepo]
+
+prerequisites:
+  - name: helm
+    version: ">=3.0"
+    purpose: "Render + lint a consumer chart that depends on this library"
+    optional: false
+
+hooks: {}
