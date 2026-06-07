@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-05-30T23:30:18.000Z",
+  "generated_at": "2026-06-07T02:14:06.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -1724,6 +1724,26 @@
       ],
       "kind": "template",
       "path": "templates/spring-boot-service"
+    },
+    {
+      "name": "tenant-chart-base",
+      "displayName": "Tenant Chart Base (Helm library)",
+      "description": "A Helm library chart (type: library) that defines the named templates every nanohype Platform-tenant chart shares — the ServiceAccount (IRSA), NetworkPolicy (egress baseline + values-driven ingress), PrometheusRule, Grafana dashboard ConfigMap, and the name/label/selector helpers. Consumer charts vendor it under chart/charts/tenant-chart-base, declare it as a file:// dependency, and replace their copy-pasted templates with one-line `{{ include \"tenant-chart-base.*\" . }}` wrappers. The named templates run in the consumer's context, so `.Chart`, `.Values`, and `.Release` resolve to the consuming app. Workload topology (Deployments, CronJobs, Services) and the per-tenant ExternalSecret stay in the consumer — those are the legitimate per-app divergences. The catalog's first library chart.",
+      "version": "0.1.0",
+      "category": "infrastructure",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "kubernetes",
+        "k8s",
+        "helm",
+        "library",
+        "platform",
+        "nanohype"
+      ],
+      "kind": "template",
+      "path": "templates/tenant-chart-base"
     },
     {
       "name": "test-automation",
