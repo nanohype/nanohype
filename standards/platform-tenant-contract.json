@@ -40,7 +40,7 @@
       },
       {
         "path": "<app>/platform.yaml",
-        "description": "Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary. The eks-agent-platform operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role from this CR."
+        "description": "Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary. The CR objects live in the team namespace (metadata.namespace: tenants-<team>); the eks-agent-platform operator provisions a per-Platform WORKLOAD namespace named tenants-<platform-name> — where the app's chart deploys — plus its ResourceQuota, LimitRange, default-deny NetworkPolicy, the ArgoCD AppProject named <platform-name>, and the per-Platform IRSA role. The app's ApplicationSet entry must target that per-Platform namespace + project."
       },
       {
         "path": "<app>/agentfleet.yaml (AI workloads only)",
