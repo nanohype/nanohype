@@ -1,0 +1,7 @@
+apiVersion: v2
+name: tenant-chart-base
+description: Shared named templates for nanohype Platform-tenant charts.
+type: library
+version: 0.1.0
+maintainers:
+  - name: nanohype

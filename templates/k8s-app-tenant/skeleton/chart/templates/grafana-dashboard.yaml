@@ -1,15 +1,1 @@
-{{- if .Values.grafanaDashboard.enabled -}}
-# Dashboard ConfigMap discovered by the Grafana sidecar via the `grafana_dashboard`
-# label (wired by the eks-gitops observability addon). The JSON is loaded verbatim
-# from chart/dashboards/__APP_NAME__.json — edit that file, not this template.
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "app.fullname" . }}-dashboard
-  labels:
-    {{- include "app.labels" . | nindent 4 }}
-    grafana_dashboard: "1"
-data:
-  __APP_NAME__.json: |-
-    {{- .Files.Get "dashboards/__APP_NAME__.json" | nindent 4 }}
-{{- end }}
+{{ include "tenant-chart-base.grafanaDashboard" . }}

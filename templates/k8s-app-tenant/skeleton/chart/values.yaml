@@ -62,9 +62,21 @@ probes:
     initialDelaySeconds: 5
     periodSeconds: 10
 
-# Default-deny + egress allow-list. Add entries per the app's actual needs.
+# Default-deny + ingress/egress allow-lists. Add entries per the app's actual needs.
+# (Ingress varies by workload topology — single-pod vs api+web vs webhook+processor —
+# so the base chart takes it from here rather than hardcoding it.)
 networkPolicy:
   enabled: true
+  ingress:
+    # Allow traffic from same namespace + the cluster ingress controller.
+    - from:
+        - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: __PORT__
   egress:
     # DNS to kube-system CoreDNS
     - to:

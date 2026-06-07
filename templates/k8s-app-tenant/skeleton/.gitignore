@@ -1,5 +1,7 @@
-# Helm
-chart/charts/
+# Helm — ignore fetched subchart deps, but KEEP the vendored tenant-chart-base
+# library (it's committed, not fetched; the app has no `helm dependency build`).
+chart/charts/*
+!chart/charts/tenant-chart-base/
 chart/Chart.lock
 
 # Rendered output (if you ever run helm template > rendered/)

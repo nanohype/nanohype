@@ -6,3 +6,10 @@ version: 0.1.0
 appVersion: "0.1.0"
 maintainers:
   - name: __TENANT__
+dependencies:
+  # Shared named templates (ServiceAccount, NetworkPolicy, PrometheusRule, Grafana
+  # dashboard, name/label helpers). Vendored under charts/tenant-chart-base — kept
+  # in sync from the catalog template by `npm run sync:library`.
+  - name: tenant-chart-base
+    version: 0.1.0
+    repository: file://charts/tenant-chart-base
