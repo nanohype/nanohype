@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-06-07T02:34:52.000Z",
+  "generated_at": "2026-06-07T03:05:54.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -957,6 +957,27 @@
       ],
       "kind": "template",
       "path": "templates/module-analytics-ts"
+    },
+    {
+      "name": "module-audit-ledger-ts",
+      "displayName": "Module: Audit Ledger",
+      "description": "Append-only audit ledger with pluggable storage backends. One AuditLedger port (append + queryByContext) over four adapters: an in-memory store for development, Postgres (immutable append), DynamoDB (conditional write + strongly-consistent read), and SQS→consumer (FIFO with a DLQ fallback for at-least-once delivery). The module owns persistence only — domain logic such as approval gates, edit-distance scoring, and PII scrubbing stays in the app that owns the events.",
+      "version": "0.1.0",
+      "category": "composable-modules",
+      "persona": [
+        "engineering"
+      ],
+      "tags": [
+        "audit",
+        "ledger",
+        "compliance",
+        "postgres",
+        "dynamodb",
+        "sqs",
+        "typescript"
+      ],
+      "kind": "template",
+      "path": "templates/module-audit-ledger-ts"
     },
     {
       "name": "module-auth-go",
