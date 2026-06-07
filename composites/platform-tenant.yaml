@@ -75,6 +75,18 @@ variables:
     description: "Default vector store backend."
     default: "memory"
 
+  - name: IncludeAuditLedger
+    type: bool
+    placeholder: "__INCLUDE_AUDIT_LEDGER__"
+    description: "Include the audit ledger package (append-only event log over pluggable storage)."
+    default: false
+
+  - name: AuditProvider
+    type: string
+    placeholder: "__AUDIT_PROVIDER__"
+    description: "Default audit ledger backend."
+    default: "memory"
+
 templates:
   - template: k8s-app-tenant
     root: true
@@ -98,3 +110,10 @@ templates:
     variables:
       ProjectName: "${AppName}-vectors"
       VectorProvider: "${VectorProvider}"
+
+  - template: module-audit-ledger-ts
+    path: packages/audit
+    condition: IncludeAuditLedger
+    variables:
+      ProjectName: "${AppName}-audit"
+      AuditProvider: "${AuditProvider}"
