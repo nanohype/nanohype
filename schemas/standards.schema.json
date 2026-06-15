@@ -16,7 +16,8 @@
         "nanohype/standards/platform-tenant-contract",
         "nanohype/standards/llm-policy",
         "nanohype/standards/quality-rubric-dimensions",
-        "nanohype/standards/testing-rubric"
+        "nanohype/standards/testing-rubric",
+        "nanohype/standards/resource-tagging"
       ]
     },
     "version": {
@@ -233,6 +234,60 @@
                     "severity": { "type": "string", "enum": ["reject", "warn"] }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/resource-tagging" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["transforms", "reserved_prefixes", "dimensions", "required_by_surface"],
+            "properties": {
+              "transforms": { "type": "object", "additionalProperties": { "type": "string" } },
+              "reserved_prefixes": {
+                "type": "object",
+                "required": ["k8s", "otel", "app_extension"],
+                "properties": {
+                  "k8s": { "type": "array", "items": { "type": "string" } },
+                  "otel": { "type": "array", "items": { "type": "string" } },
+                  "app_extension": { "type": "object", "additionalProperties": { "type": "string" } }
+                }
+              },
+              "dimensions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "tier", "meaning", "render"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "tier": { "type": "string", "enum": ["required", "recommended", "contextual"] },
+                    "meaning": { "type": "string" },
+                    "render": {
+                      "type": "object",
+                      "required": ["aws", "azure", "gcp", "k8s", "otel"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "aws": { "type": ["string", "null"] },
+                        "azure": { "type": ["string", "null"] },
+                        "gcp": { "type": ["string", "null"] },
+                        "k8s": { "type": ["string", "null"] },
+                        "otel": { "type": ["string", "null"] }
+                      }
+                    }
+                  }
+                }
+              },
+              "required_by_surface": {
+                "type": "object",
+                "required": ["aws", "azure", "gcp", "k8s", "otel"],
+                "additionalProperties": { "type": "array", "items": { "type": "string" } }
               }
             }
           }

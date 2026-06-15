@@ -1,0 +1,161 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/resource-tagging",
+  "version": "1",
+  "title": "Resource tagging and labeling standard",
+  "summary": "The canonical org-wide tag/label taxonomy every cloud resource and k8s object on the nanohype stack carries. Defines vendor-neutral dimensions, their per-surface rendering (AWS/Azure tag keys, GCP labels, k8s labels, OTel attributes), the deterministic casing transforms, the reserved namespaces, and which dimensions are required. cloudgov reads the required-tier keys from this file to gate CI; landing-zone and the eks-agent-platform operator inject them; tenant charts label workloads from it.",
+  "content": {
+    "transforms": {
+      "aws": "Render the canonical kebab-case id as PascalCase (split on '-', capitalize each part, join). cost-center -> CostCenter.",
+      "azure": "Same as aws (PascalCase). Azure tag keys are case-insensitive with a broad charset; reuse the AWS rendering for cross-cloud consistency.",
+      "gcp_key": "Render the canonical id as snake_case (replace '-' with '_'; the id is already lowercase). cost-center -> cost_center.",
+      "gcp_value": "Sanitize the value: lower-case it, replace '-' with '_', replace '/' with '_', truncate to 63 chars. GCP label values accept only [a-z0-9_-]. nanohype/landing-zone -> nanohype_landing_zone.",
+      "k8s": "Well-known dimensions render under app.kubernetes.io/<leaf>; org dimensions render under <group>.nanohype.dev/<id>. The label value must match [a-z0-9A-Z._-]{0,63}.",
+      "otel": "Dotted lower-case attribute names. Reserved namespace agents.* (tenant/platform/model identity) plus the well-known deployment.environment and service.version."
+    },
+    "reserved_prefixes": {
+      "k8s": [
+        "app.kubernetes.io/",
+        "platform.nanohype.dev/",
+        "agents.nanohype.dev/",
+        "tenants.nanohype.dev/",
+        "governance.nanohype.dev/"
+      ],
+      "otel": [
+        "agents.",
+        "deployment.",
+        "service."
+      ],
+      "app_extension": {
+        "k8s": "<app>.tenants.nanohype.dev/<key>",
+        "aws": "app:<key>",
+        "azure": "app:<key>",
+        "gcp": "app_<key>",
+        "otel": "<app-namespace>.<key> (never under agents.*)"
+      }
+    },
+    "dimensions": [
+      {
+        "id": "environment",
+        "tier": "required",
+        "meaning": "Deploy stage: dev, staging, production, or org.",
+        "render": { "aws": "Environment", "azure": "Environment", "gcp": "environment", "k8s": "platform.nanohype.dev/environment", "otel": "deployment.environment" }
+      },
+      {
+        "id": "managed-by",
+        "tier": "required",
+        "meaning": "The tool that owns the resource lifecycle. Value: opentofu (substrate) or eks-agent-platform (operator-reconciled).",
+        "render": { "aws": "ManagedBy", "azure": "ManagedBy", "gcp": "managed_by", "k8s": "app.kubernetes.io/managed-by", "otel": null }
+      },
+      {
+        "id": "project",
+        "tier": "required",
+        "meaning": "The substrate project the resource belongs to. Value: landing-zone.",
+        "render": { "aws": "Project", "azure": "Project", "gcp": "project", "k8s": "platform.nanohype.dev/project", "otel": null }
+      },
+      {
+        "id": "repository",
+        "tier": "required",
+        "meaning": "The source repository as org/name (e.g. nanohype/landing-zone).",
+        "render": { "aws": "Repository", "azure": "Repository", "gcp": "repository", "k8s": "platform.nanohype.dev/repository", "otel": null }
+      },
+      {
+        "id": "cost-center",
+        "tier": "required",
+        "meaning": "Billing rollup unit (e.g. platform-engineering).",
+        "render": { "aws": "CostCenter", "azure": "CostCenter", "gcp": "cost_center", "k8s": "platform.nanohype.dev/cost-center", "otel": null }
+      },
+      {
+        "id": "business-unit",
+        "tier": "required",
+        "meaning": "Organizational rollup above cost-center (e.g. engineering).",
+        "render": { "aws": "BusinessUnit", "azure": "BusinessUnit", "gcp": "business_unit", "k8s": "platform.nanohype.dev/business-unit", "otel": null }
+      },
+      {
+        "id": "data-classification",
+        "tier": "required",
+        "meaning": "Data sensitivity: public, internal, confidential, or restricted.",
+        "render": { "aws": "DataClassification", "azure": "DataClassification", "gcp": "data_classification", "k8s": "platform.nanohype.dev/data-classification", "otel": null }
+      },
+      {
+        "id": "compliance",
+        "tier": "required",
+        "meaning": "Compliance regime: soc2, hipaa, or none.",
+        "render": { "aws": "Compliance", "azure": "Compliance", "gcp": "compliance", "k8s": "platform.nanohype.dev/compliance", "otel": null }
+      },
+      {
+        "id": "component",
+        "tier": "required",
+        "meaning": "The substrate component or workload role (network, cluster, llm, ...).",
+        "render": { "aws": "Component", "azure": "Component", "gcp": "component", "k8s": "app.kubernetes.io/component", "otel": null }
+      },
+      {
+        "id": "team",
+        "tier": "required",
+        "meaning": "The owning team that operates the resource (e.g. platform).",
+        "render": { "aws": "Team", "azure": "Team", "gcp": "team", "k8s": "platform.nanohype.dev/team", "otel": null }
+      },
+      {
+        "id": "owner",
+        "tier": "recommended",
+        "meaning": "Accountable handle for escalation (a team or GitHub-team slug). Auto-filled from the env-level owner, defaulting to team when unset; never hand-entered per resource.",
+        "render": { "aws": "Owner", "azure": "Owner", "gcp": "owner", "k8s": "platform.nanohype.dev/owner", "otel": null }
+      },
+      {
+        "id": "revision",
+        "tier": "recommended",
+        "meaning": "The deployed source revision (a short git SHA or chart appVersion) for provenance and rollback correlation.",
+        "render": { "aws": "Revision", "azure": "Revision", "gcp": "revision", "k8s": "app.kubernetes.io/version", "otel": "service.version" }
+      },
+      {
+        "id": "provisioner",
+        "tier": "recommended",
+        "meaning": "The factory job or CI run that created the resource (a pipeline run id). Feeds provenance and attribution.",
+        "render": { "aws": "Provisioner", "azure": "Provisioner", "gcp": "provisioner", "k8s": "platform.nanohype.dev/provisioner", "otel": null }
+      },
+      {
+        "id": "lifecycle",
+        "tier": "recommended",
+        "meaning": "Whether the resource is reapable: ephemeral or persistent. Ephemeral resources past their expiry are cleanup candidates.",
+        "render": { "aws": "Lifecycle", "azure": "Lifecycle", "gcp": "lifecycle", "k8s": "platform.nanohype.dev/lifecycle", "otel": null }
+      },
+      {
+        "id": "expiry",
+        "tier": "recommended",
+        "meaning": "An ISO-8601 date (YYYY-MM-DD) after which an ephemeral resource is safe to reap. Set by the vend layer as now + ttl; omit on persistent resources.",
+        "render": { "aws": "Expiry", "azure": "Expiry", "gcp": "expiry", "k8s": "platform.nanohype.dev/expiry", "otel": null }
+      },
+      {
+        "id": "tenant",
+        "tier": "contextual",
+        "meaning": "The Platform tenant a per-tenant resource belongs to. Applies only to multi-tenant components and per-tenant cloud resources.",
+        "render": { "aws": "Tenant", "azure": "Tenant", "gcp": "tenant", "k8s": "agents.nanohype.dev/tenant", "otel": "agents.tenant" }
+      },
+      {
+        "id": "platform",
+        "tier": "contextual",
+        "meaning": "The Platform CR name (the app). k8s and OTel only — never a cloud tag.",
+        "render": { "aws": null, "azure": null, "gcp": null, "k8s": "agents.nanohype.dev/platform", "otel": "agents.platform" }
+      },
+      {
+        "id": "model-family",
+        "tier": "contextual",
+        "meaning": "The LLM family for AI workloads. OTel only — runtime cost attribution.",
+        "render": { "aws": null, "azure": null, "gcp": null, "k8s": null, "otel": "agents.model_family" }
+      },
+      {
+        "id": "model-id",
+        "tier": "contextual",
+        "meaning": "The full Bedrock model id for AI workloads. OTel only — runtime cost attribution.",
+        "render": { "aws": null, "azure": null, "gcp": null, "k8s": null, "otel": "agents.model_id" }
+      }
+    ],
+    "required_by_surface": {
+      "aws": ["Environment", "ManagedBy", "Project", "Repository", "CostCenter", "BusinessUnit", "DataClassification", "Compliance", "Component", "Team"],
+      "azure": ["Environment", "ManagedBy", "Project", "Repository", "CostCenter", "BusinessUnit", "DataClassification", "Compliance", "Component", "Team"],
+      "gcp": ["environment", "managed_by", "project", "repository", "cost_center", "business_unit", "data_classification", "compliance", "component", "team"],
+      "k8s": ["app.kubernetes.io/managed-by", "app.kubernetes.io/component", "platform.nanohype.dev/environment", "platform.nanohype.dev/team"],
+      "otel": ["agents.tenant", "agents.platform"]
+    }
+  }
+}

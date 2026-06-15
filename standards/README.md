@@ -104,6 +104,29 @@ The deeper per-language enforcement (how each runner is configured, the REJECT c
 
 ---
 
+## Resource tagging — `resource-tagging.json`
+
+The canonical tag/label taxonomy every cloud resource and k8s object on the stack carries. One vendor-neutral dimension set, rendered idiomatically per surface. Read it when injecting tags in `landing-zone`, stamping labels in the operator or a tenant chart, or auditing tags with `cloudgov`.
+
+The taxonomy is three tiers:
+
+- **Required (10)** — the billing + ownership + security skeleton, auto-injected on every resource: `environment`, `managed-by`, `project`, `repository`, `cost-center`, `business-unit`, `data-classification`, `compliance`, `component`, `team`.
+- **Recommended (5)** — the *own / trace / expire* idiom: `owner` (escalation handle), `revision` (deployed source rev), `provisioner` (the factory job that created it), `lifecycle` (`ephemeral` | `persistent`), `expiry` (the date an ephemeral resource is reapable). All auto-derivable; `lifecycle`+`expiry` make orphan-reaping policy-driven, `provisioner`+`revision` carry provenance.
+- **Contextual (4)** — applied only where meaningful: `tenant`, `platform` (per-tenant / per-app identity), `model-family`, `model-id` (AI-workload OTel only).
+
+Each dimension renders per surface by deterministic transform:
+
+- **AWS / Azure tag key** — PascalCase (`cost-center` → `CostCenter`).
+- **GCP label key** — snake_case (`cost-center` → `cost_center`); the value is lower-cased with `-`/`/` mapped to `_` and truncated to 63 (GCP labels accept only `[a-z0-9_-]`).
+- **k8s label** — well-known dimensions under `app.kubernetes.io/*`, agent/tenant identity under `agents.nanohype.dev/*`, and org governance metadata under `platform.nanohype.dev/*`. These three prefixes are reserved.
+- **OTel attribute** — the narrow operational-identity subset only: `deployment.environment`, `service.version`, and the reserved `agents.*` namespace (`agents.tenant`, `agents.platform`, `agents.model_family`, `agents.model_id`). Billing metadata stays out of OTel.
+
+Apps extend with their own tags under a per-app namespace that avoids the reserved prefixes — `<app>.tenants.nanohype.dev/*` (k8s), `app:<key>` (AWS/Azure), `app_<key>` (GCP), their own OTel namespace. Audits only gate the required tier, so extensions never trip the gate.
+
+The `required_by_surface` block is the flat, directly-consumable list of required keys per surface — `cloudgov tags --standard-file` reads `required_by_surface.aws` to gate CI without re-deriving the rendering.
+
+---
+
 ## Versioning
 
 Each file declares its `version` (a positive integer). Bump the version field on any breaking shape change. Agents that consume these standards should pin to a major version range (the `version` field == major; minor evolution within a major must be backwards-compatible).
