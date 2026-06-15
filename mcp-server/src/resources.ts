@@ -21,6 +21,7 @@ const STANDARD_NAMES: StandardName[] = [
   'llm-policy',
   'quality-rubric-dimensions',
   'testing-rubric',
+  'resource-tagging',
 ];
 
 interface StaticResource {
@@ -48,7 +49,7 @@ export function listResources(): StaticResource[] {
       uri: 'nanohype://standards',
       name: 'nanohype standards (bundle)',
       description:
-        'All published standards files bundled under one resource. Includes language toolchain, version currency, platform-tenant contract, LLM policy, quality-rubric dimension names, and the testing rubric.',
+        'All published standards files bundled under one resource. Includes language toolchain, version currency, platform-tenant contract, LLM policy, quality-rubric dimension names, the testing rubric, and the resource-tagging taxonomy.',
       mimeType: 'application/json',
     },
   ];

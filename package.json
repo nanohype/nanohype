@@ -26,7 +26,7 @@
     "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
     "validate:schema": "ajv validate -s schemas/template.schema.json -d 'templates/*/template.yaml' --spec=draft2020 --strict=false",
     "validate:catalog": "./scripts/validate-catalog.sh",
-    "validate:standards": "ajv validate -s schemas/standards.schema.json -d 'standards/*.json' --spec=draft2020 --strict=false",
+    "validate:standards": "ajv validate -s schemas/standards.schema.json -d 'standards/*.json' --spec=draft2020 --strict=false && node scripts/check-tagging-standard.mjs",
     "validate:manifest": "ajv validate -s schemas/catalog.schema.json -d catalog.json --spec=draft2020 --strict=false",
     "generate:catalog": "node scripts/generate-catalog.mjs",
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",

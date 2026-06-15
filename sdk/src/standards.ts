@@ -4,6 +4,7 @@ import type {
   LLMPolicyStandard,
   PlatformTenantContractStandard,
   QualityRubricDimensionsStandard,
+  ResourceTaggingStandard,
   Standard,
   StandardName,
   Standards,
@@ -19,6 +20,7 @@ const ALL_STANDARDS: StandardName[] = [
   'llm-policy',
   'quality-rubric-dimensions',
   'testing-rubric',
+  'resource-tagging',
 ];
 
 const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
@@ -28,6 +30,7 @@ const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
   'llm-policy': 'nanohype/standards/llm-policy',
   'quality-rubric-dimensions': 'nanohype/standards/quality-rubric-dimensions',
   'testing-rubric': 'nanohype/standards/testing-rubric',
+  'resource-tagging': 'nanohype/standards/resource-tagging',
 };
 
 /**
@@ -60,7 +63,7 @@ export async function loadStandard(
  * than scanning the union).
  */
 export async function loadStandards(source: CatalogSource): Promise<Standards> {
-  const [toolchain, currency, contract, llm, rubric, testing] = await Promise.all(
+  const [toolchain, currency, contract, llm, rubric, testing, tagging] = await Promise.all(
     ALL_STANDARDS.map((name) => loadStandard(source, name)),
   );
   return {
@@ -70,5 +73,6 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     'llm-policy': llm as LLMPolicyStandard,
     'quality-rubric-dimensions': rubric as QualityRubricDimensionsStandard,
     'testing-rubric': testing as TestingRubricStandard,
+    'resource-tagging': tagging as ResourceTaggingStandard,
   };
 }

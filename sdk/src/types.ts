@@ -160,7 +160,8 @@ export type StandardName =
   | 'platform-tenant-contract'
   | 'llm-policy'
   | 'quality-rubric-dimensions'
-  | 'testing-rubric';
+  | 'testing-rubric'
+  | 'resource-tagging';
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -253,6 +254,38 @@ export interface TestingRubricStandard {
   };
 }
 
+/** One canonical tag/label dimension and how it renders on each surface. A null render means the dimension does not apply to that surface. */
+export interface TagDimension {
+  id: string;
+  tier: 'required' | 'recommended' | 'contextual';
+  meaning: string;
+  render: {
+    aws: string | null;
+    azure: string | null;
+    gcp: string | null;
+    k8s: string | null;
+    otel: string | null;
+  };
+}
+
+/** Standards file: resource tagging/labeling taxonomy. The single source of truth for the canonical tag set and its per-surface rendering. */
+export interface ResourceTaggingStandard {
+  kind: 'nanohype/standards/resource-tagging';
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    transforms: Record<string, string>;
+    reserved_prefixes: {
+      k8s: string[];
+      otel: string[];
+      app_extension: Record<string, string>;
+    };
+    dimensions: TagDimension[];
+    required_by_surface: Record<'aws' | 'azure' | 'gcp' | 'k8s' | 'otel', string[]>;
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
@@ -260,7 +293,8 @@ export type Standard =
   | PlatformTenantContractStandard
   | LLMPolicyStandard
   | QualityRubricDimensionsStandard
-  | TestingRubricStandard;
+  | TestingRubricStandard
+  | ResourceTaggingStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
@@ -274,6 +308,7 @@ export interface Standards {
   'llm-policy': LLMPolicyStandard;
   'quality-rubric-dimensions': QualityRubricDimensionsStandard;
   'testing-rubric': TestingRubricStandard;
+  'resource-tagging': ResourceTaggingStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */

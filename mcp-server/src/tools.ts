@@ -17,6 +17,7 @@ const STANDARD_NAMES: StandardName[] = [
   'llm-policy',
   'quality-rubric-dimensions',
   'testing-rubric',
+  'resource-tagging',
 ];
 
 interface ToolDescriptor {
