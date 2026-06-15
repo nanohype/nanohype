@@ -4,6 +4,9 @@ image:
 
 replicaCount: 3
 
+commonLabels:
+  platform.nanohype.dev/environment: production
+
 resources:
   requests:
     cpu: 250m
