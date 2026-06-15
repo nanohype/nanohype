@@ -1,6 +1,6 @@
-# __PROJECT_NAME__
+# **PROJECT_NAME**
 
-__DESCRIPTION__
+**DESCRIPTION**
 
 ## Quick Start
 
@@ -9,7 +9,7 @@ import { createSemanticCache } from "./semantic-cache/index.js";
 
 const cache = await createSemanticCache({
   embeddingProvider: "__EMBEDDING_PROVIDER__", // defaults to "bedrock"
-  vectorBackend: "__VECTOR_BACKEND__",         // defaults to "memory"
+  vectorBackend: "__VECTOR_BACKEND__", // defaults to "memory"
   similarityThreshold: 0.92,
 });
 
@@ -20,7 +20,7 @@ await cache.store("What is TypeScript?", "TypeScript is a typed superset of Java
 const hit = await cache.lookup("Tell me about TypeScript");
 if (hit) {
   console.log(hit.response); // "TypeScript is a typed superset of JavaScript."
-  console.log(hit.score);    // 0.97 (cosine similarity)
+  console.log(hit.score); // 0.97 (cosine similarity)
 }
 
 // Clean up
@@ -29,11 +29,11 @@ await cache.close();
 
 ## Embedding Providers
 
-| Provider  | Backend | Dimensions | Use Case |
-|-----------|---------|------------|----------|
-| `bedrock` | AWS Bedrock Titan Text v2 | 1024 | Production (default) |
-| `openai`  | OpenAI text-embedding-3-small | 1536 | Alternate |
-| `mock`    | Deterministic hash | 64 | Testing |
+| Provider  | Backend                       | Dimensions | Use Case             |
+| --------- | ----------------------------- | ---------- | -------------------- |
+| `bedrock` | AWS Bedrock Titan Text v2     | 1024       | Production (default) |
+| `openai`  | OpenAI text-embedding-3-small | 1536       | Alternate            |
+| `mock`    | Deterministic hash            | 64         | Testing              |
 
 ### Bedrock (default)
 
@@ -73,21 +73,33 @@ const cache = await createSemanticCache({
 ## How Similarity Matching Works
 
 When you call `cache.store(prompt, response)`, the cache:
+
 1. Generates an embedding vector for the prompt using the configured provider
 2. Stores the vector alongside the response and a TTL expiration timestamp
 
 When you call `cache.lookup(prompt)`, the cache:
+
 1. Generates an embedding for the query prompt
 2. Computes cosine similarity against every stored vector
 3. Returns the best match if its score exceeds the similarity threshold (default: 0.95)
 4. Returns `undefined` if no match exceeds the threshold or all entries are expired
 
 Cosine similarity measures the angle between two vectors:
+
 - **1.0** = identical direction (exact semantic match)
 - **0.0** = orthogonal (unrelated)
 - **-1.0** = opposite direction
 
 A threshold of **0.95** is conservative — it catches near-identical prompts. Lower it to **0.85--0.90** to match semantically similar but differently-worded prompts.
+
+Don't guess — tune it empirically with the **threshold sweep** (`src/semantic-cache/threshold-sweep.ts`). Feed it a labeled validation set (query/candidate pairs tagged same-intent or not) and it reports hit / false-hit / miss rates at each candidate threshold and recommends the lowest one whose false-hit rate stays under tolerance — so you capture the most paraphrases without serving answers to _different_ questions:
+
+```ts
+import { sweepThresholds, renderSweepMarkdown } from "./semantic-cache/threshold-sweep.js";
+
+const report = sweepThresholds(validationSamples); // [{ similarity, sameIntent }, ...]
+console.log(renderSweepMarkdown(report)); // → recommended similarityThreshold + the supporting table
+```
 
 ## Gateway Integration
 
@@ -122,12 +134,19 @@ Implement the `EmbeddingProvider` interface and register a factory under a name.
 import { registerEmbeddingProvider } from "./semantic-cache/embedder/index.js";
 import type { EmbeddingProvider } from "./semantic-cache/embedder/index.js";
 
-registerEmbeddingProvider("my-embedder", (): EmbeddingProvider => ({
-  name: "my-embedder",
-  dimensions: 768,
-  async embed(text) { /* ... */ return vector; },
-  async embedBatch(texts) { /* ... */ return vectors; },
-}));
+registerEmbeddingProvider(
+  "my-embedder",
+  (): EmbeddingProvider => ({
+    name: "my-embedder",
+    dimensions: 768,
+    async embed(text) {
+      /* ... */ return vector;
+    },
+    async embedBatch(texts) {
+      /* ... */ return vectors;
+    },
+  }),
+);
 ```
 
 ## Custom Vector Store Backends
@@ -138,15 +157,30 @@ Implement the `VectorCacheStore` interface and register a factory under a name. 
 import { registerVectorStore } from "./semantic-cache/store/index.js";
 import type { VectorCacheStore } from "./semantic-cache/store/index.js";
 
-registerVectorStore("my-store", (): VectorCacheStore => ({
-  name: "my-store",
-  async init(config) { /* ... */ },
-  async upsert(entry) { /* ... */ },
-  async search(embedding, threshold) { /* ... */ return hit; },
-  async delete(id) { /* ... */ },
-  async count() { /* ... */ return n; },
-  async close() { /* ... */ },
-}));
+registerVectorStore(
+  "my-store",
+  (): VectorCacheStore => ({
+    name: "my-store",
+    async init(config) {
+      /* ... */
+    },
+    async upsert(entry) {
+      /* ... */
+    },
+    async search(embedding, threshold) {
+      /* ... */ return hit;
+    },
+    async delete(id) {
+      /* ... */
+    },
+    async count() {
+      /* ... */ return n;
+    },
+    async close() {
+      /* ... */
+    },
+  }),
+);
 ```
 
 ## Architecture
