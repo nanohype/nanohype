@@ -30,7 +30,11 @@ Fully qualified app name.
 
 {{/*
 Common labels. The tenant/platform labels come from the OTel resource attributes
-the consumer sets, falling back to the chart name for the platform.
+the consumer sets, falling back to the chart name for the platform. Any
+`.Values.commonLabels` the consumer sets are merged in verbatim — that's where
+the resource-tagging governance labels land (platform.nanohype.dev/environment,
+.../team, .../cost-center, …) under the standard's reserved k8s prefixes. These
+go on metadata + pod-template labels only, never on the immutable selectorLabels.
 */}}
 {{- define "tenant-chart-base.labels" -}}
 helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
@@ -41,6 +45,9 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 agents.nanohype.dev/tenant: {{ (index .Values.otel.resourceAttributes "agents.tenant") | default "unknown" | quote }}
 agents.nanohype.dev/platform: {{ (index .Values.otel.resourceAttributes "agents.platform") | default .Chart.Name | quote }}
+{{- range $key, $value := .Values.commonLabels }}
+{{ $key }}: {{ $value | quote }}
+{{- end }}
 {{- end -}}
 
 {{/*

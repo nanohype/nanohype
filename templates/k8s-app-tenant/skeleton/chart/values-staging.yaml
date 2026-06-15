@@ -4,6 +4,9 @@ image:
 
 replicaCount: 2
 
+commonLabels:
+  platform.nanohype.dev/environment: staging
+
 # Set from landing-zone's __APP_NAME__-platform component (staging):
 #   terraform output -raw irsa_role_arn
 # aws:

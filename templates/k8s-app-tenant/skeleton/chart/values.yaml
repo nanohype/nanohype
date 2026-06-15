@@ -132,6 +132,14 @@ otel:
     agents.tenant: __TENANT__
     agents.platform: __APP_NAME__
 
+# Resource-tagging governance labels (the resource-tagging standard). Merged onto
+# every resource's metadata + pod labels by tenant-chart-base.labels, under the
+# reserved k8s prefixes. environment is set per-env in values-{env}.yaml; add
+# platform.nanohype.dev/cost-center / .../owner here if you want them in-cluster.
+commonLabels:
+  platform.nanohype.dev/team: __TENANT__
+  app.kubernetes.io/component: __PERSONA__
+
 nodeSelector: {}
 tolerations: []
 affinity: {}
