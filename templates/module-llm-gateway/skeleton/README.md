@@ -1,6 +1,6 @@
-# __PROJECT_NAME__
+# **PROJECT_NAME**
 
-__DESCRIPTION__
+**DESCRIPTION**
 
 ## Quick Start
 
@@ -19,22 +19,22 @@ const response = await gateway.chat([
   { role: "user", content: "What is the capital of France?" },
 ]);
 
-console.log(response.text);       // "The capital of France is Paris."
-console.log(response.provider);   // "bedrock"
-console.log(response.cost);       // 0.000135
-console.log(response.cached);     // false
+console.log(response.text); // "The capital of France is Paris."
+console.log(response.provider); // "bedrock"
+console.log(response.cost); // 0.000135
+console.log(response.cached); // false
 
 // Second identical call hits the cache
 const cached = await gateway.chat([
   { role: "system", content: "You are a helpful assistant." },
   { role: "user", content: "What is the capital of France?" },
 ]);
-console.log(cached.cached);       // true
+console.log(cached.cached); // true
 
 // Query costs
 const costs = gateway.getCosts({ tags: { user: "alice" } });
-console.log(costs.totalCost);     // 0.000135
-console.log(costs.byModel);       // { "claude-sonnet-4-6": 0.000135 }
+console.log(costs.totalCost); // 0.000135
+console.log(costs.byModel); // { "claude-sonnet-4-6": 0.000135 }
 
 // Shut down
 gateway.close();
@@ -42,13 +42,13 @@ gateway.close();
 
 ## Providers
 
-| Provider | Backend | Default Model | Pricing (input/output per 1M) |
-|----------|---------|---------------|-------------------------------|
-| `bedrock` | Claude Sonnet on Bedrock (Converse + cachePoint) | `anthropic.claude-sonnet-4-6` | $3 / $15 |
-| `anthropic` | Claude Sonnet | `claude-sonnet-4-6` | $3 / $15 |
-| `openai` | GPT-4o | `gpt-4o` | $2.50 / $10 |
-| `groq` | Llama 3 70B | `llama-3.3-70b-versatile` | $0.59 / $0.79 |
-| `mock` | In-memory | `mock-model` | $0 / $0 |
+| Provider    | Backend                                          | Default Model                 | Pricing (input/output per 1M) |
+| ----------- | ------------------------------------------------ | ----------------------------- | ----------------------------- |
+| `bedrock`   | Claude Sonnet on Bedrock (Converse + cachePoint) | `anthropic.claude-sonnet-4-6` | $3 / $15                      |
+| `anthropic` | Claude Sonnet                                    | `claude-sonnet-4-6`           | $3 / $15                      |
+| `openai`    | GPT-4o                                           | `gpt-4o`                      | $2.50 / $10                   |
+| `groq`      | Llama 3 70B                                      | `llama-3.3-70b-versatile`     | $0.59 / $0.79                 |
+| `mock`      | In-memory                                        | `mock-model`                  | $0 / $0                       |
 
 `bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every call carries an explicit `AbortSignal.timeout` (`LLM_REQUEST_TIMEOUT_MS`, default 30s) so a hung socket trips the circuit breaker instead of hanging.
 
@@ -56,22 +56,36 @@ Each provider wraps its API calls in a circuit breaker that opens after 5 failur
 
 ## Routing Strategies
 
-| Strategy | Behavior |
-|----------|----------|
-| `static` | Fixed priority list, always picks the first provider; the gateway falls through to the next on failure |
-| `round-robin` | Rotates through providers in order |
-| `latency` | Picks provider with lowest p50 latency from a sliding window of 100 calls |
-| `cost` | Picks cheapest provider that meets an 80% success rate quality threshold |
-| `adaptive` | Epsilon-greedy: exploits the best-known provider 90% of the time, explores randomly 10%. Falls back to static with < 10 data points |
-| `linucb` | Contextual bandit (ridge regression per provider) that routes on request features — task type, token estimate, latency budget, quality. Falls back to static with < 10 data points |
+| Strategy      | Behavior                                                                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `static`      | Fixed priority list, always picks the first provider; the gateway falls through to the next on failure                                                                             |
+| `round-robin` | Rotates through providers in order                                                                                                                                                 |
+| `latency`     | Picks provider with lowest p50 latency from a sliding window of 100 calls                                                                                                          |
+| `cost`        | Picks cheapest provider that meets an 80% success rate quality threshold                                                                                                           |
+| `adaptive`    | Epsilon-greedy: exploits the best-known provider 90% of the time, explores randomly 10%. Falls back to static with < 10 data points                                                |
+| `linucb`      | Contextual bandit (ridge regression per provider) that routes on request features — task type, token estimate, latency budget, quality. Falls back to static with < 10 data points |
+
+### Choosing adaptive vs linucb (ICC diagnostic)
+
+`adaptive` (epsilon-greedy) is the right default; `linucb` only pays off when a provider's reward actually depends on the request context. Decide it empirically — log routed requests and run the diagnostic in `src/gateway/diagnostics/icc.ts`:
+
+```ts
+import { computeIcc, renderIccMarkdown } from "./gateway/diagnostics/icc.js";
+
+const report = computeIcc(routingLog); // ≥1000 logged { provider, latencyMs, success, features }
+console.log(renderIccMarkdown(report));
+// ICC ≥ 0.2 → switch to linucb · ≤ 0.05 → stay on adaptive · between → collect more
+```
+
+It buckets requests by context (token quartile × task type × latency budget) and measures how much of each provider's reward variance the context explains: `ICC = Var_between / (Var_between + Var_within)`.
 
 ## Caching Strategies
 
-| Strategy | Behavior |
-|----------|----------|
-| `hash` | SHA-256 of model+prompt+params, fixed TTL (default 1 hour), in-memory Map |
-| `sliding-ttl` | Same hash key, but TTL extends on each cache hit |
-| `none` | Passthrough, never caches (for non-deterministic generation) |
+| Strategy      | Behavior                                                                  |
+| ------------- | ------------------------------------------------------------------------- |
+| `hash`        | SHA-256 of model+prompt+params, fixed TTL (default 1 hour), in-memory Map |
+| `sliding-ttl` | Same hash key, but TTL extends on each cache hit                          |
+| `none`        | Passthrough, never caches (for non-deterministic generation)              |
 
 ## Cost Tracking
 
@@ -104,7 +118,9 @@ const entries = gateway.getCosts().entries;
 const anomalies = detectAnomalies(entries, 20, 2.0);
 
 for (const a of anomalies) {
-  console.log(`Anomaly: $${a.entry.cost} (z=${a.zScore.toFixed(2)}, mean=$${a.rollingMean.toFixed(4)})`);
+  console.log(
+    `Anomaly: $${a.entry.cost} (z=${a.zScore.toFixed(2)}, mean=$${a.rollingMean.toFixed(4)})`,
+  );
 }
 ```
 
