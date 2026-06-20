@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type CSSProperties } from "react";
 import { Chat } from "./components/Chat";
 
 interface Message {
@@ -79,8 +79,10 @@ export function App() {
           letterSpacing: "-0.015em",
           color: "var(--foreground)",
           background: "var(--card)",
+          // -webkit-app-region makes the custom title bar draggable; not in
+          // @types/react's CSSProperties, so cast.
           WebkitAppRegion: "drag",
-        }}
+        } as CSSProperties}
       >
         __PROJECT_NAME__
       </header>
