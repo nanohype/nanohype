@@ -7,6 +7,9 @@ on:
   pull_request:
     paths: ['sdk/**', 'schemas/**']
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build and test SDK
