@@ -3,7 +3,7 @@ module __GO_MODULE__
 go 1.24
 
 require (
-	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-chi/chi/v5 v5.3.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/spf13/viper v1.20.1
