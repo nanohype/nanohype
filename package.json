@@ -37,10 +37,14 @@
   "devDependencies": {
     "ajv-cli": "^5.0.0",
     "ajv-formats": "^3.0.1",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.2.0",
     "markdownlint-cli2": "^0.22.1"
   },
   "overrides": {
-    "fast-json-patch": "^3.1.1"
+    "fast-json-patch": "^3.1.1",
+    "markdownlint-cli2": {
+      "js-yaml": "^4.2.0",
+      "markdown-it": "^14.2.0"
+    }
   }
 }
