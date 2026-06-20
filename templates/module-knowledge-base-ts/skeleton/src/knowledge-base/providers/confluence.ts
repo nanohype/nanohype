@@ -38,6 +38,19 @@ function getConfig(): { baseUrl: string; email: string; token: string } {
 }
 
 /** Convert Confluence storage format (simplified XHTML) to markdown. */
+// Strip HTML tags, looping until the string stabilizes. A single global replace
+// is insufficient — nested/overlapping constructs like `<scr<x>ipt>` can leave a
+// live tag behind after one pass — so repeat until no `<...>` remains.
+function stripHtmlTags(input: string): string {
+  let out = input;
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, "");
+  } while (out !== prev);
+  return out;
+}
+
 function storageToMarkdown(html: string): string {
   let md = html;
 
@@ -89,7 +102,7 @@ function storageToMarkdown(html: string): string {
       const cells: string[] = [];
       const cellMatches = rowHtml.match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) ?? [];
       for (const cellHtml of cellMatches) {
-        const cellContent = cellHtml.replace(/<[^>]+>/g, "").trim();
+        const cellContent = stripHtmlTags(cellHtml).trim();
         cells.push(cellContent);
       }
       rows.push(cells);
@@ -106,16 +119,17 @@ function storageToMarkdown(html: string): string {
     return lines.join("\n") + "\n\n";
   });
 
-  // Strip remaining HTML tags
-  md = md.replace(/<[^>]+>/g, "");
+  // Strip remaining HTML tags (iteratively, so nested tags can't survive a pass)
+  md = stripHtmlTags(md);
 
-  // Decode HTML entities
-  md = md.replace(/&amp;/g, "&");
+  // Decode HTML entities. `&amp;` is decoded LAST so an input like `&amp;lt;`
+  // resolves to the literal `&lt;` instead of being double-unescaped to `<`.
   md = md.replace(/&lt;/g, "<");
   md = md.replace(/&gt;/g, ">");
   md = md.replace(/&quot;/g, '"');
   md = md.replace(/&#39;/g, "'");
   md = md.replace(/&nbsp;/g, " ");
+  md = md.replace(/&amp;/g, "&");
 
   // Clean up excessive newlines
   md = md.replace(/\n{3,}/g, "\n\n");
