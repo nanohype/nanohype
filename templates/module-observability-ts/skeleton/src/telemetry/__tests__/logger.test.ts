@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { trace, context, SpanContext, TraceFlags } from "@opentelemetry/api";
+import { trace, context, TraceFlags, type SpanContext } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { logger } from "../logger.js";
 

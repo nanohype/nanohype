@@ -16,6 +16,7 @@ import { registerExporter } from "./registry.js";
  *   DD_OTLP_ENDPOINT  (default: http://localhost:4318)
  */
 class DatadogTelemetryExporter implements TelemetryExporter {
+  readonly name = "datadog";
   private readonly endpoint: string;
 
   constructor() {
