@@ -382,7 +382,7 @@ function createGoogleDocsProvider(): KnowledgeProvider {
       logger.debug("google-docs searchPages", { query: options.query });
 
       const limit = options.limit ?? 20;
-      let q = `mimeType='application/vnd.google-apps.document' and fullText contains '${options.query.replace(/'/g, "\\'")}'`;
+      let q = `mimeType='application/vnd.google-apps.document' and fullText contains '${options.query.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
 
       if (options.parentId) {
         q += ` and '${options.parentId}' in parents`;
