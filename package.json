@@ -24,10 +24,10 @@
   ],
   "scripts": {
     "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
-    "validate:schema": "ajv validate -s schemas/template.schema.json -d 'templates/*/template.yaml' --spec=draft2020 --strict=false",
+    "validate:schema": "node scripts/validate-schema.mjs --schema schemas/template.schema.json --data 'templates/*/template.yaml'",
     "validate:catalog": "./scripts/validate-catalog.sh",
-    "validate:standards": "ajv validate -s schemas/standards.schema.json -d 'standards/*.json' --spec=draft2020 --strict=false && node scripts/check-tagging-standard.mjs",
-    "validate:manifest": "ajv validate -s schemas/catalog.schema.json -d catalog.json --spec=draft2020 --strict=false",
+    "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
+    "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
     "generate:catalog": "node scripts/generate-catalog.mjs",
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
     "sync:library": "node scripts/sync-library.mjs",
@@ -35,7 +35,7 @@
     "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**' '!.plans/**'"
   },
   "devDependencies": {
-    "ajv-cli": "^5.0.0",
+    "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.2.0",
     "markdownlint-cli2": "^0.22.1"
