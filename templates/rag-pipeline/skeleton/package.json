@@ -18,7 +18,7 @@
     "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.89.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
     "@pinecone-database/pinecone": "^4.0.0",
     "@qdrant/js-client-rest": "^1.12.0",

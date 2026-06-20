@@ -18,7 +18,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "openai": "^4.85.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
