@@ -1,6 +1,6 @@
 import { validateBootstrap } from "./bootstrap.js";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { Resource } from "@opentelemetry/resources";
+import { resourceFromAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
@@ -58,7 +58,7 @@ export function initTelemetry(config: TelemetryConfig): () => Promise<void> {
   const exporterName = config.exporterName ?? "__EXPORTER__";
   const exporter = getExporter(exporterName);
 
-  const resource = new Resource({
+  const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: config.serviceName,
     [ATTR_SERVICE_VERSION]: config.serviceVersion ?? "0.0.0",
   });
