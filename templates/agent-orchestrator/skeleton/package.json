@@ -21,7 +21,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "@opentelemetry/api": "^1.9.0",
     "openai": "^4.85.0",
     "zod": "^3.24.0"

@@ -24,7 +24,7 @@
     "cli": "tsx src/cli/index.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "commander": "^13.1.0",
     "hono": "^4.7.0",
     "simple-git": "^3.27.0",

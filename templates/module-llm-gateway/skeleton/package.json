@@ -27,7 +27,7 @@
     "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.89.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
     "@opentelemetry/api": "^1.9.1",
     "groq-sdk": "^0.15.0",
