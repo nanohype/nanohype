@@ -1,3 +1,4 @@
+import { applyContentConditionals, evalCondition } from './conditions.js';
 import { resolveVariables } from './resolver.js';
 import type { RenderResult, SkeletonFile, TemplateHook, TemplateManifest } from './types.js';
 import { validateManifest } from './validator.js';
@@ -43,10 +44,12 @@ export function renderTemplate(
 
   // Step 8: render
 
-  // Build conditional exclusion set
+  // Build conditional exclusion set. `when` is a boolean expression over
+  // variable names (a bare name is the common case), so RDS-needs-VPC style
+  // dependencies are expressible as `IncludeVpc || IncludeRds`.
   const excludedPaths = new Set<string>();
   for (const cond of manifest.conditionals ?? []) {
-    if (resolved[cond.when] === 'false') {
+    if (!evalCondition(cond.when, resolved)) {
       excludedPaths.add(cond.path);
     }
   }
@@ -66,8 +69,9 @@ export function renderTemplate(
       renderedPath = renderedPath.replaceAll(v.placeholder, resolved[v.name]);
     }
 
-    // Replace placeholders in content
-    let renderedContent = file.content;
+    // Strip inline #if/#endif blocks first, then replace placeholders in the
+    // surviving content.
+    let renderedContent = applyContentConditionals(file.content, resolved);
     for (const v of manifest.variables) {
       renderedContent = renderedContent.replaceAll(v.placeholder, resolved[v.name]);
     }

@@ -18,3 +18,10 @@ export class VariableResolutionError extends NanohypeError {
     this.name = 'VariableResolutionError';
   }
 }
+
+export class TemplateRenderError extends NanohypeError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TemplateRenderError';
+  }
+}

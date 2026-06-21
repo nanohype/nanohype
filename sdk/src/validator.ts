@@ -1,3 +1,4 @@
+import { conditionVariables } from './conditions.js';
 import { ManifestValidationError } from './errors.js';
 import type { CompositeManifest, TemplateManifest } from './types.js';
 
@@ -17,18 +18,21 @@ export function validateManifest(manifest: TemplateManifest): void {
     }
   }
 
-  // Conditionals must reference bool variables
+  // Conditionals' `when` is a boolean expression; every variable it references
+  // must exist and be a bool.
   for (const cond of manifest.conditionals ?? []) {
-    const ref = manifest.variables.find((v) => v.name === cond.when);
-    if (!ref) {
-      throw new ManifestValidationError(
-        `Conditional references unknown variable '${cond.when}'`,
-      );
-    }
-    if (ref.type !== 'bool') {
-      throw new ManifestValidationError(
-        `Conditional 'when' must reference bool variable, got '${ref.type}' for '${cond.when}'`,
-      );
+    for (const name of conditionVariables(cond.when)) {
+      const ref = manifest.variables.find((v) => v.name === name);
+      if (!ref) {
+        throw new ManifestValidationError(
+          `Conditional 'when' references unknown variable '${name}' (in '${cond.when}')`,
+        );
+      }
+      if (ref.type !== 'bool') {
+        throw new ManifestValidationError(
+          `Conditional 'when' must reference bool variables, got '${ref.type}' for '${name}'`,
+        );
+      }
     }
   }
 
