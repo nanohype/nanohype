@@ -122,13 +122,16 @@ _go_outdated() {
 
 _go_build() {
   local work="$1" name="$2"
-  local output
-  output="$(cd "$work" && GOSUMDB=off go build ./... 2>&1 || true)"
-  if [ -n "$output" ]; then
+  local output status
+  # Gate on the exit code, not on output presence: a successful `go build` can
+  # still print linker warnings (e.g. a missing optional search path), which
+  # are not build failures.
+  output="$(cd "$work" && GOSUMDB=off go build ./... 2>&1)" && status=0 || status=$?
+  if [ "${status:-0}" -ne 0 ]; then
     local error_count
-    error_count=$(printf '%s' "$output" | wc -l | tr -d ' ')
+    error_count=$(printf '%s\n' "$output" | grep -c . || true)
     finding "error" "go" "$name" "build" \
-      "go build ./... failed (${error_count} lines of output)"
+      "go build ./... failed (exit ${status}, ${error_count} lines of output)"
   fi
 }
 

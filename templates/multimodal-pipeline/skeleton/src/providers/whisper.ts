@@ -8,7 +8,7 @@
  */
 
 import OpenAI, { toFile } from "openai";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 

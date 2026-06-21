@@ -125,7 +125,7 @@ async function handleHono(
   provider: { verifyRequest: (req: AuthRequest) => Promise<AuthResult> },
   _config: AuthConfig,
   args: unknown[],
-): Promise<unknown> {
+): Promise<void> {
   const c = args[0] as {
     req: { raw: Request; header: (name: string) => string | undefined };
     json: (body: unknown, status: number) => unknown;

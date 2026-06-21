@@ -13,7 +13,7 @@ import {
 } from "./metrics.js";
 import type { ConversationStore } from "./memory/conversation.js";
 
-const MAX_ITERATIONS = __MAX_ITERATIONS__;
+const MAX_ITERATIONS = Number("__MAX_ITERATIONS__");
 const PROVIDER_NAME = "__LLM_PROVIDER__";
 
 /** Lazily resolved provider — avoids calling getProvider() at module scope

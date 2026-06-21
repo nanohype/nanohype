@@ -1,4 +1,4 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 import type { Flag } from "../types.js";
 import type { FlagStore } from "./types.js";
 import { registerStore } from "./registry.js";

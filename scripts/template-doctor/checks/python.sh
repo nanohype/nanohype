@@ -50,8 +50,11 @@ _py_compile() {
   local output error_count
   output="$(python3 -m compileall -q "$skeleton" 2>&1 || true)"
   error_count=$(printf '%s' "$output" | grep -cE "SyntaxError|IndentationError" || true)
-  [ "$error_count" -gt 0 ] && finding "error" "python" "$name" "syntax" \
-    "python3 compileall reports ${error_count} syntax errors"
+  # if/fi, not `[ ] && finding`: under `set -e` the latter returns non-zero on a
+  # clean skeleton (error_count=0) and would abort the run on the first one.
+  if [ "$error_count" -gt 0 ]; then
+    finding "error" "python" "$name" "syntax" "python3 compileall reports ${error_count} syntax errors"
+  fi
 }
 
 _py_outdated() {

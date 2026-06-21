@@ -28,6 +28,23 @@ interface UploadcareConfig {
   secretKey: string;
 }
 
+interface UploadcareUploadResponse {
+  file: string;
+}
+
+interface UploadcareFileInfo {
+  original_filename?: string;
+  mime_type?: string;
+  size?: number;
+  image_info?: { width?: number; height?: number };
+  datetime_uploaded?: string;
+}
+
+interface UploadcareListResponse {
+  results?: Record<string, unknown>[];
+  next?: string | null;
+}
+
 const FIT_MAP: Record<string, string> = {
   cover: "crop",
   contain: "fit",
@@ -81,7 +98,7 @@ function createUploadcareProvider(): MediaProvider {
         }
       }
 
-      const response = await breaker.execute(async () => {
+      const response = await breaker.execute(async (): Promise<UploadcareUploadResponse> => {
         const res = await fetch("https://upload.uploadcare.com/base/", {
           method: "POST",
           signal: AbortSignal.timeout(30_000),
@@ -91,7 +108,7 @@ function createUploadcareProvider(): MediaProvider {
           const text = await res.text();
           throw new Error(`Uploadcare upload failed (${res.status}): ${text}`);
         }
-        return res.json();
+        return res.json() as Promise<UploadcareUploadResponse>;
       });
 
       const uuid = response.file;
@@ -102,7 +119,7 @@ function createUploadcareProvider(): MediaProvider {
       const uri = `/files/${uuid}/`;
       const signature = buildAuthHeader("GET", "application/json", "", uri, date, secretKey);
 
-      const info = await breaker.execute(async () => {
+      const info = await breaker.execute(async (): Promise<UploadcareFileInfo> => {
         const res = await fetch(`https://api.uploadcare.com${uri}`, {
           signal: AbortSignal.timeout(30_000),
           headers: {
@@ -112,7 +129,7 @@ function createUploadcareProvider(): MediaProvider {
           },
         });
         if (!res.ok) return {};
-        return res.json();
+        return res.json() as Promise<UploadcareFileInfo>;
       });
 
       const asset: MediaAsset = {
@@ -204,7 +221,7 @@ function createUploadcareProvider(): MediaProvider {
       const uri = `/files/?${params}`;
       const signature = buildAuthHeader("GET", "application/json", "", uri, date, secretKey);
 
-      const response = await breaker.execute(async () => {
+      const response = await breaker.execute(async (): Promise<UploadcareListResponse> => {
         const res = await fetch(`https://api.uploadcare.com${uri}`, {
           signal: AbortSignal.timeout(30_000),
           headers: {
@@ -217,7 +234,7 @@ function createUploadcareProvider(): MediaProvider {
           const text = await res.text();
           throw new Error(`Uploadcare list failed (${res.status}): ${text}`);
         }
-        return res.json();
+        return res.json() as Promise<UploadcareListResponse>;
       });
 
       const resultAssets: MediaAsset[] = (response.results ?? []).map((r: Record<string, unknown>) => ({

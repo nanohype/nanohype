@@ -134,7 +134,7 @@ describe("mock media provider", () => {
       for (const asset of assets) {
         expect(asset.id).toBeDefined();
         expect(asset.size).toBeGreaterThan(0);
-        expect((asset as Record<string, unknown>).data).toBeUndefined();
+        expect((asset as unknown as Record<string, unknown>).data).toBeUndefined();
       }
     });
 

@@ -7,7 +7,7 @@
 // Environment variables:
 //   CLERK_SECRET_KEY — Clerk secret key from the dashboard
 
-import { createClerkClient } from "@clerk/backend";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import type { AuthResult } from "../types.js";
 import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
@@ -106,7 +106,7 @@ const clerkProvider: AuthProvider = {
       // The token is extracted from the Authorization header.
       const token = authHeader.replace(/^Bearer\s+/i, "");
       const verifiedToken = await clerkCb.execute(() =>
-        clerk.verifyToken(token)
+        verifyToken(token, { secretKey })
       );
 
       // Resolve user details — check cache first to avoid redundant API calls

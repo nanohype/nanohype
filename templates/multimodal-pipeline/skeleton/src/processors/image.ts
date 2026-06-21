@@ -29,7 +29,7 @@ class ImageProcessor implements Processor {
     const maxDim = config.image.maxDimension;
 
     const raw = await readFile(filePath);
-    let buffer = raw;
+    let buffer: Buffer = raw;
     let width: number | undefined;
     let height: number | undefined;
 

@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createHonoAnalytics } from "../middleware/hono.js";
 import { createExpressAnalytics } from "../middleware/express.js";
 import type { AnalyticsProvider } from "../providers/types.js";
+import type { TrackEvent } from "../types.js";
 
 // ── Middleware Tests ─────────────────────────────────────────────
 //
@@ -9,8 +10,8 @@ import type { AnalyticsProvider } from "../providers/types.js";
 // both Hono and Express middleware factories.
 //
 
-function stubProvider(): AnalyticsProvider & { tracked: Record<string, unknown>[] } {
-  const tracked: Record<string, unknown>[] = [];
+function stubProvider(): AnalyticsProvider & { tracked: TrackEvent[] } {
+  const tracked: TrackEvent[] = [];
 
   return {
     name: "stub",
@@ -55,7 +56,7 @@ describe("hono analytics middleware", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     expect(provider.tracked).toHaveLength(1);
-    const event = provider.tracked[0] as Record<string, unknown>;
+    const event = provider.tracked[0];
     expect(event.event).toBe("request");
 
     const props = event.properties as Record<string, unknown>;
@@ -77,7 +78,7 @@ describe("hono analytics middleware", () => {
     await middleware(ctx, async () => {});
     await new Promise((r) => setTimeout(r, 0));
 
-    expect((provider.tracked[0] as Record<string, unknown>).event).toBe("http_request");
+    expect(provider.tracked[0].event).toBe("http_request");
   });
 
   it("captures error status codes", async () => {
@@ -91,7 +92,7 @@ describe("hono analytics middleware", () => {
     await middleware(ctx, async () => {});
     await new Promise((r) => setTimeout(r, 0));
 
-    const props = (provider.tracked[0] as Record<string, unknown>).properties as Record<string, unknown>;
+    const props = provider.tracked[0].properties as Record<string, unknown>;
     expect(props.statusCode).toBe(500);
   });
 });
@@ -128,7 +129,7 @@ describe("express analytics middleware", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     expect(provider.tracked).toHaveLength(1);
-    const event = provider.tracked[0] as Record<string, unknown>;
+    const event = provider.tracked[0];
     expect(event.event).toBe("request");
 
     const props = event.properties as Record<string, unknown>;
@@ -162,7 +163,7 @@ describe("express analytics middleware", () => {
     finishCallback!();
     await new Promise((r) => setTimeout(r, 0));
 
-    const props = (provider.tracked[0] as Record<string, unknown>).properties as Record<string, unknown>;
+    const props = provider.tracked[0].properties as Record<string, unknown>;
     expect(props.durationMs).toBeGreaterThanOrEqual(0);
   });
 });

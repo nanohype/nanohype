@@ -61,7 +61,7 @@ function createStripeProvider(): PaymentProvider {
       // Lazy load the Stripe SDK
       const { default: Stripe } = await import("stripe");
       client = new Stripe(secretKey, {
-        apiVersion: "2024-12-18.acacia",
+        apiVersion: "2025-02-24.acacia",
       });
 
       logger.info("Stripe provider initialized");
@@ -196,7 +196,7 @@ function createStripeProvider(): PaymentProvider {
           description: line.description ?? "",
           metric: "",
           quantity: line.quantity ?? 0,
-          unitPrice: line.unit_amount ?? 0,
+          unitPrice: line.price?.unit_amount ?? 0,
           amount: line.amount,
         })),
         totalAmount: inv.total,

@@ -116,7 +116,7 @@ export async function proxyRequest(
       headers,
       body: request.body,
       signal: controller.signal,
-      // @ts-expect-error -- Node.js fetch supports duplex for streaming request bodies
+      // Node.js fetch supports duplex for streaming request bodies
       duplex: "half",
     });
 

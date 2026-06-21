@@ -5,6 +5,15 @@ on:
   # weekly cadence matches how fast the ecosystem drifts in practice.
   schedule:
     - cron: "0 6 * * 0"
+  # Gate PRs that touch templates, composites, or the doctor itself: fail on
+  # hard errors so typecheck/build/lint/ref debt can't land silently. Advisory
+  # findings (outdated deps, dead deps) are reported but don't block.
+  pull_request:
+    paths:
+      - "templates/**"
+      - "composites/**"
+      - "scripts/template-doctor/**"
+      - ".github/workflows/template-doctor.yml"
   # Manual trigger for on-demand runs (e.g., before cutting a release).
   workflow_dispatch:
     inputs:
@@ -33,7 +42,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          # go-service's pgx/otel deps require go 1.25; keep the doctor on a
+          # current toolchain so it validates skeletons against what they build on.
+          go-version: "1.26"
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -50,15 +61,19 @@ jobs:
         id: doctor
         env:
           ONLY: ${{ github.event.inputs.only || 'ts,go,java,python,cross' }}
+          # Gate pull requests on hard errors; cron / manual runs stay report-only.
+          FAIL_ON: ${{ github.event_name == 'pull_request' && 'error' || '' }}
         run: |
-          set -e
-          ./scripts/template-doctor/run.sh --only "$ONLY" --format markdown \
-            > doctor-report.md || true
+          args=(--only "$ONLY" --format markdown)
+          [ -n "$FAIL_ON" ] && args+=(--fail-on "$FAIL_ON")
+          ./scripts/template-doctor/run.sh "${args[@]}" > doctor-report.md
 
       - name: Post report to job summary
+        if: always()
         run: cat doctor-report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report artifact
+        if: always()
         uses: actions/upload-artifact@v5
         with:
           name: doctor-report

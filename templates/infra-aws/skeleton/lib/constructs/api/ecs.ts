@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { Construct } from "constructs";
-import type { ComputeConstruct } from "../compute/__COMPUTE_TARGET__";
+import type { ComputeConstruct } from "../compute/ecs";
 
 export interface ApiConstructProps {
   readonly compute: ComputeConstruct;

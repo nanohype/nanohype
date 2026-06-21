@@ -5,8 +5,8 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
-import type { ComputeConstruct } from "./compute/__COMPUTE_TARGET__";
-import type { ApiConstruct } from "./api/__COMPUTE_TARGET__";
+import type { ComputeConstruct } from "./compute";
+import type { ApiConstruct } from "./api";
 
 export interface MonitoringConstructProps {
   readonly compute: ComputeConstruct;

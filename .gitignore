@@ -8,6 +8,12 @@ bin/
 build/
 coverage/
 
+# Template skeletons ship their own bin/ source entrypoints (CDK app.ts, CLI
+# runners). The blanket bin/ rule above targets compiled build output, so
+# re-include template sources explicitly.
+!templates/**/bin/
+!templates/**/bin/**
+
 # Environment
 .env
 .env.*

@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider, listProviders } from "./providers/index.js";
+import { getProvider } from "./providers/index.js";
 import { cacheGetTotal, cacheOperationDuration } from "./metrics.js";
 import type { CacheProvider } from "./providers/types.js";
 import type { CacheConfig, SetOptions } from "./types.js";
@@ -94,7 +94,7 @@ export async function createCache(
     return `${nsPrefix}${key}`;
   }
 
-  return {
+  const cache: Cache = {
     provider,
 
     async get<T = unknown>(key: string): Promise<T | undefined> {
@@ -145,14 +145,14 @@ export async function createCache(
       opts?: SetOptions,
     ): Promise<T> {
       const start = performance.now();
-      const existing = await this.get<T>(key);
+      const existing = await cache.get<T>(key);
       if (existing !== undefined) {
         cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
         return existing;
       }
 
       const value = await factory();
-      await this.set(key, value, opts);
+      await cache.set(key, value, opts);
       cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
       return value;
     },
@@ -161,4 +161,6 @@ export async function createCache(
       await provider.close();
     },
   };
+
+  return cache;
 }

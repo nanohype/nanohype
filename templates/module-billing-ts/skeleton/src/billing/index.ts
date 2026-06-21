@@ -132,6 +132,17 @@ export async function createBillingService(
 
   logger.info("Billing service created", { provider: providerName, currency });
 
+  // Shared usage-summary computation — used by both the public
+  // getUsageSummary method and generateInvoice. Lives in the closure
+  // so callers don't depend on the returned object's `this` type.
+  function computeUsageSummary(
+    customerId: string,
+    period: BillingPeriod,
+  ): UsageSummary {
+    const records = tracker.getRecords(customerId, period);
+    return aggregator.aggregate(records, customerId, period);
+  }
+
   return {
     recordUsage(
       customerId: string,
@@ -143,12 +154,11 @@ export async function createBillingService(
     },
 
     getUsageSummary(customerId: string, period: BillingPeriod): UsageSummary {
-      const records = tracker.getRecords(customerId, period);
-      return aggregator.aggregate(records, customerId, period);
+      return computeUsageSummary(customerId, period);
     },
 
     generateInvoice(customerId: string, period: BillingPeriod): Invoice {
-      const summary = this.getUsageSummary(customerId, period);
+      const summary = computeUsageSummary(customerId, period);
       return invoiceGen.generate(customerId, period, summary.lineItems);
     },
 

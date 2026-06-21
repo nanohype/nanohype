@@ -34,5 +34,14 @@ export interface QueueProvider {
 /** Function that processes a single dequeued job. */
 export type JobHandler<T = unknown> = (job: JobDefinition<T>) => Promise<void>;
 
-/** Map of job names to their handler functions. */
-export type HandlerMap = Record<string, JobHandler>;
+/**
+ * Map of job names to their handler functions.
+ *
+ * The value is written with method syntax so handlers declared against a
+ * specific payload type (e.g. JobHandler<NotificationPayload>) register
+ * without widening their parameter. The consumer always dispatches a
+ * JobDefinition whose data is unknown until the handler narrows it.
+ */
+export interface HandlerMap {
+  [jobName: string]: { handle(job: JobDefinition): Promise<void> }["handle"];
+}

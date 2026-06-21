@@ -13,7 +13,19 @@ import { selectUpstream, isCanaryConfig } from "./traffic/canary.js";
 import { createHealthChecker } from "./traffic/health.js";
 import { createCircuitBreaker, type CircuitBreaker } from "./resilience/circuit-breaker.js";
 import { gatewayProxyTotal, gatewayProxyDuration } from "./metrics.js";
-import type { GatewayConfig, RouteRule } from "./types.js";
+import type { GatewayConfig, RouteRule, TransformRule } from "./types.js";
+
+// ── Hono context variables ──────────────────────────────────────────
+//
+// Typed context keys shared across middleware and the proxy handler.
+// Registering the Variables env makes c.get/c.set type-safe instead of
+// resolving to `never`.
+//
+interface GatewayEnv {
+  Variables: {
+    transformRule: TransformRule;
+  };
+}
 
 // ── Gateway Entry Point ─────────────────────────────────────────────
 //
@@ -49,7 +61,7 @@ function collectUpstreams(routes: RouteRule[]): string[] {
  */
 export function createGateway(config: GatewayConfig) {
   const logger = createLogger("gateway", (config.logLevel as "debug" | "info" | "warn" | "error") ?? "info");
-  const app = new Hono();
+  const app = new Hono<GatewayEnv>();
 
   // ── Per-upstream circuit breakers (instance-scoped) ──────────────
   const breakers = new Map<string, CircuitBreaker>();
@@ -163,7 +175,7 @@ export function createGateway(config: GatewayConfig) {
 
     // Proxy the request
     const timeoutMs = match.rule.timeoutMs ?? config.defaultTimeoutMs ?? 30_000;
-    const transform = (c.get("transformRule") as typeof match.rule.transform) ?? match.rule.transform;
+    const transform = c.get("transformRule") ?? match.rule.transform;
 
     const proxyResponse = await proxyRequest(
       upstreamUrl,

@@ -1,7 +1,7 @@
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
-import type { ComputeConstruct } from "../compute/__COMPUTE_TARGET__";
+import type { ComputeConstruct } from "../compute/lambda";
 
 export interface ApiConstructProps {
   readonly compute: ComputeConstruct;

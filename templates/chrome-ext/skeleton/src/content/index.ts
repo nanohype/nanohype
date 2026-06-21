@@ -68,7 +68,7 @@ function showOverlay(selection: Selection) {
       } else if (response?.content) {
         showResult(response.content, false);
       }
-    } catch (err) {
+    } catch {
       showResult("Failed to get response.", true);
     }
   });

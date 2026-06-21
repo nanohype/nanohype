@@ -10,15 +10,22 @@ export interface AssertionResult {
 }
 
 /**
+ * A synchronous assertion function takes the LLM output string and returns
+ * a result indicating whether the output satisfies the assertion.
+ */
+export type SyncAssertionFn = (output: string) => AssertionResult;
+
+/**
  * An assertion function takes the LLM output string and returns
  * a result indicating whether the output satisfies the assertion.
+ * May be synchronous or asynchronous; `SyncAssertionFn` is assignable to it.
  */
 export type AssertionFn = (output: string) => AssertionResult | Promise<AssertionResult>;
 
 /**
  * Checks that the output contains the given substring.
  */
-export function contains(substring: string): AssertionFn {
+export function contains(substring: string): SyncAssertionFn {
   return (output: string): AssertionResult => {
     const pass = output.includes(substring);
     return {
@@ -34,7 +41,7 @@ export function contains(substring: string): AssertionFn {
 /**
  * Checks that the output does NOT contain the given substring.
  */
-export function notContains(substring: string): AssertionFn {
+export function notContains(substring: string): SyncAssertionFn {
   return (output: string): AssertionResult => {
     const pass = !output.includes(substring);
     return {
@@ -50,7 +57,7 @@ export function notContains(substring: string): AssertionFn {
 /**
  * Checks that the output matches the given regular expression pattern.
  */
-export function matchesPattern(pattern: string): AssertionFn {
+export function matchesPattern(pattern: string): SyncAssertionFn {
   return (output: string): AssertionResult => {
     const regex = new RegExp(pattern);
     const pass = regex.test(output);
@@ -71,7 +78,7 @@ export function matchesPattern(pattern: string): AssertionFn {
  *
  * Supports `type`, `required`, and `properties` fields from the schema value.
  */
-export function matchesJsonSchema(schema: Record<string, unknown>): AssertionFn {
+export function matchesJsonSchema(schema: Record<string, unknown>): SyncAssertionFn {
   return (output: string): AssertionResult => {
     let parsed: unknown;
     try {
@@ -127,7 +134,7 @@ export function matchesJsonSchema(schema: Record<string, unknown>): AssertionFn 
  * Checks that the output does not exceed the given token count.
  * Uses a simple whitespace-based tokenization as an approximation.
  */
-export function maxTokens(limit: number): AssertionFn {
+export function maxTokens(limit: number): SyncAssertionFn {
   return (output: string): AssertionResult => {
     // Approximate token count by splitting on whitespace and punctuation boundaries
     const tokens = output.split(/\s+/).filter(Boolean);
@@ -179,7 +186,7 @@ export function satisfies(
  * The `threshold` parameter sets the minimum cosine similarity score (0-1)
  * required to pass.
  */
-export function semanticSimilarity(reference: string, threshold = 0.8): AssertionFn {
+export function semanticSimilarity(reference: string, threshold = 0.8): SyncAssertionFn {
   return (output: string): AssertionResult => {
     const score = tfidfCosineSimilarity(reference, output);
     const pass = score >= threshold;
