@@ -33,6 +33,7 @@
     "electron": "^42.0.0",
     "esbuild": "^0.24.0",
     "eslint": "^9.20.0",
+    "globals": "^17.6.0",
     "prettier": "^3.5.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.25.0",
