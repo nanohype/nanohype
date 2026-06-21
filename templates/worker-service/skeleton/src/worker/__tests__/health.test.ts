@@ -1,6 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
 
+// Shape of the /health and /readyz JSON responses. res.json() returns
+// unknown, so the tests parse into this typed boundary instead of any.
+interface HealthBody {
+  status: string;
+  consumer?: string;
+  scheduler?: string;
+}
+
 // ── Health Endpoint Tests ─────────────────────────────────────────
 //
 // Tests the /health and /readyz responses directly against a Hono
@@ -44,7 +52,7 @@ describe("/health", () => {
     const res = await app.request("/health");
 
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as HealthBody;
     expect(body.status).toBe("alive");
   });
 
@@ -62,7 +70,7 @@ describe("/readyz", () => {
     const res = await app.request("/readyz");
 
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as HealthBody;
     expect(body.status).toBe("ready");
     expect(body.consumer).toBe("polling");
     expect(body.scheduler).toBe("running");
@@ -73,7 +81,7 @@ describe("/readyz", () => {
     const res = await app.request("/readyz");
 
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = (await res.json()) as HealthBody;
     expect(body.status).toBe("not_ready");
     expect(body.consumer).toBe("stopped");
   });
@@ -83,7 +91,7 @@ describe("/readyz", () => {
     const res = await app.request("/readyz");
 
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = (await res.json()) as HealthBody;
     expect(body.status).toBe("not_ready");
     expect(body.scheduler).toBe("stopped");
   });
@@ -93,7 +101,7 @@ describe("/readyz", () => {
     const res = await app.request("/readyz");
 
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = (await res.json()) as HealthBody;
     expect(body.consumer).toBe("stopped");
     expect(body.scheduler).toBe("stopped");
   });

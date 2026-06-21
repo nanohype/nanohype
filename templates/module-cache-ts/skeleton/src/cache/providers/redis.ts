@@ -1,4 +1,4 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 import type { CacheConfig } from "../types.js";
 import type { CacheProvider } from "./types.js";
 import { registerProvider } from "./registry.js";

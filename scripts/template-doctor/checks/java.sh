@@ -89,9 +89,11 @@ _java_outdated() {
   output="$(cd "$work" && mvn -B -q versions:display-dependency-updates 2>&1 || true)"
 
   # Maven output form: "  [INFO]   group:artifact ......... current -> latest"
-  # Parse per-line; skip anything without the arrow.
+  # Parse per-line; skip anything without the arrow. `grep` exits 1 when no deps
+  # are outdated — that is success, not failure, so swallow it (otherwise pipefail
+  # propagates the non-zero and set -e aborts the whole run).
   printf '%s\n' "$output" \
-    | grep -E "\->[[:space:]]" \
+    | { grep -E "\->[[:space:]]" || true; } \
     | sed -E 's/^\[INFO\][[:space:]]*//; s/^[[:space:]]+//' \
     | while IFS= read -r line; do
         # Strip the padding dots; extract "coord current -> latest".

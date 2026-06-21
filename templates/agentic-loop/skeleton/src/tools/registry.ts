@@ -27,11 +27,15 @@ export class ToolRegistry {
   private tools = new Map<string, Tool>();
 
   /** Register a tool. Throws if a tool with the same name already exists. */
-  register(tool: Tool): void {
+  register<TSchema extends z.ZodObject<z.ZodRawShape>>(tool: Tool<TSchema>): void {
     if (this.tools.has(tool.name)) {
       throw new Error(`Tool "${tool.name}" is already registered`);
     }
-    this.tools.set(tool.name, tool);
+    // Store erased: each tool's execute is only ever invoked with input
+    // that this registry has parsed against that same tool's inputSchema
+    // (see execute() below), so the per-tool input type is preserved at
+    // the call boundary even though the map holds the widened Tool type.
+    this.tools.set(tool.name, tool as unknown as Tool);
   }
 
   /** Get a tool by name. Returns undefined if not found. */

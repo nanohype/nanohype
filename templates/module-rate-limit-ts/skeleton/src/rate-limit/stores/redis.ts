@@ -1,4 +1,4 @@
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 import type { RateLimitStore, StoreConfig } from "./types.js";
 import { registerStore } from "./registry.js";
 

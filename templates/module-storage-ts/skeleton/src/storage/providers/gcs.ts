@@ -84,7 +84,7 @@ class GcsStorageProvider implements StorageProvider {
   async list(prefix?: string, opts?: ListOptions): Promise<ListResult> {
     const bucket = this.storage.bucket(this.bucketName);
 
-    const [files, , apiResponse] = await this.cb.execute(() =>
+    const [files, nextQuery] = await this.cb.execute(() =>
       withRetry(() =>
         bucket.getFiles({
           prefix: prefix ?? undefined,
@@ -106,7 +106,7 @@ class GcsStorageProvider implements StorageProvider {
 
     return {
       objects,
-      nextCursor: apiResponse?.nextPageToken,
+      nextCursor: nextQuery?.pageToken,
     };
   }
 

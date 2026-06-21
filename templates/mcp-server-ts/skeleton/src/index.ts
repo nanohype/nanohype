@@ -1,6 +1,6 @@
 import { validateBootstrap } from "./bootstrap.js";
 import { createServer } from "./server.js";
-import { start } from "./transports/__TRANSPORT__.js";
+import { start } from "./transports/index.js";
 
 validateBootstrap();
 

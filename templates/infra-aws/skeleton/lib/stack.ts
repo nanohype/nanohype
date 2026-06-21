@@ -1,7 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { ComputeConstruct } from "./constructs/compute/__COMPUTE_TARGET__";
-import { ApiConstruct } from "./constructs/api/__COMPUTE_TARGET__";
+import { ComputeConstruct } from "./constructs/compute";
+import { ApiConstruct } from "./constructs/api";
 import { VpcConstruct } from "./constructs/vpc";
 import { DatabaseConstruct } from "./constructs/database";
 import { MonitoringConstruct } from "./constructs/monitoring";

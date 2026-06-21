@@ -32,9 +32,15 @@ _check_ts_template() {
   name="$(template_name "$tmpl")"
   skeleton="${tmpl}/skeleton"
 
-  # Install once per skeleton; cached via node_modules across checks.
-  if [ ! -d "${skeleton}/node_modules" ]; then
-    if ! (cd "$skeleton" && npm install --silent --no-audit --no-fund >/dev/null 2>&1); then
+  # (Re)install when node_modules is missing or stale relative to package.json.
+  # A cached-but-stale tree makes tsc run against old dependency versions and
+  # report phantom errors against APIs the pinned versions don't expose (e.g. a
+  # node_modules left from before a dependency bump). Drop the lockfile too so
+  # versions re-resolve from the package.json ranges.
+  if [ ! -d "${skeleton}/node_modules" ] ||
+    [ "${skeleton}/package.json" -nt "${skeleton}/node_modules" ]; then
+    if ! (cd "$skeleton" && rm -rf node_modules package-lock.json &&
+      npm install --silent --no-audit --no-fund >/dev/null 2>&1); then
       finding "error" "ts" "$name" "install" "npm install failed"
       return
     fi
@@ -85,8 +91,12 @@ _ts_typecheck() {
   local output error_count
   output="$(cd "$skeleton" && npx --no-install tsc --noEmit 2>&1 || true)"
   error_count=$(printf '%s' "$output" | grep -cE "error TS[0-9]+" || true)
-  [ "$error_count" -gt 0 ] && finding "error" "ts" "$name" "typecheck" \
-    "tsc --noEmit reports ${error_count} errors"
+  # if/fi, not `[ ] && finding`: under `set -e` the latter returns non-zero when
+  # the skeleton is clean (error_count=0), which would abort the whole run on the
+  # first clean template.
+  if [ "$error_count" -gt 0 ]; then
+    finding "error" "ts" "$name" "typecheck" "tsc --noEmit reports ${error_count} errors"
+  fi
 }
 
 _ts_dead_deps() {

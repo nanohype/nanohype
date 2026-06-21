@@ -30,6 +30,23 @@ interface CloudinaryConfig {
   apiSecret: string;
 }
 
+interface CloudinaryUploadResponse {
+  public_id: string;
+  original_filename?: string;
+  format?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+  created_at: string;
+  version?: number;
+  etag?: string;
+}
+
+interface CloudinaryListResponse {
+  resources?: Record<string, unknown>[];
+  next_cursor?: string;
+}
+
 const FIT_MAP: Record<string, string> = {
   cover: "c_fill",
   contain: "c_fit",
@@ -108,13 +125,13 @@ function createCloudinaryProvider(): MediaProvider {
 
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
-      const response = await breaker.execute(async () => {
+      const response = await breaker.execute(async (): Promise<CloudinaryUploadResponse> => {
         const res = await fetch(url, { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`Cloudinary upload failed (${res.status}): ${text}`);
         }
-        return res.json();
+        return res.json() as Promise<CloudinaryUploadResponse>;
       });
 
       return {
@@ -177,7 +194,7 @@ function createCloudinaryProvider(): MediaProvider {
       const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image?${params}`;
 
-      const response = await breaker.execute(async () => {
+      const response = await breaker.execute(async (): Promise<CloudinaryListResponse> => {
         const res = await fetch(url, {
           signal: AbortSignal.timeout(30_000),
           headers: { Authorization: `Basic ${auth}` },
@@ -186,7 +203,7 @@ function createCloudinaryProvider(): MediaProvider {
           const text = await res.text();
           throw new Error(`Cloudinary list failed (${res.status}): ${text}`);
         }
-        return res.json();
+        return res.json() as Promise<CloudinaryListResponse>;
       });
 
       const assets: MediaAsset[] = (response.resources ?? []).map((r: Record<string, unknown>) => ({

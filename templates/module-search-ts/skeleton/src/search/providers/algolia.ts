@@ -68,7 +68,7 @@ function createAlgoliaProvider(): SearchProvider {
     if (operator === "in" && Array.isArray(value)) {
       return value.map((v) => `${field}:${JSON.stringify(v)}`).join(" OR ");
     }
-    if (operator === "=" || operator === "==") {
+    if (operator === "=") {
       return `${field}:${JSON.stringify(value)}`;
     }
     if (operator === "!=") {

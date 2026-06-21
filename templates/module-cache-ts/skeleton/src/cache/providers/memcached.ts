@@ -1,4 +1,4 @@
-import memjs from "memjs";
+import memjs, { type Client } from "memjs";
 import type { CacheConfig } from "../types.js";
 import type { CacheProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
@@ -15,7 +15,7 @@ import { registerProvider } from "./registry.js";
 //   password?: string   (optional SASL auth)
 //
 
-let client: memjs.Client | null = null;
+let client: Client | null = null;
 
 const memcachedProvider: CacheProvider = {
   name: "memcached",

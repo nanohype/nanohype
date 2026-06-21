@@ -111,6 +111,12 @@ describe("cronMatches", () => {
 describe("CronScheduler", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // Pin to the top of a minute. Without this, fake timers start at the real
+    // wall-clock time, so a run that happens to begin within a few seconds of a
+    // minute boundary crosses it mid-test and the every-minute job fires twice —
+    // a load-sensitive CI flake. A fixed second-0 base keeps multi-second
+    // advances inside one minute.
+    vi.setSystemTime(new Date(2025, 0, 1, 12, 30, 0, 0));
   });
 
   afterEach(() => {

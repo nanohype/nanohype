@@ -211,7 +211,7 @@ class OpenAIProvider implements LlmProvider {
         contentBlocks.push({ type: "text", text: contentText });
       }
 
-      const toolCallMessages: { id: string; type: "function" as const; function: { name: string; arguments: string } }[] = [];
+      const toolCallMessages: { id: string; type: "function"; function: { name: string; arguments: string } }[] = [];
 
       for (const [, tc] of [...toolCallAccumulators.entries()].sort(
         ([a], [b]) => a - b,

@@ -43,8 +43,7 @@ const bullmqProvider: QueueProvider = {
 
     // Verify Redis connectivity — fail fast if unreachable
     try {
-      const queueEvents = await queue.client;
-      await queueEvents.ping();
+      await queue.waitUntilReady();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await queue.close().catch(() => {});
