@@ -68,7 +68,7 @@ describe('validateManifest', () => {
           conditionals: [{ path: 'src/foo.ts', when: 'Missing' }],
         }),
       ),
-    ).toThrow("Conditional references unknown variable 'Missing'");
+    ).toThrow("references unknown variable 'Missing'");
   });
 
   it('rejects conditional referencing non-bool variable', () => {
@@ -86,7 +86,7 @@ describe('validateManifest', () => {
           conditionals: [{ path: 'src/foo.ts', when: 'Name' }],
         }),
       ),
-    ).toThrow("must reference bool variable, got 'string'");
+    ).toThrow("must reference bool variables, got 'string'");
   });
 
   it('accepts conditional referencing bool variable', () => {

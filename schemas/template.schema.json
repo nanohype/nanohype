@@ -177,7 +177,7 @@
         "when": {
           "type": "string",
           "minLength": 1,
-          "description": "Variable name that controls inclusion."
+          "description": "Boolean expression over variable names that controls inclusion (e.g. \"IncludeVpc\" or \"IncludeVpc || IncludeRds\"). Supports ||, &&, !, and parentheses."
         }
       }
     },

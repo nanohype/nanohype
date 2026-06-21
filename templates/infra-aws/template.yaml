@@ -75,7 +75,7 @@ variables:
 
 conditionals:
   - path: "lib/constructs/vpc.ts"
-    when: IncludeVpc
+    when: IncludeVpc || IncludeRds
   - path: "lib/constructs/database.ts"
     when: IncludeRds
   - path: "lib/constructs/monitoring.ts"

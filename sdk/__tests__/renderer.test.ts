@@ -131,4 +131,39 @@ describe('renderTemplate', () => {
     const result = renderTemplate(manifest, files, { Name: 'foo' });
     expect(result.files[0].content).toBe('foo uses foo');
   });
+
+  it('strips inline #if/#endif blocks whose condition is false', () => {
+    const manifest = minimalManifest({
+      variables: [
+        { name: 'IncludeVpc', type: 'bool', placeholder: '__INCLUDE_VPC__', description: 'Vpc' },
+      ],
+    });
+    const files: SkeletonFile[] = [
+      { path: 'stack.ts', content: ['import a;', '// #if IncludeVpc', 'import vpc;', '// #endif', 'use();'].join('\n') },
+    ];
+    const off = renderTemplate(manifest, files, { IncludeVpc: false });
+    expect(off.files[0].content).toBe(['import a;', 'use();'].join('\n'));
+    const on = renderTemplate(manifest, files, { IncludeVpc: true });
+    expect(on.files[0].content).toBe(['import a;', 'import vpc;', 'use();'].join('\n'));
+  });
+
+  it('evaluates expression file-conditionals (A || B)', () => {
+    const manifest = minimalManifest({
+      variables: [
+        { name: 'IncludeVpc', type: 'bool', placeholder: '__INCLUDE_VPC__', description: 'Vpc' },
+        { name: 'IncludeRds', type: 'bool', placeholder: '__INCLUDE_RDS__', description: 'Rds' },
+      ],
+      conditionals: [{ path: 'lib/vpc.ts', when: 'IncludeVpc || IncludeRds' }],
+    });
+    const files: SkeletonFile[] = [
+      { path: 'lib/index.ts', content: 'x' },
+      { path: 'lib/vpc.ts', content: 'vpc' },
+    ];
+    // RDS on, VPC off — VPC file must survive because RDS needs it.
+    const rdsOnly = renderTemplate(manifest, files, { IncludeVpc: false, IncludeRds: true });
+    expect(rdsOnly.files.map((f) => f.path)).toContain('lib/vpc.ts');
+    // Both off — VPC file excluded.
+    const neither = renderTemplate(manifest, files, { IncludeVpc: false, IncludeRds: false });
+    expect(neither.files.map((f) => f.path)).not.toContain('lib/vpc.ts');
+  });
 });

@@ -69,11 +69,9 @@ if [ -f "$TEMPLATE_DIR/template.yaml" ]; then
   echo ""
   echo -e "${BOLD}Schema validation:${RESET}"
 
-  if npx ajv validate \
-    -s schemas/template.schema.json \
-    -d "$TEMPLATE_DIR/template.yaml" \
-    --spec=draft2020 \
-    --strict=false 2>&1; then
+  if node scripts/validate-schema.mjs \
+    --schema schemas/template.schema.json \
+    --data "$TEMPLATE_DIR/template.yaml" 2>&1; then
     pass "template.yaml conforms to schema"
   else
     fail "template.yaml does not conform to schema"
