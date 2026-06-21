@@ -37,8 +37,11 @@ _check_go_template() {
   name="$(template_name "$tmpl")"
 
   work="$(mktemp -d)"
-  # Guarantee cleanup even on early return / error.
-  trap 'rm -rf "$work"' RETURN
+  # Guarantee cleanup even on early return / error. The RETURN trap also fires
+  # when the *caller* returns (bash traps aren't function-scoped), where `work`
+  # is out of scope, so guard the expansion to avoid an unbound-variable error
+  # under `set -u`.
+  trap 'rm -rf "${work:-}"' RETURN
   cp -R "${tmpl}/skeleton/." "${work}/"
 
   _materialize_placeholders "$work" "$name"

@@ -36,7 +36,10 @@ _check_java_template() {
   name="$(template_name "$tmpl")"
 
   work="$(mktemp -d)"
-  trap 'rm -rf "$work"' RETURN
+  # Guard the expansion: this RETURN trap also fires when the caller returns
+  # (bash traps aren't function-scoped), where `work` is out of scope, which
+  # would trip `set -u`.
+  trap 'rm -rf "${work:-}"' RETURN
   cp -R "${tmpl}/skeleton/." "${work}/"
 
   _java_materialize "$work" "$name"

@@ -13,7 +13,9 @@ import { registerIpcHandlers } from "./ipc-handlers.js";
 
 validateBootstrap();
 
-const config = loadConfig();
+// Validates env and exits on invalid config. The IPC handlers read their keys
+// from the environment directly, so the returned object isn't needed here.
+loadConfig();
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
