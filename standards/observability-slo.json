@@ -1,0 +1,76 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/observability-slo",
+  "version": "1",
+  "title": "Observability and SLO standard",
+  "summary": "The production bar for how every system on the nanohype stack is observed: RED for services, USE for resources, the four golden signals, and at least one SLO with a multi-window multi-burn-rate error budget. Defines the dashboard a system MUST ship to represent itself (golden-signal rows + an SLO/error-budget row keyed on the system's own nouns, never only generic node/k8s infra), the recording-rule naming convention, and the canonical burn-rate alert windows. tenant-chart-base renders the PrometheusRule + ServiceMonitor from this standard's shape; every tenant chart inherits it; the quality gate reads it when grading the Systems-Thinking and Observability surface.",
+  "content": {
+    "principles": {
+      "red": "Every request-serving service exposes Rate (requests/s), Errors (error ratio), and Duration (latency). Latency is recorded as a histogram and shown as p50/p95/p99 quantiles — never as an average or a single gauge.",
+      "use": "Every saturable resource exposes Utilization, Saturation (queue depth / in-flight / backlog), and Errors. Resource panels compare against the limit, not just the raw value.",
+      "golden_signals": ["latency", "traffic", "errors", "saturation"],
+      "domain_semantics": "Panels and alerts query the system's own nouns and verbs (reconcile loop, vend pipeline, queue, model gateway, tofu run, …). Generic node/CPU/memory or upstream community dashboards do NOT count as representing the system.",
+      "instrumentation": "A dashboard with no backing metrics is hollow. Every system that ships a dashboard also ships a ServiceMonitor/PodMonitor (or equivalent scrape config) and a PrometheusRule so the panels and SLOs have real series to draw from."
+    },
+    "slo": {
+      "definition": "An SLO is an SLI (a good-events / valid-events ratio) measured over a rolling window against a target objective. The remaining error budget is (1 - objective) minus the budget already consumed over the window.",
+      "window_days": 30,
+      "sli_types": [
+        {
+          "id": "availability",
+          "good_over_valid": "1 - (sum rate(<metric>_errors_total) / sum rate(<metric>_requests_total))",
+          "default_objective": 0.999
+        },
+        {
+          "id": "latency",
+          "good_over_valid": "sum rate(<metric>_request_duration_seconds_bucket{le=\"<threshold>\"}) / sum rate(<metric>_request_duration_seconds_count)",
+          "default_objective": 0.99,
+          "default_threshold_seconds": 0.5
+        }
+      ],
+      "error_budget": "budget = 1 - objective. Surface remaining-budget as a panel; alert on the rate it is being consumed (burn rate), not on instantaneous error ratio."
+    },
+    "burn_rate_alerts": {
+      "method": "Multi-window, multi-burn-rate (Google SRE Workbook). An alert fires only when BOTH a long window and a short window exceed the burn-rate factor, which suppresses flapping and one-off spikes while still catching fast burns quickly.",
+      "burn_rate_definition": "burn_rate = error_ratio_over_window / (1 - objective). A burn rate of 1 exhausts the whole budget exactly over the SLO window; a burn rate of 14.4 exhausts 2% of a 30d budget in 1h.",
+      "windows": [
+        { "severity": "page", "long": "1h", "short": "5m", "factor": 14.4, "budget_consumed": "2% in 1h" },
+        { "severity": "page", "long": "6h", "short": "30m", "factor": 6, "budget_consumed": "5% in 6h" },
+        { "severity": "ticket", "long": "1d", "short": "2h", "factor": 3, "budget_consumed": "10% in 1d" },
+        { "severity": "ticket", "long": "3d", "short": "6h", "factor": 1, "budget_consumed": "10% in 3d" }
+      ]
+    },
+    "recording_rules": {
+      "sli_error_ratio": "<metric>:sli_error:ratio_rate<window> — the error ratio over each burn-rate window (5m, 30m, 1h, 2h, 6h, 1d, 3d). Burn-rate alerts reference these instead of recomputing the ratio inline.",
+      "note": "<metric> is the OTLP→Prometheus form of the service name (dashes → underscores). Recording rules live in the system's own PrometheusRule, evaluated every 30s."
+    },
+    "dashboard_requirements": {
+      "required_rows": [
+        { "id": "slo", "panels": ["30d SLI vs objective (stat)", "error budget remaining (gauge)", "fast burn rate — 1h (stat/timeseries)", "slow burn rate — 6h (stat/timeseries)"] },
+        { "id": "traffic", "panels": ["request rate by status and/or route"] },
+        { "id": "errors", "panels": ["error ratio (percentunit)", "errors by status/class"] },
+        { "id": "latency", "panels": ["p50", "p95", "p99 from histogram_quantile"] },
+        { "id": "saturation", "panels": ["in-flight / queue depth / backlog", "resource utilization vs limit"] }
+      ],
+      "conventions": {
+        "uid": "<system>-overview, or <system>-<facet> for additional boards",
+        "title": "<system> — <facet> (em-dash separator)",
+        "tags": ["nanohype", "<system>"],
+        "template_vars": "at least a datasource variable; add drill-down variables for the system's natural dimensions (tenant, env, route, operation)",
+        "refresh": "30s default, now-6h default window"
+      }
+    },
+    "do": [
+      "Ship the dashboard, the ServiceMonitor/PodMonitor, and the PrometheusRule together — observability is on by default, not opt-in.",
+      "Declare at least one availability SLO per system; add a latency SLO for latency-sensitive paths.",
+      "Show latency as p50/p95/p99 from a histogram.",
+      "Reference recording rules from burn-rate alerts so alert evaluation is cheap and consistent."
+    ],
+    "do_not": [
+      "Ship a board that only embeds community grafanaCom/gnetId infra dashboards and call the system observed.",
+      "Alert on instantaneous error ratio in place of a multi-window burn rate.",
+      "Show latency as an average or a single gauge.",
+      "Leave dashboards/PrometheusRule disabled by default in a template."
+    ]
+  }
+}

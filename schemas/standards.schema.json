@@ -17,7 +17,8 @@
         "nanohype/standards/llm-policy",
         "nanohype/standards/quality-rubric-dimensions",
         "nanohype/standards/testing-rubric",
-        "nanohype/standards/resource-tagging"
+        "nanohype/standards/resource-tagging",
+        "nanohype/standards/observability-slo"
       ]
     },
     "version": {
@@ -289,6 +290,98 @@
                 "required": ["aws", "azure", "gcp", "k8s", "otel"],
                 "additionalProperties": { "type": "array", "items": { "type": "string" } }
               }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/observability-slo" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["principles", "slo", "burn_rate_alerts", "dashboard_requirements"],
+            "properties": {
+              "principles": {
+                "type": "object",
+                "required": ["red", "use", "golden_signals"],
+                "properties": {
+                  "red": { "type": "string" },
+                  "use": { "type": "string" },
+                  "golden_signals": { "type": "array", "items": { "type": "string" } },
+                  "domain_semantics": { "type": "string" },
+                  "instrumentation": { "type": "string" }
+                }
+              },
+              "slo": {
+                "type": "object",
+                "required": ["definition", "window_days", "sli_types", "error_budget"],
+                "properties": {
+                  "definition": { "type": "string" },
+                  "window_days": { "type": "integer", "minimum": 1 },
+                  "sli_types": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "good_over_valid", "default_objective"],
+                      "properties": {
+                        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                        "good_over_valid": { "type": "string" },
+                        "default_objective": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+                        "default_threshold_seconds": { "type": "number", "exclusiveMinimum": 0 }
+                      }
+                    }
+                  },
+                  "error_budget": { "type": "string" }
+                }
+              },
+              "burn_rate_alerts": {
+                "type": "object",
+                "required": ["method", "windows"],
+                "properties": {
+                  "method": { "type": "string" },
+                  "burn_rate_definition": { "type": "string" },
+                  "windows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["severity", "long", "short", "factor"],
+                      "properties": {
+                        "severity": { "type": "string", "enum": ["page", "ticket"] },
+                        "long": { "type": "string" },
+                        "short": { "type": "string" },
+                        "factor": { "type": "number", "exclusiveMinimum": 0 },
+                        "budget_consumed": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              "recording_rules": { "type": "object" },
+              "dashboard_requirements": {
+                "type": "object",
+                "required": ["required_rows"],
+                "properties": {
+                  "required_rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "panels"],
+                      "properties": {
+                        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                        "panels": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  },
+                  "conventions": { "type": "object" }
+                }
+              },
+              "do": { "type": "array", "items": { "type": "string" } },
+              "do_not": { "type": "array", "items": { "type": "string" } }
             }
           }
         }

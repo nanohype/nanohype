@@ -73,6 +73,18 @@ describe('loadStandard', () => {
     expect(s.content.rules.some((r) => r.id === 'typecheck-includes-tests')).toBe(true);
   });
 
+  it('loads observability-slo with SLI types, burn-rate windows, and dashboard rows', async () => {
+    const s = await loadStandard(source, 'observability-slo');
+    if (s.kind !== 'nanohype/standards/observability-slo') throw new Error('kind narrow');
+    expect(s.content.principles.golden_signals).toEqual(
+      expect.arrayContaining(['latency', 'traffic', 'errors', 'saturation']),
+    );
+    expect(s.content.slo.window_days).toBe(30);
+    expect(s.content.slo.sli_types.some((t) => t.id === 'availability')).toBe(true);
+    expect(s.content.burn_rate_alerts.windows.some((w) => w.severity === 'page')).toBe(true);
+    expect(s.content.dashboard_requirements.required_rows.some((r) => r.id === 'slo')).toBe(true);
+  });
+
   it('throws NanohypeError when the standard is missing', async () => {
     const broken = new LocalSource({ rootDir: '/tmp/nonexistent-nanohype-standards' });
     await expect(loadStandard(broken, 'llm-policy')).rejects.toBeInstanceOf(NanohypeError);
@@ -94,5 +106,6 @@ describe('loadStandards (bundle)', () => {
       'nanohype/standards/quality-rubric-dimensions',
     );
     expect(bundle['testing-rubric'].kind).toBe('nanohype/standards/testing-rubric');
+    expect(bundle['observability-slo'].kind).toBe('nanohype/standards/observability-slo');
   });
 });

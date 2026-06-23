@@ -110,19 +110,44 @@ externalSecret:
   refreshInterval: 1h
   remoteRefSecret: __APP_NAME__/dev/app-secrets   # override per-env in values-{env}.yaml
 
-# PrometheusRule (kube-prometheus-stack → Mimir). Off by default — enable once the
-# app emits RED metrics via OTel. Ships one example alert keyed on
-# `__APP_NAME___requests_total`; replace the rules with the app's real SLOs.
+# PrometheusRule (kube-prometheus-stack → Mimir). On by default per the
+# observability-slo standard. With `slo.enabled` it renders SLI recording rules +
+# multi-window multi-burn-rate error-budget alerts keyed on `__APP_NAME___requests_total`
+# / `__APP_NAME___errors_total`. Supply latency or custom-shaped SLOs via `groups`
+# (set it to a non-empty list and it is emitted verbatim instead of the SLO default).
 prometheusRule:
-  enabled: false
+  enabled: true
   selector:
     release: kube-prometheus-stack
+  groups: []
+
+# SLO / error-budget config (observability-slo standard). Drives the burn-rate
+# alerts in the PrometheusRule. The default availability SLI is
+# `1 - errors_total/requests_total`; override the ratio with `errorRatioQuery` if
+# the app's good/valid events are shaped differently.
+slo:
+  enabled: true
+  objective: 0.999        # 99.9% availability over 30d
+  errorRatioQuery: ""     # optional PromQL override of the error-ratio (per-window [$window] interpolated by the app)
 
 # Grafana dashboard ConfigMap (discovered by the Grafana sidecar via the
-# `grafana_dashboard` label). Off by default — enable once
-# chart/dashboards/__APP_NAME__.json holds a real dashboard.
+# `grafana_dashboard` label). On by default — the SRE-grade board lives in
+# chart/dashboards/__APP_NAME__.json (golden-signal rows + SLO/error-budget row).
 grafanaDashboard:
+  enabled: true
+
+# ServiceMonitor (Prometheus scrape). Off by default — the baseline pushes metrics
+# via OTLP to the cluster collector (the standard's "equivalent scrape config").
+# Enable only for apps that instead expose a Prometheus /metrics endpoint to be
+# scraped, and add a named `metrics` port to the Service.
+serviceMonitor:
   enabled: false
+  port: metrics
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+  selector:
+    release: kube-prometheus-stack
 
 # OTel resource attrs propagate through traces/logs/metrics. The cluster-level
 # OTel Collector tags downstream exporters using these.

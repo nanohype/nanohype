@@ -161,7 +161,8 @@ export type StandardName =
   | 'llm-policy'
   | 'quality-rubric-dimensions'
   | 'testing-rubric'
-  | 'resource-tagging';
+  | 'resource-tagging'
+  | 'observability-slo';
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -286,6 +287,58 @@ export interface ResourceTaggingStandard {
   };
 }
 
+/** One SLI definition: the good/valid ratio and its default objective. */
+export interface SliType {
+  id: string;
+  good_over_valid: string;
+  default_objective: number;
+  default_threshold_seconds?: number;
+}
+
+/** One multi-window multi-burn-rate alert pair. */
+export interface BurnRateWindow {
+  severity: 'page' | 'ticket';
+  long: string;
+  short: string;
+  factor: number;
+  budget_consumed?: string;
+}
+
+/** Standards file: observability + SLO bar (RED/USE, golden signals, SLO error-budget burn, dashboard requirements). */
+export interface ObservabilitySloStandard {
+  kind: 'nanohype/standards/observability-slo';
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    principles: {
+      red: string;
+      use: string;
+      golden_signals: string[];
+      domain_semantics?: string;
+      instrumentation?: string;
+    };
+    slo: {
+      definition: string;
+      window_days: number;
+      sli_types: SliType[];
+      error_budget: string;
+    };
+    burn_rate_alerts: {
+      method: string;
+      burn_rate_definition?: string;
+      windows: BurnRateWindow[];
+    };
+    recording_rules?: Record<string, string>;
+    dashboard_requirements: {
+      required_rows: { id: string; panels: string[] }[];
+      conventions?: Record<string, string>;
+    };
+    do?: string[];
+    do_not?: string[];
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
@@ -294,7 +347,8 @@ export type Standard =
   | LLMPolicyStandard
   | QualityRubricDimensionsStandard
   | TestingRubricStandard
-  | ResourceTaggingStandard;
+  | ResourceTaggingStandard
+  | ObservabilitySloStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
@@ -309,6 +363,7 @@ export interface Standards {
   'quality-rubric-dimensions': QualityRubricDimensionsStandard;
   'testing-rubric': TestingRubricStandard;
   'resource-tagging': ResourceTaggingStandard;
+  'observability-slo': ObservabilitySloStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */
