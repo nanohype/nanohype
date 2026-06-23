@@ -10,8 +10,9 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   - `serviceaccount.yaml` — `eks.amazonaws.com/role-arn` rendered from `aws.platformRoleArn` (the landing-zone-owned IRSA role), never inline IAM
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
   - `externalsecret.yaml` — *(toggle, off by default)* AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
-  - `prometheusrule.yaml` — *(toggle, off by default)* example RED-metric alert
-  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(toggle, off by default)* sidecar-discovered dashboard
+  - `prometheusrule.yaml` — *(on by default)* SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
+  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(on by default)* a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
+  - `servicemonitor.yaml` — *(toggle, off by default)* Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/` (or aks-gitops)
 - **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role (scoped to `spec.identity.allowedModelFamilies`); the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
@@ -21,6 +22,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 | Variable | Type | Default | Description |
 |---|---|---|---|
 | `AppName` | string | (required) | Kebab-case app name — chart name, namespace, Platform/BudgetPolicy CR name, service account name |
+| `AppMetric` | string | `${AppName}` | Underscored metric prefix for the RED/SLO panels + burn-rate rules (`competitive_intelligence`). Single-word names inherit `AppName`; multi-word names must set the snake_case form |
 | `Description` | string | `k8s-native Platform tenant` | Short description for Chart.yaml + README |
 | `Tenant` | string | (required) | Owning team (drives namespace prefix `tenants-<team>`, AppProject, quotas) |
 | `Persona` | string | `generic` | Platform persona — `sales-ops`, `support`, `finance`, `ops`, `founder`, `eng`, `marketing`, `legal`, `generic` |
@@ -41,15 +43,16 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
     values-staging.yaml            # staging delta only
     values-production.yaml         # prod delta only
     dashboards/
-      <app>.json                   # Grafana dashboard (loaded by grafana-dashboard.yaml)
+      <app>.json                   # SRE dashboard (loaded by grafana-dashboard.yaml)
     templates/
       deployment.yaml
       service.yaml
       serviceaccount.yaml          # role-arn from aws.platformRoleArn (landing-zone IRSA role)
       networkpolicy.yaml           # default-deny + egress allow-list
       externalsecret.yaml          # toggle: Secrets Manager → k8s Secret (off by default)
-      prometheusrule.yaml          # toggle: RED-metric alerts (off by default)
-      grafana-dashboard.yaml       # toggle: dashboard ConfigMap (off by default)
+      prometheusrule.yaml          # SLO recording rules + burn-rate alerts (on by default)
+      grafana-dashboard.yaml       # dashboard ConfigMap (on by default)
+      servicemonitor.yaml          # toggle: Prometheus scrape (off by default)
       _helpers.tpl
   gitops/
     applicationset-entry.yaml      # copy into nanohype/eks-gitops/applicationsets/
@@ -57,7 +60,9 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   README.md                        # how to deploy + iterate
 ```
 
-The `externalSecret`, `prometheusRule`, and `grafanaDashboard` blocks in `values.yaml` ship **off** so the chart `helm lint`s on a bare cluster without the External Secrets / kube-prometheus-stack CRDs. Flip them on (per-env) once the substrate + instrumentation exist.
+Observability ships **on** per the `observability-slo` standard: `grafanaDashboard` (a `GrafanaDashboard` CR) and `prometheusRule` (with `slo.*`) render by default so a new tenant is SRE-observable out of the box. The app just needs to emit the RED metrics the SLO keys on (`<metric>_requests_total` / `_errors_total` / `_request_duration_seconds`).
+
+Delivery differs by cluster: the **dashboard** is delivered via the grafana-operator (running in both the EKS clusters and the local kx kind cluster), so it reaches Grafana everywhere; the **PrometheusRule** (recording rules + burn-rate alerts) is consumed by kube-prometheus-stack, which runs in **kx today** — the EKS clusters use Grafana Agent → AMP with no in-cluster ruler, so the rules are forward-compatible there (the dashboard is self-contained and never depends on them). `externalSecret` and `serviceMonitor` stay **off** by default — enable `externalSecret` once the app has secrets, and `serviceMonitor` only if the app exposes a Prometheus `/metrics` endpoint instead of pushing via OTLP.
 
 ## Pairs with
 

@@ -2,6 +2,7 @@ import type { CatalogSource } from './source.js';
 import type {
   LanguageToolchainStandard,
   LLMPolicyStandard,
+  ObservabilitySloStandard,
   PlatformTenantContractStandard,
   QualityRubricDimensionsStandard,
   ResourceTaggingStandard,
@@ -21,6 +22,7 @@ const ALL_STANDARDS: StandardName[] = [
   'quality-rubric-dimensions',
   'testing-rubric',
   'resource-tagging',
+  'observability-slo',
 ];
 
 const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
@@ -31,6 +33,7 @@ const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
   'quality-rubric-dimensions': 'nanohype/standards/quality-rubric-dimensions',
   'testing-rubric': 'nanohype/standards/testing-rubric',
   'resource-tagging': 'nanohype/standards/resource-tagging',
+  'observability-slo': 'nanohype/standards/observability-slo',
 };
 
 /**
@@ -63,9 +66,8 @@ export async function loadStandard(
  * than scanning the union).
  */
 export async function loadStandards(source: CatalogSource): Promise<Standards> {
-  const [toolchain, currency, contract, llm, rubric, testing, tagging] = await Promise.all(
-    ALL_STANDARDS.map((name) => loadStandard(source, name)),
-  );
+  const [toolchain, currency, contract, llm, rubric, testing, tagging, observability] =
+    await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
   return {
     'language-toolchain': toolchain as LanguageToolchainStandard,
     'version-currency': currency as VersionCurrencyStandard,
@@ -74,5 +76,6 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     'quality-rubric-dimensions': rubric as QualityRubricDimensionsStandard,
     'testing-rubric': testing as TestingRubricStandard,
     'resource-tagging': tagging as ResourceTaggingStandard,
+    'observability-slo': observability as ObservabilitySloStandard,
   };
 }

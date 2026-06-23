@@ -127,6 +127,20 @@ The `required_by_surface` block is the flat, directly-consumable list of require
 
 ---
 
+## Observability and SLO — `observability-slo.json`
+
+The bar for how every system is observed and what dashboard it ships to represent itself. Read it when wiring a service's metrics, authoring a Grafana dashboard, or grading the systems-thinking surface.
+
+- **RED + USE + golden signals** — request-serving services expose Rate / Errors / Duration (latency as p50/p95/p99 from a histogram, never an average); saturable resources expose Utilization / Saturation / Errors. Panels and alerts query the **system's own nouns** (reconcile loop, vend pipeline, queue, model gateway, tofu run) — generic node/CPU dashboards and embedded community boards do not count as representing the system.
+- **At least one SLO per system** — an SLI (good/valid ratio) over a 30-day window against an objective. Default availability objective `0.999`; add a latency SLO for latency-sensitive paths. The remaining error budget is `(1 - objective)` minus what's been spent.
+- **Multi-window multi-burn-rate alerts** — alert on the *rate* the budget burns, not instantaneous error ratio. The canonical four windows: page at 14.4× (1h/5m) and 6× (6h/30m), ticket at 3× (1d/2h) and 1× (3d/6h). An alert fires only when both its long and short window exceed the burn-rate factor.
+- **Recording-rule convention** — `<metric>:sli_error:ratio_rate<window>` over each window; burn-rate alerts reference these rather than recomputing inline.
+- **The required dashboard** — five rows: an SLO/error-budget row (30d SLI vs objective, budget remaining, fast/slow burn) plus traffic, errors, latency (p50/p95/p99), and saturation.
+
+`tenant-chart-base` renders this standard's shape: a `GrafanaDashboard` CR (reconciled by the grafana-operator onto the external Amazon Managed Grafana, self-contained so it renders against AMP with no ruler), the PrometheusRule (SLI recording rules + the four burn-rate alerts), and the optional ServiceMonitor. Every k8s tenant inherits it with observability **on by default**. The baseline pushes metrics via OTLP to the cluster collector — the standard's accepted "equivalent scrape config" — so the ServiceMonitor is opt-in. Note the delivery split: the dashboard reaches Grafana via the operator on every cluster, while the PrometheusRule is consumed where kube-prometheus-stack runs (the local kx cluster today); the EKS clusters' AMP path has no in-cluster ruler yet, so burn-rate **alerts** there await a rules sink (AMP rule groups or Grafana-managed alerting) even though the **dashboards** are fully live.
+
+---
+
 ## Versioning
 
 Each file declares its `version` (a positive integer). Bump the version field on any breaking shape change. Agents that consume these standards should pin to a major version range (the `version` field == major; minor evolution within a major must be backwards-compatible).

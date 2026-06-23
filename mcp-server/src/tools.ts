@@ -18,6 +18,7 @@ const STANDARD_NAMES: StandardName[] = [
   'quality-rubric-dimensions',
   'testing-rubric',
   'resource-tagging',
+  'observability-slo',
 ];
 
 interface ToolDescriptor {

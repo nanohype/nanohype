@@ -1,8 +1,9 @@
 {
-  "title": "__APP_NAME__ — RED",
-  "uid": "__APP_NAME__-red",
-  "tags": ["nanohype", "__TENANT__"],
+  "title": "__APP_NAME__ — overview",
+  "uid": "__APP_NAME__-overview",
+  "tags": ["nanohype", "__TENANT__", "slo"],
   "timezone": "utc",
+  "editable": true,
   "schemaVersion": 39,
   "version": 1,
   "refresh": "30s",
@@ -19,8 +20,16 @@
         "name": "metric",
         "type": "constant",
         "label": "Metric prefix (underscored service name)",
-        "query": "__APP_NAME__",
-        "current": { "text": "__APP_NAME__", "value": "__APP_NAME__" },
+        "query": "__APP_METRIC__",
+        "current": { "text": "__APP_METRIC__", "value": "__APP_METRIC__" },
+        "hide": 2
+      },
+      {
+        "name": "objective",
+        "type": "constant",
+        "label": "Availability SLO objective",
+        "query": "0.999",
+        "current": { "text": "0.999", "value": "0.999" },
         "hide": 2
       }
     ]
@@ -28,43 +37,224 @@
   "panels": [
     {
       "id": 1,
-      "title": "Request rate (req/s)",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(rate(${metric}_requests_total[5m]))"
-        }
-      ]
+      "type": "row",
+      "title": "SLO & error budget",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
     {
       "id": 2,
-      "title": "Error ratio",
-      "type": "timeseries",
+      "title": "Availability (30d)",
+      "description": "Rolling 30-day SLI vs the objective — inline, no recording rule required.",
+      "type": "stat",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-      "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 0.999 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
       "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(rate(${metric}_errors_total[5m])) / clamp_min(sum(rate(${metric}_requests_total[5m])), 1)"
-        }
+        { "refId": "A", "expr": "1 - (sum(rate(${metric}_errors_total[30d])) / clamp_min(sum(rate(${metric}_requests_total[30d])), 1))" }
       ]
     },
     {
       "id": 3,
-      "title": "Request duration p95 (s)",
+      "title": "Error budget remaining (30d)",
+      "description": "Fraction of the 30-day error budget still unspent — inline, no recording rule required.",
+      "type": "gauge",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.25 },
+              { "color": "green", "value": 0.5 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "clamp_min(1 - ((sum(rate(${metric}_errors_total[30d])) / clamp_min(sum(rate(${metric}_requests_total[30d])), 1)) / (1 - ${objective})), 0)" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Fast burn (1h)",
+      "description": "Burn rate over 1h = error_ratio / (1 - objective). Pages at 14.4× (2% of budget in 1h).",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 14.4 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "targets": [
+        { "refId": "A", "expr": "(sum(rate(${metric}_errors_total[1h])) / clamp_min(sum(rate(${metric}_requests_total[1h])), 1)) / (1 - ${objective})" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Slow burn (6h)",
+      "description": "Burn rate over 6h = error_ratio / (1 - objective). Pages at 6× (5% of budget in 6h).",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 6 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
+      "targets": [
+        { "refId": "A", "expr": "(sum(rate(${metric}_errors_total[6h])) / clamp_min(sum(rate(${metric}_requests_total[6h])), 1)) / (1 - ${objective})" }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Traffic",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 }
+    },
+    {
+      "id": 7,
+      "title": "Request rate by status (req/s)",
       "type": "timeseries",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum by (status) (rate(${metric}_requests_total[5m]))", "legendFormat": "{{status}}" },
+        { "refId": "B", "expr": "sum(rate(${metric}_requests_total[5m]))", "legendFormat": "total" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "row",
+      "title": "Errors",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 }
+    },
+    {
+      "id": 9,
+      "title": "Error ratio (5m)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 16 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 0.001 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "refId": "A", "expr": "sum(rate(${metric}_errors_total[5m])) / clamp_min(sum(rate(${metric}_requests_total[5m])), 1)", "legendFormat": "error ratio" }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Errors by status (err/s)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 16 },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum by (status) (rate(${metric}_errors_total[5m]))", "legendFormat": "{{status}}" }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "row",
+      "title": "Latency",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 }
+    },
+    {
+      "id": 12,
+      "title": "Request duration p50 / p95 / p99 (s)",
+      "description": "Latency quantiles from the ${metric}_request_duration_seconds histogram — never an average.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
       "targets": [
-        {
-          "refId": "A",
-          "expr": "histogram_quantile(0.95, sum(rate(${metric}_request_duration_seconds_bucket[5m])) by (le))"
-        }
+        { "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(${metric}_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50" },
+        { "refId": "B", "expr": "histogram_quantile(0.95, sum(rate(${metric}_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95" },
+        { "refId": "C", "expr": "histogram_quantile(0.99, sum(rate(${metric}_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "Saturation",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 }
+    },
+    {
+      "id": 14,
+      "title": "In-flight requests",
+      "description": "Concurrent in-flight requests — the app's load saturation. Remove if the app does not emit ${metric}_inflight_requests.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 33 },
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum(${metric}_inflight_requests)", "legendFormat": "in-flight" }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Queue depth / backlog",
+      "description": "Pending work waiting to be processed — backpressure signal. Remove if the app does not emit ${metric}_queue_depth.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 33 },
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "expr": "sum(${metric}_queue_depth)", "legendFormat": "queue depth" }
       ]
     }
   ]
