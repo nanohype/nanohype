@@ -11,7 +11,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
   - `externalsecret.yaml` — *(toggle, off by default)* AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
   - `prometheusrule.yaml` — *(on by default)* SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
-  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(on by default)* sidecar-discovered SRE dashboard: SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
+  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(on by default)* a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
   - `servicemonitor.yaml` — *(toggle, off by default)* Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/` (or aks-gitops)
 - **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role (scoped to `spec.identity.allowedModelFamilies`); the BudgetPolicy drives the spend kill-switch
@@ -60,7 +60,9 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   README.md                        # how to deploy + iterate
 ```
 
-Observability ships **on** per the `observability-slo` standard: `prometheusRule` (with `slo.*`) and `grafanaDashboard` render by default so a new tenant is SRE-observable out of the box. The app just needs to emit the RED metrics the SLO keys on (`<metric>_requests_total` / `_errors_total` / `_request_duration_seconds`) via OTLP. `externalSecret` and `serviceMonitor` stay **off** by default — enable `externalSecret` once the app has secrets, and `serviceMonitor` only if the app exposes a Prometheus `/metrics` endpoint instead of pushing via OTLP.
+Observability ships **on** per the `observability-slo` standard: `grafanaDashboard` (a `GrafanaDashboard` CR) and `prometheusRule` (with `slo.*`) render by default so a new tenant is SRE-observable out of the box. The app just needs to emit the RED metrics the SLO keys on (`<metric>_requests_total` / `_errors_total` / `_request_duration_seconds`).
+
+Delivery differs by cluster: the **dashboard** is delivered via the grafana-operator (running in both the EKS clusters and the local kx kind cluster), so it reaches Grafana everywhere; the **PrometheusRule** (recording rules + burn-rate alerts) is consumed by kube-prometheus-stack, which runs in **kx today** — the EKS clusters use Grafana Agent → AMP with no in-cluster ruler, so the rules are forward-compatible there (the dashboard is self-contained and never depends on them). `externalSecret` and `serviceMonitor` stay **off** by default — enable `externalSecret` once the app has secrets, and `serviceMonitor` only if the app exposes a Prometheus `/metrics` endpoint instead of pushing via OTLP.
 
 ## Pairs with
 

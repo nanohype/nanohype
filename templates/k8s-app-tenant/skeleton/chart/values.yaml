@@ -130,11 +130,17 @@ slo:
   objective: 0.999        # 99.9% availability over 30d
   errorRatioQuery: ""     # optional PromQL override of the error-ratio (per-window [$window] interpolated by the app)
 
-# Grafana dashboard ConfigMap (discovered by the Grafana sidecar via the
-# `grafana_dashboard` label). On by default — the SRE-grade board lives in
-# chart/dashboards/__APP_NAME__.json (golden-signal rows + SLO/error-budget row).
+# Grafana dashboard, shipped as a GrafanaDashboard CR the grafana-operator
+# reconciles onto the external Amazon Managed Grafana (the same path the platform
+# dashboards use). On by default — the SRE-grade board lives in
+# chart/dashboards/__APP_NAME__.json (golden-signal rows + SLO/error-budget row),
+# self-contained so it renders against AMP with no recording-rule ruler.
 grafanaDashboard:
   enabled: true
+  instanceSelector:
+    dashboards: external
+  allowCrossNamespaceImport: true
+  resyncPeriod: 24h
 
 # ServiceMonitor (Prometheus scrape). Off by default — the baseline pushes metrics
 # via OTLP to the cluster collector (the standard's "equivalent scrape config").

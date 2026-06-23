@@ -44,7 +44,7 @@
     {
       "id": 2,
       "title": "Availability (30d)",
-      "description": "Rolling 30-day SLI vs the objective. Backed by the ${metric}:sli_availability:ratio30d recording rule.",
+      "description": "Rolling 30-day SLI vs the objective — inline, no recording rule required.",
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
@@ -65,13 +65,13 @@
       },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
       "targets": [
-        { "refId": "A", "expr": "${metric}:sli_availability:ratio30d" }
+        { "refId": "A", "expr": "1 - (sum(rate(${metric}_errors_total[30d])) / clamp_min(sum(rate(${metric}_requests_total[30d])), 1))" }
       ]
     },
     {
       "id": 3,
       "title": "Error budget remaining (30d)",
-      "description": "Fraction of the 30-day error budget still unspent. Backed by ${metric}:error_budget:ratio30d.",
+      "description": "Fraction of the 30-day error budget still unspent — inline, no recording rule required.",
       "type": "gauge",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
@@ -92,7 +92,7 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "clamp_min(${metric}:error_budget:ratio30d, 0)" }
+        { "refId": "A", "expr": "clamp_min(1 - ((sum(rate(${metric}_errors_total[30d])) / clamp_min(sum(rate(${metric}_requests_total[30d])), 1)) / (1 - ${objective})), 0)" }
       ]
     },
     {
@@ -119,7 +119,7 @@
       },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
       "targets": [
-        { "refId": "A", "expr": "${metric}:sli_error:ratio_rate1h / (1 - ${objective})" }
+        { "refId": "A", "expr": "(sum(rate(${metric}_errors_total[1h])) / clamp_min(sum(rate(${metric}_requests_total[1h])), 1)) / (1 - ${objective})" }
       ]
     },
     {
@@ -146,7 +146,7 @@
       },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area" },
       "targets": [
-        { "refId": "A", "expr": "${metric}:sli_error:ratio_rate6h / (1 - ${objective})" }
+        { "refId": "A", "expr": "(sum(rate(${metric}_errors_total[6h])) / clamp_min(sum(rate(${metric}_requests_total[6h])), 1)) / (1 - ${objective})" }
       ]
     },
     {
@@ -193,7 +193,7 @@
         "overrides": []
       },
       "targets": [
-        { "refId": "A", "expr": "${metric}:sli_error:ratio_rate5m", "legendFormat": "error ratio" }
+        { "refId": "A", "expr": "sum(rate(${metric}_errors_total[5m])) / clamp_min(sum(rate(${metric}_requests_total[5m])), 1)", "legendFormat": "error ratio" }
       ]
     },
     {

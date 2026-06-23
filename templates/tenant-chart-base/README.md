@@ -10,7 +10,7 @@ A `chart/` directory containing a library chart with these named templates (all 
 - `tenant-chart-base.networkpolicy` — the NetworkPolicy CR scaffold with values-driven `ingress` (varies by workload topology) and `egress` (the DNS + HTTPS-out baseline).
 - `tenant-chart-base.prometheusrule` — the PrometheusRule CR scaffold. Per the `observability-slo` standard it renders SLI recording rules over the burn-rate windows plus multi-window multi-burn-rate error-budget alerts (2 page, 2 ticket) from the `slo.*` values. `prometheusRule.groups` overrides it verbatim for latency or custom-shaped SLOs; with `slo.enabled` false it falls back to one example RED alert.
 - `tenant-chart-base.serviceMonitor` — an optional ServiceMonitor for apps that expose a Prometheus `/metrics` endpoint. Off by default (the baseline pushes metrics via OTLP to the cluster collector — the standard's equivalent scrape config).
-- `tenant-chart-base.grafanaDashboard` — the dashboard ConfigMap; loads `chart/dashboards/<name>.json` verbatim.
+- `tenant-chart-base.grafanaDashboard` — a `GrafanaDashboard` CR the grafana-operator reconciles onto the external Amazon Managed Grafana; loads `chart/dashboards/<name>.json` verbatim into `spec.json`. The board is self-contained (inline SLO/burn PromQL) so it renders against AMP without a recording-rule ruler.
 - helpers — `tenant-chart-base.name` / `.fullname` / `.labels` / `.selectorLabels` / `.serviceAccountName`. The tenant/platform labels come from `otel.resourceAttributes`.
 
 The named templates run in the **consumer's** context, so `.Chart`, `.Values`, and `.Release` resolve to the consuming app — `tenant-chart-base.name` returns the app's name, not `tenant-chart-base`.
