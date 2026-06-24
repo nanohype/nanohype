@@ -110,10 +110,10 @@ externalSecret:
   refreshInterval: 1h
   remoteRefSecret: __APP_NAME__/dev/app-secrets   # override per-env in values-{env}.yaml
 
-# PrometheusRule (kube-prometheus-stack → Mimir). On by default per the
-# observability-slo standard. With `slo.enabled` it renders SLI recording rules +
-# multi-window multi-burn-rate error-budget alerts keyed on `__APP_NAME___requests_total`
-# / `__APP_NAME___errors_total`. Supply latency or custom-shaped SLOs via `groups`
+# PrometheusRule (kube-prometheus-stack → Mimir). Per the observability-slo
+# standard it renders SLI recording rules + multi-window multi-burn-rate
+# error-budget alerts keyed on `__APP_NAME___requests_total` /
+# `__APP_NAME___errors_total`. Supply latency or custom-shaped SLOs via `groups`
 # (set it to a non-empty list and it is emitted verbatim instead of the SLO default).
 prometheusRule:
   enabled: true
@@ -126,7 +126,6 @@ prometheusRule:
 # `1 - errors_total/requests_total`; override the ratio with `errorRatioQuery` if
 # the app's good/valid events are shaped differently.
 slo:
-  enabled: true
   objective: 0.999        # 99.9% availability over 30d
   errorRatioQuery: ""     # optional PromQL override of the error-ratio (per-window [$window] interpolated by the app)
 

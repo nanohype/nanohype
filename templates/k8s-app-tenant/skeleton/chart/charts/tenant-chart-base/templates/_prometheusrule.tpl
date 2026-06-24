@@ -1,13 +1,12 @@
 {{/*
 PrometheusRule: the CR scaffold + alert groups, per the observability-slo standard.
 
-Three modes, in priority order:
-  1. `prometheusRule.groups` set        → emitted verbatim (full manual control).
-  2. `slo.enabled` true (the default)   → SLI recording rules over the burn-rate
-     windows + multi-window multi-burn-rate error-budget alerts (2 page, 2 ticket),
-     keyed on the app's metric prefix (service.name with dashes → underscores per
-     the OTLP→Prometheus convention).
-  3. neither                            → one example RED alert (back-compat).
+Two modes, in priority order:
+  1. `prometheusRule.groups` set → emitted verbatim (full manual control).
+  2. otherwise (the default)     → SLI recording rules over the burn-rate windows
+     + multi-window multi-burn-rate error-budget alerts (2 page, 2 ticket), keyed
+     on the app's metric prefix (service.name with dashes → underscores per the
+     OTLP→Prometheus convention).
 
 The availability SLI defaults to `1 - errors/requests`. Override the objective via
 `slo.objective`; supply latency or custom-shaped SLOs via `prometheusRule.groups`.
@@ -32,7 +31,7 @@ spec:
   {{- if .Values.prometheusRule.groups }}
   groups:
     {{- toYaml .Values.prometheusRule.groups | nindent 4 }}
-  {{- else if .Values.slo.enabled }}
+  {{- else }}
   {{- $obj := .Values.slo.objective }}
   {{- $budget := subf 1.0 $obj }}
   {{- $errExpr := .Values.slo.errorRatioQuery }}
@@ -95,26 +94,6 @@ spec:
               {{ "{{" }} $value | printf "%.4f" {{ "}}" }}. At this rate the 30d budget is gone soon.
               Check recent rollouts, upstream dependency health, and the pod logs.
         {{- end }}
-  {{- else }}
-  groups:
-    - name: {{ $name }}.red
-      interval: 1m
-      rules:
-        - alert: {{ $name | replace "-" " " | title | nospace }}HighErrorRate
-          # Error ratio over 5m exceeds 5%. Enable slo.* for the full burn-rate SLOs.
-          expr: |
-            sum(rate({{ $metric }}_errors_total[5m]))
-              / clamp_min(sum(rate({{ $metric }}_requests_total[5m])), 1)
-              > 0.05
-          for: 10m
-          labels:
-            severity: page
-            service: {{ $name }}
-          annotations:
-            summary: {{ $name }} error rate above 5% for 10m
-            description: |
-              Error ratio is {{ "{{" }} $value | printf "%.3f" {{ "}}" }} over the last 5m.
-              Check recent rollouts, upstream dependency health, and the pod logs.
   {{- end }}
 {{- end }}
 {{- end -}}
