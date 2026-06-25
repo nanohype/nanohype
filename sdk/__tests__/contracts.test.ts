@@ -17,7 +17,7 @@ describe('loadContract', () => {
     expect(c.content).toContain('# nanohype — agent entry point');
   });
 
-  it.each(['landing-zone', 'eks-gitops', 'aks-gitops', 'eks-agent-platform', 'kx'] as const)(
+  it.each(['landing-zone', 'eks-gitops', 'aks-gitops', 'eks-agent-platform', 'kx', 'cloudgov'] as const)(
     "loads the AGENTS.md from the sibling '%s' repo",
     async (repo) => {
       const c = await loadContract(source, repo);

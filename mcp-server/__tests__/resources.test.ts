@@ -5,6 +5,11 @@ import { listResources, readResource } from '../src/resources.js';
 
 const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
 
+// Contract resolution reads sibling repos' AGENTS.md (../<repo>/AGENTS.md), which
+// aren't checked out in CI. Point those tests at a self-contained fixture tree so
+// they're hermetic; the catalog/template/standard tests still use the real repo.
+const CONTRACTS_ROOT = resolve(import.meta.dirname, 'fixtures', 'contracts', 'nanohype');
+
 describe('listResources', () => {
   it('advertises catalog, standards bundle, every standard, every contract', () => {
     const resources = listResources();
@@ -43,6 +48,7 @@ describe('listResources', () => {
 
 describe('readResource', () => {
   const source = new LocalSource({ rootDir: CATALOG_ROOT });
+  const contractSource = new LocalSource({ rootDir: CONTRACTS_ROOT });
 
   it('resolves nanohype://catalog to the parsed catalog JSON', async () => {
     const result = await readResource(source, 'nanohype://catalog');
@@ -68,7 +74,7 @@ describe('readResource', () => {
   });
 
   it('resolves nanohype://contracts/{repo} to the AGENTS.md content', async () => {
-    const result = await readResource(source, 'nanohype://contracts/landing-zone');
+    const result = await readResource(contractSource, 'nanohype://contracts/landing-zone');
     expect(result.contents[0].mimeType).toBe('text/markdown');
     expect(result.contents[0].text).toContain('# landing-zone');
   });
