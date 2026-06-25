@@ -14,17 +14,13 @@ service:
 
 serviceAccount:
   create: true
-  # Extra annotations merged onto the ServiceAccount. The IRSA role ARN itself
-  # comes from `aws.platformRoleArn` (below) — set it per-env from the landing-zone
-  # <app>-platform component's `irsa_role_arn` output.
+  # Pinned to the app name so it matches the `service_account` of the EKS Pod
+  # Identity association that landing-zone's __APP_NAME__-platform component
+  # creates — that association binds this ServiceAccount to its IAM role, so the
+  # pod needs no role-arn annotation and the chart carries no AWS account values.
+  name: __APP_NAME__
+  # Extra annotations merged onto the ServiceAccount.
   annotations: {}
-
-# AWS wiring. platformRoleArn is the IRSA role the pod's ServiceAccount assumes.
-# landing-zone's <app>-platform component owns it; set it per-env in
-# values-{env}.yaml from `terraform output -raw irsa_role_arn`. Empty → no
-# role-arn annotation is rendered (fine until the substrate exists).
-aws:
-  platformRoleArn: ""
 
 resources:
   requests:

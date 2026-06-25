@@ -15,9 +15,5 @@ resources:
     cpu: 1000m
     memory: 1Gi
 
-# Set from landing-zone's __APP_NAME__-platform component (production):
-#   terraform output -raw irsa_role_arn
-# aws:
-#   platformRoleArn: ""
 # externalSecret:
 #   remoteRefSecret: __APP_NAME__/production/app-secrets
