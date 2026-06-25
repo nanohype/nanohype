@@ -1,0 +1,29 @@
+name: render-assert action
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/actions/render-assert/**', '.github/workflows/render-assert.yml']
+  pull_request:
+    paths: ['.github/actions/render-assert/**', '.github/workflows/render-assert.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    name: render-assert self-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Unit self-test (clean accepted, dirty caught, empty rejected)
+        run: bash .github/actions/render-assert/test.sh
+
+      # Dogfood the composite-action interface (inputs → assert.sh) against the
+      # clean fixtures, which must pass.
+      - name: Action interface accepts clean fixtures
+        uses: ./.github/actions/render-assert
+        with:
+          manifests: .github/actions/render-assert/testdata/clean

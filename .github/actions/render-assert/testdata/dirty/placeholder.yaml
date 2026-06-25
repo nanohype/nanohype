@@ -1,0 +1,8 @@
+# A literal placeholder token that survived into rendered output — must be caught.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bad-placeholder
+data:
+  gatewayHost: PLACEHOLDER
+  token: REPLACE_ME

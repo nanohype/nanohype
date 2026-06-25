@@ -1,0 +1,8 @@
+# An IAM ARN whose account segment is empty — a template that built an ARN from a
+# value it never received. Must be caught (the empty-field case never produces this).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bad-arn
+data:
+  roleArn: arn:aws:iam:::role/no-account
