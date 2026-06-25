@@ -13,9 +13,9 @@
 # BudgetPolicy drives the spend kill-switch (fires at 120% of monthlyUsd when
 # killSwitchEnabled).
 #
-# The chart's OWN ServiceAccount role-arn is separate: it comes from the
-# landing-zone __APP_NAME__-platform component via aws.platformRoleArn in per-env
-# values — NOT from this CR.
+# The chart's pod identity is separate from this CR: the landing-zone
+# __APP_NAME__-platform component creates an EKS Pod Identity association binding
+# the chart's ServiceAccount to its IAM role, so the chart carries no role ARN.
 #
 # Once Platform.status.phase is Ready, the ApplicationSet entry in __GITOPS_REPO__
 # takes over reconciling the chart.

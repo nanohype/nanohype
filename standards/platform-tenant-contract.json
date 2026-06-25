@@ -28,7 +28,7 @@
       },
       {
         "path": "<app>/chart/templates/serviceaccount.yaml",
-        "description": "ServiceAccount used by the pod. `eks.amazonaws.com/role-arn` annotation is rendered from `aws.platformRoleArn` per-env value, pointing at the landing-zone-owned IRSA role."
+        "description": "ServiceAccount used by the pod. It carries no role-arn annotation: the landing-zone <app>-platform component creates an EKS Pod Identity association binding this ServiceAccount to its IAM role. `serviceAccount.name` must be pinned to the app name so it matches the association's `service_account`."
       },
       {
         "path": "<app>/chart/templates/networkpolicy.yaml",
@@ -95,7 +95,7 @@
       }
     ],
     "do_not": [
-      "Do NOT scaffold IAM roles inside the chart. The IRSA role is provisioned by the corresponding landing-zone <app>-platform component; the chart's ServiceAccount annotates with its ARN via `aws.platformRoleArn`.",
+      "Do NOT scaffold IAM roles inside the chart, and do NOT annotate the ServiceAccount with a role ARN. The IAM role is provisioned by the corresponding landing-zone <app>-platform component, which also creates the EKS Pod Identity association that binds the ServiceAccount to it — the chart carries no role ARN.",
       "Do NOT add cloud-substrate tofu (VPCs, base IAM, KMS keys) inside the app. Substrate lives in `nanohype/landing-zone` as a per-app `<app>-platform` component.",
       "Do NOT add cluster-level addons in the chart (ingress controller, cert-manager, External Secrets, observability stack). Those are gitops-repo concerns in `nanohype/eks-gitops` or `aks-gitops`.",
       "Do NOT skip per-env `values-{dev,staging,production}.yaml` — every chart has three deltas even if some are empty.",

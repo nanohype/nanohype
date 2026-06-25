@@ -7,7 +7,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 - **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-dev.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
   - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), `terminationGracePeriodSeconds` headroom
   - `service.yaml` — ClusterIP
-  - `serviceaccount.yaml` — `eks.amazonaws.com/role-arn` rendered from `aws.platformRoleArn` (the landing-zone-owned IRSA role), never inline IAM
+  - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to its IAM role by a landing-zone EKS Pod Identity association, so no role-arn annotation and never inline IAM
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
   - `externalsecret.yaml` — *(toggle, off by default)* AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
   - `prometheusrule.yaml` — *(on by default)* SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
@@ -47,7 +47,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
     templates/
       deployment.yaml
       service.yaml
-      serviceaccount.yaml          # role-arn from aws.platformRoleArn (landing-zone IRSA role)
+      serviceaccount.yaml          # name pinned to app; role bound via landing-zone Pod Identity association
       networkpolicy.yaml           # default-deny + egress allow-list
       externalsecret.yaml          # toggle: Secrets Manager → k8s Secret (off by default)
       prometheusrule.yaml          # SLO recording rules + burn-rate alerts (on by default)
@@ -92,7 +92,7 @@ If any of these are missing on the target cluster, the rendered app's `platform.
 1. Render: `helm template chart/ -f chart/values-dev.yaml` (sanity)
 2. Apply the Platform + BudgetPolicy CRs: `kubectl apply -f platform.yaml`
 3. Wait for `Platform.status.phase = Ready`
-4. Set `aws.platformRoleArn` (and any per-env secret paths) in `values-{env}.yaml` from the landing-zone `<app>-platform` component outputs
+4. Set any per-env secret paths in `values-{env}.yaml`; the pod's IAM role is bound by the landing-zone `<app>-platform` component's EKS Pod Identity association (no role ARN in the chart)
 5. Copy `gitops/applicationset-entry.yaml` into the gitops repo as a new entry in the appropriate ApplicationSet
 6. ArgoCD picks up the entry on next sync and rolls out the chart
 7. For new image tags: update `values-{env}.yaml` `image.tag`, commit, ArgoCD reconciles
