@@ -5,6 +5,11 @@ import { callTool, listTools, searchTemplates } from '../src/tools.js';
 
 const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
 
+// get_contract reads sibling repos' AGENTS.md (../<repo>/AGENTS.md), which aren't
+// checked out in CI. Point those tests at a self-contained fixture tree so they're
+// hermetic; the other tools still dispatch against the real catalog.
+const CONTRACTS_ROOT = resolve(import.meta.dirname, 'fixtures', 'contracts', 'nanohype');
+
 describe('listTools', () => {
   it('advertises the canonical tool set', () => {
     const names = listTools().map((t) => t.name);
@@ -98,6 +103,7 @@ describe('searchTemplates (pure)', () => {
 
 describe('callTool', () => {
   const source = new LocalSource({ rootDir: CATALOG_ROOT });
+  const contractSource = new LocalSource({ rootDir: CONTRACTS_ROOT });
 
   it('search_templates dispatches to the real catalog', async () => {
     const result = await callTool(source, 'search_templates', { query: 'mcp' });
@@ -132,8 +138,13 @@ describe('callTool', () => {
   });
 
   it('get_contract returns the markdown content', async () => {
-    const result = await callTool(source, 'get_contract', { repo: 'kx' });
+    const result = await callTool(contractSource, 'get_contract', { repo: 'kx' });
     expect(result.content[0].text).toContain('# kx');
+  });
+
+  it('get_contract resolves cloudgov', async () => {
+    const result = await callTool(contractSource, 'get_contract', { repo: 'cloudgov' });
+    expect(result.content[0].text).toContain('# cloudgov');
   });
 
   it('rejects unknown tools', async () => {
