@@ -61,7 +61,7 @@
       }
     },
     "do": [
-      "Ship the dashboard, the ServiceMonitor/PodMonitor, and the PrometheusRule together — observability is on by default, not opt-in.",
+      "Ship the dashboard and a metric scrape on by default (pod scrape annotations, or a ServiceMonitor where a Prometheus Operator runs) — metrics and the board are not opt-in. Ship SLO alerting in the form the cluster evaluates: a Grafana-managed alert group on a managed-Prometheus stack (grafana-agent + AMP/AMG), or a PrometheusRule where a Prometheus Operator runs. A PrometheusRule alone is inert without an operator.",
       "Declare at least one availability SLO per system; add a latency SLO for latency-sensitive paths.",
       "Show latency as p50/p95/p99 from a histogram.",
       "Reference recording rules from burn-rate alerts so alert evaluation is cheap and consistent."
@@ -70,7 +70,7 @@
       "Ship a board that only embeds community grafanaCom/gnetId infra dashboards and call the system observed.",
       "Alert on instantaneous error ratio in place of a multi-window burn rate.",
       "Show latency as an average or a single gauge.",
-      "Leave dashboards/PrometheusRule disabled by default in a template."
+      "Leave the dashboard or the metric scrape disabled by default. (A PrometheusRule/ServiceMonitor may default off — they are inert without a Prometheus Operator, which the managed-Prometheus stack doesn't run; SLO alerting then lives in a Grafana-managed alert group instead.)"
     ]
   }
 }

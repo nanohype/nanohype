@@ -111,8 +111,14 @@ externalSecret:
 # error-budget alerts keyed on `__APP_NAME___requests_total` /
 # `__APP_NAME___errors_total`. Supply latency or custom-shaped SLOs via `groups`
 # (set it to a non-empty list and it is emitted verbatim instead of the SLO default).
+#
+# Off by default: a PrometheusRule is inert without a Prometheus Operator to
+# evaluate it, and the managed-Prometheus stack this platform runs (grafana-agent
+# scraping pod annotations into Amazon Managed Prometheus, alerting in Amazon
+# Managed Grafana) doesn't run one. Set `enabled: true` on a cluster that does —
+# e.g. the local kx workspace with kube-prometheus-stack.
 prometheusRule:
-  enabled: true
+  enabled: false
   selector:
     release: kube-prometheus-stack
   groups: []
