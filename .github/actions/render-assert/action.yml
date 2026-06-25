@@ -1,0 +1,23 @@
+name: render-assert
+description: >-
+  Assert that rendered Kubernetes manifests carry no unfilled sentinels — the
+  zero AWS account id, literal placeholder tokens, or account-less IAM ARNs.
+  The render-time complement to a source-file no-placeholders gate.
+
+inputs:
+  manifests:
+    description: Directory of rendered manifests to scan (helm template / kustomize build output).
+    required: false
+    default: rendered
+  exclude:
+    description: >-
+      Optional extended-regex matched against "file:line:match" result lines, used
+      to drop known-legitimate hits (e.g. an opt-in addon's own placeholders).
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: ${{ github.action_path }}/assert.sh "${{ inputs.manifests }}" "${{ inputs.exclude }}"

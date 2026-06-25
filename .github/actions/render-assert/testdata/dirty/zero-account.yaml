@@ -1,0 +1,7 @@
+# A role ARN built with the zero AWS account id — must be caught.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bad-account
+data:
+  roleArn: arn:aws:iam::000000000000:role/leaked
