@@ -8,6 +8,7 @@ const ALL_REPOS: ContractRepo[] = [
   'aks-gitops',
   'eks-agent-platform',
   'kx',
+  'cloudgov',
 ];
 
 /**

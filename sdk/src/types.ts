@@ -119,7 +119,8 @@ export type ContractRepo =
   | 'eks-gitops'
   | 'aks-gitops'
   | 'eks-agent-platform'
-  | 'kx';
+  | 'kx'
+  | 'cloudgov';
 
 /** One entry in catalog.json's `templates` array — a single template's discovery metadata. */
 export interface CatalogTemplate {
