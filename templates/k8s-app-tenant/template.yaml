@@ -5,7 +5,7 @@ displayName: "K8s App as Platform Tenant"
 description: >
   Primary scaffolding for a nanohype-org k8s-native application. Produces
   a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
-  ready to register against nanohype/eks-gitops or nanohype/aks-gitops,
+  ready to register against nanohype/eks-gitops,
   and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required
   BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant
   boundary for the eks-agent-platform operator to reconcile. Use this for

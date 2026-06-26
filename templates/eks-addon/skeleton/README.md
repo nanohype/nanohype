@@ -1,6 +1,6 @@
 # __ADDON_NAME__ addon
 
-Helm-based addon for `nanohype/eks-gitops` (or `nanohype/aks-gitops`). Uses chart `__CHART_NAME__` from `__CHART_REPO__` pinned to `__CHART_VERSION__`.
+Helm-based addon for `nanohype/eks-gitops`. Uses chart `__CHART_NAME__` from `__CHART_REPO__` pinned to `__CHART_VERSION__`.
 
 ## Files added to the gitops repo
 
