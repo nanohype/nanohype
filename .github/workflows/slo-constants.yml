@@ -1,0 +1,38 @@
+name: SLO constants
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'standards/observability-slo.json'
+      - 'scripts/check-slo-constants.mjs'
+      - '.github/workflows/slo-constants.yml'
+  pull_request:
+    paths:
+      - 'standards/observability-slo.json'
+      - 'scripts/check-slo-constants.mjs'
+      - '.github/workflows/slo-constants.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Burn-rate constants match the eks-gitops alerts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout nanohype
+        uses: actions/checkout@v6
+
+      # The alert PromQL that inlines the standard's burn-rate factors lives in
+      # eks-gitops (a public repo), so pull just its alerting dir to diff against.
+      - name: Checkout eks-gitops alerting
+        uses: actions/checkout@v6
+        with:
+          repository: nanohype/eks-gitops
+          path: eks-gitops
+          sparse-checkout: dashboards/base/alerting
+          sparse-checkout-cone-mode: false
+
+      - name: Check SLO constants
+        run: node scripts/check-slo-constants.mjs eks-gitops/dashboards/base/alerting
