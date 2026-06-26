@@ -117,10 +117,21 @@ export type ContractRepo =
   | 'nanohype'
   | 'landing-zone'
   | 'eks-gitops'
-  | 'aks-gitops'
   | 'eks-agent-platform'
   | 'kx'
-  | 'cloudgov';
+  | 'cloudgov'
+  | 'fab'
+  | 'portal'
+  | 'eks-fleet';
+
+/** Whether a contract repo is publicly readable or needs an authenticated token. */
+export type RepoVisibility = 'public' | 'private';
+
+/** A contract repo plus its visibility — the descriptor the loader resolves against. */
+export interface ContractRepoInfo {
+  repo: ContractRepo;
+  visibility: RepoVisibility;
+}
 
 /** One entry in catalog.json's `templates` array — a single template's discovery metadata. */
 export interface CatalogTemplate {
@@ -371,4 +382,6 @@ export interface Standards {
 export interface Contract {
   repo: ContractRepo;
   content: string;
+  /** Stamped from the repo descriptor so consumers can label without a second lookup. */
+  visibility?: RepoVisibility;
 }

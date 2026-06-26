@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LocalSource, type CatalogTemplate } from '@nanohype/sdk';
+import { LocalSource, KNOWN_CONTRACT_REPOS, type CatalogTemplate } from '@nanohype/sdk';
 import { callTool, listTools, searchTemplates } from '../src/tools.js';
 
 const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
@@ -21,6 +21,14 @@ describe('listTools', () => {
       'get_standard',
       'get_contract',
     ]);
+  });
+
+  it('get_contract enum reflects the current contract surface', () => {
+    const tool = listTools().find((t) => t.name === 'get_contract')!;
+    const repoEnum = (tool.inputSchema.properties as { repo: { enum: string[] } }).repo.enum;
+    expect(repoEnum).toEqual([...KNOWN_CONTRACT_REPOS]);
+    expect(repoEnum).not.toContain('aks-gitops');
+    expect(repoEnum).toEqual(expect.arrayContaining(['fab', 'portal', 'eks-fleet']));
   });
 
   it('every tool has a non-empty description and JSON-schema input', () => {
@@ -145,6 +153,11 @@ describe('callTool', () => {
   it('get_contract resolves cloudgov', async () => {
     const result = await callTool(contractSource, 'get_contract', { repo: 'cloudgov' });
     expect(result.content[0].text).toContain('# cloudgov');
+  });
+
+  it('get_contract resolves fab (newly added repo)', async () => {
+    const result = await callTool(contractSource, 'get_contract', { repo: 'fab' });
+    expect(result.content[0].text).toContain('# fab');
   });
 
   it('rejects unknown tools', async () => {
