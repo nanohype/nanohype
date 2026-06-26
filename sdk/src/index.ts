@@ -18,6 +18,8 @@ export type {
   CatalogComposite,
   Contract,
   ContractRepo,
+  ContractRepoInfo,
+  RepoVisibility,
   LanguageToolchainStandard,
   LLMPolicyStandard,
   PlatformTenantContractStandard,
@@ -55,4 +57,4 @@ export { renderComposite } from './composite.js';
 // Platform Reference loaders
 export { loadCatalog } from './catalog.js';
 export { loadStandard, loadStandards } from './standards.js';
-export { loadContract, loadAllContracts, KNOWN_CONTRACT_REPOS } from './contracts.js';
+export { loadContract, loadAllContracts, KNOWN_CONTRACT_REPOS, CONTRACT_REPOS } from './contracts.js';

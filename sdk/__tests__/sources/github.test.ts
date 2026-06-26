@@ -205,3 +205,53 @@ describe('GitHubSource', () => {
     });
   });
 });
+
+describe('GitHubSource.fetchContract', () => {
+  it('resolves a public repo via raw.githubusercontent when no token is set', async () => {
+    // The constructor falls back to GITHUB_TOKEN, which CI sets — clear it so this
+    // exercises the no-token path.
+    vi.stubEnv('GITHUB_TOKEN', '');
+    mockFetch.mockResolvedValueOnce(textResponse('# eks-gitops — agent entry point'));
+    const source = new GitHubSource();
+    const md = await source.fetchContract('eks-gitops');
+    expect(md).toContain('# eks-gitops');
+    const [url] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('raw.githubusercontent.com/nanohype/eks-gitops/main/AGENTS.md');
+    vi.unstubAllEnvs();
+  });
+
+  it('resolves via the authenticated contents API when a token is set', async () => {
+    const md = '# eks-fleet — agent entry point';
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ content: Buffer.from(md).toString('base64'), encoding: 'base64' }),
+    );
+    const source = new GitHubSource({ token: 'ghp_x' });
+    const out = await source.fetchContract('eks-fleet');
+    expect(out).toBe(md);
+    const [url, opts] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('api.github.com/repos/nanohype/eks-fleet/contents/AGENTS.md?ref=main');
+    expect((opts.headers as Record<string, string>).Authorization).toBe('Bearer ghp_x');
+  });
+
+  it('falls back to GITHUB_TOKEN from the environment for the contents API', async () => {
+    vi.stubEnv('GITHUB_TOKEN', 'env_token');
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ content: Buffer.from('# kx').toString('base64'), encoding: 'base64' }),
+    );
+    const source = new GitHubSource();
+    await source.fetchContract('kx');
+    const [, opts] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect((opts.headers as Record<string, string>).Authorization).toBe('Bearer env_token');
+    vi.unstubAllEnvs();
+  });
+
+  it('throws NanohypeError when the AGENTS.md is missing', async () => {
+    vi.stubEnv('GITHUB_TOKEN', '');
+    mockFetch.mockResolvedValueOnce(textResponse('Not Found', 404));
+    const source = new GitHubSource();
+    await expect(source.fetchContract('landing-zone')).rejects.toThrow(
+      "AGENTS.md for repo 'landing-zone' not found",
+    );
+    vi.unstubAllEnvs();
+  });
+});

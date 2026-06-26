@@ -5,6 +5,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import {
   CatalogSource,
+  CONTRACT_REPOS,
   KNOWN_CONTRACT_REPOS,
   loadAllContracts,
   loadCatalog,
@@ -63,11 +64,12 @@ export function listResources(): StaticResource[] {
     });
   }
 
-  for (const repo of KNOWN_CONTRACT_REPOS) {
+  for (const { repo, visibility } of CONTRACT_REPOS) {
+    const access = visibility === 'private' ? ' (private — requires a GitHub token to resolve)' : '';
     resources.push({
       uri: `nanohype://contracts/${repo}`,
       name: `contract: ${repo}`,
-      description: `The agent-facing AGENTS.md for the '${repo}' repo. Five-minute orientation: what the repo gives you, contract surface, how to add a new thing, conventions, pointers.`,
+      description: `The agent-facing AGENTS.md for the '${repo}' repo${access}. Five-minute orientation: what the repo gives you, contract surface, how to add a new thing, conventions, pointers.`,
       mimeType: 'text/markdown',
     });
   }

@@ -114,7 +114,7 @@ export function listTools(): ToolDescriptor[] {
     {
       name: 'get_contract',
       description:
-        "Fetch a repo's AGENTS.md content. Use this when you need the agent-facing contract surface for a specific repo (what it gives you, how to add a new thing, conventions).",
+        "Fetch a repo's AGENTS.md content. Use this when you need the agent-facing contract surface for a specific repo (what it gives you, how to add a new thing, conventions). Private repos (e.g. eks-fleet) resolve only when the server has a GitHub token; without one they return a not-found error.",
       inputSchema: {
         type: 'object',
         properties: {

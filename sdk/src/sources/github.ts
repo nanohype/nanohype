@@ -34,7 +34,9 @@ export class GitHubSource implements CatalogSource {
   constructor(options: GitHubSourceOptions = {}) {
     this.repo = options.repo ?? 'nanohype/nanohype';
     this.ref = options.ref ?? 'main';
-    this.token = options.token;
+    // Fall back to GITHUB_TOKEN so a private contract repo resolves with no caller
+    // config when the env var is present.
+    this.token = options.token ?? process.env.GITHUB_TOKEN;
     this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1000;
   }
 
@@ -222,6 +224,26 @@ export class GitHubSource implements CatalogSource {
     // pull contracts from the matching forked siblings, which is correct).
     const [org] = this.repo.split('/');
     const targetRepo = repo === 'nanohype' ? this.repo : `${org}/${repo}`;
+
+    // With a token, resolve via the authenticated contents API — it works for
+    // both public and private repos (raw.githubusercontent can't authenticate
+    // private content via a Bearer header). Without a token, use the raw host,
+    // which is fine for public repos.
+    if (this.token) {
+      const res = await fetch(
+        `https://api.github.com/repos/${targetRepo}/contents/AGENTS.md?ref=${this.ref}`,
+        { headers: this.headers() },
+      );
+      if (!res.ok) {
+        throw new NanohypeError(`AGENTS.md for repo '${repo}' not found: ${res.status}`);
+      }
+      const body = (await res.json()) as { content?: string; encoding?: string };
+      if (body.encoding === 'base64' && body.content) {
+        return Buffer.from(body.content, 'base64').toString('utf-8');
+      }
+      throw new NanohypeError(`AGENTS.md for repo '${repo}' returned an unexpected encoding`);
+    }
+
     const res = await fetch(
       `https://raw.githubusercontent.com/${targetRepo}/${this.ref}/AGENTS.md`,
       { headers: this.headers() },

@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LocalSource } from '@nanohype/sdk';
+import { LocalSource, KNOWN_CONTRACT_REPOS } from '@nanohype/sdk';
 import { listResources, readResource } from '../src/resources.js';
 
 const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
@@ -25,16 +25,12 @@ describe('listResources', () => {
     ]) {
       expect(uris).toContain(`nanohype://standards/${name}`);
     }
-    for (const repo of [
-      'nanohype',
-      'landing-zone',
-      'eks-gitops',
-      'aks-gitops',
-      'eks-agent-platform',
-      'kx',
-    ]) {
+    // Assert against the SDK's canonical list so this never drifts as the
+    // contract surface changes.
+    for (const repo of KNOWN_CONTRACT_REPOS) {
       expect(uris).toContain(`nanohype://contracts/${repo}`);
     }
+    expect(uris).not.toContain('nanohype://contracts/aks-gitops');
   });
 
   it('every resource carries a name, description, and mimeType', () => {
