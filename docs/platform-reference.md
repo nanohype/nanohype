@@ -18,14 +18,13 @@ If you're a human reading this looking for "how do I use the templates," skip do
 
 ## The stack
 
-Six public repos form the system. Five are the deploy substrate; the sixth (`fab`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
+Five public repos form the system. Four are the deploy substrate; the fifth (`fab`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
 
 | Repo                                                                            | Role                                                                                                                                                                                                                                                                                                                                                                 | Agent entry point              |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | [`nanohype/nanohype`](https://github.com/nanohype/nanohype)                     | Template catalog + SDK + the public Platform Reference itself (this file)                                                                                                                                                                                                                                                                                            | [`AGENTS.md`](../AGENTS.md)    |
 | [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone)             | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, per-app `<app>-platform` components                                                                                                                                                                                                                                                | `landing-zone/AGENTS.md`       |
 | [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops)                 | ArgoCD addon catalog for EKS clusters (App-of-Apps pattern)                                                                                                                                                                                                                                                                                                          | `eks-gitops/AGENTS.md`         |
-| [`nanohype/aks-gitops`](https://github.com/nanohype/aks-gitops)                 | Same for AKS                                                                                                                                                                                                                                                                                                                                                         | `aks-gitops/AGENTS.md`         |
 | [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs                                                                                                                                                                                                                                                    | `eks-agent-platform/AGENTS.md` |
 | [`nanohype/kx`](https://github.com/nanohype/kx)                                 | Local kind workspace that mirrors `eks-gitops`. Run the same charts locally before deploying                                                                                                                                                                                                                                                                         | `kx/AGENTS.md`                 |
 | [`nanohype/fab`](https://github.com/nanohype/fab)                               | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.fab/skills/` | `fab/skills/README.md`         |
@@ -34,7 +33,7 @@ The boundary between layers:
 
 - **Slow-moving cloud infra** (VPC, base IAM, KMS keys, cost pipeline, EventBridge, WAF) → `landing-zone`
 - **Per-tenant fast-moving AWS state** (IRSA roles, KMS grants, S3 bucket policies, Bedrock model-access) → `eks-agent-platform` operator reconciles via AWS SDK
-- **Cluster addons** (cert-manager, external-secrets, Kyverno, observability) → `eks-gitops` / `aks-gitops`
+- **Cluster addons** (cert-manager, external-secrets, Kyverno, observability) → `eks-gitops`
 - **Local development** → `kx` (kind cluster mirroring eks-gitops)
 - **Application logic** → templates from `nanohype/templates/` scaffolded into an `<app>/chart/` + `<app>/platform.yaml`
 
@@ -78,7 +77,7 @@ Each repo in the stack has an `AGENTS.md` at its root — short, agent-facing, a
 1. [`nanohype/AGENTS.md`](../AGENTS.md) — templates + SDK + catalog. The starting point.
 2. `eks-agent-platform/AGENTS.md` — the CRD surface. Platform / AgentFleet / ModelGateway / BudgetPolicy / EvalSuite. How to declare a tenant.
 3. `landing-zone/AGENTS.md` — cloud substrate. The `<app>-platform` per-app component pattern. OIDC trust setup.
-4. `eks-gitops/AGENTS.md` (and `aks-gitops/AGENTS.md`) — addon catalog. ApplicationSet entry shape. Sync waves.
+4. `eks-gitops/AGENTS.md` — addon catalog. ApplicationSet entry shape. Sync waves.
 5. `kx/AGENTS.md` — local kind mirror. When to use it.
 
 If you're skipping straight to delivery, only `eks-agent-platform/AGENTS.md` is mandatory — its Platform CR is what your output must conform to.

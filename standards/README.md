@@ -41,7 +41,7 @@ Every k8s-native deliverable ships as a **Platform tenant** — a self-contained
 A tenant ships three artifacts:
 
 1. A Helm chart in `<app>/chart/` with per-env values files
-2. An ApplicationSet entry referenced by `nanohype/eks-gitops` or `nanohype/aks-gitops`
+2. An ApplicationSet entry referenced by `nanohype/eks-gitops`
 3. A Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary
 
 The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role. The chart's own ServiceAccount carries the `eks.amazonaws.com/role-arn` annotation rendered from a per-env Helm value pointing at the landing-zone-owned IRSA role.
@@ -50,7 +50,7 @@ What you must **not** do inside a chart:
 
 - Scaffold IAM roles (the operator + landing-zone own IRSA)
 - Add cloud-substrate tofu (substrate lives in `nanohype/landing-zone`)
-- Add cluster-level addons (addons live in `nanohype/eks-gitops` / `aks-gitops`)
+- Add cluster-level addons (addons live in `nanohype/eks-gitops`)
 - Skip per-env values files (every chart has three, even if some are empty)
 - Hardcode AWS account IDs, region names, or KMS ARNs
 

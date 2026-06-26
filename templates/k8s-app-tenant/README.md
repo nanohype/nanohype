@@ -13,7 +13,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   - `prometheusrule.yaml` — *(on by default)* SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
   - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(on by default)* a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
   - `servicemonitor.yaml` — *(toggle, off by default)* Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
-- **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/` (or aks-gitops)
+- **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/`
 - **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role (scoped to `spec.identity.allowedModelFamilies`); the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
@@ -81,8 +81,8 @@ Compose with any of the application templates that produce a container-shipped s
 
 Designed to work with these repos already in place on the target cluster:
 
-- `nanohype/landing-zone` — provisions the EKS/AKS cluster, ArgoCD, base IAM, KMS keys, and the per-app `<app>-platform` component (IRSA role + Secrets Manager entries)
-- `nanohype/eks-gitops` (or `aks-gitops`) — supplies cluster addons (cert-manager, external-secrets, ingress-nginx, observability, Kyverno policies) and the ApplicationSet that picks up `gitops/applicationset-entry.yaml`
+- `nanohype/landing-zone` — provisions the EKS cluster, ArgoCD, base IAM, KMS keys, and the per-app `<app>-platform` component (IRSA role + Secrets Manager entries)
+- `nanohype/eks-gitops` — supplies cluster addons (cert-manager, external-secrets, ingress-nginx, observability, Kyverno policies) and the ApplicationSet that picks up `gitops/applicationset-entry.yaml`
 - `nanohype/eks-agent-platform` — runs the operator that reconciles your `platform.yaml`
 
 If any of these are missing on the target cluster, the rendered app's `platform.yaml` won't reconcile and the ApplicationSet entry won't have a parent to register against.

@@ -1,6 +1,6 @@
 # eks-addon
 
-Scaffolds a new Helm-based addon into [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops) or [`nanohype/aks-gitops`](https://github.com/nanohype/aks-gitops). Follows the base + delta-only env values pattern that both gitops repos standardize on.
+Scaffolds a new Helm-based addon into [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops). Follows the base + delta-only env values pattern eks-gitops standardizes on.
 
 The Kustomize-based addon variant (used by `storage-classes`, `priority-classes`, `karpenter-resources`) needs a different file layout and is not covered by this template — copy from an existing Kustomize addon directly.
 
@@ -40,7 +40,7 @@ Apps land at wave ≥100 (handled by `k8s-app-tenant`).
 ## Project layout
 
 ```text
-eks-gitops/                          # (or aks-gitops/)
+eks-gitops/
   addons/
     __CATEGORY__/
       __ADDON_NAME__/

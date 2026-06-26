@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-06-23T01:26:33.000Z",
+  "generated_at": "2026-06-26T00:18:05.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -510,8 +510,8 @@
     },
     {
       "name": "eks-addon",
-      "displayName": "EKS / AKS GitOps Addon (Helm)",
-      "description": "Scaffolds a new Helm-based addon into nanohype/eks-gitops or nanohype/aks-gitops. Produces the addons/<category>/<name>/values.yaml + per-env delta files (values-{dev,staging,production}.yaml) following the eks-gitops Helm values pattern (base + delta-only). The Kustomize variant (used by storage-classes, priority-classes, karpenter-resources) needs a different layout and is not covered here.",
+      "displayName": "EKS GitOps Addon (Helm)",
+      "description": "Scaffolds a new Helm-based addon into nanohype/eks-gitops. Produces the addons/<category>/<name>/values.yaml + per-env delta files (values-{dev,staging,production}.yaml) following the eks-gitops Helm values pattern (base + delta-only). The Kustomize variant (used by storage-classes, priority-classes, karpenter-resources) needs a different layout and is not covered here.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [
@@ -523,7 +523,6 @@
         "argocd",
         "gitops",
         "eks",
-        "aks",
         "nanohype"
       ],
       "kind": "template",
@@ -804,7 +803,7 @@
     {
       "name": "k8s-app-tenant",
       "displayName": "K8s App as Platform Tenant",
-      "description": "Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm chart with per-environment values, an ArgoCD ApplicationSet entry ready to register against nanohype/eks-gitops or nanohype/aks-gitops, and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the eks-agent-platform operator to reconcile. Use this for every k8s-native deliverable unless an explicit escape hatch (aws-lambda, fly, vercel, cloudflare) is justified.",
+      "description": "Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm chart with per-environment values, an ArgoCD ApplicationSet entry ready to register against nanohype/eks-gitops, and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the eks-agent-platform operator to reconcile. Use this for every k8s-native deliverable unless an explicit escape hatch (aws-lambda, fly, vercel, cloudflare) is justified.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [

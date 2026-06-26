@@ -2,7 +2,7 @@
 
 Generic Kubernetes deployment with raw manifests and an optional Helm chart. Works against any cluster. Production-grade defaults with resource limits, health probes, non-root security context, and auto-scaling.
 
-> **Picking between k8s-deploy and k8s-app-tenant:** use `k8s-app-tenant` when targeting nanohype-org clusters (EKS or AKS managed by `eks-agent-platform` + `eks-gitops`/`aks-gitops` + `landing-zone`). That template produces a Helm chart plus an ApplicationSet entry and a Platform CR, and assumes the operator is running. Use `k8s-deploy` when targeting a generic cluster without those operators — bare-bones manifests + Helm, no Platform CR, no opinionated ArgoCD wiring.
+> **Picking between k8s-deploy and k8s-app-tenant:** use `k8s-app-tenant` when targeting nanohype-org clusters (EKS managed by `eks-agent-platform` + `eks-gitops` + `landing-zone`). That template produces a Helm chart plus an ApplicationSet entry and a Platform CR, and assumes the operator is running. Use `k8s-deploy` when targeting a generic cluster without those operators — bare-bones manifests + Helm, no Platform CR, no opinionated ArgoCD wiring.
 
 ## What you get
 
