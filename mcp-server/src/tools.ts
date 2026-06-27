@@ -5,21 +5,11 @@ import {
   KNOWN_CONTRACT_REPOS,
   loadCatalog,
   loadStandard,
+  STANDARD_NAMES,
   type CatalogTemplate,
   type ContractRepo,
   type StandardName,
 } from '@nanohype/sdk';
-
-const STANDARD_NAMES: StandardName[] = [
-  'language-toolchain',
-  'version-currency',
-  'platform-tenant-contract',
-  'llm-policy',
-  'quality-rubric-dimensions',
-  'testing-rubric',
-  'resource-tagging',
-  'observability-slo',
-];
 
 interface ToolDescriptor {
   name: string;

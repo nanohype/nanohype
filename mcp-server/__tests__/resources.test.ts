@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { LocalSource, KNOWN_CONTRACT_REPOS } from '@nanohype/sdk';
+import { LocalSource, KNOWN_CONTRACT_REPOS, STANDARD_NAMES } from '@nanohype/sdk';
 import { listResources, readResource } from '../src/resources.js';
 
 const CATALOG_ROOT = resolve(import.meta.dirname, '..', '..');
@@ -16,17 +16,11 @@ describe('listResources', () => {
     const uris = resources.map((r) => r.uri);
     expect(uris).toContain('nanohype://catalog');
     expect(uris).toContain('nanohype://standards');
-    for (const name of [
-      'language-toolchain',
-      'version-currency',
-      'platform-tenant-contract',
-      'llm-policy',
-      'quality-rubric-dimensions',
-    ]) {
+    // Assert against the SDK's canonical lists so the advertised surface never
+    // drifts as the standards or contract surfaces change.
+    for (const name of STANDARD_NAMES) {
       expect(uris).toContain(`nanohype://standards/${name}`);
     }
-    // Assert against the SDK's canonical list so this never drifts as the
-    // contract surface changes.
     for (const repo of KNOWN_CONTRACT_REPOS) {
       expect(uris).toContain(`nanohype://contracts/${repo}`);
     }
