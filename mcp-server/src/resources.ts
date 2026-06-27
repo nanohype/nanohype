@@ -7,23 +7,13 @@ import {
   CatalogSource,
   CONTRACT_REPOS,
   KNOWN_CONTRACT_REPOS,
-  loadAllContracts,
   loadCatalog,
   loadStandard,
   loadStandards,
+  STANDARD_NAMES,
   type ContractRepo,
   type StandardName,
 } from '@nanohype/sdk';
-
-const STANDARD_NAMES: StandardName[] = [
-  'language-toolchain',
-  'version-currency',
-  'platform-tenant-contract',
-  'llm-policy',
-  'quality-rubric-dimensions',
-  'testing-rubric',
-  'resource-tagging',
-];
 
 interface StaticResource {
   uri: string;
@@ -188,11 +178,6 @@ export async function readResource(
  * via the tools and resolvable directly when an LLM constructs the URI.
  */
 export function registerResources(server: Server, source: CatalogSource): void {
-  // Loaders for handlers (and tests) get the source via closure;
-  // keep handler bodies thin.
-  const _loadAllContracts = (): Promise<unknown> => loadAllContracts(source);
-  void _loadAllContracts;
-
   server.setRequestHandler(ListResourcesRequestSchema, async () => ({
     resources: listResources(),
   }));

@@ -48,6 +48,10 @@ jobs:
         working-directory: mcp-server
         run: npm run typecheck
 
+      - name: Lint
+        working-directory: mcp-server
+        run: npm run lint
+
       - name: Build
         working-directory: mcp-server
         run: npm run build

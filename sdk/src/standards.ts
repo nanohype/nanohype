@@ -25,6 +25,9 @@ const ALL_STANDARDS: StandardName[] = [
   'observability-slo',
 ];
 
+/** The canonical list of published standards file names. */
+export const STANDARD_NAMES: readonly StandardName[] = ALL_STANDARDS;
+
 const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
   'language-toolchain': 'nanohype/standards/language-toolchain',
   'version-currency': 'nanohype/standards/version-currency',

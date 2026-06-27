@@ -84,7 +84,7 @@ If you're skipping straight to delivery, only `eks-agent-platform/AGENTS.md` is 
 
 ## SDK
 
-`@nanohype/sdk` is the reference TypeScript implementation of the catalog + standards consumption pattern. Zero runtime dependencies.
+`@nanohype/sdk` is the reference TypeScript implementation of the catalog + standards consumption pattern. One runtime dependency (a YAML parser).
 
 ```typescript
 import {
@@ -115,7 +115,7 @@ await renderTemplate({
 
 For agents running remotely without a checkout, use `GitHubSource` instead — same API, fetches manifests from the GitHub API.
 
-`loadStandards()` returns a typed bundle covering all six standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
+`loadStandards()` returns a typed bundle covering all eight standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
 
 ## MCP server
 
