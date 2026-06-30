@@ -13,7 +13,7 @@ const ALL_REPOS: ContractRepoInfo[] = [
   { repo: 'cloudgov', visibility: 'public' },
   { repo: 'fab', visibility: 'public' },
   { repo: 'portal', visibility: 'public' },
-  { repo: 'eks-fleet', visibility: 'private' },
+  { repo: 'eks-fleet', visibility: 'public' },
 ];
 
 /**

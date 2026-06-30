@@ -36,7 +36,7 @@ describe('loadContract', () => {
 
   it('stamps the repo visibility onto the loaded contract', async () => {
     expect((await loadContract(source, 'eks-gitops')).visibility).toBe('public');
-    expect((await loadContract(source, 'eks-fleet')).visibility).toBe('private');
+    expect((await loadContract(source, 'eks-fleet')).visibility).toBe('public');
   });
 
   it('throws NanohypeError when the repo path does not exist', async () => {
@@ -57,8 +57,9 @@ describe('loadAllContracts', () => {
   });
 
   it('skips a repo that fails to resolve instead of rejecting the whole load', async () => {
-    // A source that resolves everything except eks-fleet — the shape of a private
-    // repo fetched without a token (404). The load must degrade, not throw.
+    // A source that resolves everything except eks-fleet — the shape of a
+    // transient fetch failure, or a future private repo fetched without a token
+    // (404). The load must degrade, not throw.
     const partial = {
       async fetchContract(repo: string) {
         if (repo === 'eks-fleet') throw new NanohypeError('AGENTS.md for repo \'eks-fleet\' not found: 404');

@@ -11,7 +11,7 @@ Use it when you're building an AI client (Bedrock agent, Claude Desktop assistan
 | `nanohype://catalog` | Full `catalog.json` (templates + composites with metadata) | `application/json` |
 | `nanohype://standards` | All five standards files bundled | `application/json` |
 | `nanohype://standards/{name}` | One standards file. `name` ∈ `language-toolchain` / `version-currency` / `platform-tenant-contract` / `llm-policy` / `quality-rubric-dimensions` | `application/json` |
-| `nanohype://contracts/{repo}` | One repo's `AGENTS.md`. `repo` ∈ `nanohype` / `landing-zone` / `eks-gitops` / `eks-agent-platform` / `kx` / `cloudgov` / `fab` / `portal` / `eks-fleet` (private — needs a GitHub token) | `text/markdown` |
+| `nanohype://contracts/{repo}` | One repo's `AGENTS.md`. `repo` ∈ `nanohype` / `landing-zone` / `eks-gitops` / `eks-agent-platform` / `kx` / `cloudgov` / `fab` / `portal` / `eks-fleet` | `text/markdown` |
 | `nanohype://template/{name}` | One template's full manifest (variables, conditionals, hooks, composition) | `application/json` |
 | `nanohype://composite/{name}` | One composite's full manifest (multi-template orchestration) | `application/json` |
 
