@@ -57,5 +57,10 @@ export async function loadAllContracts(source: CatalogSource): Promise<Contract[
 /** The canonical list of supporting repos that ship an AGENTS.md (names only). */
 export const KNOWN_CONTRACT_REPOS: readonly ContractRepo[] = ALL_REPOS.map((r) => r.repo);
 
+/** True when `value` names a known contract repo. */
+export function isContractRepo(value: unknown): value is ContractRepo {
+  return typeof value === 'string' && ALL_REPOS.some((r) => r.repo === value);
+}
+
 /** The contract repos with their visibility — for callers that label or gate on it. */
 export const CONTRACT_REPOS: readonly ContractRepoInfo[] = ALL_REPOS;

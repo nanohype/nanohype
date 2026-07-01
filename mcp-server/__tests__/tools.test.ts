@@ -160,7 +160,123 @@ describe('callTool', () => {
     expect(result.content[0].text).toContain('# fab');
   });
 
-  it('rejects unknown tools', async () => {
+  it('rejects unknown tools as a protocol error (throw, not isError result)', async () => {
     await expect(callTool(source, 'bogus_tool', {})).rejects.toThrow(/Unknown tool/);
+  });
+
+  it('happy-path results carry no isError flag', async () => {
+    const result = await callTool(source, 'get_template', { name: 'agentic-loop' });
+    expect(result.isError).toBeUndefined();
+  });
+});
+
+describe('callTool argument validation', () => {
+  const source = new LocalSource({ rootDir: CATALOG_ROOT });
+
+  async function expectToolError(
+    name: string,
+    args: Record<string, unknown>,
+    match: string | RegExp,
+  ): Promise<void> {
+    const result = await callTool(source, name, args);
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toMatch(match);
+  }
+
+  describe('get_template / get_composite names', () => {
+    it('rejects path traversal', async () => {
+      await expectToolError('get_template', { name: '../../../etc/passwd' }, /not a valid catalog name/);
+      await expectToolError('get_composite', { name: '../secrets' }, /not a valid catalog name/);
+    });
+
+    it('rejects absolute paths', async () => {
+      await expectToolError('get_template', { name: '/etc/passwd' }, /not a valid catalog name/);
+    });
+
+    it('rejects null bytes', async () => {
+      await expectToolError('get_template', { name: 'go-cli\0evil' }, /not a valid catalog name/);
+    });
+
+    it('rejects URL metacharacters', async () => {
+      await expectToolError('get_template', { name: 'go-cli?ref=evil' }, /not a valid catalog name/);
+      await expectToolError('get_composite', { name: 'a/b' }, /not a valid catalog name/);
+    });
+
+    it('rejects missing and non-string names', async () => {
+      await expectToolError('get_template', {}, /'name': expected a string, got undefined/);
+      await expectToolError('get_template', { name: 42 }, /'name': expected a string/);
+      await expectToolError('get_composite', { name: null }, /'name': expected a string/);
+    });
+  });
+
+  describe('get_standard names', () => {
+    it('rejects names outside the published set', async () => {
+      await expectToolError('get_standard', { name: 'bogus' }, /not a known standard/);
+    });
+
+    it('rejects traversal attempts', async () => {
+      await expectToolError('get_standard', { name: '../../package' }, /not a known standard/);
+    });
+
+    it('rejects non-string names', async () => {
+      await expectToolError('get_standard', { name: 42 }, /'name': expected a string/);
+    });
+  });
+
+  describe('get_contract repos', () => {
+    it('rejects repos outside the known set', async () => {
+      await expectToolError('get_contract', { repo: 'not-a-repo' }, /not a known contract repo/);
+    });
+
+    it('rejects traversal attempts', async () => {
+      await expectToolError('get_contract', { repo: '../../etc' }, /not a known contract repo/);
+      await expectToolError('get_contract', { repo: 'nanohype/../evil' }, /not a known contract repo/);
+    });
+
+    it('rejects missing repos', async () => {
+      await expectToolError('get_contract', {}, /'repo': expected a string, got undefined/);
+    });
+  });
+
+  describe('search_templates filters', () => {
+    it('rejects a missing query (declared required)', async () => {
+      await expectToolError('search_templates', {}, /'query': expected a string, got undefined/);
+    });
+
+    it('rejects non-string filters', async () => {
+      await expectToolError('search_templates', { query: '', category: 3 }, /'category': expected a string/);
+      await expectToolError('search_templates', { query: '', persona: {} }, /'persona': expected a string/);
+    });
+
+    it('rejects kind values outside the enum', async () => {
+      await expectToolError('search_templates', { query: '', kind: 'bogus' }, /'kind'.*expected 'template' or 'brief'/);
+    });
+
+    it('still accepts the full valid filter set', async () => {
+      const result = await callTool(source, 'search_templates', {
+        query: '',
+        category: 'ai-systems',
+        persona: 'engineering',
+        kind: 'template',
+      });
+      expect(result.isError).toBeUndefined();
+      expect(JSON.parse(result.content[0].text).length).toBeGreaterThan(0);
+    });
+  });
+});
+
+describe('callTool error semantics', () => {
+  const source = new LocalSource({ rootDir: CATALOG_ROOT });
+
+  it('a well-formed but missing template is an isError result, not a throw', async () => {
+    const result = await callTool(source, 'get_template', { name: 'no-such-template' });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("Template 'no-such-template' not found");
+  });
+
+  it('a well-formed but missing composite is an isError result, not a throw', async () => {
+    const result = await callTool(source, 'get_composite', { name: 'no-such-composite' });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("Composite 'no-such-composite' not found");
   });
 });

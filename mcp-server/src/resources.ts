@@ -6,13 +6,13 @@ import {
 import {
   CatalogSource,
   CONTRACT_REPOS,
-  KNOWN_CONTRACT_REPOS,
+  isCatalogName,
+  isContractRepo,
+  isStandardName,
   loadCatalog,
   loadStandard,
   loadStandards,
   STANDARD_NAMES,
-  type ContractRepo,
-  type StandardName,
 } from '@nanohype/sdk';
 
 interface StaticResource {
@@ -104,8 +104,8 @@ export async function readResource(
 
   const standardMatch = /^nanohype:\/\/standards\/(.+)$/.exec(uri);
   if (standardMatch) {
-    const name = standardMatch[1] as StandardName;
-    if (!STANDARD_NAMES.includes(name)) {
+    const name = standardMatch[1];
+    if (!isStandardName(name)) {
       throw new Error(`Unknown standard: ${name}`);
     }
     const standard = await loadStandard(source, name);
@@ -122,8 +122,8 @@ export async function readResource(
 
   const contractMatch = /^nanohype:\/\/contracts\/(.+)$/.exec(uri);
   if (contractMatch) {
-    const repo = contractMatch[1] as ContractRepo;
-    if (!KNOWN_CONTRACT_REPOS.includes(repo)) {
+    const repo = contractMatch[1];
+    if (!isContractRepo(repo)) {
       throw new Error(`Unknown repo: ${repo}`);
     }
     const content = await source.fetchContract(repo);
@@ -141,6 +141,11 @@ export async function readResource(
   const templateMatch = /^nanohype:\/\/template\/(.+)$/.exec(uri);
   if (templateMatch) {
     const name = templateMatch[1];
+    // LLM-constructed URI — hold the name to the catalog naming rule before
+    // it reaches a source (which interpolates it into paths/URLs).
+    if (!isCatalogName(name)) {
+      throw new Error(`Invalid template name: ${name}`);
+    }
     const { manifest } = await source.fetchTemplate(name);
     return {
       contents: [
@@ -156,6 +161,9 @@ export async function readResource(
   const compositeMatch = /^nanohype:\/\/composite\/(.+)$/.exec(uri);
   if (compositeMatch) {
     const name = compositeMatch[1];
+    if (!isCatalogName(name)) {
+      throw new Error(`Invalid composite name: ${name}`);
+    }
     const manifest = await source.fetchComposite(name);
     return {
       contents: [

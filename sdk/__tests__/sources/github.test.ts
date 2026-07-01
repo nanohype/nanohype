@@ -310,6 +310,56 @@ describe("GitHubSource", () => {
       );
     });
   });
+
+  describe('name shape guards', () => {
+    // Names are interpolated into request paths — a malformed one must be
+    // rejected before any request is issued.
+    it('rejects traversal in template names without fetching', async () => {
+      const source = new GitHubSource();
+      await expect(source.fetchTemplate('../evil')).rejects.toThrow('Invalid template name');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects path separators and URL metacharacters in template names', async () => {
+      const source = new GitHubSource();
+      await expect(source.fetchTemplate('a/b')).rejects.toThrow('Invalid template name');
+      await expect(source.fetchTemplate('name?ref=evil')).rejects.toThrow('Invalid template name');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects null bytes and empty template names', async () => {
+      const source = new GitHubSource();
+      await expect(source.fetchTemplate('go-cli\0evil')).rejects.toThrow('Invalid template name');
+      await expect(source.fetchTemplate('')).rejects.toThrow('Invalid template name');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects malformed composite names without fetching', async () => {
+      const source = new GitHubSource();
+      await expect(source.fetchComposite('../../secrets')).rejects.toThrow(
+        'Invalid composite name',
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects standards outside the published set without fetching', async () => {
+      const source = new GitHubSource();
+      await expect(
+        source.fetchStandard('../package' as Parameters<typeof source.fetchStandard>[0]),
+      ).rejects.toThrow('Unknown standard');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects contract repos outside the known set without fetching', async () => {
+      const source = new GitHubSource();
+      await expect(
+        source.fetchContract(
+          'nanohype/main/evil' as Parameters<typeof source.fetchContract>[0],
+        ),
+      ).rejects.toThrow('Unknown contract repo');
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe("GitHubSource.fetchContract", () => {

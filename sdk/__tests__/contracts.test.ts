@@ -1,7 +1,12 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { LocalSource } from '../src/sources/local.js';
-import { loadAllContracts, loadContract, KNOWN_CONTRACT_REPOS } from '../src/contracts.js';
+import {
+  isContractRepo,
+  loadAllContracts,
+  loadContract,
+  KNOWN_CONTRACT_REPOS,
+} from '../src/contracts.js';
 import { NanohypeError } from '../src/errors.js';
 import type { CatalogSource } from '../src/source.js';
 
@@ -82,5 +87,21 @@ describe('KNOWN_CONTRACT_REPOS', () => {
     expect(KNOWN_CONTRACT_REPOS).toContain('fab');
     expect(KNOWN_CONTRACT_REPOS).toContain('portal');
     expect(KNOWN_CONTRACT_REPOS).toContain('eks-fleet');
+  });
+});
+
+describe('isContractRepo', () => {
+  it('accepts every known contract repo', () => {
+    for (const repo of KNOWN_CONTRACT_REPOS) {
+      expect(isContractRepo(repo)).toBe(true);
+    }
+  });
+
+  it('rejects anything outside the known set', () => {
+    expect(isContractRepo('aks-gitops')).toBe(false);
+    expect(isContractRepo('../nanohype')).toBe(false);
+    expect(isContractRepo('nanohype/main/evil')).toBe(false);
+    expect(isContractRepo(42)).toBe(false);
+    expect(isContractRepo(undefined)).toBe(false);
   });
 });

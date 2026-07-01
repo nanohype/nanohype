@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { LocalSource } from '../src/sources/local.js';
-import { loadStandard, loadStandards } from '../src/standards.js';
+import { isStandardName, loadStandard, loadStandards, STANDARD_NAMES } from '../src/standards.js';
 import { NanohypeError } from '../src/errors.js';
 import type { Standards } from '../src/types.js';
 
@@ -107,5 +107,20 @@ describe('loadStandards (bundle)', () => {
     );
     expect(bundle['testing-rubric'].kind).toBe('nanohype/standards/testing-rubric');
     expect(bundle['observability-slo'].kind).toBe('nanohype/standards/observability-slo');
+  });
+});
+
+describe('isStandardName', () => {
+  it('accepts every published standard name', () => {
+    for (const name of STANDARD_NAMES) {
+      expect(isStandardName(name)).toBe(true);
+    }
+  });
+
+  it('rejects anything outside the published set', () => {
+    expect(isStandardName('bogus')).toBe(false);
+    expect(isStandardName('../package')).toBe(false);
+    expect(isStandardName(42)).toBe(false);
+    expect(isStandardName(undefined)).toBe(false);
   });
 });

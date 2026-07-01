@@ -3,6 +3,20 @@ import { ManifestValidationError } from './errors.js';
 import type { CompositeManifest, TemplateManifest } from './types.js';
 
 /**
+ * The kebab-case shape every catalog entry name (template or composite)
+ * must satisfy — the same pattern `schemas/template.schema.json` and the
+ * template contract enforce on `name`. Sources interpolate these names
+ * into filesystem paths and request URLs, so the shape check doubles as
+ * an injection guard: it admits no `/`, `.`, null bytes, or uppercase.
+ */
+export const CATALOG_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
+
+/** True when `value` is a well-formed kebab-case catalog (template/composite) name. */
+export function isCatalogName(value: unknown): value is string {
+  return typeof value === 'string' && CATALOG_NAME_PATTERN.test(value);
+}
+
+/**
  * Validate a template manifest's structural invariants.
  * Throws ManifestValidationError on the first violation found.
  */

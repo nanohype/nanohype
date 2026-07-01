@@ -55,6 +55,40 @@ describe('LocalSource', () => {
     });
   });
 
+  describe('path containment', () => {
+    it('rejects template names that traverse out of templates/', async () => {
+      await expect(source.fetchTemplate('../sdk')).rejects.toThrow(/escapes/);
+    });
+
+    it('rejects template names that traverse to a sibling catalog directory', async () => {
+      await expect(source.fetchTemplate('../composites')).rejects.toThrow(/escapes/);
+    });
+
+    it('rejects absolute template names', async () => {
+      await expect(source.fetchTemplate('/etc/passwd')).rejects.toThrow(/escapes/);
+    });
+
+    it('rejects template names containing null bytes', async () => {
+      await expect(source.fetchTemplate('go-cli\0evil')).rejects.toThrow(/null byte/);
+    });
+
+    it('rejects composite names that traverse out of composites/', async () => {
+      await expect(source.fetchComposite('../../outside/secret')).rejects.toThrow(/escapes/);
+    });
+
+    it('rejects standard names that traverse out of standards/', async () => {
+      await expect(
+        source.fetchStandard('../package' as Parameters<typeof source.fetchStandard>[0]),
+      ).rejects.toThrow(/escapes/);
+    });
+
+    it('rejects contract repo names that traverse out of the workspace parent', async () => {
+      await expect(
+        source.fetchContract('../../etc' as Parameters<typeof source.fetchContract>[0]),
+      ).rejects.toThrow(/escapes/);
+    });
+  });
+
   describe('listComposites', () => {
     it('discovers composites from the real catalog', async () => {
       const entries = await source.listComposites();
