@@ -12,6 +12,9 @@ import type {
 } from "../types.js";
 import type { CatalogSource, GitHubSourceOptions } from "../source.js";
 import { NanohypeError } from "../errors.js";
+import { isContractRepo } from "../contracts.js";
+import { isStandardName } from "../standards.js";
+import { isCatalogName } from "../validator.js";
 
 interface CacheEntry<T> {
   data: T;
@@ -162,6 +165,12 @@ export class GitHubSource implements CatalogSource {
   async fetchTemplate(
     name: string,
   ): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }> {
+    // `name` is interpolated into request paths — reject anything that isn't
+    // a well-formed catalog name before it can reshape the URL.
+    if (!isCatalogName(name)) {
+      throw new NanohypeError(`Invalid template name: ${JSON.stringify(name)}`);
+    }
+
     // Fetch manifest
     const manifestRes = await this.get(
       this.raw(`templates/${name}/template.yaml`),
@@ -271,6 +280,11 @@ export class GitHubSource implements CatalogSource {
   }
 
   async fetchComposite(name: string): Promise<CompositeManifest> {
+    if (!isCatalogName(name)) {
+      throw new NanohypeError(
+        `Invalid composite name: ${JSON.stringify(name)}`,
+      );
+    }
     const res = await this.get(this.raw(`composites/${name}.yaml`));
     if (!res.ok)
       throw new NanohypeError(`Composite '${name}' not found: ${res.status}`);
@@ -296,6 +310,10 @@ export class GitHubSource implements CatalogSource {
   }
 
   async fetchStandard(name: StandardName): Promise<Standard> {
+    // Typed as StandardName, but callers cast LLM-supplied strings — hold the line at runtime.
+    if (!isStandardName(name)) {
+      throw new NanohypeError(`Unknown standard: ${JSON.stringify(name)}`);
+    }
     const res = await this.get(this.raw(`standards/${name}.json`));
     if (!res.ok)
       throw new NanohypeError(`Standard '${name}' not found: ${res.status}`);
@@ -303,6 +321,12 @@ export class GitHubSource implements CatalogSource {
   }
 
   async fetchContract(repo: ContractRepo): Promise<string> {
+    // Typed as ContractRepo, but callers cast LLM-supplied strings — a raw
+    // value like `x/main/evil?` would otherwise reshape the request path.
+    if (!isContractRepo(repo)) {
+      throw new NanohypeError(`Unknown contract repo: ${JSON.stringify(repo)}`);
+    }
+
     // The nanohype repo's AGENTS.md lives in `this.repo`; each other repo
     // is a sibling under the same GitHub org (`<org>/<repo>`). When the
     // configured `this.repo` is `<org>/nanohype` we resolve siblings as

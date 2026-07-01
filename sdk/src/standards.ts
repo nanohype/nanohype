@@ -28,6 +28,11 @@ const ALL_STANDARDS: StandardName[] = [
 /** The canonical list of published standards file names. */
 export const STANDARD_NAMES: readonly StandardName[] = ALL_STANDARDS;
 
+/** True when `value` names a published standard. */
+export function isStandardName(value: unknown): value is StandardName {
+  return typeof value === 'string' && (STANDARD_NAMES as readonly string[]).includes(value);
+}
+
 const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
   'language-toolchain': 'nanohype/standards/language-toolchain',
   'version-currency': 'nanohype/standards/version-currency',

@@ -49,12 +49,23 @@ export {
 } from './errors.js';
 
 // Functions
-export { validateManifest, validateCompositeManifest } from './validator.js';
+export {
+  CATALOG_NAME_PATTERN,
+  isCatalogName,
+  validateManifest,
+  validateCompositeManifest,
+} from './validator.js';
 export { resolveVariables } from './resolver.js';
 export { renderTemplate } from './renderer.js';
 export { renderComposite } from './composite.js';
 
 // Platform Reference loaders
 export { loadCatalog } from './catalog.js';
-export { loadStandard, loadStandards, STANDARD_NAMES } from './standards.js';
-export { loadContract, loadAllContracts, KNOWN_CONTRACT_REPOS, CONTRACT_REPOS } from './contracts.js';
+export { isStandardName, loadStandard, loadStandards, STANDARD_NAMES } from './standards.js';
+export {
+  isContractRepo,
+  loadContract,
+  loadAllContracts,
+  KNOWN_CONTRACT_REPOS,
+  CONTRACT_REPOS,
+} from './contracts.js';

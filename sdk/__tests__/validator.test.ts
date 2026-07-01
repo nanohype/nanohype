@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateManifest, validateCompositeManifest } from '../src/validator.js';
+import { isCatalogName, validateManifest, validateCompositeManifest } from '../src/validator.js';
 import type { TemplateManifest, CompositeManifest } from '../src/types.js';
 
 function minimalManifest(overrides?: Partial<TemplateManifest>): TemplateManifest {
@@ -286,5 +286,30 @@ describe('validateCompositeManifest', () => {
       templates: [],
     };
     expect(() => validateCompositeManifest(manifest)).toThrow("Expected kind 'composite'");
+  });
+});
+
+describe('isCatalogName', () => {
+  it('accepts kebab-case catalog names', () => {
+    expect(isCatalogName('go-cli')).toBe(true);
+    expect(isCatalogName('module-auth-ts')).toBe(true);
+    expect(isCatalogName('a2a-agent')).toBe(true);
+  });
+
+  it('rejects traversal, separators, and metacharacters', () => {
+    expect(isCatalogName('../evil')).toBe(false);
+    expect(isCatalogName('a/b')).toBe(false);
+    expect(isCatalogName('/etc/passwd')).toBe(false);
+    expect(isCatalogName('name?ref=evil')).toBe(false);
+    expect(isCatalogName('go-cli\0')).toBe(false);
+  });
+
+  it('rejects empty strings, leading digits/dashes, uppercase, and non-strings', () => {
+    expect(isCatalogName('')).toBe(false);
+    expect(isCatalogName('1template')).toBe(false);
+    expect(isCatalogName('-template')).toBe(false);
+    expect(isCatalogName('Go-Cli')).toBe(false);
+    expect(isCatalogName(42)).toBe(false);
+    expect(isCatalogName(undefined)).toBe(false);
   });
 });
