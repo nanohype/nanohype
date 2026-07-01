@@ -29,9 +29,12 @@ describe("ServiceStack", () => {
 
     const template = Template.fromStack(stack);
 
-    // Validate compute resources exist — the specific resource type
-    // depends on the __COMPUTE_TARGET__ selected at generation time
-    expect(template.toJSON()).toBeDefined();
+    // The concrete resource type depends on the __COMPUTE_TARGET__ selected
+    // at generation time, so assert on the synthesized set: with VPC, RDS,
+    // and monitoring disabled, every resource in the stack belongs to the
+    // compute target — an empty set means it synthesized nothing.
+    const resources: Record<string, unknown> = template.toJSON().Resources ?? {};
+    expect(Object.keys(resources).length).toBeGreaterThan(0);
   });
 
   test("includes monitoring when enabled", () => {

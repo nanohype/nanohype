@@ -8,11 +8,13 @@ import type {
   StandardName,
   SkeletonFile,
   TemplateManifest,
-} from './types.js';
+} from "./types.js";
 
 export interface CatalogSource {
   listTemplates(): Promise<CatalogEntry[]>;
-  fetchTemplate(name: string): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }>;
+  fetchTemplate(
+    name: string,
+  ): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }>;
   listComposites(): Promise<CompositeCatalogEntry[]>;
   fetchComposite(name: string): Promise<CompositeManifest>;
 
@@ -35,6 +37,8 @@ export interface GitHubSourceOptions {
   ref?: string;
   token?: string;
   cacheTtl?: number;
+  /** Per-request timeout in milliseconds for GitHub API calls. Default 10 000. */
+  requestTimeout?: number;
 }
 
 export interface LocalSourceOptions {

@@ -10,12 +10,12 @@ import type { CronJobDefinition } from "../../types.js";
 export const cleanupStaleData: CronJobDefinition = {
   name: "cleanup-stale-data",
   expression: "0 * * * *",
-  description: "Remove stale data older than 30 days",
+  description: "Example job — computes a 30-day cutoff and exits without deleting anything",
 
   async handler(): Promise<void> {
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // TODO: Replace with actual cleanup logic
+    // A real handler would act on the cutoff, e.g.:
     //
     //   const deleted = await db
     //     .delete(records)
