@@ -94,6 +94,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
+    version: ">=24"
     purpose: "Node.js runtime for the Next.js application"
     optional: false
