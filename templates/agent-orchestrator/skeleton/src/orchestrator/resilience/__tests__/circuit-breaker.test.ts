@@ -51,16 +51,19 @@ describe("circuit breaker", () => {
   });
 
   it("transitions to half-open after timeout", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 1, resetTimeoutMs: 50 });
 
     await expect(cb.execute(() => Promise.reject(new Error("fail")))).rejects.toThrow("fail");
     expect(cb.getState()).toBe("open");
 
-    await new Promise((r) => setTimeout(r, 60));
+    vi.advanceTimersByTime(60);
 
     const result = await cb.execute(() => Promise.resolve("recovered"));
     expect(result).toBe("recovered");
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 
   it("reset returns to closed", async () => {

@@ -47,6 +47,7 @@ describe("createCircuitBreaker", () => {
   });
 
   it("transitions to half-open after reset timeout", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({
       failureThreshold: 1,
       resetTimeoutMs: 100,
@@ -58,16 +59,19 @@ describe("createCircuitBreaker", () => {
 
     expect(cb.getState()).toBe("open");
 
-    // Wait for reset timeout
-    await new Promise((r) => setTimeout(r, 150));
+    // Advance past the reset timeout
+    vi.advanceTimersByTime(150);
 
     // Next call should attempt (half-open)
     const result = await cb.execute(async () => "recovered");
     expect(result).toBe("recovered");
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 
   it("re-opens on failure during half-open", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({
       failureThreshold: 1,
       resetTimeoutMs: 100,
@@ -77,13 +81,15 @@ describe("createCircuitBreaker", () => {
       throw new Error("fail");
     })).rejects.toThrow("fail");
 
-    await new Promise((r) => setTimeout(r, 150));
+    vi.advanceTimersByTime(150);
 
     await expect(cb.execute(async () => {
       throw new Error("still failing");
     })).rejects.toThrow("still failing");
 
     expect(cb.getState()).toBe("open");
+
+    vi.useRealTimers();
   });
 
   it("resets to closed state", async () => {
