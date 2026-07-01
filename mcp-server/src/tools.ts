@@ -1,7 +1,11 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
+  CATALOG_NAME_PATTERN,
   CatalogSource,
+  isCatalogName,
+  isContractRepo,
+  isStandardName,
   KNOWN_CONTRACT_REPOS,
   loadCatalog,
   loadStandard,
@@ -141,47 +145,147 @@ export function searchTemplates(
 }
 
 /**
+ * The MCP tool-result shape. `isError: true` marks a tool-level failure.
+ * A type alias (not an interface) so it carries an implicit index signature
+ * and stays assignable to the MCP SDK's `ServerResult` union.
+ */
+export type ToolResult = {
+  content: { type: 'text'; text: string }[];
+  isError?: true;
+};
+
+/**
+ * Marker for a tool name the server never advertised. Per the MCP spec an
+ * unknown tool is a protocol error, not a tool result — so this is the one
+ * failure `callTool` re-throws instead of folding into `isError: true`.
+ */
+class UnknownToolError extends Error {}
+
+// ── Argument validation ─────────────────────────────────────────────────────
+// Tool arguments arrive from an LLM client and the declared inputSchema is
+// advisory — nothing in the protocol enforces it. Every argument is
+// re-validated here before it reaches a source: names against the catalog
+// naming rule, standards and contract repos against their closed sets.
+// Violations throw plain Errors, which `callTool` converts into `isError`
+// results with the message intact so the calling LLM can self-correct.
+
+function describeValue(value: unknown): string {
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (value === undefined) return 'undefined';
+  return `${JSON.stringify(value)} (${typeof value})`;
+}
+
+function stringArg(args: Record<string, unknown>, key: string): string {
+  const value = args[key];
+  if (typeof value !== 'string') {
+    throw new Error(`Invalid argument '${key}': expected a string, got ${describeValue(value)}`);
+  }
+  return value;
+}
+
+function optionalStringArg(args: Record<string, unknown>, key: string): string | undefined {
+  if (args[key] === undefined) return undefined;
+  return stringArg(args, key);
+}
+
+function catalogNameArg(args: Record<string, unknown>): string {
+  const value = stringArg(args, 'name');
+  if (!isCatalogName(value)) {
+    throw new Error(
+      `Invalid argument 'name': ${describeValue(value)} is not a valid catalog name (must match ${CATALOG_NAME_PATTERN})`,
+    );
+  }
+  return value;
+}
+
+function standardNameArg(args: Record<string, unknown>): StandardName {
+  const value = stringArg(args, 'name');
+  if (!isStandardName(value)) {
+    throw new Error(
+      `Invalid argument 'name': ${describeValue(value)} is not a known standard (expected one of: ${STANDARD_NAMES.join(', ')})`,
+    );
+  }
+  return value;
+}
+
+function contractRepoArg(args: Record<string, unknown>): ContractRepo {
+  const value = stringArg(args, 'repo');
+  if (!isContractRepo(value)) {
+    throw new Error(
+      `Invalid argument 'repo': ${describeValue(value)} is not a known contract repo (expected one of: ${KNOWN_CONTRACT_REPOS.join(', ')})`,
+    );
+  }
+  return value;
+}
+
+function kindArg(args: Record<string, unknown>): 'template' | 'brief' | undefined {
+  const value = optionalStringArg(args, 'kind');
+  if (value === undefined || value === 'template' || value === 'brief') return value;
+  throw new Error(
+    `Invalid argument 'kind': ${describeValue(value)} (expected 'template' or 'brief')`,
+  );
+}
+
+/**
  * Pure helper exposed for tests. Dispatch a tool call to the right handler.
- * Returns the MCP tool-result shape (`{ content: [{ type, text }] }`).
+ * Unknown tools throw (a protocol error — the client called something the
+ * server never advertised). Everything a known tool does wrong — bad
+ * arguments, a missing template, an upstream fetch failure — comes back as
+ * an `isError: true` result so MCP clients handle it as a tool failure
+ * instead of a broken connection.
  */
 export async function callTool(
   source: CatalogSource,
   name: string,
   args: Record<string, unknown> = {},
-): Promise<{ content: { type: 'text'; text: string }[] }> {
+): Promise<ToolResult> {
+  try {
+    return await dispatchTool(source, name, args);
+  } catch (err) {
+    if (err instanceof UnknownToolError) throw err;
+    const message = err instanceof Error ? err.message : String(err);
+    return { isError: true, content: [{ type: 'text', text: message }] };
+  }
+}
+
+async function dispatchTool(
+  source: CatalogSource,
+  name: string,
+  args: Record<string, unknown>,
+): Promise<ToolResult> {
   switch (name) {
     case 'search_templates': {
+      const criteria = {
+        query: stringArg(args, 'query'),
+        category: optionalStringArg(args, 'category'),
+        persona: optionalStringArg(args, 'persona'),
+        kind: kindArg(args),
+      };
       const catalog = await loadCatalog(source);
-      const results = searchTemplates(catalog.templates, {
-        query: String(args.query ?? ''),
-        category: args.category as string | undefined,
-        persona: args.persona as string | undefined,
-        kind: args.kind as string | undefined,
-      });
+      const results = searchTemplates(catalog.templates, criteria);
       return { content: [{ type: 'text', text: JSON.stringify(results, null, 2) }] };
     }
     case 'get_template': {
-      const { manifest } = await source.fetchTemplate(String(args.name));
+      const { manifest } = await source.fetchTemplate(catalogNameArg(args));
       return { content: [{ type: 'text', text: JSON.stringify(manifest, null, 2) }] };
     }
     case 'get_composite': {
-      const manifest = await source.fetchComposite(String(args.name));
+      const manifest = await source.fetchComposite(catalogNameArg(args));
       return { content: [{ type: 'text', text: JSON.stringify(manifest, null, 2) }] };
     }
     case 'list_standards': {
       return { content: [{ type: 'text', text: JSON.stringify(STANDARD_NAMES, null, 2) }] };
     }
     case 'get_standard': {
-      const standard = await loadStandard(source, args.name as StandardName);
+      const standard = await loadStandard(source, standardNameArg(args));
       return { content: [{ type: 'text', text: JSON.stringify(standard, null, 2) }] };
     }
     case 'get_contract': {
-      const repo = args.repo as ContractRepo;
-      const content = await source.fetchContract(repo);
+      const content = await source.fetchContract(contractRepoArg(args));
       return { content: [{ type: 'text', text: content }] };
     }
     default:
-      throw new Error(`Unknown tool: ${name}`);
+      throw new UnknownToolError(`Unknown tool: ${name}`);
   }
 }
 

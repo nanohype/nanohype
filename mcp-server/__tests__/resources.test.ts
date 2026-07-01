@@ -100,4 +100,28 @@ describe('readResource', () => {
       /Unrecognized resource URI/,
     );
   });
+
+  it('rejects template names that violate the catalog naming rule', async () => {
+    await expect(readResource(source, 'nanohype://template/../../etc/passwd')).rejects.toThrow(
+      /Invalid template name/,
+    );
+    await expect(readResource(source, 'nanohype://template/go-cli\0evil')).rejects.toThrow(
+      /Invalid template name/,
+    );
+  });
+
+  it('rejects composite names that violate the catalog naming rule', async () => {
+    await expect(readResource(source, 'nanohype://composite/../secrets')).rejects.toThrow(
+      /Invalid composite name/,
+    );
+  });
+
+  it('rejects traversal in standard and contract URIs', async () => {
+    await expect(readResource(source, 'nanohype://standards/../package')).rejects.toThrow(
+      /Unknown standard/,
+    );
+    await expect(readResource(source, 'nanohype://contracts/../../etc')).rejects.toThrow(
+      /Unknown repo/,
+    );
+  });
 });
