@@ -1,0 +1,21 @@
+{
+  "name": "@nanohype/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zero-dependency TypeScript runtime primitives — the vendorable source of truth for circuit breaking, resilience, provider registries, WorkOS Directory access, and PII redaction",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
