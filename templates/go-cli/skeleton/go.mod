@@ -1,6 +1,6 @@
 module __GO_MODULE__
 
-go 1.24
+go 1.26
 
 require (
 	github.com/spf13/cobra v1.9.1
