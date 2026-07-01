@@ -20,7 +20,7 @@ export const sendNotification: JobHandler<NotificationPayload> = async (
 ): Promise<void> => {
   const { recipient, subject, channel } = job.data;
 
-  // TODO: Replace with actual notification delivery
+  // A real handler would deliver the payload, e.g.:
   //
   //   await notificationService.send({
   //     to: recipient,
