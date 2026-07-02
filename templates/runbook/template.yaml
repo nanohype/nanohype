@@ -50,5 +50,5 @@ conditionals:
     when: IncludeIncidentResponse
 
 composition:
-  pairsWith: [compliance-checklist, monitoring-stack, infra-aws, infra-gcp]
+  pairsWith: [compliance-checklist, monitoring-stack, infra-aws]
   nestsInside: [monorepo]

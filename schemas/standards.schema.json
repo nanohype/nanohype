@@ -300,12 +300,10 @@
                     "meaning": { "type": "string" },
                     "render": {
                       "type": "object",
-                      "required": ["aws", "azure", "gcp", "k8s", "otel"],
+                      "required": ["aws", "k8s", "otel"],
                       "additionalProperties": false,
                       "properties": {
                         "aws": { "type": ["string", "null"] },
-                        "azure": { "type": ["string", "null"] },
-                        "gcp": { "type": ["string", "null"] },
                         "k8s": { "type": ["string", "null"] },
                         "otel": { "type": ["string", "null"] }
                       }
@@ -315,7 +313,7 @@
               },
               "required_by_surface": {
                 "type": "object",
-                "required": ["aws", "azure", "gcp", "k8s", "otel"],
+                "required": ["aws", "k8s", "otel"],
                 "additionalProperties": { "type": "array", "items": { "type": "string" } }
               }
             }

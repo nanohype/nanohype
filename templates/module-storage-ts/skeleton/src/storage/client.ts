@@ -76,7 +76,7 @@ const CreateStorageClientSchema = z.object({
 /**
  * Create and initialize a storage client for the named provider.
  *
- * @param providerName  Provider identifier (e.g. "local", "s3", "r2", "gcs").
+ * @param providerName  Provider identifier (e.g. "local", "s3", "r2").
  * @param config        Provider-specific configuration.
  * @returns             An initialized StorageClient.
  */

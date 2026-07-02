@@ -8,8 +8,8 @@ description: >
   outputs.tf, versions.tf) plus the live/_envcommon/<cloud>/<name>.hcl
   dependency-wiring file. Optionally adds a modules/tenant/ submodule
   for multi-tenant components (used by druid, pipeline, gateway, llm,
-  mlops, rag, governance). AWS variant for now; gcp and azure follow
-  the same shape and can be added by copying.
+  mlops, rag, governance). Components target AWS, the org's cloud
+  substrate.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]

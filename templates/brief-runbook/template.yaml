@@ -33,7 +33,7 @@ variables:
   - name: InfraProvider
     type: string
     placeholder: '__INFRA_PROVIDER__'
-    description: 'Primary infrastructure provider (aws, gcp, azure, fly, vercel)'
+    description: 'Primary infrastructure provider (aws, fly, vercel, cloudflare)'
     prompt: 'Infrastructure provider'
     default: 'aws'
 

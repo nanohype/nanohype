@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "private": true,
-  "description": "Template catalog for AI-focused projects \u2014 MCP servers, agentic loops, RAG pipelines, and more",
+  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -37,11 +37,14 @@
     "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**' '!.plans/**'"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
+    "eslint": "^10.6.0",
     "js-yaml": "^4.2.0",
     "markdownlint-cli2": "^0.22.1",
-    "prettier": "^3.9.4"
+    "prettier": "^3.9.4",
+    "typescript-eslint": "^8.62.1"
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",

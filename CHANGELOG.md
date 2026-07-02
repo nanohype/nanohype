@@ -9,13 +9,20 @@
 - `module-auth-go` — Composable Go HTTP auth middleware with pluggable providers (JWT/JWKS, Auth0, Clerk, Supabase, API key).
 - `module-analytics-ts` — Product analytics with pluggable backends (Segment, PostHog, Mixpanel, Amplitude).
 - `module-knowledge-base-ts` — Knowledge base providers (Notion, Confluence, Google Docs, Coda) normalized to markdown.
-- `module-llm-providers` — Shared LLM provider pack covering Anthropic, OpenAI, Groq, plus optional Bedrock / Azure / Vertex / HuggingFace / Ollama.
+- `module-llm-providers` — Shared LLM provider pack covering Anthropic, OpenAI, Groq, plus optional Bedrock / Vertex / HuggingFace / Ollama.
 - `module-media-ts` — Media processing and delivery (Cloudinary, Uploadcare, imgix).
 - `module-oauth-delegation-ts` — Outbound OAuth 2.0 Authorization Code + PKCE with HMAC-signed state cookies and refresh-before-expiry token storage.
 - `module-project-mgmt-ts` — Project management providers (Linear, Jira, Asana, Shortcut).
 - `module-search-ts` — Full-text search with pluggable backends (Algolia, Typesense, Meilisearch).
 - `module-spring-security` — Drop-in Spring Security module with OIDC JWT resource server, header API keys, and a multi-provider filter chain.
 - Persona templates and agent briefs for design, QA, product, marketing, sales, operations, and customer success (see [catalog reference](docs/catalog.md)).
+
+### Removed
+
+- `infra-gcp` template removed — the catalog's cloud deploy targets are now `infra-aws`, `infra-fly`, `infra-vercel`, `infra-cloudflare`, and `k8s-deploy`.
+- `module-llm-providers` — removed the `azure-openai` provider (`IncludeAzure` variable dropped). Bedrock, Vertex AI, Hugging Face, and Ollama remain the optional providers.
+- `module-storage-ts` — removed the `gcs` provider and the `@google-cloud/storage` dependency. Backends are now local, S3, and R2.
+- `resource-tagging` standard — tag surfaces are now `aws`, `k8s`, and `otel`; the `azure` and `gcp` renderings were removed from the dimensions, `required_by_surface`, the standards schema, and the SDK types.
 
 ### Composites
 

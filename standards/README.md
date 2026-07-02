@@ -116,12 +116,11 @@ The taxonomy is three tiers:
 
 Each dimension renders per surface by deterministic transform:
 
-- **AWS / Azure tag key** — PascalCase (`cost-center` → `CostCenter`).
-- **GCP label key** — snake_case (`cost-center` → `cost_center`); the value is lower-cased with `-`/`/` mapped to `_` and truncated to 63 (GCP labels accept only `[a-z0-9_-]`).
+- **AWS tag key** — PascalCase (`cost-center` → `CostCenter`).
 - **k8s label** — well-known dimensions under `app.kubernetes.io/*`, agent/tenant identity under `agents.nanohype.dev/*`, and org governance metadata under `platform.nanohype.dev/*`. These three prefixes are reserved.
 - **OTel attribute** — the narrow operational-identity subset only: `deployment.environment`, `service.version`, and the reserved `agents.*` namespace (`agents.tenant`, `agents.platform`, `agents.model_family`, `agents.model_id`). Billing metadata stays out of OTel.
 
-Apps extend with their own tags under a per-app namespace that avoids the reserved prefixes — `<app>.tenants.nanohype.dev/*` (k8s), `app:<key>` (AWS/Azure), `app_<key>` (GCP), their own OTel namespace. Audits only gate the required tier, so extensions never trip the gate.
+Apps extend with their own tags under a per-app namespace that avoids the reserved prefixes — `<app>.tenants.nanohype.dev/*` (k8s), `app:<key>` (AWS), their own OTel namespace. Audits only gate the required tier, so extensions never trip the gate.
 
 The `required_by_surface` block is the flat, directly-consumable list of required keys per surface — `cloudgov tags --standard-file` reads `required_by_surface.aws` to gate CI without re-deriving the rendering.
 

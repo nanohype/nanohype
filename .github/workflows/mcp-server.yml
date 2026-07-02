@@ -56,6 +56,6 @@ jobs:
         working-directory: mcp-server
         run: npm run build
 
-      - name: Test
+      - name: Test with coverage floors
         working-directory: mcp-server
-        run: npm test
+        run: npm run test:coverage

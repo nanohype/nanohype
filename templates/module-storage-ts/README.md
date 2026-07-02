@@ -1,6 +1,6 @@
 # module-storage-ts
 
-Composable blob storage abstraction with pluggable backends for local filesystem, AWS S3, Cloudflare R2, and Google Cloud Storage.
+Composable blob storage abstraction with pluggable backends for local filesystem, AWS S3, and Cloudflare R2.
 
 ## What you get
 
@@ -9,17 +9,16 @@ Composable blob storage abstraction with pluggable backends for local filesystem
 - Local filesystem provider with recursive directory walking
 - AWS S3 provider via @aws-sdk/client-s3
 - Cloudflare R2 provider (S3-compatible with custom endpoint)
-- Google Cloud Storage provider via @google-cloud/storage
 - High-level StorageClient wrapper with factory function
 - Stream support for large file handling
 
 ## Variables
 
-| Variable          | Type   | Default                            | Description                                         |
-| ----------------- | ------ | ---------------------------------- | --------------------------------------------------- |
-| `ProjectName`     | string | --                                 | Kebab-case project name                             |
-| `Description`     | string | `A composable blob storage module` | Project description                                 |
-| `StorageProvider` | string | `local`                            | Default storage backend (local/s3/r2/gcs or custom) |
+| Variable          | Type   | Default                            | Description                                     |
+| ----------------- | ------ | ---------------------------------- | ----------------------------------------------- |
+| `ProjectName`     | string | --                                 | Kebab-case project name                         |
+| `Description`     | string | `A composable blob storage module` | Project description                             |
+| `StorageProvider` | string | `local`                            | Default storage backend (local/s3/r2 or custom) |
 
 ## Project layout
 
@@ -36,7 +35,6 @@ Composable blob storage abstraction with pluggable backends for local filesystem
         local.ts            # Local filesystem provider
         s3.ts               # AWS S3 provider
         r2.ts               # Cloudflare R2 provider
-        gcs.ts              # Google Cloud Storage provider
         index.ts            # Barrel import + re-exports
   package.json
   tsconfig.json

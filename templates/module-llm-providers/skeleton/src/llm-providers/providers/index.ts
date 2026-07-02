@@ -4,8 +4,8 @@
 // with the provider registry. Custom providers can be added by calling
 // registerProvider() after this import.
 //
-// Conditional providers (bedrock, azure-openai, vertex, huggingface,
-// ollama) are only present when their respective template conditionals
+// Conditional providers (bedrock, vertex, huggingface, ollama) are
+// only present when their respective template conditionals
 // are enabled. Missing imports are harmless — the barrel only imports
 // what the scaffolding tool included.
 //
@@ -20,7 +20,6 @@ import "./mock.js";
 // when the conditional is false, so these imports are only present
 // in the generated output when enabled.
 import "./bedrock.js";
-import "./azure-openai.js";
 import "./vertex.js";
 import "./huggingface.js";
 import "./ollama.js";
