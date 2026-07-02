@@ -30,6 +30,12 @@ export interface CachedResponse {
   cachedAt: string;
 }
 
+/** Construction options shared by the built-in caching strategies. */
+export interface CachingStrategyOptions {
+  /** Injectable clock for tests. Defaults to Date.now. */
+  now?: () => number;
+}
+
 export interface CachingStrategy {
   /** Unique strategy name (e.g. "hash", "sliding-ttl", "none"). */
   readonly name: string;

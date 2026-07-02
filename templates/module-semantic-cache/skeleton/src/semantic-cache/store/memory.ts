@@ -17,6 +17,7 @@ class MemoryVectorCacheStore implements VectorCacheStore {
   readonly name = "memory";
   private entries = new Map<string, CacheVector>();
   private readonly maxEntries: number;
+  private now: () => number = Date.now;
 
   // Bound the cache so a stream of distinct prompts (every miss is upserted)
   // can't grow memory without limit until TTL. Default 1000; override per store.
@@ -25,7 +26,7 @@ class MemoryVectorCacheStore implements VectorCacheStore {
   }
 
   private isExpired(entry: CacheVector): boolean {
-    return Date.now() >= entry.expiresAt;
+    return this.now() >= entry.expiresAt;
   }
 
   /**
@@ -33,7 +34,7 @@ class MemoryVectorCacheStore implements VectorCacheStore {
    * to avoid unbounded memory growth.
    */
   private pruneExpired(): void {
-    const now = Date.now();
+    const now = this.now();
     for (const [id, entry] of this.entries) {
       if (now >= entry.expiresAt) {
         this.entries.delete(id);
@@ -41,8 +42,11 @@ class MemoryVectorCacheStore implements VectorCacheStore {
     }
   }
 
-  async init(_config: VectorStoreConfig): Promise<void> {
-    // No setup needed for in-memory store
+  async init(config: VectorStoreConfig): Promise<void> {
+    // Adopt the injected clock when one is provided (tests).
+    if (typeof config.now === "function") {
+      this.now = config.now as () => number;
+    }
   }
 
   async upsert(entry: CacheVector): Promise<void> {

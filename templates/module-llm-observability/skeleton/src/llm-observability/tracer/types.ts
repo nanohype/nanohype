@@ -8,6 +8,8 @@ export interface TracerOptions {
   defaultTags?: Record<string, string>;
   /** Whether to record cost on each span. Default: true. */
   recordCost?: boolean;
+  /** Injectable clock for tests. Defaults to Date.now. */
+  now?: () => number;
 }
 
 /** Context captured during a traced LLM call. */

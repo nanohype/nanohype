@@ -114,6 +114,7 @@ export async function createSemanticCache(
   const vectorBackendName = config.vectorBackend ?? "memory";
   const similarityThreshold = config.similarityThreshold ?? DEFAULT_SIMILARITY_THRESHOLD;
   const defaultTtlMs = config.defaultTtlMs ?? DEFAULT_TTL_MS;
+  const now = config.now ?? Date.now;
 
   const embedder = getEmbeddingProvider(embeddingProviderName);
   const vectorStore = getVectorStore(vectorBackendName);
@@ -160,7 +161,7 @@ export async function createSemanticCache(
         embedding,
         response,
         metadata: { prompt },
-        expiresAt: Date.now() + (ttlMs ?? defaultTtlMs),
+        expiresAt: now() + (ttlMs ?? defaultTtlMs),
       };
 
       await vectorStore.upsert(entry);

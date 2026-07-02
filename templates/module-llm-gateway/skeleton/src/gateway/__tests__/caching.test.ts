@@ -44,8 +44,9 @@ describe("hash caching strategy", () => {
   });
 
   it("expires entries after TTL", async () => {
-    const { getCachingStrategy } = await import("../caching/registry.js");
-    const strategy = getCachingStrategy("hash");
+    const { createHashStrategy } = await import("../caching/hash.js");
+    let clock = 0;
+    const strategy = createHashStrategy({ now: () => clock });
 
     const shortTtlContext = { ...defaultContext, ttl: 50 };
     await strategy.set("expire-key", mockResponse, shortTtlContext);
@@ -53,8 +54,8 @@ describe("hash caching strategy", () => {
     // Should exist immediately
     expect(await strategy.get("expire-key", shortTtlContext)).toBeDefined();
 
-    // Wait for TTL to pass
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    // Tick the injected clock past the TTL — no real waiting
+    clock = 60;
 
     // Should be expired
     expect(await strategy.get("expire-key", shortTtlContext)).toBeUndefined();
@@ -74,20 +75,20 @@ describe("hash caching strategy", () => {
 
 describe("sliding-ttl caching strategy", () => {
   it("extends TTL on cache hit", async () => {
-    const { getCachingStrategy } = await import("../caching/registry.js");
-    await import("../caching/sliding-ttl.js");
-    const strategy = getCachingStrategy("sliding-ttl");
+    const { createSlidingTtlStrategy } = await import("../caching/sliding-ttl.js");
+    let clock = 0;
+    const strategy = createSlidingTtlStrategy({ now: () => clock });
 
     const context = { ...defaultContext, ttl: 100 };
     await strategy.set("sliding-key", mockResponse, context);
 
-    // Hit the cache repeatedly to extend TTL
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    // Hit the cache at 60ms to extend the TTL
+    clock = 60;
     const result1 = await strategy.get("sliding-key", context);
     expect(result1).toBeDefined();
 
     // Another 60ms — would have expired without sliding, but TTL was extended
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    clock = 120;
     const result2 = await strategy.get("sliding-key", context);
     expect(result2).toBeDefined();
   });

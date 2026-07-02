@@ -53,6 +53,9 @@ export interface SemanticCacheConfig {
   /** Default TTL in milliseconds. Default: 3_600_000 (1 hour) */
   defaultTtlMs?: number;
 
+  /** Injectable clock for tests. Defaults to Date.now. */
+  now?: () => number;
+
   /** Provider-specific options passed through to init. */
   [key: string]: unknown;
 }
