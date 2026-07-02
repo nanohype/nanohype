@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "private": true,
-  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
+  "description": "Template catalog for AI-focused projects \u2014 MCP servers, agentic loops, RAG pipelines, and more",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -49,5 +49,6 @@
       "js-yaml": "^4.2.0",
       "markdown-it": "^14.2.0"
     }
-  }
+  },
+  "prettier": "./library/config/prettierrc.json"
 }
