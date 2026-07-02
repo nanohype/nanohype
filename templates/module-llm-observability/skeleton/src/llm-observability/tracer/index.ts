@@ -34,6 +34,7 @@ export class TracedError extends Error {
  */
 export function createLlmTracer(options: TracerOptions) {
   const defaultTags = options.defaultTags ?? {};
+  const now = options.now ?? Date.now;
 
   /**
    * Trace an async function that returns an LlmResponse.
@@ -49,12 +50,12 @@ export function createLlmTracer(options: TracerOptions) {
     tags: Record<string, string> = {},
   ): Promise<{ response: LlmResponse; span: LlmSpan }> {
     const id = randomUUID();
-    const startedAt = new Date();
+    const startedAt = new Date(now());
     const mergedTags = { ...defaultTags, ...tags };
 
     try {
       const response = await fn();
-      const endedAt = new Date();
+      const endedAt = new Date(now());
       const durationMs = endedAt.getTime() - startedAt.getTime();
 
       const span: LlmSpan = {
@@ -73,7 +74,7 @@ export function createLlmTracer(options: TracerOptions) {
 
       return { response, span };
     } catch (error) {
-      const endedAt = new Date();
+      const endedAt = new Date(now());
       const durationMs = endedAt.getTime() - startedAt.getTime();
 
       const span: LlmSpan = {

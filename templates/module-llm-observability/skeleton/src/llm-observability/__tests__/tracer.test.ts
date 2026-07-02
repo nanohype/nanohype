@@ -37,15 +37,18 @@ describe("LLM tracer", () => {
   });
 
   it("records duration accurately", async () => {
-    const tracer = createLlmTracer({ serviceName: "test-service" });
+    let clock = 1_000;
+    const tracer = createLlmTracer({
+      serviceName: "test-service",
+      now: () => clock,
+    });
 
     const { span } = await tracer.trace(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      clock += 50; // the traced call advances the injected clock by 50ms
       return makeResponse();
     });
 
-    expect(span.durationMs).toBeGreaterThanOrEqual(40);
-    expect(span.durationMs).toBeLessThan(200);
+    expect(span.durationMs).toBe(50);
   });
 
   it("throws a TracedError carrying the error span — never a fake response", async () => {

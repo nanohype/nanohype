@@ -23,20 +23,22 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2",
-    "pg": "^8.13.0",
-    "better-sqlite3": "^11.0.0",
     "@libsql/client": "^0.15.0",
-    "dotenv": "^16.4.0"
+    "better-sqlite3": "^11.0.0",
+    "dotenv": "^16.4.0",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.13.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "@vitest/coverage-v8": "^3.1.0",
     "drizzle-kit": "^0.30.0",
     "eslint": "^9.20.0",
     "prettier": "^3.5.0",

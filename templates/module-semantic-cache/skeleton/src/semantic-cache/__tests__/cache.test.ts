@@ -50,14 +50,23 @@ describe("semantic cache", () => {
   });
 
   it("respects TTL expiration", async () => {
-    // Store with a 1ms TTL
-    await cache.store("What is TypeScript?", "TypeScript is ...", 1);
+    let clock = 0;
+    const clockCache = await createSemanticCache({
+      embeddingProvider: "mock",
+      vectorBackend: "memory",
+      similarityThreshold: 0.95,
+      defaultTtlMs: 60_000,
+      now: () => clock,
+    });
 
-    // Wait for expiration
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Store with a 1ms TTL, then tick the injected clock past it
+    await clockCache.store("What is TypeScript?", "TypeScript is ...", 1);
+    clock = 10;
 
-    const hit = await cache.lookup("What is TypeScript?");
+    const hit = await clockCache.lookup("What is TypeScript?");
     expect(hit).toBeUndefined();
+
+    await clockCache.close();
   });
 
   it("invalidates a cache entry by id", async () => {
@@ -92,19 +101,19 @@ describe("semantic cache", () => {
   });
 
   it("stores entries with custom TTL that persists beyond default", async () => {
-    // Create cache with very short default TTL
+    // Create cache with a very short default TTL and an injected clock
+    let clock = 0;
     const shortCache = await createSemanticCache({
       embeddingProvider: "mock",
       vectorBackend: "memory",
       similarityThreshold: 0.95,
       defaultTtlMs: 1, // 1ms default
+      now: () => clock,
     });
 
-    // Store with explicit long TTL
+    // Store with explicit long TTL, then tick the clock past the default TTL
     await shortCache.store("persistent prompt", "persistent response", 60_000);
-
-    // Wait for default TTL to expire
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    clock = 10;
 
     // Should still be found because we used custom TTL
     const hit = await shortCache.lookup("persistent prompt");

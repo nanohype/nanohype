@@ -1,5 +1,10 @@
 import type { GatewayResponse } from "../types.js";
-import type { CachingStrategy, CacheContext, CachedResponse } from "./types.js";
+import type {
+  CachingStrategy,
+  CachingStrategyOptions,
+  CacheContext,
+  CachedResponse,
+} from "./types.js";
 import { registerCachingStrategy } from "./registry.js";
 
 // Re-export so existing imports from "./hash.js" keep working
@@ -22,7 +27,8 @@ interface CacheEntry {
   expiresAt: number;
 }
 
-export function createHashStrategy(): CachingStrategy {
+export function createHashStrategy(options: CachingStrategyOptions = {}): CachingStrategy {
+  const now = options.now ?? Date.now;
   const store = new Map<string, CacheEntry>();
 
   return {
@@ -32,7 +38,7 @@ export function createHashStrategy(): CachingStrategy {
       const entry = store.get(key);
       if (!entry) return undefined;
 
-      if (Date.now() >= entry.expiresAt) {
+      if (now() >= entry.expiresAt) {
         store.delete(key);
         return undefined;
       }
@@ -44,12 +50,12 @@ export function createHashStrategy(): CachingStrategy {
       const ttl = context.ttl ?? DEFAULT_TTL_MS;
       const cached: CachedResponse = {
         response: { ...response, cached: true },
-        cachedAt: new Date().toISOString(),
+        cachedAt: new Date(now()).toISOString(),
       };
       // Re-inserting moves the key to the end of the insertion order, so a
       // refreshed entry isn't treated as the oldest on the next eviction.
       store.delete(key);
-      store.set(key, { cached, expiresAt: Date.now() + ttl });
+      store.set(key, { cached, expiresAt: now() + ttl });
 
       // Bound the store: evict the oldest-inserted entry once over the cap.
       while (store.size > MAX_ENTRIES) {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Import the memory store module to trigger self-registration
 import "../stores/memory.js";
@@ -99,16 +99,21 @@ describe("in-memory rate limit store", () => {
   });
 
   it("expires keys after TTL", async () => {
-    // TTL is in milliseconds. Use a window wide enough to survive an
-    // awaited get() without racing against expiry on a slow runner.
-    await store.set("ephemeral", "value", 50);
+    // The store reads Date.now(), so fake timers make expiry deterministic
+    // — no real-clock waiting, no races on a slow runner.
+    vi.useFakeTimers();
+    try {
+      await store.set("ephemeral", "value", 50);
 
-    const immediate = await store.get("ephemeral");
-    expect(immediate).toBe("value");
+      const immediate = await store.get("ephemeral");
+      expect(immediate).toBe("value");
 
-    await new Promise((resolve) => setTimeout(resolve, 75));
+      vi.advanceTimersByTime(75);
 
-    const expired = await store.get("ephemeral");
-    expect(expired).toBeNull();
+      const expired = await store.get("ephemeral");
+      expect(expired).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

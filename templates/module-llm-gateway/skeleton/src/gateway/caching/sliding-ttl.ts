@@ -1,5 +1,10 @@
 import type { GatewayResponse } from "../types.js";
-import type { CachingStrategy, CacheContext, CachedResponse } from "./types.js";
+import type {
+  CachingStrategy,
+  CachingStrategyOptions,
+  CacheContext,
+  CachedResponse,
+} from "./types.js";
 import { registerCachingStrategy } from "./registry.js";
 
 // Re-export so existing imports from "./sliding-ttl.js" keep working
@@ -24,7 +29,8 @@ interface CacheEntry {
   expiresAt: number;
 }
 
-export function createSlidingTtlStrategy(): CachingStrategy {
+export function createSlidingTtlStrategy(options: CachingStrategyOptions = {}): CachingStrategy {
+  const now = options.now ?? Date.now;
   const store = new Map<string, CacheEntry>();
 
   return {
@@ -34,13 +40,13 @@ export function createSlidingTtlStrategy(): CachingStrategy {
       const entry = store.get(key);
       if (!entry) return undefined;
 
-      if (Date.now() >= entry.expiresAt) {
+      if (now() >= entry.expiresAt) {
         store.delete(key);
         return undefined;
       }
 
       // Extend TTL on hit and mark as most-recently used by re-inserting.
-      entry.expiresAt = Date.now() + entry.ttlMs;
+      entry.expiresAt = now() + entry.ttlMs;
       store.delete(key);
       store.set(key, entry);
       return entry.cached;
@@ -50,10 +56,10 @@ export function createSlidingTtlStrategy(): CachingStrategy {
       const ttl = context.ttl ?? DEFAULT_TTL_MS;
       const cached: CachedResponse = {
         response: { ...response, cached: true },
-        cachedAt: new Date().toISOString(),
+        cachedAt: new Date(now()).toISOString(),
       };
       store.delete(key);
-      store.set(key, { cached, ttlMs: ttl, expiresAt: Date.now() + ttl });
+      store.set(key, { cached, ttlMs: ttl, expiresAt: now() + ttl });
 
       // Bound the store: evict the least-recently-used entry over the cap.
       while (store.size > MAX_ENTRIES) {
