@@ -11,12 +11,12 @@ Scaffolds an OKR structure with company, team, and individual levels, key result
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `OrgName` | string | (required) | Organization name |
-| `Cadence` | enum | `quarterly` | Review cadence: quarterly or monthly |
-| `IncludeScoring` | bool | `true` | Include scoring rubric |
+| Variable         | Type   | Default     | Description                          |
+| ---------------- | ------ | ----------- | ------------------------------------ |
+| `ProjectName`    | string | (required)  | Kebab-case project name              |
+| `OrgName`        | string | (required)  | Organization name                    |
+| `Cadence`        | enum   | `quarterly` | Review cadence: quarterly or monthly |
+| `IncludeScoring` | bool   | `true`      | Include scoring rubric               |
 
 ## Project layout
 

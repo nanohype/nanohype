@@ -10,11 +10,11 @@ Scaffolds a structured postmortem with incident summary, timeline reconstruction
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `ServiceName` | string | (required) | Human-readable service name |
-| `IncludeFollowUp` | bool | `true` | Include follow-up action tracker |
+| Variable          | Type   | Default    | Description                      |
+| ----------------- | ------ | ---------- | -------------------------------- |
+| `ProjectName`     | string | (required) | Kebab-case project name          |
+| `ServiceName`     | string | (required) | Human-readable service name      |
+| `IncludeFollowUp` | bool   | `true`     | Include follow-up action tracker |
 
 ## Project layout
 

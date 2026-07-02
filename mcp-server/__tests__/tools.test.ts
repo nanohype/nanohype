@@ -185,7 +185,11 @@ describe('callTool argument validation', () => {
 
   describe('get_template / get_composite names', () => {
     it('rejects path traversal', async () => {
-      await expectToolError('get_template', { name: '../../../etc/passwd' }, /not a valid catalog name/);
+      await expectToolError(
+        'get_template',
+        { name: '../../../etc/passwd' },
+        /not a valid catalog name/,
+      );
       await expectToolError('get_composite', { name: '../secrets' }, /not a valid catalog name/);
     });
 
@@ -198,7 +202,11 @@ describe('callTool argument validation', () => {
     });
 
     it('rejects URL metacharacters', async () => {
-      await expectToolError('get_template', { name: 'go-cli?ref=evil' }, /not a valid catalog name/);
+      await expectToolError(
+        'get_template',
+        { name: 'go-cli?ref=evil' },
+        /not a valid catalog name/,
+      );
       await expectToolError('get_composite', { name: 'a/b' }, /not a valid catalog name/);
     });
 
@@ -230,7 +238,11 @@ describe('callTool argument validation', () => {
 
     it('rejects traversal attempts', async () => {
       await expectToolError('get_contract', { repo: '../../etc' }, /not a known contract repo/);
-      await expectToolError('get_contract', { repo: 'nanohype/../evil' }, /not a known contract repo/);
+      await expectToolError(
+        'get_contract',
+        { repo: 'nanohype/../evil' },
+        /not a known contract repo/,
+      );
     });
 
     it('rejects missing repos', async () => {
@@ -244,12 +256,24 @@ describe('callTool argument validation', () => {
     });
 
     it('rejects non-string filters', async () => {
-      await expectToolError('search_templates', { query: '', category: 3 }, /'category': expected a string/);
-      await expectToolError('search_templates', { query: '', persona: {} }, /'persona': expected a string/);
+      await expectToolError(
+        'search_templates',
+        { query: '', category: 3 },
+        /'category': expected a string/,
+      );
+      await expectToolError(
+        'search_templates',
+        { query: '', persona: {} },
+        /'persona': expected a string/,
+      );
     });
 
     it('rejects kind values outside the enum', async () => {
-      await expectToolError('search_templates', { query: '', kind: 'bogus' }, /'kind'.*expected 'template' or 'brief'/);
+      await expectToolError(
+        'search_templates',
+        { query: '', kind: 'bogus' },
+        /'kind'.*expected 'template' or 'brief'/,
+      );
     });
 
     it('still accepts the full valid filter set', async () => {

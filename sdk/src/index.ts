@@ -31,22 +31,14 @@ export type {
   VersionCurrencyStandard,
 } from './types.js';
 
-export type {
-  CatalogSource,
-  GitHubSourceOptions,
-  LocalSourceOptions,
-} from './source.js';
+export type { CatalogSource, GitHubSourceOptions, LocalSourceOptions } from './source.js';
 
 // Sources
 export { GitHubSource } from './sources/github.js';
 export { LocalSource } from './sources/local.js';
 
 // Errors
-export {
-  NanohypeError,
-  ManifestValidationError,
-  VariableResolutionError,
-} from './errors.js';
+export { NanohypeError, ManifestValidationError, VariableResolutionError } from './errors.js';
 
 // Functions
 export {

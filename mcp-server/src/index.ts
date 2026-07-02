@@ -42,7 +42,7 @@ export function makeSource(env: NodeJS.ProcessEnv = process.env): CatalogSource 
     const rootDir = env.NANOHYPE_ROOT;
     if (!rootDir) {
       throw new Error(
-        "NANOHYPE_SOURCE=local requires NANOHYPE_ROOT to point at a local nanohype checkout",
+        'NANOHYPE_SOURCE=local requires NANOHYPE_ROOT to point at a local nanohype checkout',
       );
     }
     return new LocalSource({ rootDir });
@@ -73,8 +73,7 @@ async function main(): Promise<void> {
 
 // Run as bin when invoked directly; do nothing on import (tests).
 const invokedAsBin =
-  import.meta.url === `file://${process.argv[1]}` ||
-  process.argv[1]?.endsWith('nanohype-mcp');
+  import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('nanohype-mcp');
 if (invokedAsBin) {
   main().catch((err: unknown) => {
     console.error('[@nanohype/mcp] fatal:', err);

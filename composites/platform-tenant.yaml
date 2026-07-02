@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 kind: composite
 name: platform-tenant
-displayName: "Platform Tenant"
+displayName: 'Platform Tenant'
 description: >
   One-shot scaffolder for a k8s-native nanohype Platform tenant: the
   k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values,
@@ -11,109 +11,109 @@ description: >
   required templates, the gitops entry, and the Platform CR, with the OTel
   agents.tenant / agents.platform attributes set and no inline IAM. Pair the
   packages with a ts-service or agentic-loop for the app's own logic.
-version: "0.1.0"
+version: '0.1.0'
 tags: [kubernetes, platform, tenant, ai, nanohype]
 
 variables:
   - name: AppName
     type: string
-    placeholder: "__APP_NAME__"
-    description: "Kebab-case app name — chart name, namespace, Platform CR name, and the package prefix."
+    placeholder: '__APP_NAME__'
+    description: 'Kebab-case app name — chart name, namespace, Platform CR name, and the package prefix.'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Tenant
     type: string
-    placeholder: "__TENANT__"
-    description: "Owning team — drives the namespace prefix, ArgoCD AppProject, and quotas."
+    placeholder: '__TENANT__'
+    description: 'Owning team — drives the namespace prefix, ArgoCD AppProject, and quotas.'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: Image
     type: string
-    placeholder: "__IMAGE__"
-    description: "Container image base (no tag — pinned per-env in values-{env}.yaml)."
+    placeholder: '__IMAGE__'
+    description: 'Container image base (no tag — pinned per-env in values-{env}.yaml).'
     required: true
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short app description for Chart.yaml and README."
-    default: "k8s-native Platform tenant"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short app description for Chart.yaml and README.'
+    default: 'k8s-native Platform tenant'
 
   - name: Port
     type: string
-    placeholder: "__PORT__"
-    description: "Container port the app listens on."
-    default: "8080"
+    placeholder: '__PORT__'
+    description: 'Container port the app listens on.'
+    default: '8080'
 
   - name: IncludeLlmGateway
     type: bool
-    placeholder: "__INCLUDE_LLM_GATEWAY__"
-    description: "Include the LLM gateway package (Bedrock-first, routing + caching + cost tracking)."
+    placeholder: '__INCLUDE_LLM_GATEWAY__'
+    description: 'Include the LLM gateway package (Bedrock-first, routing + caching + cost tracking).'
     default: true
 
   - name: LlmProvider
     type: string
-    placeholder: "__LLM_PROVIDER__"
-    description: "Default LLM provider for the gateway."
-    default: "bedrock"
+    placeholder: '__LLM_PROVIDER__'
+    description: 'Default LLM provider for the gateway.'
+    default: 'bedrock'
 
   - name: IncludeVectorStore
     type: bool
-    placeholder: "__INCLUDE_VECTOR_STORE__"
-    description: "Include the vector store package (embedding storage + similarity search)."
+    placeholder: '__INCLUDE_VECTOR_STORE__'
+    description: 'Include the vector store package (embedding storage + similarity search).'
     default: false
 
   - name: VectorProvider
     type: string
-    placeholder: "__VECTOR_PROVIDER__"
-    description: "Default vector store backend."
-    default: "memory"
+    placeholder: '__VECTOR_PROVIDER__'
+    description: 'Default vector store backend.'
+    default: 'memory'
 
   - name: IncludeAuditLedger
     type: bool
-    placeholder: "__INCLUDE_AUDIT_LEDGER__"
-    description: "Include the audit ledger package (append-only event log over pluggable storage)."
+    placeholder: '__INCLUDE_AUDIT_LEDGER__'
+    description: 'Include the audit ledger package (append-only event log over pluggable storage).'
     default: false
 
   - name: AuditProvider
     type: string
-    placeholder: "__AUDIT_PROVIDER__"
-    description: "Default audit ledger backend."
-    default: "memory"
+    placeholder: '__AUDIT_PROVIDER__'
+    description: 'Default audit ledger backend.'
+    default: 'memory'
 
 templates:
   - template: k8s-app-tenant
     root: true
     variables:
-      AppName: "${AppName}"
-      Tenant: "${Tenant}"
-      Image: "${Image}"
-      Description: "${Description}"
-      Port: "${Port}"
+      AppName: '${AppName}'
+      Tenant: '${Tenant}'
+      Image: '${Image}'
+      Description: '${Description}'
+      Port: '${Port}'
 
   - template: module-llm-gateway
     path: packages/gateway
     condition: IncludeLlmGateway
     variables:
-      ProjectName: "${AppName}-gateway"
-      DefaultProvider: "${LlmProvider}"
+      ProjectName: '${AppName}-gateway'
+      DefaultProvider: '${LlmProvider}'
 
   - template: module-vector-store
     path: packages/vectors
     condition: IncludeVectorStore
     variables:
-      ProjectName: "${AppName}-vectors"
-      VectorProvider: "${VectorProvider}"
+      ProjectName: '${AppName}-vectors'
+      VectorProvider: '${VectorProvider}'
 
   - template: module-audit-ledger-ts
     path: packages/audit
     condition: IncludeAuditLedger
     variables:
-      ProjectName: "${AppName}-audit"
-      AuditProvider: "${AuditProvider}"
+      ProjectName: '${AppName}-audit'
+      AuditProvider: '${AuditProvider}'

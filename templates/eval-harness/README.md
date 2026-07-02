@@ -13,12 +13,12 @@ Standalone TypeScript evaluation framework for testing LLM outputs. Define eval 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | `my-evals` | Kebab-case project name |
-| `Description` | string | `LLM evaluation harness` | Project description |
-| `LlmProvider` | string | `anthropic` | Default provider: anthropic or openai |
-| `IncludeCi` | bool | `true` | Include GitHub Actions eval workflow |
+| Variable      | Type   | Default                  | Description                           |
+| ------------- | ------ | ------------------------ | ------------------------------------- |
+| `ProjectName` | string | `my-evals`               | Kebab-case project name               |
+| `Description` | string | `LLM evaluation harness` | Project description                   |
+| `LlmProvider` | string | `anthropic`              | Default provider: anthropic or openai |
+| `IncludeCi`   | bool   | `true`                   | Include GitHub Actions eval workflow  |
 
 ## Project layout
 

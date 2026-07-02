@@ -20,7 +20,8 @@ const std = JSON.parse(readFileSync(path, 'utf-8'));
 const { dimensions, required_by_surface } = std.content;
 const errors = [];
 
-const setEq = (a, b) => a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
+const setEq = (a, b) =>
+  a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
 
 // Full-derivation surfaces: required_by_surface must equal the rendered required dims exactly.
 for (const surface of ['aws', 'azure', 'gcp']) {

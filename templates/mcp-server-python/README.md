@@ -13,12 +13,12 @@ Scaffolds a [Model Context Protocol](https://modelcontextprotocol.io) server in 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"An MCP server in Python"` | Short project description |
-| `Transport` | string | `"stdio"` | Transport protocol: `stdio` or `http` |
-| `IncludeTests` | bool | `true` | Include test suite with pytest |
+| Variable       | Type   | Default                     | Description                           |
+| -------------- | ------ | --------------------------- | ------------------------------------- |
+| `ProjectName`  | string | _(required)_                | Kebab-case project name               |
+| `Description`  | string | `"An MCP server in Python"` | Short project description             |
+| `Transport`    | string | `"stdio"`                   | Transport protocol: `stdio` or `http` |
+| `IncludeTests` | bool   | `true`                      | Include test suite with pytest        |
 
 ## Project layout
 

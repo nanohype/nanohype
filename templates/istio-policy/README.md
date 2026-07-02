@@ -8,22 +8,22 @@ Drops alongside any containerized service — pairs naturally with [spring-boot-
 
 - **`request-authentication.yaml`** — configures the JWT issuer + JWKs endpoint so the sidecar decodes incoming tokens and exposes their claims to the authorization layer. Requests without a valid token proceed without an authenticated principal (the AuthorizationPolicy decides what to do with them).
 - **`authorization-policy.yaml`** — enforces that inbound traffic carries a JWT issued by the configured issuer with the expected audience. Blocks unauthenticated requests at the sidecar, before they reach the application.
-- **`peer-authentication.yaml`** *(conditional)* — enforces STRICT mTLS between sidecars in the namespace. Only turn this on once every workload in the namespace has a sidecar; in STRICT mode, non-mTLS traffic is rejected.
-- **`virtual-service.yaml`** *(conditional)* — routing template attached to either the internal mesh (`gateways: [mesh]`) or an external Istio gateway. Ships with a single catch-all route; add path-based splits or traffic shifting as needed.
+- **`peer-authentication.yaml`** _(conditional)_ — enforces STRICT mTLS between sidecars in the namespace. Only turn this on once every workload in the namespace has a sidecar; in STRICT mode, non-mTLS traffic is rejected.
+- **`virtual-service.yaml`** _(conditional)_ — routing template attached to either the internal mesh (`gateways: [mesh]`) or an external Istio gateway. Ships with a single catch-all route; add path-based splits or traffic shifting as needed.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name; drives resource names and selector labels |
-| `Namespace` | string | `default` | Kubernetes namespace |
-| `OidcIssuer` | string | (required) | OIDC issuer URL that signs inbound JWTs |
-| `JwksUri` | string | `<OidcIssuer>/.well-known/jwks.json` | JWKs endpoint URL |
-| `AllowedAudience` | string | `<ProjectName>` | Required JWT `aud` claim value |
-| `ServiceHost` | string | `<ProjectName>.<Namespace>.svc.cluster.local` | Fully-qualified service host (for VirtualService) |
-| `GatewayName` | string | `mesh` | Gateway the VirtualService attaches to (`mesh` = internal-only) |
-| `IncludeMTls` | bool | `false` | Ship a STRICT PeerAuthentication |
-| `IncludeVirtualService` | bool | `false` | Ship a VirtualService |
+| Variable                | Type   | Default                                       | Description                                                        |
+| ----------------------- | ------ | --------------------------------------------- | ------------------------------------------------------------------ |
+| `ProjectName`           | string | (required)                                    | Kebab-case project name; drives resource names and selector labels |
+| `Namespace`             | string | `default`                                     | Kubernetes namespace                                               |
+| `OidcIssuer`            | string | (required)                                    | OIDC issuer URL that signs inbound JWTs                            |
+| `JwksUri`               | string | `<OidcIssuer>/.well-known/jwks.json`          | JWKs endpoint URL                                                  |
+| `AllowedAudience`       | string | `<ProjectName>`                               | Required JWT `aud` claim value                                     |
+| `ServiceHost`           | string | `<ProjectName>.<Namespace>.svc.cluster.local` | Fully-qualified service host (for VirtualService)                  |
+| `GatewayName`           | string | `mesh`                                        | Gateway the VirtualService attaches to (`mesh` = internal-only)    |
+| `IncludeMTls`           | bool   | `false`                                       | Ship a STRICT PeerAuthentication                                   |
+| `IncludeVirtualService` | bool   | `false`                                       | Ship a VirtualService                                              |
 
 ## Project layout
 

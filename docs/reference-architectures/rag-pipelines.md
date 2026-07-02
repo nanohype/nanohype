@@ -35,14 +35,14 @@ These are three approaches to getting an LLM to work with your data. They are no
 
 **Decision framework:**
 
-| Criterion | RAG | Fine-tuning | Long context |
-|---|---|---|---|
-| Knowledge base size | Any | Small-medium | Small |
-| Update frequency | High (re-index) | Low (re-train) | High (just pass it) |
-| Source attribution | Yes | No | Possible but harder |
-| Per-query cost | Moderate | Low (amortized) | High |
-| Setup complexity | Medium | High | Low |
-| Accuracy ceiling | High (with good retrieval) | High (with good data) | High (for short docs) |
+| Criterion           | RAG                        | Fine-tuning           | Long context          |
+| ------------------- | -------------------------- | --------------------- | --------------------- |
+| Knowledge base size | Any                        | Small-medium          | Small                 |
+| Update frequency    | High (re-index)            | Low (re-train)        | High (just pass it)   |
+| Source attribution  | Yes                        | No                    | Possible but harder   |
+| Per-query cost      | Moderate                   | Low (amortized)       | High                  |
+| Setup complexity    | Medium                     | High                  | Low                   |
+| Accuracy ceiling    | High (with good retrieval) | High (with good data) | High (for short docs) |
 
 Most production systems use RAG. Fine-tuning and long context are complements, not replacements.
 
@@ -162,12 +162,12 @@ Use the document's own structure — headings, sections, code blocks, table boun
 
 ### 4.5 Chunk Size Guidelines
 
-| Chunk size (tokens) | Retrieval behavior | Typical use |
-|---|---|---|
-| 128-256 | High precision, narrow context | FAQ, definitions, factoid QA |
-| 256-512 | Balanced precision and context | General-purpose RAG |
-| 512-1024 | More context per chunk, lower precision | Long-form answers, summarization |
-| 1024+ | Document-level retrieval | When you need full sections |
+| Chunk size (tokens) | Retrieval behavior                      | Typical use                      |
+| ------------------- | --------------------------------------- | -------------------------------- |
+| 128-256             | High precision, narrow context          | FAQ, definitions, factoid QA     |
+| 256-512             | Balanced precision and context          | General-purpose RAG              |
+| 512-1024            | More context per chunk, lower precision | Long-form answers, summarization |
+| 1024+               | Document-level retrieval                | When you need full sections      |
 
 Smaller chunks are better for precise retrieval (finding the exact sentence that answers a question). Larger chunks provide more context to the LLM (helpful for nuanced answers). Test with your actual data and queries.
 
@@ -179,13 +179,13 @@ Convert text chunks into dense vector representations for similarity search.
 
 ### 5.1 Model Selection
 
-| Model | Dimensions | Notes |
-|---|---|---|
-| OpenAI `text-embedding-3-small` | 1536 | Good balance of cost and quality. Supports dimension reduction. |
-| OpenAI `text-embedding-3-large` | 3072 | Higher quality, higher cost. Supports dimension reduction. |
-| Cohere `embed-v3` | 1024 | Strong multilingual support. Separate query/document modes. |
-| Voyage AI `voyage-3` | 1024 | Strong on code and technical content. |
-| Open source (`bge-large`, `e5-large-v2`) | 1024 | Self-hostable. No API dependency. Requires GPU for production throughput. |
+| Model                                    | Dimensions | Notes                                                                     |
+| ---------------------------------------- | ---------- | ------------------------------------------------------------------------- |
+| OpenAI `text-embedding-3-small`          | 1536       | Good balance of cost and quality. Supports dimension reduction.           |
+| OpenAI `text-embedding-3-large`          | 3072       | Higher quality, higher cost. Supports dimension reduction.                |
+| Cohere `embed-v3`                        | 1024       | Strong multilingual support. Separate query/document modes.               |
+| Voyage AI `voyage-3`                     | 1024       | Strong on code and technical content.                                     |
+| Open source (`bge-large`, `e5-large-v2`) | 1024       | Self-hostable. No API dependency. Requires GPU for production throughput. |
 
 **Selection criteria:**
 
@@ -223,25 +223,25 @@ Store vectors in a NumPy array or a lightweight library like FAISS. Search via b
 
 ### 6.2 Managed Services
 
-| Service | Notes |
-|---|---|
-| Pinecone | Fully managed, serverless option. Good DX. Pay per query + storage. |
-| Weaviate Cloud | Managed Weaviate. Supports hybrid search natively. |
-| Qdrant Cloud | Managed Qdrant. Strong filtering support. |
-| MongoDB Atlas Vector Search | If you already use MongoDB. |
-| Supabase (pgvector) | If you already use Supabase/Postgres. |
+| Service                     | Notes                                                               |
+| --------------------------- | ------------------------------------------------------------------- |
+| Pinecone                    | Fully managed, serverless option. Good DX. Pay per query + storage. |
+| Weaviate Cloud              | Managed Weaviate. Supports hybrid search natively.                  |
+| Qdrant Cloud                | Managed Qdrant. Strong filtering support.                           |
+| MongoDB Atlas Vector Search | If you already use MongoDB.                                         |
+| Supabase (pgvector)         | If you already use Supabase/Postgres.                               |
 
 **Use for:** production, when you do not want to manage infrastructure.
 
 ### 6.3 Self-Hosted
 
-| Option | Notes |
-|---|---|
-| pgvector (Postgres extension) | Use your existing Postgres. Good enough for most scales. Familiar SQL interface. |
-| Qdrant | Purpose-built. Excellent filtering and performance. Rust-based. |
-| Chroma | Python-native. Easy to embed in applications. Good for prototyping. |
-| Milvus | High scale. More operational complexity. |
-| FAISS (Facebook) | Library, not a database. No persistence by default. Best for read-heavy batch workloads. |
+| Option                        | Notes                                                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| pgvector (Postgres extension) | Use your existing Postgres. Good enough for most scales. Familiar SQL interface.         |
+| Qdrant                        | Purpose-built. Excellent filtering and performance. Rust-based.                          |
+| Chroma                        | Python-native. Easy to embed in applications. Good for prototyping.                      |
+| Milvus                        | High scale. More operational complexity.                                                 |
+| FAISS (Facebook)              | Library, not a database. No persistence by default. Best for read-heavy batch workloads. |
 
 **Use for:** production, when you need control over data locality, cost optimization at scale, or air-gapped environments.
 
@@ -451,23 +451,23 @@ Build an eval dataset, run it on every pipeline change, track metrics over time.
 
 ### 11.1 Retrieval Failures
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Relevant documents exist but are not retrieved | Poor chunking (answer split across chunks), embedding model mismatch | Try smaller chunks, add overlap, test a different embedding model |
-| Top results are all about the wrong topic | Query-document vocabulary mismatch | Add hybrid search (BM25), try query rewriting |
-| Retrieved chunks are relevant but too short to be useful | Chunks too small | Increase chunk size, include surrounding context |
-| Retrieved chunks are relevant but contain too much noise | Chunks too large, poor document cleaning | Decrease chunk size, improve parsing/cleaning |
-| Retrieval works for some query types but not others | Single retrieval strategy does not cover all cases | Add hybrid search, query transformation, per-query-type routing |
+| Symptom                                                  | Likely cause                                                         | Fix                                                               |
+| -------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Relevant documents exist but are not retrieved           | Poor chunking (answer split across chunks), embedding model mismatch | Try smaller chunks, add overlap, test a different embedding model |
+| Top results are all about the wrong topic                | Query-document vocabulary mismatch                                   | Add hybrid search (BM25), try query rewriting                     |
+| Retrieved chunks are relevant but too short to be useful | Chunks too small                                                     | Increase chunk size, include surrounding context                  |
+| Retrieved chunks are relevant but contain too much noise | Chunks too large, poor document cleaning                             | Decrease chunk size, improve parsing/cleaning                     |
+| Retrieval works for some query types but not others      | Single retrieval strategy does not cover all cases                   | Add hybrid search, query transformation, per-query-type routing   |
 
 ### 11.2 Generation Failures
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Answer contradicts the context | Model ignoring context (especially with strong priors) | Move context closer to the question in the prompt, increase temperature=0, add explicit instruction to only use context |
-| Answer is correct but does not cite sources | Citation instruction not strong enough or not in system prompt | Reinforce citation instruction, provide few-shot examples |
-| Answer says "I don't know" when context contains the answer | Similarity threshold too high, or context placed too far from question | Lower threshold, restructure prompt, check chunk quality |
-| Answer includes information not in the context | Hallucination, model falling back to training data | Add faithfulness check, instruct model to only use provided context, reduce temperature |
-| Answer is verbose and unfocused | Too many chunks included, no instruction on conciseness | Reduce number of chunks, add reranking, instruct model on desired length |
+| Symptom                                                     | Likely cause                                                           | Fix                                                                                                                     |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Answer contradicts the context                              | Model ignoring context (especially with strong priors)                 | Move context closer to the question in the prompt, increase temperature=0, add explicit instruction to only use context |
+| Answer is correct but does not cite sources                 | Citation instruction not strong enough or not in system prompt         | Reinforce citation instruction, provide few-shot examples                                                               |
+| Answer says "I don't know" when context contains the answer | Similarity threshold too high, or context placed too far from question | Lower threshold, restructure prompt, check chunk quality                                                                |
+| Answer includes information not in the context              | Hallucination, model falling back to training data                     | Add faithfulness check, instruct model to only use provided context, reduce temperature                                 |
+| Answer is verbose and unfocused                             | Too many chunks included, no instruction on conciseness                | Reduce number of chunks, add reranking, instruct model on desired length                                                |
 
 ### 11.3 Debugging Strategy
 

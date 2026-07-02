@@ -11,11 +11,11 @@ Scaffolds an acceptance criteria framework using Given/When/Then BDD structure w
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Format` | string | `gherkin` | Criteria format style |
-| `IncludeDoD` | bool | `true` | Include definition of done checklist |
+| Variable      | Type   | Default    | Description                          |
+| ------------- | ------ | ---------- | ------------------------------------ |
+| `ProjectName` | string | (required) | Kebab-case project name              |
+| `Format`      | string | `gherkin`  | Criteria format style                |
+| `IncludeDoD`  | bool   | `true`     | Include definition of done checklist |
 
 ## Project layout
 

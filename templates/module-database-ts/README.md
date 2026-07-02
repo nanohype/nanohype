@@ -15,11 +15,11 @@ Composable database connection and query layer built on Drizzle ORM with pluggab
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"Database module with Drizzle ORM and pluggable drivers"` | Short project description |
-| `DatabaseDriver` | string | `"postgres"` | Default driver (`postgres`, `sqlite`, `turso`, or custom) |
+| Variable         | Type   | Default                                                    | Description                                               |
+| ---------------- | ------ | ---------------------------------------------------------- | --------------------------------------------------------- |
+| `ProjectName`    | string | _(required)_                                               | Kebab-case project name                                   |
+| `Description`    | string | `"Database module with Drizzle ORM and pluggable drivers"` | Short project description                                 |
+| `DatabaseDriver` | string | `"postgres"`                                               | Default driver (`postgres`, `sqlite`, `turso`, or custom) |
 
 ## Project layout
 
@@ -90,12 +90,12 @@ Never edit a migration that has already been applied to a shared environment -- 
 ## Usage
 
 ```typescript
-import { createDatabase, getDb } from "./db/index.js";
+import { createDatabase, getDb } from './db/index.js';
 
 // Explicit connection
 const db = await createDatabase({
-  driver: "postgres",
-  url: "postgres://localhost:5432/mydb",
+  driver: 'postgres',
+  url: 'postgres://localhost:5432/mydb',
 });
 
 // Or use environment variables (DB_DRIVER + DATABASE_URL)

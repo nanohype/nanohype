@@ -11,11 +11,11 @@ Scaffolds a compliance management package with control inventory, audit trail tr
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Framework` | string | `soc2` | Compliance framework |
-| `IncludeEvidenceTemplates` | bool | `true` | Include evidence templates |
+| Variable                   | Type   | Default    | Description                |
+| -------------------------- | ------ | ---------- | -------------------------- |
+| `ProjectName`              | string | (required) | Kebab-case project name    |
+| `Framework`                | string | `soc2`     | Compliance framework       |
+| `IncludeEvidenceTemplates` | bool   | `true`     | Include evidence templates |
 
 ## Project layout
 

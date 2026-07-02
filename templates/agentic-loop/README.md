@@ -12,14 +12,14 @@ Scaffolds a TypeScript agentic loop — the core pattern behind tool-calling AI 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"An agentic loop powered by LLM tool-calling"` | Short project description |
-| `LlmProvider` | string | `"anthropic"` | `anthropic` or `openai` |
-| `IncludeMemory` | bool | `true` | Include memory subsystem |
-| `IncludeEval` | bool | `true` | Include eval harness |
-| `MaxIterations` | int | `10` | Max tool-calling loop iterations |
+| Variable        | Type   | Default                                         | Description                      |
+| --------------- | ------ | ----------------------------------------------- | -------------------------------- |
+| `ProjectName`   | string | _(required)_                                    | Kebab-case project name          |
+| `Description`   | string | `"An agentic loop powered by LLM tool-calling"` | Short project description        |
+| `LlmProvider`   | string | `"anthropic"`                                   | `anthropic` or `openai`          |
+| `IncludeMemory` | bool   | `true`                                          | Include memory subsystem         |
+| `IncludeEval`   | bool   | `true`                                          | Include eval harness             |
+| `MaxIterations` | int    | `10`                                            | Max tool-calling loop iterations |
 
 ## Project layout
 

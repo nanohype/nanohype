@@ -14,13 +14,13 @@ Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScrip
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Description` | string | `A Turborepo monorepo workspace` | Short project description |
-| `PackageManager` | string | `pnpm` | Package manager for the workspace |
-| `IncludeSharedUi` | bool | `false` | Include shared-ui component library |
-| `IncludeSharedUtils` | bool | `true` | Include shared-utils library |
+| Variable             | Type   | Default                          | Description                         |
+| -------------------- | ------ | -------------------------------- | ----------------------------------- |
+| `ProjectName`        | string | (required)                       | Kebab-case project name             |
+| `Description`        | string | `A Turborepo monorepo workspace` | Short project description           |
+| `PackageManager`     | string | `pnpm`                           | Package manager for the workspace   |
+| `IncludeSharedUi`    | bool   | `false`                          | Include shared-ui component library |
+| `IncludeSharedUtils` | bool   | `true`                           | Include shared-utils library        |
 
 ## Project layout
 

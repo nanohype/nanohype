@@ -10,32 +10,32 @@ Individual templates are building blocks. Composites are the blueprints that ass
 
 ## Selection guide
 
-| Composite | What it produces | Templates | Best for |
-|---|---|---|---|
-| `proof-of-concept` | Minimal AI agent with eval harness | 2 | Quick POC -- validate an idea in days, not weeks |
-| `ai-chatbot` | Full-stack chatbot with auth, evals, deployment | 6 | Customer-facing conversational AI |
-| `ai-web-app` | Next.js frontend with RAG, auth, database, observability | 8 | AI-powered web applications with document search |
-| `production-api` | TypeScript API with auth, DB, caching, rate limiting, queue, observability | 9 | Backend services that need to be production-grade from day one |
-| `enterprise-ai` | Agents, RAG, guardrails, evals, prompts, storage, K8s deploy | 15 | Full enterprise AI platform with all the operational layers |
-| `multi-agent` | A2A orchestrator, agent, MCP tools, guardrails, evals | 8 | Systems where multiple AI agents collaborate and delegate |
-| `rag-agent` | Agent with RAG pipeline, storage, database, evals | 8 | AI agents that need grounded knowledge from documents |
-| `document-intelligence` | RAG pipeline, API service, storage, database, evals | 7 | Document search and question-answering systems |
-| `background-processor` | Worker service with queue, database, storage, observability | 7 | Async job processing without synchronous HTTP |
-| `safe-ai-agent` | Agent with guardrails, evals, prompt library | 5 | Responsible AI -- input filtering, output validation, testing |
-| `eval-suite` | Eval harness, prompt library, guardrails validation | 4 | Testing AI systems without building them |
-| `go-microservice` | Go HTTP service with evals and deployment | 3 | Lightweight, single-binary Go services |
-| `mcp-toolkit` | MCP server with prompts and evals | 3 | Building tool servers for AI systems |
-| `chrome-ai-extension` | Chrome extension with MCP tools and prompt library | 3 | Browser extensions with AI sidepanel |
-| `vscode-ai-extension` | VS Code extension with MCP tools and prompt library | 3 | Editor extensions with AI integration |
-| `internal-tool` | CLI or extension backed by MCP servers | 4 | Internal team tooling |
-| `cost-optimized-ai` | LLM gateway with cost routing, semantic caching, observability | 4 | Minimizing LLM spend with smart routing and caching |
-| `ai-platform` | Monorepo with service, gateway, vectors, pipeline, auth, database, billing, monitoring | 9 | Full AI product with usage-based billing |
-| `agent-team` | Orchestrator, specialized agents, MCP tools, evals | 6 | Multi-agent systems with distinct roles |
-| `client-engagement` | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook | 5 | Non-engineering client engagement workflows |
-| `product-launch` | Next.js app, design system, tokens, test plan, acceptance criteria, PRD, campaign, runbook | 10 | Cross-functional product launches spanning eng through marketing |
-| `research-to-prototype` | PRD, agentic loop prototype, optional test plan | 3 | Research-driven prototyping from idea to validated POC |
-| `spring-boot-microservice` | Spring Boot 4 HTTP service on JDK 25 with K8s deploy, optional Grafana + Prometheus + Loki | 4 | Java services that need production posture out of the gate |
-| `identity-aware-service` | Spring Boot 4 service with Istio mesh-edge auth + Spring Security resource server | 5 | Defense-in-depth identity against a shared OIDC issuer |
+| Composite                  | What it produces                                                                           | Templates | Best for                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------ | --------- | ---------------------------------------------------------------- |
+| `proof-of-concept`         | Minimal AI agent with eval harness                                                         | 2         | Quick POC -- validate an idea in days, not weeks                 |
+| `ai-chatbot`               | Full-stack chatbot with auth, evals, deployment                                            | 6         | Customer-facing conversational AI                                |
+| `ai-web-app`               | Next.js frontend with RAG, auth, database, observability                                   | 8         | AI-powered web applications with document search                 |
+| `production-api`           | TypeScript API with auth, DB, caching, rate limiting, queue, observability                 | 9         | Backend services that need to be production-grade from day one   |
+| `enterprise-ai`            | Agents, RAG, guardrails, evals, prompts, storage, K8s deploy                               | 15        | Full enterprise AI platform with all the operational layers      |
+| `multi-agent`              | A2A orchestrator, agent, MCP tools, guardrails, evals                                      | 8         | Systems where multiple AI agents collaborate and delegate        |
+| `rag-agent`                | Agent with RAG pipeline, storage, database, evals                                          | 8         | AI agents that need grounded knowledge from documents            |
+| `document-intelligence`    | RAG pipeline, API service, storage, database, evals                                        | 7         | Document search and question-answering systems                   |
+| `background-processor`     | Worker service with queue, database, storage, observability                                | 7         | Async job processing without synchronous HTTP                    |
+| `safe-ai-agent`            | Agent with guardrails, evals, prompt library                                               | 5         | Responsible AI -- input filtering, output validation, testing    |
+| `eval-suite`               | Eval harness, prompt library, guardrails validation                                        | 4         | Testing AI systems without building them                         |
+| `go-microservice`          | Go HTTP service with evals and deployment                                                  | 3         | Lightweight, single-binary Go services                           |
+| `mcp-toolkit`              | MCP server with prompts and evals                                                          | 3         | Building tool servers for AI systems                             |
+| `chrome-ai-extension`      | Chrome extension with MCP tools and prompt library                                         | 3         | Browser extensions with AI sidepanel                             |
+| `vscode-ai-extension`      | VS Code extension with MCP tools and prompt library                                        | 3         | Editor extensions with AI integration                            |
+| `internal-tool`            | CLI or extension backed by MCP servers                                                     | 4         | Internal team tooling                                            |
+| `cost-optimized-ai`        | LLM gateway with cost routing, semantic caching, observability                             | 4         | Minimizing LLM spend with smart routing and caching              |
+| `ai-platform`              | Monorepo with service, gateway, vectors, pipeline, auth, database, billing, monitoring     | 9         | Full AI product with usage-based billing                         |
+| `agent-team`               | Orchestrator, specialized agents, MCP tools, evals                                         | 6         | Multi-agent systems with distinct roles                          |
+| `client-engagement`        | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook              | 5         | Non-engineering client engagement workflows                      |
+| `product-launch`           | Next.js app, design system, tokens, test plan, acceptance criteria, PRD, campaign, runbook | 10        | Cross-functional product launches spanning eng through marketing |
+| `research-to-prototype`    | PRD, agentic loop prototype, optional test plan                                            | 3         | Research-driven prototyping from idea to validated POC           |
+| `spring-boot-microservice` | Spring Boot 4 HTTP service on JDK 25 with K8s deploy, optional Grafana + Prometheus + Loki | 4         | Java services that need production posture out of the gate       |
+| `identity-aware-service`   | Spring Boot 4 service with Istio mesh-edge auth + Spring Security resource server          | 5         | Defense-in-depth identity against a shared OIDC issuer           |
 
 ---
 
@@ -180,32 +180,32 @@ Minimal structure:
 apiVersion: nanohype/v1
 kind: composite
 name: my-stack
-displayName: "My Stack"
+displayName: 'My Stack'
 description: >
   What this composite produces and who it is for.
-version: "0.1.0"
+version: '0.1.0'
 tags: [relevant, searchable, tags]
 
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
 templates:
   - template: monorepo
     root: true
     variables:
-      ProjectName: "${ProjectName}"
+      ProjectName: '${ProjectName}'
 
   - template: ts-service
     path: apps/api
     variables:
-      ProjectName: "${ProjectName}-api"
+      ProjectName: '${ProjectName}-api'
 ```
 
 Key rules:

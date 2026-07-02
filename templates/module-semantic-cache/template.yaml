@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: module-semantic-cache
-displayName: "Module: Semantic Cache"
+displayName: 'Module: Semantic Cache'
 description: >
   Embedding-based LLM response caching using vector similarity search.
   Stores prompt embeddings alongside cached responses and retrieves them
@@ -9,7 +9,7 @@ description: >
   Titan embedding provider (default), an OpenAI alternate, and an
   in-memory vector store for development. Includes a gateway adapter for
   drop-in integration with LLM gateway caching strategies.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: composable-modules
@@ -18,41 +18,41 @@ tags: [semantic-cache, embeddings, vector-search, llm, caching, typescript]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as package name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as package name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for package.json and README"
-    prompt: "Project description"
-    default: "Semantic caching for LLM responses"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for package.json and README'
+    prompt: 'Project description'
+    default: 'Semantic caching for LLM responses'
 
   - name: EmbeddingProvider
     type: string
-    placeholder: "__EMBEDDING_PROVIDER__"
-    description: "Default embedding provider (bedrock, openai, mock, or a custom name)"
-    prompt: "Embedding provider"
-    default: "bedrock"
+    placeholder: '__EMBEDDING_PROVIDER__'
+    description: 'Default embedding provider (bedrock, openai, mock, or a custom name)'
+    prompt: 'Embedding provider'
+    default: 'bedrock'
 
   - name: VectorBackend
     type: string
-    placeholder: "__VECTOR_BACKEND__"
-    description: "Default vector cache store backend (memory or a custom name)"
-    prompt: "Vector store backend"
-    default: "memory"
+    placeholder: '__VECTOR_BACKEND__'
+    description: 'Default vector cache store backend (memory or a custom name)'
+    prompt: 'Vector store backend'
+    default: 'memory'
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Install npm dependencies"
-      run: "npm install"
-      workdir: "."
+      description: 'Install npm dependencies'
+      run: 'npm install'
+      workdir: '.'
 
 composition:
   pairsWith: [ts-service, agentic-loop, rag-pipeline, module-cache-ts]
@@ -60,6 +60,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=24"
-    purpose: "Node.js runtime for the semantic cache module"
+    version: '>=24'
+    purpose: 'Node.js runtime for the semantic cache module'
     optional: false

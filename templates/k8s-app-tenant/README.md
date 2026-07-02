@@ -9,28 +9,28 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   - `service.yaml` — ClusterIP
   - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to its IAM role by a landing-zone EKS Pod Identity association, so no role-arn annotation and never inline IAM
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
-  - `externalsecret.yaml` — *(toggle, off by default)* AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
-  - `prometheusrule.yaml` — *(on by default)* SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
-  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — *(on by default)* a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
-  - `servicemonitor.yaml` — *(toggle, off by default)* Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
+  - `externalsecret.yaml` — _(toggle, off by default)_ AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
+  - `prometheusrule.yaml` — _(on by default)_ SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
+  - `grafana-dashboard.yaml` + `dashboards/<app>.json` — _(on by default)_ a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
+  - `servicemonitor.yaml` — _(toggle, off by default)_ Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/`
 - **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role (scoped to `spec.identity.allowedModelFamilies`); the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `AppName` | string | (required) | Kebab-case app name — chart name, namespace, Platform/BudgetPolicy CR name, service account name |
-| `AppMetric` | string | `${AppName}` | Underscored metric prefix for the RED/SLO panels + burn-rate rules (`competitive_intelligence`). Single-word names inherit `AppName`; multi-word names must set the snake_case form |
-| `Description` | string | `k8s-native Platform tenant` | Short description for Chart.yaml + README |
-| `Tenant` | string | (required) | Owning team (drives namespace prefix `tenants-<team>`, AppProject, quotas) |
-| `Persona` | string | `generic` | Platform persona — `sales-ops`, `support`, `finance`, `ops`, `founder`, `eng`, `marketing`, `legal`, `generic` |
-| `MonthlyUsd` | string | `2500` | Soft monthly Bedrock spend cap (USD); kill-switch at 120% |
-| `Image` | string | (required) | Container image base (no tag) |
-| `Port` | string | `8080` | Container port |
-| `GitopsRepo` | string | `nanohype/eks-gitops` | Target gitops repo for the ApplicationSet entry |
-| `SyncWave` | string | `100` | ArgoCD sync wave (apps land after addons which use waves 0–52) |
+| Variable      | Type   | Default                      | Description                                                                                                                                                                         |
+| ------------- | ------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppName`     | string | (required)                   | Kebab-case app name — chart name, namespace, Platform/BudgetPolicy CR name, service account name                                                                                    |
+| `AppMetric`   | string | `${AppName}`                 | Underscored metric prefix for the RED/SLO panels + burn-rate rules (`competitive_intelligence`). Single-word names inherit `AppName`; multi-word names must set the snake_case form |
+| `Description` | string | `k8s-native Platform tenant` | Short description for Chart.yaml + README                                                                                                                                           |
+| `Tenant`      | string | (required)                   | Owning team (drives namespace prefix `tenants-<team>`, AppProject, quotas)                                                                                                          |
+| `Persona`     | string | `generic`                    | Platform persona — `sales-ops`, `support`, `finance`, `ops`, `founder`, `eng`, `marketing`, `legal`, `generic`                                                                      |
+| `MonthlyUsd`  | string | `2500`                       | Soft monthly Bedrock spend cap (USD); kill-switch at 120%                                                                                                                           |
+| `Image`       | string | (required)                   | Container image base (no tag)                                                                                                                                                       |
+| `Port`        | string | `8080`                       | Container port                                                                                                                                                                      |
+| `GitopsRepo`  | string | `nanohype/eks-gitops`        | Target gitops repo for the ApplicationSet entry                                                                                                                                     |
+| `SyncWave`    | string | `100`                        | ArgoCD sync wave (apps land after addons which use waves 0–52)                                                                                                                      |
 
 ## Project layout
 

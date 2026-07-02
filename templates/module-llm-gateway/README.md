@@ -28,12 +28,12 @@ standardizes on Converse for measured caching.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Unified LLM gateway with routing, fallback, and cost tracking` | Project description |
-| `DefaultProvider` | string | `anthropic` | Default LLM provider (anthropic/openai/groq or custom) |
-| `RoutingStrategy` | string | `adaptive` | Default routing strategy (static/round-robin/latency/cost/adaptive) |
+| Variable          | Type   | Default                                                         | Description                                                         |
+| ----------------- | ------ | --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `ProjectName`     | string | --                                                              | Kebab-case project name                                             |
+| `Description`     | string | `Unified LLM gateway with routing, fallback, and cost tracking` | Project description                                                 |
+| `DefaultProvider` | string | `anthropic`                                                     | Default LLM provider (anthropic/openai/groq or custom)              |
+| `RoutingStrategy` | string | `adaptive`                                                      | Default routing strategy (static/round-robin/latency/cost/adaptive) |
 
 ## Project layout
 

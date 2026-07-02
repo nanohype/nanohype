@@ -38,7 +38,7 @@ dependencies:
 Finally, replace each lifted template with a one-line wrapper, e.g. `chart/templates/serviceaccount.yaml`:
 
 ```yaml
-{{ include "tenant-chart-base.serviceaccount" . }}
+{ { include "tenant-chart-base.serviceaccount" . } }
 ```
 
 Because the library is vendored (present in `charts/`), `helm template` / `helm lint` work offline — no `helm dependency build` needed.

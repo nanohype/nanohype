@@ -150,7 +150,7 @@ describe('validateManifest', () => {
           ],
         }),
       ),
-    ).toThrow("is a substring of");
+    ).toThrow('is a substring of');
   });
 
   it('rejects bool variable with non-boolean default', () => {

@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: k8s-app-tenant
-displayName: "K8s App as Platform Tenant"
+displayName: 'K8s App as Platform Tenant'
 description: >
   Primary scaffolding for a nanohype-org k8s-native application. Produces
   a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
@@ -11,7 +11,7 @@ description: >
   boundary for the eks-agent-platform operator to reconcile. Use this for
   every k8s-native deliverable unless an explicit escape hatch
   (aws-lambda, fly, vercel, cloudflare) is justified.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: infrastructure
@@ -20,91 +20,91 @@ tags: [kubernetes, k8s, helm, argocd, platform, nanohype]
 variables:
   - name: AppName
     type: string
-    placeholder: "__APP_NAME__"
-    description: "Kebab-case app name. Used as chart name, namespace, Platform CR name, and service account name."
-    prompt: "App name"
+    placeholder: '__APP_NAME__'
+    description: 'Kebab-case app name. Used as chart name, namespace, Platform CR name, and service account name.'
+    prompt: 'App name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: AppMetric
     type: string
-    placeholder: "__APP_METRIC__"
-    description: "Metric-name prefix for the RED/SLO panels and burn-rate rules — the service name with dashes converted to underscores (e.g. competitive_intelligence). The app emits <prefix>_requests_total / _errors_total / _request_duration_seconds. Defaults to AppName, so single-word names need nothing; multi-word names must set the underscored form."
-    prompt: "Metric prefix (underscored)"
-    default: "${AppName}"
+    placeholder: '__APP_METRIC__'
+    description: 'Metric-name prefix for the RED/SLO panels and burn-rate rules — the service name with dashes converted to underscores (e.g. competitive_intelligence). The app emits <prefix>_requests_total / _errors_total / _request_duration_seconds. Defaults to AppName, so single-word names need nothing; multi-word names must set the underscored form.'
+    prompt: 'Metric prefix (underscored)'
+    default: '${AppName}'
     validation:
-      pattern: "^[a-z][a-z0-9_]*$"
-      message: "Must be lowercase snake_case (service name with dashes → underscores)"
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case (service name with dashes → underscores)'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short app description for Chart.yaml and README."
-    prompt: "Description"
-    default: "k8s-native Platform tenant"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short app description for Chart.yaml and README.'
+    prompt: 'Description'
+    default: 'k8s-native Platform tenant'
 
   - name: Tenant
     type: string
-    placeholder: "__TENANT__"
-    description: "Owning team. Drives the namespace prefix (tenants-<team>), ArgoCD AppProject, and per-tenant resource quotas."
-    prompt: "Owning team"
+    placeholder: '__TENANT__'
+    description: 'Owning team. Drives the namespace prefix (tenants-<team>), ArgoCD AppProject, and per-tenant resource quotas.'
+    prompt: 'Owning team'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: Persona
     type: string
-    placeholder: "__PERSONA__"
-    description: "Platform persona — drives default guardrails, dashboards, and fleet shape. One of: sales-ops, support, finance, ops, founder, eng, marketing, legal, generic."
-    prompt: "Persona"
-    default: "generic"
+    placeholder: '__PERSONA__'
+    description: 'Platform persona — drives default guardrails, dashboards, and fleet shape. One of: sales-ops, support, finance, ops, founder, eng, marketing, legal, generic.'
+    prompt: 'Persona'
+    default: 'generic'
     validation:
-      pattern: "^(sales-ops|support|finance|ops|founder|eng|marketing|legal|generic)$"
-      message: "Must be a persona the operator accepts"
+      pattern: '^(sales-ops|support|finance|ops|founder|eng|marketing|legal|generic)$'
+      message: 'Must be a persona the operator accepts'
 
   - name: MonthlyUsd
     type: string
-    placeholder: "__MONTHLY_USD__"
-    description: "Soft monthly Bedrock spend cap (USD) for the BudgetPolicy. Kill-switch fires at 120%."
-    prompt: "Monthly budget (USD)"
-    default: "2500"
+    placeholder: '__MONTHLY_USD__'
+    description: 'Soft monthly Bedrock spend cap (USD) for the BudgetPolicy. Kill-switch fires at 120%.'
+    prompt: 'Monthly budget (USD)'
+    default: '2500'
     validation:
-      pattern: "^[0-9]+$"
-      message: "Must be a whole-dollar amount"
+      pattern: '^[0-9]+$'
+      message: 'Must be a whole-dollar amount'
 
   - name: Image
     type: string
-    placeholder: "__IMAGE__"
-    description: "Container image base (no tag — tag pinned per-env in values-{env}.yaml)."
-    prompt: "Container image"
+    placeholder: '__IMAGE__'
+    description: 'Container image base (no tag — tag pinned per-env in values-{env}.yaml).'
+    prompt: 'Container image'
     required: true
 
   - name: Port
     type: string
-    placeholder: "__PORT__"
-    description: "Container port the app listens on."
-    prompt: "Container port"
-    default: "8080"
+    placeholder: '__PORT__'
+    description: 'Container port the app listens on.'
+    prompt: 'Container port'
+    default: '8080'
 
   - name: GitopsRepo
     type: string
-    placeholder: "__GITOPS_REPO__"
-    description: "Target gitops repo for the ApplicationSet entry."
-    prompt: "Gitops repo (org/repo)"
-    default: "nanohype/eks-gitops"
+    placeholder: '__GITOPS_REPO__'
+    description: 'Target gitops repo for the ApplicationSet entry.'
+    prompt: 'Gitops repo (org/repo)'
+    default: 'nanohype/eks-gitops'
     validation:
-      pattern: "^[a-z0-9-]+/[a-z0-9-]+$"
-      message: "Must be org/repo (e.g., nanohype/eks-gitops)"
+      pattern: '^[a-z0-9-]+/[a-z0-9-]+$'
+      message: 'Must be org/repo (e.g., nanohype/eks-gitops)'
 
   - name: SyncWave
     type: string
-    placeholder: "__SYNC_WAVE__"
+    placeholder: '__SYNC_WAVE__'
     description: "ArgoCD sync wave for this app's ApplicationSet entry. Apps typically deploy after addons (wave >= 100)."
-    prompt: "Sync wave"
-    default: "100"
+    prompt: 'Sync wave'
+    default: '100'
 
 conditionals: []
 
@@ -114,16 +114,16 @@ composition:
 
 prerequisites:
   - name: helm
-    version: ">=3.0"
-    purpose: "Render and lint the chart locally before pushing"
+    version: '>=3.0'
+    purpose: 'Render and lint the chart locally before pushing'
     optional: false
   - name: kubectl
-    version: ">=1.28"
-    purpose: "Apply the Platform CR during initial tenant setup (before ArgoCD takes over via the ApplicationSet)"
+    version: '>=1.28'
+    purpose: 'Apply the Platform CR during initial tenant setup (before ArgoCD takes over via the ApplicationSet)'
     optional: false
   - name: kustomize
-    version: ">=5.0"
-    purpose: "Build per-env overlays consumed by the ApplicationSet entry"
+    version: '>=5.0'
+    purpose: 'Build per-env overlays consumed by the ApplicationSet entry'
     optional: false
 
 hooks: {}

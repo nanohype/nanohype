@@ -12,15 +12,15 @@ Both CRs derive their namespace, ownership, and IRSA from the Platform via `spec
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `FleetName` | string | (required) | AgentFleet CR name + label selector |
-| `Tenant` | string | (required) | Owning team — sets the `tenants-<team>` namespace, matching the Platform |
-| `AppName` | string | (required) | Companion Platform tenant name (matches `k8s-app-tenant`'s `AppName`); used as `spec.platformRef.name` |
-| `ModelFamily` | string | `anthropic` | Bedrock model family for the gateway route — `anthropic`, `meta`, `mistral`, `cohere`, `amazon-titan`, `amazon-nova`, `stability` |
-| `ModelId` | string | `anthropic.claude-sonnet-4-6` | Bedrock model ID (or inference-profile ID) for the gateway route |
-| `RouteName` | string | (required) | ModelGateway route name referenced by each `AgentFleet.spec.agents[].modelRoute` |
-| `Compute` | string | `none` | Accelerator — `none` (CPU), `nvidia-l40s`, `nvidia-h100`, `neuron`. Non-`none` references an `AcceleratorClaim` CR by name |
+| Variable      | Type   | Default                       | Description                                                                                                                       |
+| ------------- | ------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `FleetName`   | string | (required)                    | AgentFleet CR name + label selector                                                                                               |
+| `Tenant`      | string | (required)                    | Owning team — sets the `tenants-<team>` namespace, matching the Platform                                                          |
+| `AppName`     | string | (required)                    | Companion Platform tenant name (matches `k8s-app-tenant`'s `AppName`); used as `spec.platformRef.name`                            |
+| `ModelFamily` | string | `anthropic`                   | Bedrock model family for the gateway route — `anthropic`, `meta`, `mistral`, `cohere`, `amazon-titan`, `amazon-nova`, `stability` |
+| `ModelId`     | string | `anthropic.claude-sonnet-4-6` | Bedrock model ID (or inference-profile ID) for the gateway route                                                                  |
+| `RouteName`   | string | (required)                    | ModelGateway route name referenced by each `AgentFleet.spec.agents[].modelRoute`                                                  |
+| `Compute`     | string | `none`                        | Accelerator — `none` (CPU), `nvidia-l40s`, `nvidia-h100`, `neuron`. Non-`none` references an `AcceleratorClaim` CR by name        |
 
 ## Project layout
 

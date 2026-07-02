@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: ts-service
-displayName: "TypeScript HTTP Service"
+displayName: 'TypeScript HTTP Service'
 description: >
   Scaffolds a production-ready TypeScript HTTP service using the Hono
   framework. Ships with structured request logging, error handling, Zod
@@ -10,7 +10,7 @@ description: >
   template is auth-neutral and persistence-neutral — stack
   `module-auth-ts` alongside when you need authentication, and
   `module-database-ts` when you need a database layer.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: applications
@@ -19,47 +19,47 @@ tags: [typescript, hono, api, service, rest]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as package name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as package name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for package.json and README"
-    prompt: "Project description"
-    default: "A TypeScript HTTP service"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for package.json and README'
+    prompt: 'Project description'
+    default: 'A TypeScript HTTP service'
 
   - name: Framework
     type: string
-    placeholder: "__FRAMEWORK__"
-    description: "HTTP framework (hono is default; extensible to express, fastify)"
-    prompt: "HTTP framework"
-    default: "hono"
+    placeholder: '__FRAMEWORK__'
+    description: 'HTTP framework (hono is default; extensible to express, fastify)'
+    prompt: 'HTTP framework'
+    default: 'hono'
 
   - name: IncludeDocker
     type: bool
-    placeholder: "__INCLUDE_DOCKER__"
-    description: "Include Dockerfile and docker-compose.yml"
-    prompt: "Include Docker files?"
+    placeholder: '__INCLUDE_DOCKER__'
+    description: 'Include Dockerfile and docker-compose.yml'
+    prompt: 'Include Docker files?'
     default: true
 
 conditionals:
-  - path: "Dockerfile"
+  - path: 'Dockerfile'
     when: IncludeDocker
-  - path: "docker-compose.yml"
+  - path: 'docker-compose.yml'
     when: IncludeDocker
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Install npm dependencies"
-      run: "npm install"
-      workdir: "."
+      description: 'Install npm dependencies'
+      run: 'npm install'
+      workdir: '.'
 
 composition:
   pairsWith: [infra-aws, infra-fly, module-auth-ts, module-database-ts]
@@ -67,6 +67,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
-    purpose: "Node.js runtime for the HTTP service"
+    version: '>=22'
+    purpose: 'Node.js runtime for the HTTP service'
     optional: false

@@ -8,21 +8,21 @@ A template catalog for AI-focused projects. Each template produces a production-
 
 ### By problem
 
-| You need... | Start with | Add modules |
-|---|---|---|
-| An AI agent | `agentic-loop` | `eval-harness`, `mcp-server-ts` |
-| Document search / RAG | `rag-pipeline` | `module-vector-store`, `module-storage-ts` |
-| An HTTP API | `ts-service` | `module-auth-ts`, `module-database-ts` |
-| A Go HTTP API | `go-service` | — (auth + db built in) |
-| A background worker | `worker-service` | `module-queue-ts`, `module-database-ts` |
-| A CLI tool | `go-cli` | `eval-harness` |
-| A full-stack AI app | Composite: `ai-web-app` or `ai-chatbot` | — |
-| A production platform | Composite: `production-api` | — |
-| Multi-agent coordination | `a2a-agent` | `agentic-loop`, `mcp-server-ts` |
-| AI safety / content filtering | `guardrails` | `agentic-loop` |
-| A Chrome extension with AI | `chrome-ext` | `mcp-server-ts` |
-| A VS Code extension | `vscode-ext` | `mcp-server-ts`, `prompt-library` |
-| To deploy something | `infra-aws`, `infra-fly`, `infra-gcp`, `infra-vercel`, or `k8s-deploy` | — |
+| You need...                   | Start with                                                             | Add modules                                |
+| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------ |
+| An AI agent                   | `agentic-loop`                                                         | `eval-harness`, `mcp-server-ts`            |
+| Document search / RAG         | `rag-pipeline`                                                         | `module-vector-store`, `module-storage-ts` |
+| An HTTP API                   | `ts-service`                                                           | `module-auth-ts`, `module-database-ts`     |
+| A Go HTTP API                 | `go-service`                                                           | — (auth + db built in)                     |
+| A background worker           | `worker-service`                                                       | `module-queue-ts`, `module-database-ts`    |
+| A CLI tool                    | `go-cli`                                                               | `eval-harness`                             |
+| A full-stack AI app           | Composite: `ai-web-app` or `ai-chatbot`                                | —                                          |
+| A production platform         | Composite: `production-api`                                            | —                                          |
+| Multi-agent coordination      | `a2a-agent`                                                            | `agentic-loop`, `mcp-server-ts`            |
+| AI safety / content filtering | `guardrails`                                                           | `agentic-loop`                             |
+| A Chrome extension with AI    | `chrome-ext`                                                           | `mcp-server-ts`                            |
+| A VS Code extension           | `vscode-ext`                                                           | `mcp-server-ts`, `prompt-library`          |
+| To deploy something           | `infra-aws`, `infra-fly`, `infra-gcp`, `infra-vercel`, or `k8s-deploy` | —                                          |
 
 ### Not sure?
 
@@ -67,17 +67,17 @@ This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `t
 
 Available composites:
 
-| Composite | What it assembles |
-|---|---|
-| `proof-of-concept` | Agent + evals — fastest path to a working prototype |
-| `ai-chatbot` | Agent + service + auth + deployment |
-| `ai-web-app` | Next.js + RAG + auth + database + observability |
-| `document-intelligence` | RAG + storage + database |
-| `production-api` | Service + auth + database + cache + rate limiting + queue + observability |
-| `enterprise-ai` | Agents + RAG + guardrails + evals + K8s |
-| `cost-optimized-ai` | LLM gateway + semantic cache + cost monitoring |
-| `ai-platform` | Service + gateway + vectors + auth + billing + monitoring |
-| `agent-team` | Orchestrator + specialized agents + MCP tools + evals |
+| Composite               | What it assembles                                                         |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `proof-of-concept`      | Agent + evals — fastest path to a working prototype                       |
+| `ai-chatbot`            | Agent + service + auth + deployment                                       |
+| `ai-web-app`            | Next.js + RAG + auth + database + observability                           |
+| `document-intelligence` | RAG + storage + database                                                  |
+| `production-api`        | Service + auth + database + cache + rate limiting + queue + observability |
+| `enterprise-ai`         | Agents + RAG + guardrails + evals + K8s                                   |
+| `cost-optimized-ai`     | LLM gateway + semantic cache + cost monitoring                            |
+| `ai-platform`           | Service + gateway + vectors + auth + billing + monitoring                 |
+| `agent-team`            | Orchestrator + specialized agents + MCP tools + evals                     |
 
 See the full list in `composites/` or run `npx nanohype list --composites`.
 

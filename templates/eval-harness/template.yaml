@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: eval-harness
-displayName: "Eval Harness"
+displayName: 'Eval Harness'
 description: >
   Scaffolds a standalone TypeScript evaluation framework for testing LLM
   outputs. Loads eval suites from YAML files, runs each case against an
@@ -9,7 +9,7 @@ description: >
   JSON schema, token limits, custom predicates), and reports results to
   the console or as structured JSON. Works with any LLM system —
   Anthropic and OpenAI providers included out of the box.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
@@ -18,46 +18,46 @@ tags: [typescript, eval, testing, llm, ai]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used in package.json and directory"
-    prompt: "Project name"
-    default: "my-evals"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used in package.json and directory'
+    prompt: 'Project name'
+    default: 'my-evals'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for package.json and README"
-    prompt: "Project description"
-    default: "LLM evaluation harness"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for package.json and README'
+    prompt: 'Project description'
+    default: 'LLM evaluation harness'
 
   - name: LlmProvider
     type: string
-    placeholder: "__LLM_PROVIDER__"
-    description: "Default LLM provider name (built-in: anthropic, openai — or any custom registered provider)"
-    prompt: "LLM provider"
-    default: "anthropic"
+    placeholder: '__LLM_PROVIDER__'
+    description: 'Default LLM provider name (built-in: anthropic, openai — or any custom registered provider)'
+    prompt: 'LLM provider'
+    default: 'anthropic'
 
   - name: IncludeCi
     type: bool
-    placeholder: "__INCLUDE_CI__"
-    description: "Include GitHub Actions CI workflow for automated eval runs"
-    prompt: "Include CI workflow?"
+    placeholder: '__INCLUDE_CI__'
+    description: 'Include GitHub Actions CI workflow for automated eval runs'
+    prompt: 'Include CI workflow?'
     default: true
 
 conditionals:
-  - path: ".github/workflows/evals.yml"
+  - path: '.github/workflows/evals.yml'
     when: IncludeCi
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Install npm dependencies"
-      run: "npm install"
-      workdir: "."
+      description: 'Install npm dependencies'
+      run: 'npm install'
+      workdir: '.'
 
 composition:
   pairsWith: [agentic-loop, rag-pipeline, mcp-server-ts]
@@ -65,6 +65,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: ">=22"
-    purpose: "Node.js runtime for TypeScript execution"
+    version: '>=22'
+    purpose: 'Node.js runtime for TypeScript execution'
     optional: false

@@ -87,29 +87,24 @@ If you're skipping straight to delivery, only `eks-agent-platform/AGENTS.md` is 
 `@nanohype/sdk` is the reference TypeScript implementation of the catalog + standards consumption pattern. One runtime dependency (a YAML parser).
 
 ```typescript
-import {
-  LocalSource,
-  loadCatalog,
-  loadStandards,
-  renderTemplate,
-} from "@nanohype/sdk";
+import { LocalSource, loadCatalog, loadStandards, renderTemplate } from '@nanohype/sdk';
 
 // Discovery
-const source = new LocalSource("/path/to/nanohype-repo");
+const source = new LocalSource('/path/to/nanohype-repo');
 const catalog = await loadCatalog(source);
 const standards = await loadStandards(source);
 
 // Selection (your client decides which template fits)
 const templateName = catalog.templates.find(
-  (t) => t.category === "ai-systems" && t.tags.includes("rag"),
+  (t) => t.category === 'ai-systems' && t.tags.includes('rag'),
 )?.name;
 
 // Render
 await renderTemplate({
   source,
   templateName,
-  outputDir: "/path/to/output",
-  variables: { ProjectName: "my-rag-bot", LlmProvider: "anthropic" },
+  outputDir: '/path/to/output',
+  variables: { ProjectName: 'my-rag-bot', LlmProvider: 'anthropic' },
 });
 ```
 

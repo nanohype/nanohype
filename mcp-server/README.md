@@ -6,37 +6,37 @@ Use it when you're building an AI client (Bedrock agent, Claude Desktop assistan
 
 ## Resources
 
-| URI | What it returns | MIME |
-|---|---|---|
-| `nanohype://catalog` | Full `catalog.json` (templates + composites with metadata) | `application/json` |
-| `nanohype://standards` | All five standards files bundled | `application/json` |
-| `nanohype://standards/{name}` | One standards file. `name` ∈ `language-toolchain` / `version-currency` / `platform-tenant-contract` / `llm-policy` / `quality-rubric-dimensions` | `application/json` |
-| `nanohype://contracts/{repo}` | One repo's `AGENTS.md`. `repo` ∈ `nanohype` / `landing-zone` / `eks-gitops` / `eks-agent-platform` / `kx` / `cloudgov` / `fab` / `portal` / `eks-fleet` | `text/markdown` |
-| `nanohype://template/{name}` | One template's full manifest (variables, conditionals, hooks, composition) | `application/json` |
-| `nanohype://composite/{name}` | One composite's full manifest (multi-template orchestration) | `application/json` |
+| URI                           | What it returns                                                                                                                                         | MIME               |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `nanohype://catalog`          | Full `catalog.json` (templates + composites with metadata)                                                                                              | `application/json` |
+| `nanohype://standards`        | All five standards files bundled                                                                                                                        | `application/json` |
+| `nanohype://standards/{name}` | One standards file. `name` ∈ `language-toolchain` / `version-currency` / `platform-tenant-contract` / `llm-policy` / `quality-rubric-dimensions`        | `application/json` |
+| `nanohype://contracts/{repo}` | One repo's `AGENTS.md`. `repo` ∈ `nanohype` / `landing-zone` / `eks-gitops` / `eks-agent-platform` / `kx` / `cloudgov` / `fab` / `portal` / `eks-fleet` | `text/markdown`    |
+| `nanohype://template/{name}`  | One template's full manifest (variables, conditionals, hooks, composition)                                                                              | `application/json` |
+| `nanohype://composite/{name}` | One composite's full manifest (multi-template orchestration)                                                                                            | `application/json` |
 
 ## Tools
 
-| Tool | Inputs | What it does |
-|---|---|---|
+| Tool               | Inputs                                               | What it does                                                                   |
+| ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `search_templates` | `query` (required), `category?`, `persona?`, `kind?` | Filter the catalog. Substring match on name + displayName + description + tags |
-| `get_template` | `name` | Full template manifest |
-| `get_composite` | `name` | Full composite manifest |
-| `list_standards` | — | Names of the five published standards |
-| `get_standard` | `name` | One standards file's JSON |
-| `get_contract` | `repo` | One repo's `AGENTS.md` content as markdown |
+| `get_template`     | `name`                                               | Full template manifest                                                         |
+| `get_composite`    | `name`                                               | Full composite manifest                                                        |
+| `list_standards`   | —                                                    | Names of the five published standards                                          |
+| `get_standard`     | `name`                                               | One standards file's JSON                                                      |
+| `get_contract`     | `repo`                                               | One repo's `AGENTS.md` content as markdown                                     |
 
 ## Configuration
 
 Environment variables (all optional):
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `NANOHYPE_SOURCE` | `github` | `github` reads from the GitHub API. `local` reads from a local checkout |
-| `NANOHYPE_ROOT` | — | Path to a local `nanohype/nanohype` checkout. Required when `NANOHYPE_SOURCE=local` |
-| `NANOHYPE_REPO` | `nanohype/nanohype` | GitHub repo (owner/name) when using the github source |
-| `NANOHYPE_REF` | `main` | Git ref to read from |
-| `NANOHYPE_GITHUB_TOKEN` | — | Optional GitHub API token. Lifts the public-rate-limit ceiling and unlocks private repos if the catalog ever moves |
+| Variable                | Default             | Purpose                                                                                                            |
+| ----------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `NANOHYPE_SOURCE`       | `github`            | `github` reads from the GitHub API. `local` reads from a local checkout                                            |
+| `NANOHYPE_ROOT`         | —                   | Path to a local `nanohype/nanohype` checkout. Required when `NANOHYPE_SOURCE=local`                                |
+| `NANOHYPE_REPO`         | `nanohype/nanohype` | GitHub repo (owner/name) when using the github source                                                              |
+| `NANOHYPE_REF`          | `main`              | Git ref to read from                                                                                               |
+| `NANOHYPE_GITHUB_TOKEN` | —                   | Optional GitHub API token. Lifts the public-rate-limit ceiling and unlocks private repos if the catalog ever moves |
 
 ## Claude Desktop
 
@@ -47,9 +47,9 @@ Add to `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claud
   "mcpServers": {
     "nanohype": {
       "command": "npx",
-      "args": ["-y", "@nanohype/mcp"]
-    }
-  }
+      "args": ["-y", "@nanohype/mcp"],
+    },
+  },
 }
 ```
 
@@ -65,10 +65,10 @@ To run against a local checkout instead of GitHub:
       "args": ["-y", "@nanohype/mcp"],
       "env": {
         "NANOHYPE_SOURCE": "local",
-        "NANOHYPE_ROOT": "/path/to/nanohype/nanohype"
-      }
-    }
-  }
+        "NANOHYPE_ROOT": "/path/to/nanohype/nanohype",
+      },
+    },
+  },
 }
 ```
 
@@ -77,25 +77,25 @@ To run against a local checkout instead of GitHub:
 Run the MCP server as a subprocess and mount its tools into a Claude API session via the Anthropic SDK's MCP support:
 
 ```ts
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 const message = await client.messages.create({
-  model: "claude-sonnet-4-6",
+  model: 'claude-sonnet-4-6',
   max_tokens: 1024,
   mcp_servers: [
     {
-      type: "stdio",
-      name: "nanohype",
-      command: "npx",
-      args: ["-y", "@nanohype/mcp"],
+      type: 'stdio',
+      name: 'nanohype',
+      command: 'npx',
+      args: ['-y', '@nanohype/mcp'],
     },
   ],
   messages: [
     {
-      role: "user",
+      role: 'user',
       content:
-        "I need a RAG pipeline template. List the matching options in the catalog, then fetch the full manifest for the best one.",
+        'I need a RAG pipeline template. List the matching options in the catalog, then fetch the full manifest for the best one.',
     },
   ],
 });

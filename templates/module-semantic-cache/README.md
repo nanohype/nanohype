@@ -16,12 +16,12 @@ Embedding-based LLM response caching using vector similarity search.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Semantic caching for LLM responses` | Project description |
-| `EmbeddingProvider` | string | `openai` | Default embedding provider (openai/mock or custom) |
-| `VectorBackend` | string | `memory` | Default vector store backend (memory or custom) |
+| Variable            | Type   | Default                              | Description                                        |
+| ------------------- | ------ | ------------------------------------ | -------------------------------------------------- |
+| `ProjectName`       | string | --                                   | Kebab-case project name                            |
+| `Description`       | string | `Semantic caching for LLM responses` | Project description                                |
+| `EmbeddingProvider` | string | `openai`                             | Default embedding provider (openai/mock or custom) |
+| `VectorBackend`     | string | `memory`                             | Default vector store backend (memory or custom)    |
 
 ## Project layout
 

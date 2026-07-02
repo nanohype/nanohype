@@ -56,7 +56,17 @@
                 },
                 "additionalProperties": {
                   "type": "object",
-                  "required": ["install", "build", "lint", "test", "docs", "lockfile", "manifest", "registry", "versionLookup"],
+                  "required": [
+                    "install",
+                    "build",
+                    "lint",
+                    "test",
+                    "docs",
+                    "lockfile",
+                    "manifest",
+                    "registry",
+                    "versionLookup"
+                  ],
                   "properties": {
                     "install": { "type": "string" },
                     "build": { "type": "string" },
@@ -104,12 +114,19 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/platform-tenant-contract" } } },
+      "if": {
+        "properties": { "kind": { "const": "nanohype/standards/platform-tenant-contract" } }
+      },
       "then": {
         "properties": {
           "content": {
             "type": "object",
-            "required": ["required_artifacts", "platform_cr_shape", "otel_resource_attrs", "do_not"],
+            "required": [
+              "required_artifacts",
+              "platform_cr_shape",
+              "otel_resource_attrs",
+              "do_not"
+            ],
             "properties": {
               "required_artifacts": {
                 "type": "array",
@@ -147,7 +164,13 @@
         "properties": {
           "content": {
             "type": "object",
-            "required": ["primary_provider", "models", "regions_preferred", "sdk_by_language", "requirements"],
+            "required": [
+              "primary_provider",
+              "models",
+              "regions_preferred",
+              "sdk_by_language",
+              "requirements"
+            ],
             "properties": {
               "primary_provider": { "type": "string" },
               "models": {
@@ -178,7 +201,9 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/quality-rubric-dimensions" } } },
+      "if": {
+        "properties": { "kind": { "const": "nanohype/standards/quality-rubric-dimensions" } }
+      },
       "then": {
         "properties": {
           "content": {
@@ -256,7 +281,10 @@
                 "properties": {
                   "k8s": { "type": "array", "items": { "type": "string" } },
                   "otel": { "type": "array", "items": { "type": "string" } },
-                  "app_extension": { "type": "object", "additionalProperties": { "type": "string" } }
+                  "app_extension": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                  }
                 }
               },
               "dimensions": {
@@ -329,7 +357,11 @@
                       "properties": {
                         "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
                         "good_over_valid": { "type": "string" },
-                        "default_objective": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+                        "default_objective": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "exclusiveMaximum": 1
+                        },
                         "default_threshold_seconds": { "type": "number", "exclusiveMinimum": 0 }
                       }
                     }

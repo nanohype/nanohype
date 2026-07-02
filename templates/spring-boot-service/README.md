@@ -18,16 +18,16 @@ Scaffolds a Java [Spring Boot 4](https://spring.io/projects/spring-boot) HTTP se
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `GroupId` | string | `com.example` | Maven groupId (reverse-DNS, dot-separated) |
-| `ArtifactId` | string | `<ProjectName>` | Maven artifactId (kebab-case) |
-| `Description` | string | `A Spring Boot HTTP service` | Short project description |
-| `JavaPackage` | string | `<GroupId>.app` | Root Java package, dot form (e.g. `com.example.app`) |
-| `PackageDir` | string | `com/example/app` | Root Java package, slash form — must pair with `JavaPackage` |
-| `Database` | string | `postgres` | Database driver: `postgres`, `mysql`, or `h2` |
-| `IncludeDocker` | bool | `true` | Include Dockerfile and docker-compose.yml |
+| Variable        | Type   | Default                      | Description                                                  |
+| --------------- | ------ | ---------------------------- | ------------------------------------------------------------ |
+| `ProjectName`   | string | (required)                   | Kebab-case project name                                      |
+| `GroupId`       | string | `com.example`                | Maven groupId (reverse-DNS, dot-separated)                   |
+| `ArtifactId`    | string | `<ProjectName>`              | Maven artifactId (kebab-case)                                |
+| `Description`   | string | `A Spring Boot HTTP service` | Short project description                                    |
+| `JavaPackage`   | string | `<GroupId>.app`              | Root Java package, dot form (e.g. `com.example.app`)         |
+| `PackageDir`    | string | `com/example/app`            | Root Java package, slash form — must pair with `JavaPackage` |
+| `Database`      | string | `postgres`                   | Database driver: `postgres`, `mysql`, or `h2`                |
+| `IncludeDocker` | bool   | `true`                       | Include Dockerfile and docker-compose.yml                    |
 
 ### On the two package variables
 

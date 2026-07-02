@@ -13,13 +13,13 @@ Composable OpenTelemetry instrumentation module with pluggable exporters for tra
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `OpenTelemetry instrumentation module` | Description |
-| `Exporter` | string | `console` | Default exporter (console/otlp/datadog or custom) |
-| `IncludeMetrics` | bool | `true` | Include metrics helpers |
-| `IncludeTracing` | bool | `true` | Include tracing helpers |
+| Variable         | Type   | Default                                | Description                                       |
+| ---------------- | ------ | -------------------------------------- | ------------------------------------------------- |
+| `ProjectName`    | string | —                                      | Kebab-case project name                           |
+| `Description`    | string | `OpenTelemetry instrumentation module` | Description                                       |
+| `Exporter`       | string | `console`                              | Default exporter (console/otlp/datadog or custom) |
+| `IncludeMetrics` | bool   | `true`                                 | Include metrics helpers                           |
+| `IncludeTracing` | bool   | `true`                                 | Include tracing helpers                           |
 
 ## Project layout
 

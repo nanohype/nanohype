@@ -11,11 +11,11 @@ Scaffolds an editorial content calendar with content pillars, distribution matri
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Cadence` | enum | `weekly` | Publishing cadence: weekly, biweekly, or monthly |
-| `IncludeSocial` | bool | `true` | Include social media playbook |
+| Variable        | Type   | Default    | Description                                      |
+| --------------- | ------ | ---------- | ------------------------------------------------ |
+| `ProjectName`   | string | (required) | Kebab-case project name                          |
+| `Cadence`       | enum   | `weekly`   | Publishing cadence: weekly, biweekly, or monthly |
+| `IncludeSocial` | bool   | `true`     | Include social media playbook                    |
 
 ## Project layout
 

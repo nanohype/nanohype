@@ -6,13 +6,13 @@ as the `tenant-chart-base` library chart.
 
 ## Modules
 
-| Module | What it is |
-| --- | --- |
-| `src/circuit-breaker.ts` | Pure, timer-less sliding-window circuit breaker with an injectable `now()` clock, single half-open probe, `onOpen` trip hook, and operator `reset()` |
-| `src/resilience.ts` | `withTimeout` (deadline race → `TimeoutError`) and `withRetry` (jittered exponential backoff, injectable sleep) |
-| `src/registry.ts` | `createRegistry<T>` — the provider-registry convention for pluggable seams (LLM, embeddings, vector stores, aggregators) |
-| `src/workos-directory.ts` | Typed WorkOS Directory Sync client: port-injected `fetch`, bounded cursor pagination, find-by-email / custom-attribute / group / created-since |
-| `src/pii.ts` | PII redaction over the union category set: secrets and tokens, SSN and cards, compensation, HR cases, health, DOB, contact info, AWS accounts, customer and infrastructure identifiers |
+| Module                    | What it is                                                                                                                                                                             |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/circuit-breaker.ts`  | Pure, timer-less sliding-window circuit breaker with an injectable `now()` clock, single half-open probe, `onOpen` trip hook, and operator `reset()`                                   |
+| `src/resilience.ts`       | `withTimeout` (deadline race → `TimeoutError`) and `withRetry` (jittered exponential backoff, injectable sleep)                                                                        |
+| `src/registry.ts`         | `createRegistry<T>` — the provider-registry convention for pluggable seams (LLM, embeddings, vector stores, aggregators)                                                               |
+| `src/workos-directory.ts` | Typed WorkOS Directory Sync client: port-injected `fetch`, bounded cursor pagination, find-by-email / custom-attribute / group / created-since                                         |
+| `src/pii.ts`              | PII redaction over the union category set: secrets and tokens, SSN and cards, compensation, HR cases, health, DOB, contact info, AWS accounts, customer and infrastructure identifiers |
 
 Every module is dependency-free (native `fetch` types only) and side-effect
 free at import time. Observability is deliberately left to the consumer: the

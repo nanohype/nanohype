@@ -19,7 +19,12 @@ describe('renderTemplate', () => {
   it('replaces placeholders in file content', () => {
     const manifest = minimalManifest({
       variables: [
-        { name: 'ProjectName', type: 'string', placeholder: '__PROJECT_NAME__', description: 'Name' },
+        {
+          name: 'ProjectName',
+          type: 'string',
+          placeholder: '__PROJECT_NAME__',
+          description: 'Name',
+        },
       ],
     });
     const files: SkeletonFile[] = [
@@ -32,7 +37,12 @@ describe('renderTemplate', () => {
   it('replaces placeholders in file paths', () => {
     const manifest = minimalManifest({
       variables: [
-        { name: 'ProjectName', type: 'string', placeholder: '__PROJECT_NAME__', description: 'Name' },
+        {
+          name: 'ProjectName',
+          type: 'string',
+          placeholder: '__PROJECT_NAME__',
+          description: 'Name',
+        },
       ],
     });
     const files: SkeletonFile[] = [
@@ -45,7 +55,12 @@ describe('renderTemplate', () => {
   it('excludes files when conditional is false', () => {
     const manifest = minimalManifest({
       variables: [
-        { name: 'IncludeMemory', type: 'bool', placeholder: '__INCLUDE_MEMORY__', description: 'Memory' },
+        {
+          name: 'IncludeMemory',
+          type: 'bool',
+          placeholder: '__INCLUDE_MEMORY__',
+          description: 'Memory',
+        },
       ],
       conditionals: [{ path: 'src/memory', when: 'IncludeMemory' }],
     });
@@ -62,7 +77,12 @@ describe('renderTemplate', () => {
   it('includes files when conditional is true', () => {
     const manifest = minimalManifest({
       variables: [
-        { name: 'IncludeMemory', type: 'bool', placeholder: '__INCLUDE_MEMORY__', description: 'Memory' },
+        {
+          name: 'IncludeMemory',
+          type: 'bool',
+          placeholder: '__INCLUDE_MEMORY__',
+          description: 'Memory',
+        },
       ],
       conditionals: [{ path: 'src/memory', when: 'IncludeMemory' }],
     });
@@ -105,8 +125,18 @@ describe('renderTemplate', () => {
   it('replaces multiple placeholders in the same content', () => {
     const manifest = minimalManifest({
       variables: [
-        { name: 'ProjectName', type: 'string', placeholder: '__PROJECT_NAME__', description: 'Name' },
-        { name: 'Description', type: 'string', placeholder: '__DESCRIPTION__', description: 'Desc' },
+        {
+          name: 'ProjectName',
+          type: 'string',
+          placeholder: '__PROJECT_NAME__',
+          description: 'Name',
+        },
+        {
+          name: 'Description',
+          type: 'string',
+          placeholder: '__DESCRIPTION__',
+          description: 'Desc',
+        },
       ],
     });
     const files: SkeletonFile[] = [
@@ -121,13 +151,9 @@ describe('renderTemplate', () => {
 
   it('replaces all occurrences of the same placeholder', () => {
     const manifest = minimalManifest({
-      variables: [
-        { name: 'Name', type: 'string', placeholder: '__NAME__', description: 'Name' },
-      ],
+      variables: [{ name: 'Name', type: 'string', placeholder: '__NAME__', description: 'Name' }],
     });
-    const files: SkeletonFile[] = [
-      { path: 'test.txt', content: '__NAME__ uses __NAME__' },
-    ];
+    const files: SkeletonFile[] = [{ path: 'test.txt', content: '__NAME__ uses __NAME__' }];
     const result = renderTemplate(manifest, files, { Name: 'foo' });
     expect(result.files[0].content).toBe('foo uses foo');
   });
@@ -139,7 +165,12 @@ describe('renderTemplate', () => {
       ],
     });
     const files: SkeletonFile[] = [
-      { path: 'stack.ts', content: ['import a;', '// #if IncludeVpc', 'import vpc;', '// #endif', 'use();'].join('\n') },
+      {
+        path: 'stack.ts',
+        content: ['import a;', '// #if IncludeVpc', 'import vpc;', '// #endif', 'use();'].join(
+          '\n',
+        ),
+      },
     ];
     const off = renderTemplate(manifest, files, { IncludeVpc: false });
     expect(off.files[0].content).toBe(['import a;', 'use();'].join('\n'));

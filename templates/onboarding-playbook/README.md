@@ -11,12 +11,12 @@ Scaffolds a customer onboarding playbook with milestone definitions, success cri
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `ProductName` | string | (required) | Human-readable product name |
-| `OnboardingType` | enum | `guided` | Workflow: self-serve, guided, or enterprise |
-| `IncludeHealthScoring` | bool | `true` | Include health scoring model |
+| Variable               | Type   | Default    | Description                                 |
+| ---------------------- | ------ | ---------- | ------------------------------------------- |
+| `ProjectName`          | string | (required) | Kebab-case project name                     |
+| `ProductName`          | string | (required) | Human-readable product name                 |
+| `OnboardingType`       | enum   | `guided`   | Workflow: self-serve, guided, or enterprise |
+| `IncludeHealthScoring` | bool   | `true`     | Include health scoring model                |
 
 ## Project layout
 

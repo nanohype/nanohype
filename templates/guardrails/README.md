@@ -11,13 +11,13 @@ Input/output safety filters for AI systems.
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-|----------|-------------|---------|-------------|
-| `ProjectName` | `__PROJECT_NAME__` | *(required)* | Kebab-case package name |
-| `Description` | `__DESCRIPTION__` | AI safety guardrails | Package description |
-| `IncludePii` | `__INCLUDE_PII__` | `true` | Include PII detection filter |
-| `IncludeContentPolicy` | `__INCLUDE_CONTENT_POLICY__` | `true` | Include content policy filter |
-| `IncludeTests` | `__INCLUDE_TESTS__` | `true` | Include test suite |
+| Variable               | Placeholder                  | Default              | Description                   |
+| ---------------------- | ---------------------------- | -------------------- | ----------------------------- |
+| `ProjectName`          | `__PROJECT_NAME__`           | _(required)_         | Kebab-case package name       |
+| `Description`          | `__DESCRIPTION__`            | AI safety guardrails | Package description           |
+| `IncludePii`           | `__INCLUDE_PII__`            | `true`               | Include PII detection filter  |
+| `IncludeContentPolicy` | `__INCLUDE_CONTENT_POLICY__` | `true`               | Include content policy filter |
+| `IncludeTests`         | `__INCLUDE_TESTS__`          | `true`               | Include test suite            |
 
 ## Project layout
 

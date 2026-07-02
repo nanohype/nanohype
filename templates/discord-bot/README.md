@@ -13,12 +13,12 @@ TypeScript Discord bot with discord.js v14, AI-powered responses, and a pluggabl
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"A Discord bot with AI"` | Short project description |
-| `LlmProvider` | string | `"anthropic"` | `anthropic` or `openai` |
-| `IncludeTests` | bool | `true` | Include test files |
+| Variable       | Type   | Default                   | Description               |
+| -------------- | ------ | ------------------------- | ------------------------- |
+| `ProjectName`  | string | _(required)_              | Kebab-case project name   |
+| `Description`  | string | `"A Discord bot with AI"` | Short project description |
+| `LlmProvider`  | string | `"anthropic"`             | `anthropic` or `openai`   |
+| `IncludeTests` | bool   | `true`                    | Include test files        |
 
 ## Project layout
 

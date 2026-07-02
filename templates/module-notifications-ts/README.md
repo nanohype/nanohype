@@ -14,13 +14,13 @@ Composable notification service with pluggable providers for email, SMS, and pus
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `Notification service with pluggable providers` | Project description |
-| `EmailProvider` | string | `resend` | Default email provider (resend/sendgrid or custom) |
-| `IncludeSms` | bool | `false` | Include SMS channel with Twilio provider |
-| `IncludePush` | bool | `false` | Include push channel with web-push provider |
+| Variable        | Type   | Default                                         | Description                                        |
+| --------------- | ------ | ----------------------------------------------- | -------------------------------------------------- |
+| `ProjectName`   | string | —                                               | Kebab-case project name                            |
+| `Description`   | string | `Notification service with pluggable providers` | Project description                                |
+| `EmailProvider` | string | `resend`                                        | Default email provider (resend/sendgrid or custom) |
+| `IncludeSms`    | bool   | `false`                                         | Include SMS channel with Twilio provider           |
+| `IncludePush`   | bool   | `false`                                         | Include push channel with web-push provider        |
 
 ## Project layout
 

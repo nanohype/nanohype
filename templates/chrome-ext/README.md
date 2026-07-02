@@ -15,14 +15,14 @@ Chrome extension (Manifest V3) with a React sidepanel for AI-powered interaction
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | `my-extension` | Kebab-case project name |
-| `ExtensionName` | string | `My Extension` | Display name in Chrome |
-| `Description` | string | `An AI-powered Chrome extension` | Extension description |
-| `IncludeContentScript` | bool | `true` | Include content script |
-| `IncludeOptions` | bool | `true` | Include options page |
-| `LlmProvider` | string | `anthropic` | Default provider: anthropic or openai |
+| Variable               | Type   | Default                          | Description                           |
+| ---------------------- | ------ | -------------------------------- | ------------------------------------- |
+| `ProjectName`          | string | `my-extension`                   | Kebab-case project name               |
+| `ExtensionName`        | string | `My Extension`                   | Display name in Chrome                |
+| `Description`          | string | `An AI-powered Chrome extension` | Extension description                 |
+| `IncludeContentScript` | bool   | `true`                           | Include content script                |
+| `IncludeOptions`       | bool   | `true`                           | Include options page                  |
+| `LlmProvider`          | string | `anthropic`                      | Default provider: anthropic or openai |
 
 ## Project layout
 

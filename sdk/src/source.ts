@@ -8,13 +8,11 @@ import type {
   StandardName,
   SkeletonFile,
   TemplateManifest,
-} from "./types.js";
+} from './types.js';
 
 export interface CatalogSource {
   listTemplates(): Promise<CatalogEntry[]>;
-  fetchTemplate(
-    name: string,
-  ): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }>;
+  fetchTemplate(name: string): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }>;
   listComposites(): Promise<CompositeCatalogEntry[]>;
   fetchComposite(name: string): Promise<CompositeManifest>;
 

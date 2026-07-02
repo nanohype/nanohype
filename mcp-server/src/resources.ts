@@ -55,7 +55,8 @@ export function listResources(): StaticResource[] {
   }
 
   for (const { repo, visibility } of CONTRACT_REPOS) {
-    const access = visibility === 'private' ? ' (private — requires a GitHub token to resolve)' : '';
+    const access =
+      visibility === 'private' ? ' (private — requires a GitHub token to resolve)' : '';
     resources.push({
       uri: `nanohype://contracts/${repo}`,
       name: `contract: ${repo}`,

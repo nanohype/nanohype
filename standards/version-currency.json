@@ -36,10 +36,6 @@
       "kotlin": "Maven Central (search.maven.org)",
       "csharp": "NuGet (nuget.org)"
     },
-    "accepted_pin_reasons": [
-      "security hold",
-      "upstream bug",
-      "compatibility with pinned peer"
-    ]
+    "accepted_pin_reasons": ["security hold", "upstream bug", "compatibility with pinned peer"]
   }
 }

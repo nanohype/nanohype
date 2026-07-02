@@ -4,15 +4,7 @@
   "title": "nanohype Template",
   "description": "Schema for nanohype template catalog template.yaml files.",
   "type": "object",
-  "required": [
-    "apiVersion",
-    "name",
-    "displayName",
-    "description",
-    "version",
-    "tags",
-    "variables"
-  ],
+  "required": ["apiVersion", "name", "displayName", "description", "version", "tags", "variables"],
   "additionalProperties": false,
   "properties": {
     "apiVersion": {

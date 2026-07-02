@@ -34,7 +34,16 @@
   "$defs": {
     "CatalogTemplate": {
       "type": "object",
-      "required": ["name", "displayName", "description", "version", "category", "tags", "kind", "path"],
+      "required": [
+        "name",
+        "displayName",
+        "description",
+        "version",
+        "category",
+        "tags",
+        "kind",
+        "path"
+      ],
       "additionalProperties": false,
       "properties": {
         "name": {

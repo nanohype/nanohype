@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: go-service
-displayName: "Go HTTP Service"
+displayName: 'Go HTTP Service'
 description: >
   Scaffolds a Go HTTP service using chi v5 for routing, structured middleware
   (logging, panic recovery), a repository-pattern database layer with PostgreSQL
@@ -9,7 +9,7 @@ description: >
   instrumentation. Includes graceful shutdown with signal handling, a Makefile,
   GitHub Actions CI, and optional Docker support. Auth-neutral — stack
   `module-auth-go` alongside when you need authentication.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: applications
@@ -18,68 +18,68 @@ tags: [go, chi, api, service, rest]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as binary name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as binary name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: GoModule
     type: string
-    placeholder: "__GO_MODULE__"
-    description: "Full Go module path"
-    prompt: "Go module path"
-    default: "github.com/${Org}/${ProjectName}"
+    placeholder: '__GO_MODULE__'
+    description: 'Full Go module path'
+    prompt: 'Go module path'
+    default: 'github.com/${Org}/${ProjectName}'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9./-]*$"
-      message: "Must be a valid Go module path"
+      pattern: '^[a-z][a-z0-9./-]*$'
+      message: 'Must be a valid Go module path'
 
   - name: Org
     type: string
-    placeholder: "__ORG__"
-    description: "GitHub organization or username"
-    prompt: "GitHub org/username"
+    placeholder: '__ORG__'
+    description: 'GitHub organization or username'
+    prompt: 'GitHub org/username'
     required: true
     validation:
-      pattern: "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
-      message: "Must be a valid GitHub org or username"
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9-]*$'
+      message: 'Must be a valid GitHub org or username'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for help text and README"
-    prompt: "Project description"
-    default: "A Go HTTP service"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for help text and README'
+    prompt: 'Project description'
+    default: 'A Go HTTP service'
 
   - name: Database
     type: string
-    placeholder: "__DATABASE__"
-    description: "Default database backend"
-    prompt: "Database backend"
-    default: "postgres"
+    placeholder: '__DATABASE__'
+    description: 'Default database backend'
+    prompt: 'Database backend'
+    default: 'postgres'
 
   - name: IncludeDocker
     type: bool
-    placeholder: "__INCLUDE_DOCKER__"
-    description: "Include Dockerfile and docker-compose.yml"
-    prompt: "Include Docker support?"
+    placeholder: '__INCLUDE_DOCKER__'
+    description: 'Include Dockerfile and docker-compose.yml'
+    prompt: 'Include Docker support?'
     default: true
 
 conditionals:
-  - path: "Dockerfile"
+  - path: 'Dockerfile'
     when: IncludeDocker
-  - path: "docker-compose.yml"
+  - path: 'docker-compose.yml'
     when: IncludeDocker
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Tidy Go module dependencies"
-      run: "go mod tidy"
-      workdir: "."
+      description: 'Tidy Go module dependencies'
+      run: 'go mod tidy'
+      workdir: '.'
 
 composition:
   pairsWith: [infra-aws, infra-fly, eval-harness, module-auth-go]
@@ -87,6 +87,6 @@ composition:
 
 prerequisites:
   - name: go
-    version: ">=1.26"
-    purpose: "Go compilation and module management"
+    version: '>=1.26'
+    purpose: 'Go compilation and module management'
     optional: false

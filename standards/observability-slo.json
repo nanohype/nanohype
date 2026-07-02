@@ -34,10 +34,34 @@
       "method": "Multi-window, multi-burn-rate (Google SRE Workbook). An alert fires only when BOTH a long window and a short window exceed the burn-rate factor, which suppresses flapping and one-off spikes while still catching fast burns quickly.",
       "burn_rate_definition": "burn_rate = error_ratio_over_window / (1 - objective). A burn rate of 1 exhausts the whole budget exactly over the SLO window; a burn rate of 14.4 exhausts 2% of a 30d budget in 1h.",
       "windows": [
-        { "severity": "page", "long": "1h", "short": "5m", "factor": 14.4, "budget_consumed": "2% in 1h" },
-        { "severity": "page", "long": "6h", "short": "30m", "factor": 6, "budget_consumed": "5% in 6h" },
-        { "severity": "ticket", "long": "1d", "short": "2h", "factor": 3, "budget_consumed": "10% in 1d" },
-        { "severity": "ticket", "long": "3d", "short": "6h", "factor": 1, "budget_consumed": "10% in 3d" }
+        {
+          "severity": "page",
+          "long": "1h",
+          "short": "5m",
+          "factor": 14.4,
+          "budget_consumed": "2% in 1h"
+        },
+        {
+          "severity": "page",
+          "long": "6h",
+          "short": "30m",
+          "factor": 6,
+          "budget_consumed": "5% in 6h"
+        },
+        {
+          "severity": "ticket",
+          "long": "1d",
+          "short": "2h",
+          "factor": 3,
+          "budget_consumed": "10% in 1d"
+        },
+        {
+          "severity": "ticket",
+          "long": "3d",
+          "short": "6h",
+          "factor": 1,
+          "budget_consumed": "10% in 3d"
+        }
       ]
     },
     "recording_rules": {
@@ -46,11 +70,22 @@
     },
     "dashboard_requirements": {
       "required_rows": [
-        { "id": "slo", "panels": ["30d SLI vs objective (stat)", "error budget remaining (gauge)", "fast burn rate — 1h (stat/timeseries)", "slow burn rate — 6h (stat/timeseries)"] },
+        {
+          "id": "slo",
+          "panels": [
+            "30d SLI vs objective (stat)",
+            "error budget remaining (gauge)",
+            "fast burn rate — 1h (stat/timeseries)",
+            "slow burn rate — 6h (stat/timeseries)"
+          ]
+        },
         { "id": "traffic", "panels": ["request rate by status and/or route"] },
         { "id": "errors", "panels": ["error ratio (percentunit)", "errors by status/class"] },
         { "id": "latency", "panels": ["p50", "p95", "p99 from histogram_quantile"] },
-        { "id": "saturation", "panels": ["in-flight / queue depth / backlog", "resource utilization vs limit"] }
+        {
+          "id": "saturation",
+          "panels": ["in-flight / queue depth / backlog", "resource utilization vs limit"]
+        }
       ],
       "conventions": {
         "uid": "<system>-overview, or <system>-<facet> for additional boards",

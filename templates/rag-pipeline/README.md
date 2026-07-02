@@ -13,15 +13,15 @@ Scaffolds a Retrieval-Augmented Generation (RAG) pipeline in TypeScript. All com
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | "A retrieval-augmented generation pipeline" | Project description |
-| `VectorStore` | string | `chroma` | chroma, pgvector, qdrant, or pinecone |
-| `EmbeddingProvider` | string | `openai` | openai or cohere |
-| `LlmProvider` | string | `anthropic` | anthropic or openai |
-| `ChunkStrategy` | string | `recursive` | fixed, recursive, or semantic |
-| `IncludeTests` | bool | `true` | Include vitest test suite |
+| Variable            | Type   | Default                                     | Description                           |
+| ------------------- | ------ | ------------------------------------------- | ------------------------------------- |
+| `ProjectName`       | string | _(required)_                                | Kebab-case project name               |
+| `Description`       | string | "A retrieval-augmented generation pipeline" | Project description                   |
+| `VectorStore`       | string | `chroma`                                    | chroma, pgvector, qdrant, or pinecone |
+| `EmbeddingProvider` | string | `openai`                                    | openai or cohere                      |
+| `LlmProvider`       | string | `anthropic`                                 | anthropic or openai                   |
+| `ChunkStrategy`     | string | `recursive`                                 | fixed, recursive, or semantic         |
+| `IncludeTests`      | bool   | `true`                                      | Include vitest test suite             |
 
 ## Project layout
 

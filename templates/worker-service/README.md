@@ -15,13 +15,13 @@ Background processor with scheduled cron jobs and queue consumption. Includes a 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Background worker with cron and queue processing` | Project description |
-| `QueueProvider` | string | `memory` | Default queue provider (memory/bullmq/sqs or custom) |
-| `IncludeCron` | bool | `true` | Include cron scheduler |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable        | Type   | Default                                            | Description                                          |
+| --------------- | ------ | -------------------------------------------------- | ---------------------------------------------------- |
+| `ProjectName`   | string | --                                                 | Kebab-case project name                              |
+| `Description`   | string | `Background worker with cron and queue processing` | Project description                                  |
+| `QueueProvider` | string | `memory`                                           | Default queue provider (memory/bullmq/sqs or custom) |
+| `IncludeCron`   | bool   | `true`                                             | Include cron scheduler                               |
+| `IncludeTests`  | bool   | `true`                                             | Include test suite                                   |
 
 ## Project layout
 

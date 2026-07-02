@@ -14,11 +14,11 @@ Composable webhook infrastructure with pluggable signature verification and retr
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `Webhook receiver and sender with retry` | Project description |
-| `SignatureMethod` | string | `hmac-sha256` | Default signature method (hmac-sha256/hmac-sha1 or custom) |
+| Variable          | Type   | Default                                  | Description                                                |
+| ----------------- | ------ | ---------------------------------------- | ---------------------------------------------------------- |
+| `ProjectName`     | string | —                                        | Kebab-case project name                                    |
+| `Description`     | string | `Webhook receiver and sender with retry` | Project description                                        |
+| `SignatureMethod` | string | `hmac-sha256`                            | Default signature method (hmac-sha256/hmac-sha1 or custom) |
 
 ## Project layout
 

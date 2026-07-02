@@ -18,11 +18,11 @@ Project management integration with pluggable providers.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Project management integration with pluggable providers` | Project description |
-| `Provider` | string | `linear` | Default project management provider |
+| Variable      | Type   | Default                                                   | Description                         |
+| ------------- | ------ | --------------------------------------------------------- | ----------------------------------- |
+| `ProjectName` | string | --                                                        | Kebab-case project name             |
+| `Description` | string | `Project management integration with pluggable providers` | Project description                 |
+| `Provider`    | string | `linear`                                                  | Default project management provider |
 
 ## Project layout
 

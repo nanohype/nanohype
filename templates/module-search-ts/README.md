@@ -15,11 +15,11 @@ Full-text search with pluggable backends.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Full-text search with pluggable backends` | Project description |
-| `SearchProvider` | string | `typesense` | Default search provider (typesense/algolia/meilisearch/mock or custom) |
+| Variable         | Type   | Default                                    | Description                                                            |
+| ---------------- | ------ | ------------------------------------------ | ---------------------------------------------------------------------- |
+| `ProjectName`    | string | --                                         | Kebab-case project name                                                |
+| `Description`    | string | `Full-text search with pluggable backends` | Project description                                                    |
+| `SearchProvider` | string | `typesense`                                | Default search provider (typesense/algolia/meilisearch/mock or custom) |
 
 ## Project layout
 

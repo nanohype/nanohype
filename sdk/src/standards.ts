@@ -51,10 +51,7 @@ const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
  * so a misnamed or corrupted file fails fast rather than producing
  * confusing downstream errors.
  */
-export async function loadStandard(
-  source: CatalogSource,
-  name: StandardName,
-): Promise<Standard> {
+export async function loadStandard(source: CatalogSource, name: StandardName): Promise<Standard> {
   const standard = await source.fetchStandard(name);
   const expected = EXPECTED_KIND[name];
   if (standard.kind !== expected) {

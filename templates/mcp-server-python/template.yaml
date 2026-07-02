@@ -1,13 +1,13 @@
 apiVersion: nanohype/v1
 
 name: mcp-server-python
-displayName: "MCP Server (Python)"
+displayName: 'MCP Server (Python)'
 description: >
   Scaffolds a Model Context Protocol server in Python using the official
   mcp SDK and FastMCP. Produces a working server with example tools and
   resources, configurable for stdio or streamable-http transport. Uses
   Pydantic for input validation and structlog for structured logging.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
@@ -16,45 +16,45 @@ tags: [mcp, python, ai, tools, server]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as package name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as package name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for pyproject.toml and README"
-    prompt: "Project description"
-    default: "An MCP server in Python"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for pyproject.toml and README'
+    prompt: 'Project description'
+    default: 'An MCP server in Python'
 
   - name: Transport
     type: string
-    placeholder: "__TRANSPORT__"
-    description: "Server transport protocol (stdio or http)"
-    prompt: "Transport"
-    default: "stdio"
+    placeholder: '__TRANSPORT__'
+    description: 'Server transport protocol (stdio or http)'
+    prompt: 'Transport'
+    default: 'stdio'
 
   - name: IncludeTests
     type: bool
-    placeholder: "__INCLUDE_TESTS__"
-    description: "Include test suite with pytest"
-    prompt: "Include tests?"
+    placeholder: '__INCLUDE_TESTS__'
+    description: 'Include test suite with pytest'
+    prompt: 'Include tests?'
     default: true
 
 conditionals:
-  - path: "tests/"
+  - path: 'tests/'
     when: IncludeTests
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Install Python dependencies"
+      description: 'Install Python dependencies'
       run: "pip install -e '.[dev]'"
-      workdir: "."
+      workdir: '.'
 
 composition:
   pairsWith: [agentic-loop, eval-harness]
@@ -62,9 +62,9 @@ composition:
 
 prerequisites:
   - name: python
-    version: ">=3.10"
-    purpose: "Python runtime for the MCP server"
+    version: '>=3.10'
+    purpose: 'Python runtime for the MCP server'
     optional: false
   - name: pip
-    purpose: "Package management and dependency installation"
+    purpose: 'Package management and dependency installation'
     optional: false

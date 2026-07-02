@@ -20,10 +20,10 @@ Reads templates from a GitHub repository via the GitHub API. Supports optional a
 import { GitHubSource } from '@nanohype/sdk';
 
 const source = new GitHubSource({
-  repo: 'nanohype/nanohype',   // default
-  ref: 'main',                  // default
+  repo: 'nanohype/nanohype', // default
+  ref: 'main', // default
   token: process.env.GITHUB_TOKEN, // optional, for rate limits
-  cacheTtl: 5 * 60 * 1000,     // 5 minutes, default
+  cacheTtl: 5 * 60 * 1000, // 5 minutes, default
 });
 
 // List all templates in the catalog
@@ -100,10 +100,14 @@ import { LocalSource, renderComposite } from '@nanohype/sdk';
 const source = new LocalSource({ rootDir: './nanohype' });
 const composite = await source.fetchComposite('ai-chatbot');
 
-const result = await renderComposite(composite, {
-  ProjectName: 'my-bot',
-  IncludeAuth: true,
-}, source);
+const result = await renderComposite(
+  composite,
+  {
+    ProjectName: 'my-bot',
+    IncludeAuth: true,
+  },
+  source,
+);
 
 // result.files    — merged SkeletonFile[] from all included templates
 // result.warnings — file collisions, prerequisite notices
@@ -146,29 +150,29 @@ Throws `VariableResolutionError` on missing required values, circular references
 
 Key interfaces exported from `@nanohype/sdk`:
 
-| Type | Description |
-|---|---|
-| `TemplateManifest` | Parsed `template.yaml` — metadata, variables, conditionals, hooks, prerequisites, composition hints |
-| `TemplateVariable` | Variable declaration — name, type (`string`, `bool`, `enum`, `int`), placeholder, default, validation |
-| `SkeletonFile` | A file in the skeleton tree — `{ path, content }` |
-| `CatalogEntry` | Summary of a template for listing — name, displayName, description, version, tags |
-| `RenderResult` | Output of `renderTemplate` — rendered files, warnings, hooks |
-| `CompositeManifest` | Parsed composite YAML — variables, template entries with conditions and path overrides |
-| `CompositeEntry` | A single template reference within a composite — template name, path, root flag, variables, condition |
-| `CompositeCatalogEntry` | Summary of a composite for listing — includes `templateCount` |
-| `CompositeRenderResult` | Output of `renderComposite` — merged files, warnings, hooks, per-entry metadata |
-| `CatalogSource` | Interface for template/composite discovery and fetching |
-| `GitHubSourceOptions` | Constructor options for `GitHubSource` — repo, ref, token, cacheTtl |
-| `LocalSourceOptions` | Constructor options for `LocalSource` — rootDir |
+| Type                    | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `TemplateManifest`      | Parsed `template.yaml` — metadata, variables, conditionals, hooks, prerequisites, composition hints   |
+| `TemplateVariable`      | Variable declaration — name, type (`string`, `bool`, `enum`, `int`), placeholder, default, validation |
+| `SkeletonFile`          | A file in the skeleton tree — `{ path, content }`                                                     |
+| `CatalogEntry`          | Summary of a template for listing — name, displayName, description, version, tags                     |
+| `RenderResult`          | Output of `renderTemplate` — rendered files, warnings, hooks                                          |
+| `CompositeManifest`     | Parsed composite YAML — variables, template entries with conditions and path overrides                |
+| `CompositeEntry`        | A single template reference within a composite — template name, path, root flag, variables, condition |
+| `CompositeCatalogEntry` | Summary of a composite for listing — includes `templateCount`                                         |
+| `CompositeRenderResult` | Output of `renderComposite` — merged files, warnings, hooks, per-entry metadata                       |
+| `CatalogSource`         | Interface for template/composite discovery and fetching                                               |
+| `GitHubSourceOptions`   | Constructor options for `GitHubSource` — repo, ref, token, cacheTtl                                   |
+| `LocalSourceOptions`    | Constructor options for `LocalSource` — rootDir                                                       |
 
 ## Errors
 
 All SDK errors extend `NanohypeError`:
 
-| Error | Thrown by |
-|---|---|
-| `NanohypeError` | Base class — source fetch failures, unsupported API versions |
-| `ManifestValidationError` | `validateManifest`, `validateCompositeManifest` — structural violations |
+| Error                     | Thrown by                                                                                          |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `NanohypeError`           | Base class — source fetch failures, unsupported API versions                                       |
+| `ManifestValidationError` | `validateManifest`, `validateCompositeManifest` — structural violations                            |
 | `VariableResolutionError` | `resolveVariables`, `renderTemplate`, `renderComposite` — missing values, bad types, circular refs |
 
 ## License

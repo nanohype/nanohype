@@ -3,7 +3,7 @@
 A composite GitHub Action that asserts **rendered** Kubernetes manifests carry no
 unfilled sentinels. It's the render-time complement to a source-file
 no-placeholders gate: a source scan catches sentinels you can see in the repo,
-this catches the ones that only appear *after* templating — chart defaults,
+this catches the ones that only appear _after_ templating — chart defaults,
 vendored charts, or an ARN a template builds from a value it never received.
 
 ## What it flags
@@ -44,10 +44,10 @@ action against the output:
 
 ## Inputs
 
-| input | default | description |
-|-------|---------|-------------|
-| `manifests` | `rendered` | Directory of rendered manifests to scan. |
-| `exclude` | `''` | Extended-regex matched against `file:line:match` result lines, to drop known-legitimate hits. |
+| input       | default    | description                                                                                   |
+| ----------- | ---------- | --------------------------------------------------------------------------------------------- |
+| `manifests` | `rendered` | Directory of rendered manifests to scan.                                                      |
+| `exclude`   | `''`       | Extended-regex matched against `file:line:match` result lines, to drop known-legitimate hits. |
 
 An empty manifests directory fails the action (a render step that produced nothing
 is a misconfiguration, not a pass).

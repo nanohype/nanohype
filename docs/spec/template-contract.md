@@ -18,15 +18,15 @@ The contract is intentionally tool-agnostic. It specifies _what_ a template decl
 
 ## 2. Terminology
 
-| Term | Definition |
-|---|---|
-| **Template** | A named, versioned unit in the catalog. Contains a manifest and a skeleton. |
-| **Manifest** | The `template.yaml` file. Declares metadata, variables, conditionals, hooks, composition hints, and prerequisites. |
-| **Skeleton** | The `skeleton/` directory. Contains files and directories exactly as they should appear in the generated output, with placeholder tokens standing in for variable values. |
+| Term            | Definition                                                                                                                                                                                                                               |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Template**    | A named, versioned unit in the catalog. Contains a manifest and a skeleton.                                                                                                                                                              |
+| **Manifest**    | The `template.yaml` file. Declares metadata, variables, conditionals, hooks, composition hints, and prerequisites.                                                                                                                       |
+| **Skeleton**    | The `skeleton/` directory. Contains files and directories exactly as they should appear in the generated output, with placeholder tokens standing in for variable values.                                                                |
 | **Placeholder** | A literal string (e.g. `__PROJECT_NAME__`) that appears in skeleton file content or file/directory names. Each variable declares its own placeholder. Consumers perform textual find-and-replace — no template engine syntax is imposed. |
-| **Contract** | This specification. The set of guarantees a template makes to consumers and vice versa. |
-| **Consumer** | Any tool that reads a template manifest, collects variable values from the user, and produces output by copying the skeleton with placeholders resolved. |
-| **Catalog** | The collection of all templates in a nanohype repository. |
+| **Contract**    | This specification. The set of guarantees a template makes to consumers and vice versa.                                                                                                                                                  |
+| **Consumer**    | Any tool that reads a template manifest, collects variable values from the user, and produces output by copying the skeleton with placeholders resolved.                                                                                 |
+| **Catalog**     | The collection of all templates in a nanohype repository.                                                                                                                                                                                |
 
 ---
 
@@ -63,23 +63,23 @@ The manifest is a YAML document. The root object has the following fields:
 
 ### 4.1 Top-Level Fields
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `apiVersion` | string | **yes** | Schema version. MUST be `nanohype/v1`. |
-| `kind` | string | no | Execution mode: `template` (default) or `brief`. See [4.1.1 Kind](#411-kind). |
-| `name` | string | **yes** | Template identifier. Kebab-case (`^[a-z][a-z0-9-]*$`). Unique within the catalog. |
-| `displayName` | string | **yes** | Human-readable name. Used in UIs and listings. |
-| `description` | string | **yes** | Multi-line description of what the template produces. |
-| `version` | string | **yes** | Template version. MUST be valid semver (e.g. `"0.1.0"`). |
-| `license` | string | no | SPDX license identifier for the _scaffolded output_ (not the template itself). |
-| `persona` | array of strings | no | Who this template serves (e.g. `[engineering]`, `[qa, engineering]`). See [4.1.2 Persona](#412-persona). |
-| `category` | string | no | Catalog grouping (e.g. `ai-systems`, `design`, `operations`). See [4.1.3 Category](#413-category). |
-| `tags` | array of strings | **yes** | Lowercase, searchable tags. Minimum one tag. |
-| `variables` | array of [Variable](#42-variable-object) | **yes** | Ordered list of template variables. MAY be empty (`[]`). |
-| `conditionals` | array of [Conditional](#43-conditional-object) | no | File inclusion/exclusion rules. |
-| `hooks` | [Hooks](#44-hooks-object) | no | Lifecycle commands. |
-| `composition` | [Composition](#45-composition-object) | no | Advisory relationships to other templates. |
-| `prerequisites` | array of [Prerequisite](#46-prerequisite-object) | no | External tool requirements. |
+| Field           | Type                                             | Required | Description                                                                                              |
+| --------------- | ------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------- |
+| `apiVersion`    | string                                           | **yes**  | Schema version. MUST be `nanohype/v1`.                                                                   |
+| `kind`          | string                                           | no       | Execution mode: `template` (default) or `brief`. See [4.1.1 Kind](#411-kind).                            |
+| `name`          | string                                           | **yes**  | Template identifier. Kebab-case (`^[a-z][a-z0-9-]*$`). Unique within the catalog.                        |
+| `displayName`   | string                                           | **yes**  | Human-readable name. Used in UIs and listings.                                                           |
+| `description`   | string                                           | **yes**  | Multi-line description of what the template produces.                                                    |
+| `version`       | string                                           | **yes**  | Template version. MUST be valid semver (e.g. `"0.1.0"`).                                                 |
+| `license`       | string                                           | no       | SPDX license identifier for the _scaffolded output_ (not the template itself).                           |
+| `persona`       | array of strings                                 | no       | Who this template serves (e.g. `[engineering]`, `[qa, engineering]`). See [4.1.2 Persona](#412-persona). |
+| `category`      | string                                           | no       | Catalog grouping (e.g. `ai-systems`, `design`, `operations`). See [4.1.3 Category](#413-category).       |
+| `tags`          | array of strings                                 | **yes**  | Lowercase, searchable tags. Minimum one tag.                                                             |
+| `variables`     | array of [Variable](#42-variable-object)         | **yes**  | Ordered list of template variables. MAY be empty (`[]`).                                                 |
+| `conditionals`  | array of [Conditional](#43-conditional-object)   | no       | File inclusion/exclusion rules.                                                                          |
+| `hooks`         | [Hooks](#44-hooks-object)                        | no       | Lifecycle commands.                                                                                      |
+| `composition`   | [Composition](#45-composition-object)            | no       | Advisory relationships to other templates.                                                               |
+| `prerequisites` | array of [Prerequisite](#46-prerequisite-object) | no       | External tool requirements.                                                                              |
 
 #### 4.1.1 Kind
 
@@ -110,67 +110,67 @@ Consumers MAY use this field for catalog organization and filtering. There is no
 
 Each entry in `variables` describes one user-supplied value and how it maps into the skeleton.
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | **yes** | Variable identifier. PascalCase (`^[A-Z][a-zA-Z0-9]*$`). Unique within the template. |
-| `type` | string | **yes** | One of: `string`, `bool`, `enum`, `int`. |
-| `placeholder` | string | **yes** | The literal token to find-and-replace in skeleton files and paths. |
-| `description` | string | **yes** | What this variable controls. |
-| `prompt` | string | no | Human-friendly prompt text. Consumers MAY use this when interactively collecting values. Defaults to `description` if absent. |
-| `default` | (varies) | no | Default value. Type must match `type`. See [5.3 Defaults](#53-defaults). |
-| `required` | boolean | no | Whether the user must supply a value. Defaults to `false`. When `true` and no `default` is set, the consumer MUST obtain a value before proceeding. |
-| `validation` | [Validation](#421-validation-object) | no | Constraints on the value. |
-| `options` | array of strings | conditional | **Required** when `type` is `enum`. The allowed values. MUST NOT be present when `type` is not `enum`. |
+| Field         | Type                                 | Required    | Description                                                                                                                                         |
+| ------------- | ------------------------------------ | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | string                               | **yes**     | Variable identifier. PascalCase (`^[A-Z][a-zA-Z0-9]*$`). Unique within the template.                                                                |
+| `type`        | string                               | **yes**     | One of: `string`, `bool`, `enum`, `int`.                                                                                                            |
+| `placeholder` | string                               | **yes**     | The literal token to find-and-replace in skeleton files and paths.                                                                                  |
+| `description` | string                               | **yes**     | What this variable controls.                                                                                                                        |
+| `prompt`      | string                               | no          | Human-friendly prompt text. Consumers MAY use this when interactively collecting values. Defaults to `description` if absent.                       |
+| `default`     | (varies)                             | no          | Default value. Type must match `type`. See [5.3 Defaults](#53-defaults).                                                                            |
+| `required`    | boolean                              | no          | Whether the user must supply a value. Defaults to `false`. When `true` and no `default` is set, the consumer MUST obtain a value before proceeding. |
+| `validation`  | [Validation](#421-validation-object) | no          | Constraints on the value.                                                                                                                           |
+| `options`     | array of strings                     | conditional | **Required** when `type` is `enum`. The allowed values. MUST NOT be present when `type` is not `enum`.                                              |
 
 #### 4.2.1 Validation Object
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `pattern` | string | no | ECMAScript regular expression. Applicable to `string` and `int` types. The full value must match (anchored). |
-| `message` | string | no | Human-readable error message when validation fails. |
+| Field     | Type   | Required | Description                                                                                                  |
+| --------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------ |
+| `pattern` | string | no       | ECMAScript regular expression. Applicable to `string` and `int` types. The full value must match (anchored). |
+| `message` | string | no       | Human-readable error message when validation fails.                                                          |
 
 ### 4.3 Conditional Object
 
 Each entry controls whether a skeleton path is included in the output.
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `path` | string | **yes** | Relative path from `skeleton/` root. May refer to a file or a directory. |
-| `when` | string | **yes** | Name of a variable. MUST reference a variable of type `bool`. |
+| Field  | Type   | Required | Description                                                              |
+| ------ | ------ | -------- | ------------------------------------------------------------------------ |
+| `path` | string | **yes**  | Relative path from `skeleton/` root. May refer to a file or a directory. |
+| `when` | string | **yes**  | Name of a variable. MUST reference a variable of type `bool`.            |
 
 ### 4.4 Hooks Object
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `pre` | array of [Hook](#441-hook-object) | no | Commands run before skeleton expansion. |
-| `post` | array of [Hook](#441-hook-object) | no | Commands run after skeleton expansion. |
+| Field  | Type                              | Required | Description                             |
+| ------ | --------------------------------- | -------- | --------------------------------------- |
+| `pre`  | array of [Hook](#441-hook-object) | no       | Commands run before skeleton expansion. |
+| `post` | array of [Hook](#441-hook-object) | no       | Commands run after skeleton expansion.  |
 
 #### 4.4.1 Hook Object
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | **yes** | Identifier for the hook (for logging and user confirmation). |
-| `description` | string | **yes** | What this hook does. |
-| `run` | string | **yes** | Shell command to execute. Interpreted by the system shell (`sh -c`). |
-| `workdir` | string | no | Working directory, relative to the output root. Defaults to `"."`. |
+| Field         | Type   | Required | Description                                                          |
+| ------------- | ------ | -------- | -------------------------------------------------------------------- |
+| `name`        | string | **yes**  | Identifier for the hook (for logging and user confirmation).         |
+| `description` | string | **yes**  | What this hook does.                                                 |
+| `run`         | string | **yes**  | Shell command to execute. Interpreted by the system shell (`sh -c`). |
+| `workdir`     | string | no       | Working directory, relative to the output root. Defaults to `"."`.   |
 
 ### 4.5 Composition Object
 
 All fields are advisory. Consumers MAY surface this information to users but MUST NOT enforce it.
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `pairsWith` | array of strings | no | Template `name` values that complement this template. |
-| `nestsInside` | array of strings | no | Template `name` values that this template can be scaffolded within. |
+| Field         | Type             | Required | Description                                                         |
+| ------------- | ---------------- | -------- | ------------------------------------------------------------------- |
+| `pairsWith`   | array of strings | no       | Template `name` values that complement this template.               |
+| `nestsInside` | array of strings | no       | Template `name` values that this template can be scaffolded within. |
 
 ### 4.6 Prerequisite Object
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | **yes** | Binary or tool name (as it would appear on `$PATH`). |
-| `version` | string | no | Semver range (e.g. `">=1.22"`, `"^3.0.0"`). |
-| `purpose` | string | **yes** | Why this prerequisite is needed. |
-| `optional` | boolean | no | If `true`, the consumer SHOULD warn but MUST NOT block. Defaults to `false`. |
+| Field      | Type    | Required | Description                                                                  |
+| ---------- | ------- | -------- | ---------------------------------------------------------------------------- |
+| `name`     | string  | **yes**  | Binary or tool name (as it would appear on `$PATH`).                         |
+| `version`  | string  | no       | Semver range (e.g. `">=1.22"`, `"^3.0.0"`).                                  |
+| `purpose`  | string  | **yes**  | Why this prerequisite is needed.                                             |
+| `optional` | boolean | no       | If `true`, the consumer SHOULD warn but MUST NOT block. Defaults to `false`. |
 
 ---
 
@@ -178,12 +178,12 @@ All fields are advisory. Consumers MAY surface this information to users but MUS
 
 ### 5.1 Types
 
-| Type | YAML representation | Placeholder substitution |
-|---|---|---|
-| `string` | scalar string | Literal text replacement. |
-| `bool` | `true` / `false` | Replaced with the string `"true"` or `"false"`. Primary use is in conditionals; placeholder substitution in file content is permitted but uncommon. |
-| `int` | integer scalar | Replaced with the decimal string representation. |
-| `enum` | scalar string (one of `options`) | Literal text replacement, same as `string`. |
+| Type     | YAML representation              | Placeholder substitution                                                                                                                            |
+| -------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `string` | scalar string                    | Literal text replacement.                                                                                                                           |
+| `bool`   | `true` / `false`                 | Replaced with the string `"true"` or `"false"`. Primary use is in conditionals; placeholder substitution in file content is permitted but uncommon. |
+| `int`    | integer scalar                   | Replaced with the decimal string representation.                                                                                                    |
+| `enum`   | scalar string (one of `options`) | Literal text replacement, same as `string`.                                                                                                         |
 
 ### 5.2 Placeholders
 
@@ -254,14 +254,14 @@ Conditionals control which skeleton files appear in the output.
 variables:
   - name: IncludeRelease
     type: bool
-    placeholder: "__INCLUDE_RELEASE__"
-    description: "Include GoReleaser configuration"
+    placeholder: '__INCLUDE_RELEASE__'
+    description: 'Include GoReleaser configuration'
     default: false
 
 conditionals:
-  - path: ".goreleaser.yaml"
+  - path: '.goreleaser.yaml'
     when: IncludeRelease
-  - path: "scripts/release.sh"
+  - path: 'scripts/release.sh'
     when: IncludeRelease
 ```
 
@@ -307,10 +307,10 @@ This model treats the user as the trust boundary. The template declares intent; 
 
 Consumers SHOULD make the following environment variables available to hooks:
 
-| Variable | Value |
-|---|---|
-| `NANOHYPE_TEMPLATE_NAME` | The template `name`. |
-| `NANOHYPE_OUTPUT_DIR` | Absolute path to the output root. |
+| Variable                 | Value                             |
+| ------------------------ | --------------------------------- |
+| `NANOHYPE_TEMPLATE_NAME` | The template `name`.              |
+| `NANOHYPE_OUTPUT_DIR`    | Absolute path to the output root. |
 
 Consumers MAY expose resolved template variables as environment variables (e.g. `NANOHYPE_VAR_ProjectName`). This is optional and not guaranteed — hook authors SHOULD NOT depend on it without checking.
 
@@ -354,10 +354,10 @@ Consumers SHOULD check prerequisites **before running hooks** (step 4 in the lif
 
 ### 9.3 Failure Behavior
 
-| `optional` | Prerequisite missing | Behavior |
-|---|---|---|
-| `false` (default) | yes | Consumer MUST warn the user. Consumer SHOULD block and MAY proceed if the user explicitly overrides. |
-| `true` | yes | Consumer MUST warn the user. Consumer MUST NOT block. |
+| `optional`        | Prerequisite missing | Behavior                                                                                             |
+| ----------------- | -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `false` (default) | yes                  | Consumer MUST warn the user. Consumer SHOULD block and MAY proceed if the user explicitly overrides. |
+| `true`            | yes                  | Consumer MUST warn the user. Consumer MUST NOT block.                                                |
 
 The warning MUST include the `purpose` field so the user understands what will not work.
 
@@ -415,83 +415,83 @@ A complete `template.yaml` for a Go CLI application:
 apiVersion: nanohype/v1
 
 name: go-cli
-displayName: "Go CLI Application"
+displayName: 'Go CLI Application'
 description: >
   Scaffolds a Go CLI application using Cobra for command structure,
   Viper for configuration management, and log/slog for structured logging.
   Produces a buildable binary with a root command, version subcommand,
   config file support, and a Makefile. Optionally includes GoReleaser
   configuration and a GitHub Actions release workflow.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 tags: [go, cli, cobra, viper, slog]
 
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as binary name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as binary name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Org
     type: string
-    placeholder: "__ORG__"
-    description: "GitHub organization or username"
-    prompt: "GitHub org/username"
+    placeholder: '__ORG__'
+    description: 'GitHub organization or username'
+    prompt: 'GitHub org/username'
     required: true
     validation:
-      pattern: "^[a-zA-Z0-9][a-zA-Z0-9-]*$"
-      message: "Must be a valid GitHub org or username"
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9-]*$'
+      message: 'Must be a valid GitHub org or username'
 
   - name: GoModule
     type: string
-    placeholder: "__GO_MODULE__"
-    description: "Full Go module path"
-    prompt: "Go module path"
-    default: "github.com/${Org}/${ProjectName}"
+    placeholder: '__GO_MODULE__'
+    description: 'Full Go module path'
+    prompt: 'Go module path'
+    default: 'github.com/${Org}/${ProjectName}'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9./-]*$"
-      message: "Must be a valid Go module path"
+      pattern: '^[a-z][a-z0-9./-]*$'
+      message: 'Must be a valid Go module path'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for help text and README"
-    prompt: "Project description"
-    default: "A CLI application"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for help text and README'
+    prompt: 'Project description'
+    default: 'A CLI application'
 
   - name: IncludeRelease
     type: bool
-    placeholder: "__INCLUDE_RELEASE__"
-    description: "Include GoReleaser configuration and GitHub Actions release workflow"
-    prompt: "Include release automation?"
+    placeholder: '__INCLUDE_RELEASE__'
+    description: 'Include GoReleaser configuration and GitHub Actions release workflow'
+    prompt: 'Include release automation?'
     default: true
 
   - name: LogFormat
     type: enum
-    placeholder: "__LOG_FORMAT__"
-    description: "Default structured log output format"
-    prompt: "Log format"
-    default: "json"
-    options: ["json", "text", "pretty"]
+    placeholder: '__LOG_FORMAT__'
+    description: 'Default structured log output format'
+    prompt: 'Log format'
+    default: 'json'
+    options: ['json', 'text', 'pretty']
 
 conditionals:
-  - path: ".goreleaser.yaml"
+  - path: '.goreleaser.yaml'
     when: IncludeRelease
-  - path: ".github/workflows/release.yml"
+  - path: '.github/workflows/release.yml'
     when: IncludeRelease
 
 hooks:
   post:
     - name: install-dependencies
-      description: "Initialize Go module and tidy dependencies"
-      run: "go mod tidy"
-      workdir: "."
+      description: 'Initialize Go module and tidy dependencies'
+      run: 'go mod tidy'
+      workdir: '.'
 
 composition:
   pairsWith: [eval-harness, infra-fly]
@@ -499,12 +499,12 @@ composition:
 
 prerequisites:
   - name: go
-    version: ">=1.24"
-    purpose: "Go compilation and module management"
+    version: '>=1.24'
+    purpose: 'Go compilation and module management'
     optional: false
   - name: goreleaser
-    version: ">=2.0"
-    purpose: "Automated release builds (only needed if release config is included)"
+    version: '>=2.0'
+    purpose: 'Automated release builds (only needed if release config is included)'
     optional: true
 ```
 

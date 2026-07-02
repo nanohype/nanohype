@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: agent-fleet
-displayName: "Agent Fleet (kagent + AgentFleet CR)"
+displayName: 'Agent Fleet (kagent + AgentFleet CR)'
 description: >
   Scaffolds the AI-workload composite on top of a Platform tenant.
   Produces an AgentFleet CR (agents.nanohype.dev/v1alpha1) composing
@@ -10,7 +10,7 @@ description: >
   model resolution and Guardrails. Pairs with k8s-app-tenant — the
   Platform CR there owns the tenant boundary; this composes the AI
   pieces inside that boundary.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
@@ -19,67 +19,67 @@ tags: [kubernetes, kagent, bedrock, agents, agentgateway, keda, nanohype]
 variables:
   - name: FleetName
     type: string
-    placeholder: "__FLEET_NAME__"
-    description: "Kebab-case fleet name — used as AgentFleet CR name and label selector."
-    prompt: "Fleet name"
+    placeholder: '__FLEET_NAME__'
+    description: 'Kebab-case fleet name — used as AgentFleet CR name and label selector.'
+    prompt: 'Fleet name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Tenant
     type: string
-    placeholder: "__TENANT__"
+    placeholder: '__TENANT__'
     description: "Owning team — must match the Platform CR's spec.tenant."
-    prompt: "Owning team"
+    prompt: 'Owning team'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: AppName
     type: string
-    placeholder: "__APP_NAME__"
+    placeholder: '__APP_NAME__'
     description: "Companion Platform tenant name (matches k8s-app-tenant's AppName)."
-    prompt: "Platform tenant app name"
+    prompt: 'Platform tenant app name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: ModelFamily
     type: string
-    placeholder: "__MODEL_FAMILY__"
-    description: "Bedrock model family for the ModelGateway route. One of: anthropic, meta, mistral, cohere, amazon-titan, amazon-nova, stability."
-    prompt: "Model family"
-    default: "anthropic"
+    placeholder: '__MODEL_FAMILY__'
+    description: 'Bedrock model family for the ModelGateway route. One of: anthropic, meta, mistral, cohere, amazon-titan, amazon-nova, stability.'
+    prompt: 'Model family'
+    default: 'anthropic'
     validation:
-      pattern: "^(anthropic|meta|mistral|cohere|amazon-titan|amazon-nova|stability)$"
-      message: "Must be a Bedrock model family the operator accepts"
+      pattern: '^(anthropic|meta|mistral|cohere|amazon-titan|amazon-nova|stability)$'
+      message: 'Must be a Bedrock model family the operator accepts'
 
   - name: ModelId
     type: string
-    placeholder: "__MODEL_ID__"
-    description: "Bedrock model ID (full path including version)."
-    prompt: "Bedrock model ID"
-    default: "anthropic.claude-sonnet-4-6"
+    placeholder: '__MODEL_ID__'
+    description: 'Bedrock model ID (full path including version).'
+    prompt: 'Bedrock model ID'
+    default: 'anthropic.claude-sonnet-4-6'
 
   - name: RouteName
     type: string
-    placeholder: "__ROUTE_NAME__"
-    description: "ModelGateway route name. Referenced by each AgentFleet.spec.agents[].modelRoute."
-    prompt: "Model route name"
+    placeholder: '__ROUTE_NAME__'
+    description: 'ModelGateway route name. Referenced by each AgentFleet.spec.agents[].modelRoute.'
+    prompt: 'Model route name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: Compute
     type: string
-    placeholder: "__COMPUTE__"
-    description: "Accelerator class. Options: none (CPU-only), nvidia-l40s, nvidia-h100, neuron (Trn/Inf instances)."
-    prompt: "Accelerator class"
-    default: "none"
+    placeholder: '__COMPUTE__'
+    description: 'Accelerator class. Options: none (CPU-only), nvidia-l40s, nvidia-h100, neuron (Trn/Inf instances).'
+    prompt: 'Accelerator class'
+    default: 'none'
 
 conditionals: []
 
@@ -89,8 +89,8 @@ composition:
 
 prerequisites:
   - name: kubectl
-    version: ">=1.28"
-    purpose: "Apply the AgentFleet and ModelGateway CRs during initial setup"
+    version: '>=1.28'
+    purpose: 'Apply the AgentFleet and ModelGateway CRs during initial setup'
     optional: false
 
 hooks: {}
