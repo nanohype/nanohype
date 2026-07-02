@@ -161,7 +161,7 @@ The SDK lives at `sdk/` in this repo. See the [Consumer Implementation Guide](do
 - [Template Contract](docs/spec/template-contract.md) — the formal schema for `template.yaml`
 - [Composite Contract](docs/spec/composite-contract.md) — multi-template stack manifests
 - [Authoring Guide](docs/authoring-guide.md) — practical walkthrough for creating new templates
-- [Contributing](CONTRIBUTING.md) — how to add a template to the catalog
+- [Contributing](CONTRIBUTING.md) — how to add a template or composite to the catalog
 
 ### Reference Architectures
 
