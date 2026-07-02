@@ -175,4 +175,68 @@ describe('circuit breaker', () => {
     await expect(cb.exec(fail)).rejects.toThrow('boom');
     expect(cb.state()).toBe('open');
   });
+
+  it('fires onClose once when a half-open probe succeeds', async () => {
+    const clock = makeClock();
+    const onClose = vi.fn();
+    const cb = createCircuitBreaker({
+      ...baseConfig,
+      failureThreshold: 1,
+      now: clock.now,
+      onClose,
+    });
+
+    await expect(cb.exec(fail)).rejects.toThrow('boom');
+    expect(onClose).not.toHaveBeenCalled();
+
+    clock.tick(30_000);
+    await expect(cb.exec(ok)).resolves.toBe('ok');
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledWith('test');
+
+    // Further successes while closed don't re-fire it.
+    await expect(cb.exec(ok)).resolves.toBe('ok');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires onClose on reset() of a tripped breaker, but not of a closed one', async () => {
+    const clock = makeClock();
+    const onClose = vi.fn();
+    const cb = createCircuitBreaker({
+      ...baseConfig,
+      failureThreshold: 1,
+      now: clock.now,
+      onClose,
+    });
+
+    cb.reset(); // already closed — no transition
+    expect(onClose).not.toHaveBeenCalled();
+
+    await expect(cb.exec(fail)).rejects.toThrow('boom');
+    cb.reset();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('pairs onOpen and onClose across a full trip/recover cycle', async () => {
+    const clock = makeClock();
+    const onOpen = vi.fn();
+    const onClose = vi.fn();
+    const cb = createCircuitBreaker({
+      ...baseConfig,
+      failureThreshold: 1,
+      now: clock.now,
+      onOpen,
+      onClose,
+    });
+
+    await expect(cb.exec(fail)).rejects.toThrow('boom');
+    clock.tick(30_000);
+    await expect(cb.exec(ok)).resolves.toBe('ok');
+    await expect(cb.exec(fail)).rejects.toThrow('boom');
+    clock.tick(30_000);
+    await expect(cb.exec(ok)).resolves.toBe('ok');
+
+    expect(onOpen).toHaveBeenCalledTimes(2);
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
 });

@@ -2,7 +2,7 @@
   "name": "@nanohype/runtime",
   "version": "0.1.0",
   "private": true,
-  "description": "Zero-dependency TypeScript runtime primitives — the vendorable source of truth for circuit breaking, resilience, provider registries, WorkOS Directory access, and PII redaction",
+  "description": "TypeScript runtime primitives — the vendorable source of truth for circuit breaking, resilience, provider registries, WorkOS Directory access, PII redaction, metrics, and logging. Zero runtime dependencies beyond the @opentelemetry/api peer the observability modules assume (present in every tenant by the platform contract)",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -13,7 +13,12 @@
   "engines": {
     "node": ">=24"
   },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.9.1"
+  },
   "devDependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/sdk-metrics": "^2.8.0",
     "@types/node": "^24.13.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"

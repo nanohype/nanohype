@@ -23,11 +23,15 @@
  *
  * `onOpen` fires once per closed→open transition (not on every rejection
  * while already open), so a counter wired here matches the number of
- * trips, not the blast radius. `reset()` is an operator override that
- * force-closes and clears failure history.
+ * trips, not the blast radius. `onClose` is its mirror — once per
+ * open/half_open→closed transition (a successful half-open probe or an
+ * operator `reset()` of a tripped breaker) — so a paired gauge can be
+ * raised on trip and lowered on recovery without the caller tracking
+ * state itself. `reset()` is an operator override that force-closes and
+ * clears failure history.
  *
  * Zero dependencies. Observability is the caller's concern — wire
- * `onOpen` into whatever metrics surface the consumer has.
+ * `onOpen`/`onClose` into whatever metrics surface the consumer has.
  */
 
 export type CircuitState = 'closed' | 'open' | 'half_open';
@@ -59,6 +63,12 @@ export interface CircuitBreakerConfig {
   now?: () => number;
   /** Emitted once per closed→open transition. */
   onOpen?: (name: string) => void;
+  /**
+   * Emitted once per open/half_open→closed transition: a successful
+   * half-open probe, or `reset()` on a breaker that isn't closed. Never
+   * fired by `reset()` on an already-closed breaker.
+   */
+  onClose?: (name: string) => void;
 }
 
 export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker {
@@ -95,9 +105,11 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
     state: () => state,
 
     reset(): void {
+      const wasClosed = state === 'closed';
       state = 'closed';
       failures = [];
       halfOpenInFlight = false;
+      if (!wasClosed) cfg.onClose?.(cfg.name);
     },
 
     async exec<T>(fn: () => Promise<T>): Promise<T> {
@@ -122,6 +134,7 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
           state = 'closed';
           failures = [];
           halfOpenInFlight = false;
+          cfg.onClose?.(cfg.name);
           return result;
         } catch (err) {
           halfOpenInFlight = false;
