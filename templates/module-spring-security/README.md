@@ -12,21 +12,21 @@ Unlike the TypeScript [`module-auth-ts`](../module-auth-ts/), this module doesn'
 - **`ApiKeyAuthenticationFilter.java`** — `OncePerRequestFilter` that pulls the configured header (default `X-API-Key`), constructs an `ApiKeyAuthenticationToken`, and delegates to the shared `AuthenticationManager`
 - **`ApiKeyAuthenticationProvider.java`** — an `AuthenticationProvider` that validates tokens via a pluggable `ApiKeyValidator` bean
 - **`InMemoryApiKeyValidator.java`** — a default `ApiKeyValidator` implementation backed by a static map in properties (useful for bootstrapping; real deployments swap in a DB or secret-store-backed validator)
-- **`MethodSecurityConfig.java`** *(conditional)* — `@EnableMethodSecurity` with `prePostEnabled` so you can use `@PreAuthorize` / `@PostAuthorize` on service methods
-- **`TestSecurityConfig.java`** *(conditional)* — `@TestConfiguration` exposing a stub `JwtDecoder` for slice tests that need the security context to load without hitting a real OIDC issuer
-- **`SecurityConfigTest.java`** *(conditional)* — verifies the multi-provider filter chain accepts JWT + API-key authentication paths
+- **`MethodSecurityConfig.java`** _(conditional)_ — `@EnableMethodSecurity` with `prePostEnabled` so you can use `@PreAuthorize` / `@PostAuthorize` on service methods
+- **`TestSecurityConfig.java`** _(conditional)_ — `@TestConfiguration` exposing a stub `JwtDecoder` for slice tests that need the security context to load without hitting a real OIDC issuer
+- **`SecurityConfigTest.java`** _(conditional)_ — verifies the multi-provider filter chain accepts JWT + API-key authentication paths
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `JavaPackage` | string | `com.example.app` | Root Java package (dot form) |
-| `PackageDir` | string | `com/example/app` | Root Java package (slash form) |
-| `OidcIssuer` | string | `https://auth.example.com` | Default OIDC issuer (override via env var at runtime) |
-| `AllowedAudience` | string | `<ProjectName>` | Default JWT `aud` claim |
-| `IncludeMethodSecurity` | bool | `true` | Ship `@EnableMethodSecurity` config |
-| `IncludeTests` | bool | `true` | Ship test helpers |
+| Variable                | Type   | Default                    | Description                                           |
+| ----------------------- | ------ | -------------------------- | ----------------------------------------------------- |
+| `ProjectName`           | string | (required)                 | Kebab-case project name                               |
+| `JavaPackage`           | string | `com.example.app`          | Root Java package (dot form)                          |
+| `PackageDir`            | string | `com/example/app`          | Root Java package (slash form)                        |
+| `OidcIssuer`            | string | `https://auth.example.com` | Default OIDC issuer (override via env var at runtime) |
+| `AllowedAudience`       | string | `<ProjectName>`            | Default JWT `aud` claim                               |
+| `IncludeMethodSecurity` | bool   | `true`                     | Ship `@EnableMethodSecurity` config                   |
+| `IncludeTests`          | bool   | `true`                     | Ship test helpers                                     |
 
 ## Project layout
 

@@ -18,7 +18,7 @@
 export class TimeoutError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "TimeoutError";
+    this.name = 'TimeoutError';
   }
 }
 
@@ -26,7 +26,11 @@ export class TimeoutError extends Error {
  * Rejects with `TimeoutError` if `promise` does not settle within `ms`.
  * `label` names the operation in the error message for actionable logs.
  */
-export async function withTimeout<T>(promise: Promise<T>, ms: number, label = "operation"): Promise<T> {
+export async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label = 'operation',
+): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const deadline = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new TimeoutError(`${label} timed out after ${ms}ms`)), ms);

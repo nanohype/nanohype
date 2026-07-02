@@ -14,13 +14,13 @@ Scaffolds an agent brief for producing a customer onboarding playbook. The rende
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Internal project name |
-| `ProductName` | string | (required) | Customer-facing product name |
-| `OnboardingModel` | string | `guided` | Onboarding approach |
-| `TimeToValue` | string | `30 days` | Target time to first value realization |
-| `KeyMilestones` | string | `""` | Comma-separated key milestones |
+| Variable          | Type   | Default    | Description                            |
+| ----------------- | ------ | ---------- | -------------------------------------- |
+| `ProjectName`     | string | (required) | Internal project name                  |
+| `ProductName`     | string | (required) | Customer-facing product name           |
+| `OnboardingModel` | string | `guided`   | Onboarding approach                    |
+| `TimeToValue`     | string | `30 days`  | Target time to first value realization |
+| `KeyMilestones`   | string | `""`       | Comma-separated key milestones         |
 
 ## Project layout
 

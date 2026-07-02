@@ -1,4 +1,4 @@
-import yaml from "js-yaml";
+import yaml from 'js-yaml';
 import type {
   Catalog,
   CatalogEntry,
@@ -9,12 +9,12 @@ import type {
   Standard,
   StandardName,
   TemplateManifest,
-} from "../types.js";
-import type { CatalogSource, GitHubSourceOptions } from "../source.js";
-import { NanohypeError } from "../errors.js";
-import { isContractRepo } from "../contracts.js";
-import { isStandardName } from "../standards.js";
-import { isCatalogName } from "../validator.js";
+} from '../types.js';
+import type { CatalogSource, GitHubSourceOptions } from '../source.js';
+import { NanohypeError } from '../errors.js';
+import { isContractRepo } from '../contracts.js';
+import { isStandardName } from '../standards.js';
+import { isCatalogName } from '../validator.js';
 
 interface CacheEntry<T> {
   data: T;
@@ -36,15 +36,12 @@ async function mapConcurrent<T, R>(
 ): Promise<R[]> {
   const results = new Array<R>(items.length);
   let next = 0;
-  const workers = Array.from(
-    { length: Math.min(limit, items.length) },
-    async () => {
-      while (next < items.length) {
-        const i = next++;
-        results[i] = await fn(items[i]);
-      }
-    },
-  );
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++;
+      results[i] = await fn(items[i]);
+    }
+  });
   await Promise.all(workers);
   return results;
 }
@@ -63,12 +60,11 @@ export class GitHubSource implements CatalogSource {
   private readonly requestTimeout: number;
 
   private catalogCache: CacheEntry<CatalogEntry[]> | null = null;
-  private compositeCatalogCache: CacheEntry<CompositeCatalogEntry[]> | null =
-    null;
+  private compositeCatalogCache: CacheEntry<CompositeCatalogEntry[]> | null = null;
 
   constructor(options: GitHubSourceOptions = {}) {
-    this.repo = options.repo ?? "nanohype/nanohype";
-    this.ref = options.ref ?? "main";
+    this.repo = options.repo ?? 'nanohype/nanohype';
+    this.ref = options.ref ?? 'main';
     // Fall back to GITHUB_TOKEN so a private contract repo resolves with no caller
     // config when the env var is present.
     this.token = options.token ?? process.env.GITHUB_TOKEN;
@@ -78,7 +74,7 @@ export class GitHubSource implements CatalogSource {
 
   private headers(): Record<string, string> {
     const h: Record<string, string> = {
-      Accept: "application/vnd.github.v3+json",
+      Accept: 'application/vnd.github.v3+json',
     };
     if (this.token) h.Authorization = `Bearer ${this.token}`;
     return h;
@@ -91,10 +87,8 @@ export class GitHubSource implements CatalogSource {
         signal: AbortSignal.timeout(this.requestTimeout),
       });
     } catch (err) {
-      if (err instanceof Error && err.name === "TimeoutError") {
-        throw new NanohypeError(
-          `GitHub request timed out after ${this.requestTimeout}ms: ${url}`,
-        );
+      if (err instanceof Error && err.name === 'TimeoutError') {
+        throw new NanohypeError(`GitHub request timed out after ${this.requestTimeout}ms: ${url}`);
       }
       throw err;
     }
@@ -114,19 +108,16 @@ export class GitHubSource implements CatalogSource {
     const res = await this.get(
       `https://api.github.com/repos/${this.repo}/contents/templates?ref=${this.ref}`,
     );
-    if (!res.ok)
-      throw new NanohypeError(`Failed to list catalog: ${res.status}`);
+    if (!res.ok) throw new NanohypeError(`Failed to list catalog: ${res.status}`);
 
     const dirs = (await res.json()) as { name: string; type: string }[];
-    const templateDirs = dirs.filter((d) => d.type === "dir");
+    const templateDirs = dirs.filter((d) => d.type === 'dir');
 
     const fetched = await mapConcurrent(
       templateDirs,
       FETCH_CONCURRENCY,
       async (dir): Promise<CatalogEntry | null> => {
-        const manifestRes = await this.get(
-          this.raw(`templates/${dir.name}/template.yaml`),
-        );
+        const manifestRes = await this.get(this.raw(`templates/${dir.name}/template.yaml`));
         // A directory without a template.yaml is not a template — skip it.
         // Anything else non-OK (rate limit, outage) must not silently shrink
         // the catalog.
@@ -172,17 +163,13 @@ export class GitHubSource implements CatalogSource {
     }
 
     // Fetch manifest
-    const manifestRes = await this.get(
-      this.raw(`templates/${name}/template.yaml`),
-    );
+    const manifestRes = await this.get(this.raw(`templates/${name}/template.yaml`));
     if (!manifestRes.ok) {
-      throw new NanohypeError(
-        `Template '${name}' not found: ${manifestRes.status}`,
-      );
+      throw new NanohypeError(`Template '${name}' not found: ${manifestRes.status}`);
     }
     const manifest = yaml.load(await manifestRes.text()) as TemplateManifest;
 
-    if (manifest.apiVersion !== "nanohype/v1") {
+    if (manifest.apiVersion !== 'nanohype/v1') {
       throw new NanohypeError(`Unsupported apiVersion: ${manifest.apiVersion}`);
     }
 
@@ -190,8 +177,7 @@ export class GitHubSource implements CatalogSource {
     const treeRes = await this.get(
       `https://api.github.com/repos/${this.repo}/git/trees/${this.ref}?recursive=1`,
     );
-    if (!treeRes.ok)
-      throw new NanohypeError(`Failed to fetch repo tree: ${treeRes.status}`);
+    if (!treeRes.ok) throw new NanohypeError(`Failed to fetch repo tree: ${treeRes.status}`);
 
     const tree = (await treeRes.json()) as {
       tree: { path: string; type: string; sha: string }[];
@@ -199,47 +185,37 @@ export class GitHubSource implements CatalogSource {
 
     const skeletonPrefix = `templates/${name}/skeleton/`;
     const skeletonBlobs = tree.tree.filter(
-      (entry) => entry.type === "blob" && entry.path.startsWith(skeletonPrefix),
+      (entry) => entry.type === 'blob' && entry.path.startsWith(skeletonPrefix),
     );
 
     // Fetch file contents. Any failure aborts the render — a skeleton with
     // holes is worse than no skeleton.
-    const files = await mapConcurrent(
-      skeletonBlobs,
-      FETCH_CONCURRENCY,
-      async (blob) => {
-        const fileRes = await this.get(this.raw(blob.path));
-        if (!fileRes.ok) {
-          throw new NanohypeError(
-            `Failed to fetch skeleton file '${blob.path}' for template '${name}': ${fileRes.status}`,
-          );
-        }
-        return {
-          path: blob.path.slice(skeletonPrefix.length),
-          content: await fileRes.text(),
-        } satisfies SkeletonFile;
-      },
-    );
+    const files = await mapConcurrent(skeletonBlobs, FETCH_CONCURRENCY, async (blob) => {
+      const fileRes = await this.get(this.raw(blob.path));
+      if (!fileRes.ok) {
+        throw new NanohypeError(
+          `Failed to fetch skeleton file '${blob.path}' for template '${name}': ${fileRes.status}`,
+        );
+      }
+      return {
+        path: blob.path.slice(skeletonPrefix.length),
+        content: await fileRes.text(),
+      } satisfies SkeletonFile;
+    });
 
     return { manifest, files };
   }
 
   async listComposites(): Promise<CompositeCatalogEntry[]> {
-    if (this.isFresh(this.compositeCatalogCache))
-      return this.compositeCatalogCache.data;
+    if (this.isFresh(this.compositeCatalogCache)) return this.compositeCatalogCache.data;
 
     const res = await this.get(
       `https://api.github.com/repos/${this.repo}/contents/composites?ref=${this.ref}`,
     );
-    if (!res.ok)
-      throw new NanohypeError(
-        `Failed to list composite catalog: ${res.status}`,
-      );
+    if (!res.ok) throw new NanohypeError(`Failed to list composite catalog: ${res.status}`);
 
     const items = (await res.json()) as { name: string; type: string }[];
-    const yamlFiles = items.filter(
-      (f) => f.type === "file" && f.name.endsWith(".yaml"),
-    );
+    const yamlFiles = items.filter((f) => f.type === 'file' && f.name.endsWith('.yaml'));
 
     const fetched = await mapConcurrent(
       yamlFiles,
@@ -260,7 +236,7 @@ export class GitHubSource implements CatalogSource {
             `Invalid composite manifest '${file.name}': ${err instanceof Error ? err.message : String(err)}`,
           );
         }
-        if (manifest.kind !== "composite") return null;
+        if (manifest.kind !== 'composite') return null;
         return {
           name: manifest.name,
           displayName: manifest.displayName,
@@ -271,9 +247,7 @@ export class GitHubSource implements CatalogSource {
         };
       },
     );
-    const entries = fetched.filter(
-      (e): e is CompositeCatalogEntry => e !== null,
-    );
+    const entries = fetched.filter((e): e is CompositeCatalogEntry => e !== null);
 
     this.compositeCatalogCache = { data: entries, fetchedAt: Date.now() };
     return entries;
@@ -281,31 +255,25 @@ export class GitHubSource implements CatalogSource {
 
   async fetchComposite(name: string): Promise<CompositeManifest> {
     if (!isCatalogName(name)) {
-      throw new NanohypeError(
-        `Invalid composite name: ${JSON.stringify(name)}`,
-      );
+      throw new NanohypeError(`Invalid composite name: ${JSON.stringify(name)}`);
     }
     const res = await this.get(this.raw(`composites/${name}.yaml`));
-    if (!res.ok)
-      throw new NanohypeError(`Composite '${name}' not found: ${res.status}`);
+    if (!res.ok) throw new NanohypeError(`Composite '${name}' not found: ${res.status}`);
     const manifest = yaml.load(await res.text()) as CompositeManifest;
 
-    if (manifest.apiVersion !== "nanohype/v1") {
+    if (manifest.apiVersion !== 'nanohype/v1') {
       throw new NanohypeError(`Unsupported apiVersion: ${manifest.apiVersion}`);
     }
-    if (manifest.kind !== "composite") {
-      throw new NanohypeError(
-        `Expected kind 'composite', got '${manifest.kind}'`,
-      );
+    if (manifest.kind !== 'composite') {
+      throw new NanohypeError(`Expected kind 'composite', got '${manifest.kind}'`);
     }
 
     return manifest;
   }
 
   async fetchCatalogManifest(): Promise<Catalog> {
-    const res = await this.get(this.raw("catalog.json"));
-    if (!res.ok)
-      throw new NanohypeError(`catalog.json not found: ${res.status}`);
+    const res = await this.get(this.raw('catalog.json'));
+    if (!res.ok) throw new NanohypeError(`catalog.json not found: ${res.status}`);
     return (await res.json()) as Catalog;
   }
 
@@ -315,8 +283,7 @@ export class GitHubSource implements CatalogSource {
       throw new NanohypeError(`Unknown standard: ${JSON.stringify(name)}`);
     }
     const res = await this.get(this.raw(`standards/${name}.json`));
-    if (!res.ok)
-      throw new NanohypeError(`Standard '${name}' not found: ${res.status}`);
+    if (!res.ok) throw new NanohypeError(`Standard '${name}' not found: ${res.status}`);
     return (await res.json()) as Standard;
   }
 
@@ -333,8 +300,8 @@ export class GitHubSource implements CatalogSource {
     // `<org>/<repo>`. Otherwise we still target the configured ref on the
     // explicit repo path (an MCP server pointed at a fork's `nanohype` will
     // pull contracts from the matching forked siblings, which is correct).
-    const [org] = this.repo.split("/");
-    const targetRepo = repo === "nanohype" ? this.repo : `${org}/${repo}`;
+    const [org] = this.repo.split('/');
+    const targetRepo = repo === 'nanohype' ? this.repo : `${org}/${repo}`;
 
     // With a token, resolve via the authenticated contents API — it works for
     // both public and private repos (raw.githubusercontent can't authenticate
@@ -345,29 +312,23 @@ export class GitHubSource implements CatalogSource {
         `https://api.github.com/repos/${targetRepo}/contents/AGENTS.md?ref=${this.ref}`,
       );
       if (!res.ok) {
-        throw new NanohypeError(
-          `AGENTS.md for repo '${repo}' not found: ${res.status}`,
-        );
+        throw new NanohypeError(`AGENTS.md for repo '${repo}' not found: ${res.status}`);
       }
       const body = (await res.json()) as {
         content?: string;
         encoding?: string;
       };
-      if (body.encoding === "base64" && body.content) {
-        return Buffer.from(body.content, "base64").toString("utf-8");
+      if (body.encoding === 'base64' && body.content) {
+        return Buffer.from(body.content, 'base64').toString('utf-8');
       }
-      throw new NanohypeError(
-        `AGENTS.md for repo '${repo}' returned an unexpected encoding`,
-      );
+      throw new NanohypeError(`AGENTS.md for repo '${repo}' returned an unexpected encoding`);
     }
 
     const res = await this.get(
       `https://raw.githubusercontent.com/${targetRepo}/${this.ref}/AGENTS.md`,
     );
     if (!res.ok) {
-      throw new NanohypeError(
-        `AGENTS.md for repo '${repo}' not found: ${res.status}`,
-      );
+      throw new NanohypeError(`AGENTS.md for repo '${repo}' not found: ${res.status}`);
     }
     return await res.text();
   }

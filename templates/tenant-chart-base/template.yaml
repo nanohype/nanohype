@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: tenant-chart-base
-displayName: "Tenant Chart Base (Helm library)"
+displayName: 'Tenant Chart Base (Helm library)'
 description: >
   A Helm library chart (type: library) that defines the named templates every
   nanohype Platform-tenant chart shares — the ServiceAccount (IRSA), NetworkPolicy
@@ -13,7 +13,7 @@ description: >
   and `.Release` resolve to the consuming app. Workload topology (Deployments,
   CronJobs, Services) and the per-tenant ExternalSecret stay in the consumer — those
   are the legitimate per-app divergences. The catalog's first library chart.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: infrastructure
@@ -32,8 +32,8 @@ composition:
 
 prerequisites:
   - name: helm
-    version: ">=3.0"
-    purpose: "Render + lint a consumer chart that depends on this library"
+    version: '>=3.0'
+    purpose: 'Render + lint a consumer chart that depends on this library'
     optional: false
 
 hooks: {}

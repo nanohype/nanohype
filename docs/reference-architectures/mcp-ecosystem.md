@@ -25,15 +25,15 @@ Before MCP, every LLM application that needed tool access had to define its own 
 
 **Library/SDK** — code imported directly into the application. Tightest coupling, best performance, no network overhead.
 
-| Criterion | MCP Server | REST API | Library |
-|---|---|---|---|
-| Discovery | Protocol-native (capability negotiation) | External (docs, OpenAPI spec) | Import statement |
-| LLM integration | Native (tools, resources, prompts) | Requires wrapper | Requires wrapper |
-| Deployment | Sidecar process or remote service | Remote service | In-process |
-| Language coupling | None (protocol-based) | None (HTTP-based) | Same language |
-| Composability | Multiple servers via multi-server clients | Manual aggregation | Manual aggregation |
-| Overhead | Process communication (stdio/HTTP) | Network (HTTP) | None (function call) |
-| Best for | LLM tool integration | General API access | Performance-critical, single-app use |
+| Criterion         | MCP Server                                | REST API                      | Library                              |
+| ----------------- | ----------------------------------------- | ----------------------------- | ------------------------------------ |
+| Discovery         | Protocol-native (capability negotiation)  | External (docs, OpenAPI spec) | Import statement                     |
+| LLM integration   | Native (tools, resources, prompts)        | Requires wrapper              | Requires wrapper                     |
+| Deployment        | Sidecar process or remote service         | Remote service                | In-process                           |
+| Language coupling | None (protocol-based)                     | None (HTTP-based)             | Same language                        |
+| Composability     | Multiple servers via multi-server clients | Manual aggregation            | Manual aggregation                   |
+| Overhead          | Process communication (stdio/HTTP)        | Network (HTTP)                | None (function call)                 |
+| Best for          | LLM tool integration                      | General API access            | Performance-critical, single-app use |
 
 **Build an MCP server** when the tool will be used by multiple LLM applications, when you want it to be discoverable and self-describing, or when the tool is I/O-bound. **Build a REST API** when the service is consumed by non-LLM applications too, or when you need HTTP semantics. **Use a library** when performance is critical, the tool is only used by one application, or you need compile-time type safety.
 
@@ -108,14 +108,14 @@ The original remote transport. Used two HTTP endpoints: a GET endpoint that open
 
 ### 3.4 Choosing a Transport
 
-| Factor | stdio | Streamable HTTP |
-|---|---|---|
-| Server location | Same machine as host | Anywhere (local or remote) |
-| Setup complexity | Low (just a command) | Medium (HTTP server) |
-| Authentication | Not needed (local process) | Required (tokens, OAuth) |
-| Scalability | One instance per host | Shared across hosts |
-| Network dependency | None | Yes |
-| Best for | Local dev tools, file access, Git | Shared services, team tools, cloud APIs |
+| Factor             | stdio                             | Streamable HTTP                         |
+| ------------------ | --------------------------------- | --------------------------------------- |
+| Server location    | Same machine as host              | Anywhere (local or remote)              |
+| Setup complexity   | Low (just a command)              | Medium (HTTP server)                    |
+| Authentication     | Not needed (local process)        | Required (tokens, OAuth)                |
+| Scalability        | One instance per host             | Shared across hosts                     |
+| Network dependency | None                              | Yes                                     |
+| Best for           | Local dev tools, file access, Git | Shared services, team tools, cloud APIs |
 
 ---
 
@@ -136,19 +136,19 @@ A tool has:
 
 ```typescript
 server.tool(
-  "search_files",
-  "Search for files matching a glob pattern in the project directory. " +
-  "Returns a list of matching file paths.",
+  'search_files',
+  'Search for files matching a glob pattern in the project directory. ' +
+    'Returns a list of matching file paths.',
   {
     pattern: z.string().describe("Glob pattern, e.g. '**/*.ts'"),
-    path: z.string().optional().describe("Directory to search in. Defaults to project root.")
+    path: z.string().optional().describe('Directory to search in. Defaults to project root.'),
   },
   async ({ pattern, path }) => {
     const results = await glob(pattern, { cwd: path ?? projectRoot });
     return {
-      content: [{ type: "text", text: results.join("\n") }]
+      content: [{ type: 'text', text: results.join('\n') }],
     };
-  }
+  },
 );
 ```
 
@@ -182,12 +182,12 @@ A resource handler returns a `contents` array, each entry with a URI, MIME type,
 
 MCP does not mandate a URI scheme. Common conventions:
 
-| Scheme | Use |
-|---|---|
-| `file:///` | Local file access |
-| `db://` | Database records |
-| `config://` | Configuration data |
-| `https://` | Web resources |
+| Scheme                               | Use                       |
+| ------------------------------------ | ------------------------- |
+| `file:///`                           | Local file access         |
+| `db://`                              | Database records          |
+| `config://`                          | Configuration data        |
+| `https://`                           | Web resources             |
 | Custom (e.g., `jira://`, `slack://`) | Domain-specific resources |
 
 ### 4.3 Prompts (Templates)
@@ -219,12 +219,14 @@ The TypeScript MCP SDK uses Zod for input validation. The Python SDK uses Pydant
 ```typescript
 // TypeScript with Zod
 const SearchInput = z.object({
-  query: z.string().min(1).max(500).describe("Search query"),
-  limit: z.number().int().min(1).max(100).default(10).describe("Max results"),
-  filters: z.object({
-    dateAfter: z.string().datetime().optional(),
-    category: z.enum(["docs", "code", "issues"]).optional()
-  }).optional()
+  query: z.string().min(1).max(500).describe('Search query'),
+  limit: z.number().int().min(1).max(100).default(10).describe('Max results'),
+  filters: z
+    .object({
+      dateAfter: z.string().datetime().optional(),
+      category: z.enum(['docs', 'code', 'issues']).optional(),
+    })
+    .optional(),
 });
 ```
 
@@ -243,21 +245,21 @@ Tool results use MCP's content format:
 ```typescript
 // Text result
 return {
-  content: [{ type: "text", text: "Search found 3 results:\n..." }]
+  content: [{ type: 'text', text: 'Search found 3 results:\n...' }],
 };
 
 // Error result
 return {
   isError: true,
-  content: [{ type: "text", text: "Search failed: connection timeout" }]
+  content: [{ type: 'text', text: 'Search failed: connection timeout' }],
 };
 
 // Multiple content blocks
 return {
   content: [
-    { type: "text", text: "Found the following image:" },
-    { type: "image", data: base64Data, mimeType: "image/png" }
-  ]
+    { type: 'text', text: 'Found the following image:' },
+    { type: 'image', data: base64Data, mimeType: 'image/png' },
+  ],
 };
 ```
 
@@ -435,19 +437,19 @@ When building an MCP server:
 The reference implementation language. Create a `McpServer` instance, register tools and resources with `server.tool()` and `server.resource()`, then connect a transport (`StdioServerTransport` for stdio, or the HTTP transport for remote). Tool inputs use Zod schemas. Tool results use the `{ content: [{ type: "text", text: "..." }] }` format.
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
 
-const server = new McpServer({ name: "my-server", version: "1.0.0" });
+const server = new McpServer({ name: 'my-server', version: '1.0.0' });
 
 server.tool(
-  "greet",
-  "Generate a greeting for a person",
+  'greet',
+  'Generate a greeting for a person',
   { name: z.string().describe("Person's name") },
   async ({ name }) => ({
-    content: [{ type: "text", text: `Hello, ${name}!` }]
-  })
+    content: [{ type: 'text', text: `Hello, ${name}!` }],
+  }),
 );
 
 const transport = new StdioServerTransport();

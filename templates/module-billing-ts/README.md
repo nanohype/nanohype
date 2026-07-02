@@ -14,11 +14,11 @@ Usage metering, invoice generation, and payment processing with Stripe.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Usage metering and billing with Stripe` | Project description |
-| `PaymentProvider` | string | `stripe` | Default payment provider (stripe/mock or custom) |
+| Variable          | Type   | Default                                  | Description                                      |
+| ----------------- | ------ | ---------------------------------------- | ------------------------------------------------ |
+| `ProjectName`     | string | --                                       | Kebab-case project name                          |
+| `Description`     | string | `Usage metering and billing with Stripe` | Project description                              |
+| `PaymentProvider` | string | `stripe`                                 | Default payment provider (stripe/mock or custom) |
 
 ## Project layout
 

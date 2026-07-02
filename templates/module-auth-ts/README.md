@@ -11,11 +11,11 @@ Composable authentication middleware module with pluggable providers.
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-|----------|-------------|---------|-------------|
-| `ProjectName` | `__PROJECT_NAME__` | *(required)* | Kebab-case package name |
-| `Description` | `__DESCRIPTION__` | Composable authentication middleware... | Package description |
-| `AuthProvider` | `__AUTH_PROVIDER__` | `jwt` | Default auth provider |
+| Variable       | Placeholder         | Default                                 | Description             |
+| -------------- | ------------------- | --------------------------------------- | ----------------------- |
+| `ProjectName`  | `__PROJECT_NAME__`  | _(required)_                            | Kebab-case package name |
+| `Description`  | `__DESCRIPTION__`   | Composable authentication middleware... | Package description     |
+| `AuthProvider` | `__AUTH_PROVIDER__` | `jwt`                                   | Default auth provider   |
 
 ## Project layout
 
@@ -56,18 +56,18 @@ Composable authentication middleware module with pluggable providers.
 ## Quick start
 
 ```typescript
-import { createAuthMiddleware, requireAuth, requireRole } from "your-auth-module";
+import { createAuthMiddleware, requireAuth, requireRole } from 'your-auth-module';
 
-import { Hono } from "hono";
+import { Hono } from 'hono';
 const app = new Hono();
 
-app.use("/api/*", createAuthMiddleware({ provider: "jwt" }));
-app.get("/api/profile", requireAuth, (c) => {
-  const user = c.get("authUser");
+app.use('/api/*', createAuthMiddleware({ provider: 'jwt' }));
+app.get('/api/profile', requireAuth, (c) => {
+  const user = c.get('authUser');
   return c.json({ user });
 });
-app.get("/api/admin", requireAuth, requireRole("admin"), (c) => {
-  return c.json({ message: "admin access granted" });
+app.get('/api/admin', requireAuth, requireRole('admin'), (c) => {
+  return c.json({ message: 'admin access granted' });
 });
 ```
 
@@ -75,24 +75,24 @@ app.get("/api/admin", requireAuth, requireRole("admin"), (c) => {
 
 Each provider reads its configuration from environment variables:
 
-| Provider | Environment Variables |
-|----------|---------------------|
-| `jwt` | `AUTH_JWT_SECRET` or `AUTH_JWT_JWKS_URL`, optional `AUTH_JWT_ISSUER`, `AUTH_JWT_AUDIENCE` |
-| `clerk` | `CLERK_SECRET_KEY` |
-| `auth0` | `AUTH0_DOMAIN`, `AUTH0_AUDIENCE` |
-| `supabase` | `SUPABASE_URL`, `SUPABASE_ANON_KEY` |
-| `apikey` | `AUTH_API_KEYS` (comma-separated, format: `key:role1+role2:label`) |
+| Provider   | Environment Variables                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| `jwt`      | `AUTH_JWT_SECRET` or `AUTH_JWT_JWKS_URL`, optional `AUTH_JWT_ISSUER`, `AUTH_JWT_AUDIENCE` |
+| `clerk`    | `CLERK_SECRET_KEY`                                                                        |
+| `auth0`    | `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`                                                          |
+| `supabase` | `SUPABASE_URL`, `SUPABASE_ANON_KEY`                                                       |
+| `apikey`   | `AUTH_API_KEYS` (comma-separated, format: `key:role1+role2:label`)                        |
 
 ## Adding a custom provider
 
 ```typescript
-import { registerProvider } from "your-auth-module/providers";
-import type { AuthProvider } from "your-auth-module/providers";
+import { registerProvider } from 'your-auth-module/providers';
+import type { AuthProvider } from 'your-auth-module/providers';
 
 const myProvider: AuthProvider = {
-  name: "custom",
+  name: 'custom',
   async verifyRequest(request) {
-    return { authenticated: true, user: { id: "1", roles: [], metadata: {} } };
+    return { authenticated: true, user: { id: '1', roles: [], metadata: {} } };
   },
 };
 

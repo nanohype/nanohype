@@ -15,11 +15,11 @@ Composable blob storage abstraction with pluggable backends for local filesystem
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `A composable blob storage module` | Project description |
-| `StorageProvider` | string | `local` | Default storage backend (local/s3/r2/gcs or custom) |
+| Variable          | Type   | Default                            | Description                                         |
+| ----------------- | ------ | ---------------------------------- | --------------------------------------------------- |
+| `ProjectName`     | string | --                                 | Kebab-case project name                             |
+| `Description`     | string | `A composable blob storage module` | Project description                                 |
+| `StorageProvider` | string | `local`                            | Default storage backend (local/s3/r2/gcs or custom) |
 
 ## Project layout
 

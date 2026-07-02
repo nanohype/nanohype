@@ -23,14 +23,14 @@ curl https://raw.githubusercontent.com/nanohype/nanohype/main/catalog.json \
 Render programmatically (TypeScript):
 
 ```ts
-import { GitHubSource, renderTemplate } from "@nanohype/sdk";
+import { GitHubSource, renderTemplate } from '@nanohype/sdk';
 
-const source = new GitHubSource("nanohype/nanohype");
+const source = new GitHubSource('nanohype/nanohype');
 await renderTemplate({
   source,
-  templateName: "rag-pipeline",
-  outputDir: "./my-rag-bot",
-  variables: { ProjectName: "my-rag-bot", LlmProvider: "anthropic" },
+  templateName: 'rag-pipeline',
+  outputDir: './my-rag-bot',
+  variables: { ProjectName: 'my-rag-bot', LlmProvider: 'anthropic' },
 });
 ```
 

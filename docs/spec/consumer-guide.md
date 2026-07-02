@@ -116,15 +116,15 @@ See the [composite contract](composite-contract.md) for full details on variable
 
 A conformant consumer needs exactly these capabilities:
 
-| Capability | Purpose |
-|---|---|
-| YAML parser | Read template.yaml and composite manifests |
-| JSON Schema validator | Validate manifest against schema |
-| Interactive prompts | Collect variable values from the user |
-| File tree walker | Recursively copy skeleton/ |
-| String replacer | Find-and-replace placeholders in content and paths |
-| Shell executor | Run hook commands (optional — hooks are advisory) |
-| Path checker | Verify prerequisites exist on $PATH (optional) |
+| Capability            | Purpose                                            |
+| --------------------- | -------------------------------------------------- |
+| YAML parser           | Read template.yaml and composite manifests         |
+| JSON Schema validator | Validate manifest against schema                   |
+| Interactive prompts   | Collect variable values from the user              |
+| File tree walker      | Recursively copy skeleton/                         |
+| String replacer       | Find-and-replace placeholders in content and paths |
+| Shell executor        | Run hook commands (optional — hooks are advisory)  |
+| Path checker          | Verify prerequisites exist on $PATH (optional)     |
 
 No template engine, no AST manipulation, no language-specific tooling. The entire rendering algorithm is string replacement.
 

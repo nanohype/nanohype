@@ -18,13 +18,13 @@ Composites are the bridge between the template catalog and real-world project ar
 
 ## 2. Terminology
 
-| Term | Definition |
-|---|---|
-| **Composite** | A named, versioned manifest that references multiple templates and defines how they combine. |
-| **Entry** | A single template reference within a composite, including its nesting path and variable overrides. |
+| Term              | Definition                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Composite**     | A named, versioned manifest that references multiple templates and defines how they combine.               |
+| **Entry**         | A single template reference within a composite, including its nesting path and variable overrides.         |
 | **Root template** | The entry marked `root: true`. Its skeleton forms the top-level directory structure. Typically `monorepo`. |
-| **Path** | The directory within the root where a non-root template's skeleton is placed. |
-| **Variable flow** | The mechanism by which a composite-level variable is passed to multiple template entries. |
+| **Path**          | The directory within the root where a non-root template's skeleton is placed.                              |
+| **Variable flow** | The mechanism by which a composite-level variable is passed to multiple template entries.                  |
 
 ---
 
@@ -47,29 +47,29 @@ Each file is a standalone composite manifest. There is no `skeleton/` directory 
 
 ### 4.1 Top-Level Fields
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `apiVersion` | string | **yes** | Must be `nanohype/v1`. |
-| `kind` | string | **yes** | Must be `composite`. |
-| `name` | string | **yes** | Kebab-case identifier, unique within the catalog. |
-| `displayName` | string | **yes** | Human-readable name. |
-| `description` | string | **yes** | What this composite produces. |
-| `version` | string | **yes** | Semver version. |
-| `tags` | string[] | **yes** | Lowercase searchable tags. |
-| `templates` | Entry[] | **yes** | Ordered list of template entries. |
-| `variables` | Variable[] | **yes** | Composite-level variables collected from the user. |
+| Field         | Type       | Required | Description                                        |
+| ------------- | ---------- | -------- | -------------------------------------------------- |
+| `apiVersion`  | string     | **yes**  | Must be `nanohype/v1`.                             |
+| `kind`        | string     | **yes**  | Must be `composite`.                               |
+| `name`        | string     | **yes**  | Kebab-case identifier, unique within the catalog.  |
+| `displayName` | string     | **yes**  | Human-readable name.                               |
+| `description` | string     | **yes**  | What this composite produces.                      |
+| `version`     | string     | **yes**  | Semver version.                                    |
+| `tags`        | string[]   | **yes**  | Lowercase searchable tags.                         |
+| `templates`   | Entry[]    | **yes**  | Ordered list of template entries.                  |
+| `variables`   | Variable[] | **yes**  | Composite-level variables collected from the user. |
 
 ### 4.2 Entry Object
 
 Each entry in `templates` references a template from the catalog:
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `template` | string | **yes** | Template name (must exist in `templates/`). |
-| `path` | string | no | Directory path within the output where this template is scaffolded. Relative to root. If omitted and `root: true`, scaffolds at the top level. |
-| `root` | boolean | no | If `true`, this entry's skeleton forms the top-level directory. At most one entry may be `root`. |
-| `variables` | object | no | Variable overrides for this entry. Keys are variable names from the referenced template. Values may reference composite variables via `${VarName}`. |
-| `condition` | string | no | Name of a composite-level bool variable. When `false`, this entry is skipped entirely. |
+| Field       | Type    | Required | Description                                                                                                                                         |
+| ----------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `template`  | string  | **yes**  | Template name (must exist in `templates/`).                                                                                                         |
+| `path`      | string  | no       | Directory path within the output where this template is scaffolded. Relative to root. If omitted and `root: true`, scaffolds at the top level.      |
+| `root`      | boolean | no       | If `true`, this entry's skeleton forms the top-level directory. At most one entry may be `root`.                                                    |
+| `variables` | object  | no       | Variable overrides for this entry. Keys are variable names from the referenced template. Values may reference composite variables via `${VarName}`. |
+| `condition` | string  | no       | Name of a composite-level bool variable. When `false`, this entry is skipped entirely.                                                              |
 
 ### 4.3 Variable Object
 
@@ -95,8 +95,8 @@ templates:
   - template: ts-service
     path: apps/api
     variables:
-      ProjectName: "${ProjectName}-api"
-      Description: "API for ${ProjectName}"
+      ProjectName: '${ProjectName}-api'
+      Description: 'API for ${ProjectName}'
 ```
 
 ### 5.2 Resolution Order
@@ -151,82 +151,82 @@ A full-stack AI chatbot composite:
 apiVersion: nanohype/v1
 kind: composite
 name: ai-chatbot
-displayName: "AI Chatbot"
+displayName: 'AI Chatbot'
 description: >
   Full-stack AI chatbot with agentic loop, HTTP service,
   authentication, evaluation harness, and deployment.
-version: "0.1.0"
+version: '0.1.0'
 tags: [ai, chatbot, fullstack, typescript]
 
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Project name used across all templates"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Project name used across all templates'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 
   - name: LlmProvider
     type: string
-    placeholder: "__LLM_PROVIDER__"
-    description: "LLM provider for AI features"
-    default: "anthropic"
+    placeholder: '__LLM_PROVIDER__'
+    description: 'LLM provider for AI features'
+    default: 'anthropic'
 
   - name: IncludeEvals
     type: bool
-    placeholder: "__INCLUDE_EVALS__"
-    description: "Include evaluation harness"
+    placeholder: '__INCLUDE_EVALS__'
+    description: 'Include evaluation harness'
     default: true
 
   - name: DeployTarget
     type: string
-    placeholder: "__DEPLOY_TARGET__"
-    description: "Deployment target template"
-    default: "infra-fly"
+    placeholder: '__DEPLOY_TARGET__'
+    description: 'Deployment target template'
+    default: 'infra-fly'
 
 templates:
   - template: monorepo
     root: true
     variables:
-      ProjectName: "${ProjectName}"
+      ProjectName: '${ProjectName}'
       IncludeSharedUtils: true
       IncludeSharedUi: false
 
   - template: agentic-loop
     path: packages/ai
     variables:
-      ProjectName: "${ProjectName}-ai"
-      LlmProvider: "${LlmProvider}"
+      ProjectName: '${ProjectName}-ai'
+      LlmProvider: '${LlmProvider}'
       IncludeMemory: true
       IncludeEval: false
 
   - template: ts-service
     path: apps/api
     variables:
-      ProjectName: "${ProjectName}-api"
+      ProjectName: '${ProjectName}-api'
       IncludeAuth: true
       IncludeDocker: true
 
   - template: module-auth-ts
     path: packages/auth
     variables:
-      ProjectName: "${ProjectName}-auth"
-      AuthProvider: "jwt"
+      ProjectName: '${ProjectName}-auth'
+      AuthProvider: 'jwt'
 
   - template: eval-harness
     path: packages/evals
     condition: IncludeEvals
     variables:
-      ProjectName: "${ProjectName}-evals"
-      LlmProvider: "${LlmProvider}"
+      ProjectName: '${ProjectName}-evals'
+      LlmProvider: '${LlmProvider}'
 
   - template: infra-fly
     path: infra
     variables:
-      ProjectName: "${ProjectName}"
-      AppName: "${ProjectName}"
+      ProjectName: '${ProjectName}'
+      AppName: '${ProjectName}'
       IncludeCi: true
 ```
 

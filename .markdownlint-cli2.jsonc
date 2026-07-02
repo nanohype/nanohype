@@ -12,12 +12,7 @@
     // Allow bare URLs
     "MD034": false,
     // Don't enforce table column padding style (compact vs aligned)
-    "MD060": false
+    "MD060": false,
   },
-  "globs": [
-    "**/*.md",
-    "!node_modules/**",
-    "!templates/*/skeleton/**",
-    "!.plans/**"
-  ]
+  "globs": ["**/*.md", "!node_modules/**", "!templates/*/skeleton/**", "!.plans/**"],
 }

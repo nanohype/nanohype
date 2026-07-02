@@ -16,15 +16,15 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `An AI-powered web application` | Project description |
-| `LlmProvider` | string | `anthropic` | Default LLM provider |
-| `IncludeAuth` | bool | `true` | Include NextAuth.js authentication |
-| `IncludeDatabase` | bool | `true` | Include Drizzle ORM + Postgres |
-| `IncludeDocker` | bool | `true` | Include Dockerfile and Compose |
-| `IncludeTests` | bool | `true` | Include Vitest test suite |
+| Variable          | Type   | Default                         | Description                        |
+| ----------------- | ------ | ------------------------------- | ---------------------------------- |
+| `ProjectName`     | string | --                              | Kebab-case project name            |
+| `Description`     | string | `An AI-powered web application` | Project description                |
+| `LlmProvider`     | string | `anthropic`                     | Default LLM provider               |
+| `IncludeAuth`     | bool   | `true`                          | Include NextAuth.js authentication |
+| `IncludeDatabase` | bool   | `true`                          | Include Drizzle ORM + Postgres     |
+| `IncludeDocker`   | bool   | `true`                          | Include Dockerfile and Compose     |
+| `IncludeTests`    | bool   | `true`                          | Include Vitest test suite          |
 
 ## Project layout
 

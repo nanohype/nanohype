@@ -13,13 +13,13 @@ TypeScript Slack bot with @slack/bolt, AI-powered responses, and a pluggable LLM
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"A Slack bot with AI"` | Short project description |
-| `LlmProvider` | string | `"anthropic"` | `anthropic` or `openai` |
-| `IncludeSlashCommands` | bool | `true` | Include `/ask` slash command |
-| `IncludeTests` | bool | `true` | Include test files |
+| Variable               | Type   | Default                 | Description                  |
+| ---------------------- | ------ | ----------------------- | ---------------------------- |
+| `ProjectName`          | string | _(required)_            | Kebab-case project name      |
+| `Description`          | string | `"A Slack bot with AI"` | Short project description    |
+| `LlmProvider`          | string | `"anthropic"`           | `anthropic` or `openai`      |
+| `IncludeSlashCommands` | bool   | `true`                  | Include `/ask` slash command |
+| `IncludeTests`         | bool   | `true`                  | Include test files           |
 
 ## Project layout
 

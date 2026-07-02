@@ -17,10 +17,10 @@ make -C scripts/local-cluster down RECIPE=istio
 
 ## Recipes
 
-| Recipe | Use it to validate | Extras on top of plain k8s |
-|---|---|---|
-| `istio` | `k8s-deploy`, `istio-policy`, service composites | Istio demo profile, `apps` namespace with sidecar injection |
-| `monitoring` | `monitoring-stack` | Pre-created `monitoring` namespace; no operators yet (monitoring-stack ships its own CRDs) |
+| Recipe       | Use it to validate                               | Extras on top of plain k8s                                                                 |
+| ------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `istio`      | `k8s-deploy`, `istio-policy`, service composites | Istio demo profile, `apps` namespace with sidecar injection                                |
+| `monitoring` | `monitoring-stack`                               | Pre-created `monitoring` namespace; no operators yet (monitoring-stack ships its own CRDs) |
 
 Add a new recipe by creating `recipes/<name>/` with `up.sh`, `down.sh`, `status.sh`, `README.md`, and (typically) `kind-config.yaml`. The Makefile discovers it automatically.
 
@@ -56,13 +56,13 @@ Useful when you've already got a render from a previous `nanohype scaffold` invo
 
 Every recipe is a directory under `recipes/` with four executables and a config:
 
-| File | Purpose |
-|---|---|
-| `kind-config.yaml` | kind cluster configuration (node count, port mappings) |
-| `up.sh` | Create the cluster and install any baseline components (Istio, operators, etc). Idempotent. |
-| `down.sh` | Delete the cluster. Idempotent. |
-| `status.sh` | Report what's running. Useful for debugging. |
-| `README.md` | Documents the recipe's footprint, port mappings, and evolution plan. |
+| File               | Purpose                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| `kind-config.yaml` | kind cluster configuration (node count, port mappings)                                      |
+| `up.sh`            | Create the cluster and install any baseline components (Istio, operators, etc). Idempotent. |
+| `down.sh`          | Delete the cluster. Idempotent.                                                             |
+| `status.sh`        | Report what's running. Useful for debugging.                                                |
+| `README.md`        | Documents the recipe's footprint, port mappings, and evolution plan.                        |
 
 Recipes source `../../lib/common.sh` for color output helpers, tool-presence checks, and the `nanohype-<recipe>` cluster-naming convention.
 

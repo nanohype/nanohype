@@ -15,13 +15,13 @@ A Platform Reference makes the public consumption path coherent. Anyone reading 
 
 ## The five surfaces
 
-| Surface | What it is | Audience | Mode |
-|---|---|---|---|
-| **Top-level reference doc** | Single entry point: who it's for, the repos in the stack, the catalog, the standards, the deploy contracts, "build your own client" quickstart | Human readers + agents bootstrapping fresh | Markdown |
-| **Catalog manifest** | Machine-readable index of every consumable thing (templates, composites, modules, addons — whatever your stack ships) | Agents doing discovery | JSON |
-| **Standards manifests** | The public production bar an external client must obey to produce stack-compatible output | Agents that produce work | JSON + human-readable companion README |
-| **Per-repo `AGENTS.md`** | Five-minute orientation per repo: what it gives you, contract surface, "add a new X" recipe, conventions, pointers | Agents about to touch a specific repo | Markdown |
-| **SDK + MCP server** | Programmatic surface — discovery functions, loaders for the manifests, an MCP server agents can mount | Programs (agents + tools) | TypeScript package + npm-distributed MCP server |
+| Surface                     | What it is                                                                                                                                     | Audience                                   | Mode                                            |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------- |
+| **Top-level reference doc** | Single entry point: who it's for, the repos in the stack, the catalog, the standards, the deploy contracts, "build your own client" quickstart | Human readers + agents bootstrapping fresh | Markdown                                        |
+| **Catalog manifest**        | Machine-readable index of every consumable thing (templates, composites, modules, addons — whatever your stack ships)                          | Agents doing discovery                     | JSON                                            |
+| **Standards manifests**     | The public production bar an external client must obey to produce stack-compatible output                                                      | Agents that produce work                   | JSON + human-readable companion README          |
+| **Per-repo `AGENTS.md`**    | Five-minute orientation per repo: what it gives you, contract surface, "add a new X" recipe, conventions, pointers                             | Agents about to touch a specific repo      | Markdown                                        |
+| **SDK + MCP server**        | Programmatic surface — discovery functions, loaders for the manifests, an MCP server agents can mount                                          | Programs (agents + tools)                  | TypeScript package + npm-distributed MCP server |
 
 The five surfaces fit together: the **top-level doc** points at everything else; the **catalog** lets agents discover what exists; the **standards** name the bar; the **AGENTS.md** files are the per-repo deep links; the **SDK/MCP** is how programs read all of it without parsing markdown.
 
@@ -36,15 +36,15 @@ Heuristic: "Would publishing this let someone replicate my reference client, or 
 
 For nanohype the cut landed at:
 
-| Public | Private |
-|---|---|
-| Toolchain commands per language | The orchestration logic that dispatches them |
-| Version-currency policy (EOL, @pin, registries) | The build-verifier's TRANSCRIPTS+CITATIONS evidence contract |
-| Platform-tenant contract (Helm chart + ApplicationSet + Platform CR shape) | The 4-role merge-gate choreography that enforces it |
-| LLM policy (Bedrock-primary, model tiers, regions) | The factory-preamble prompt that primes every agent |
-| Quality-rubric *dimension names* | Rubric weights, per-reviewer assignments, specific REJECT criteria, A–F methodology |
-| Per-repo `AGENTS.md` (5-min start) | Internal runbooks, role briefs, taste-encoded instructions |
-| Reference client architecture (how it works at a high level) | Reference client source code (how it orchestrates 83 agents) |
+| Public                                                                     | Private                                                                             |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Toolchain commands per language                                            | The orchestration logic that dispatches them                                        |
+| Version-currency policy (EOL, @pin, registries)                            | The build-verifier's TRANSCRIPTS+CITATIONS evidence contract                        |
+| Platform-tenant contract (Helm chart + ApplicationSet + Platform CR shape) | The 4-role merge-gate choreography that enforces it                                 |
+| LLM policy (Bedrock-primary, model tiers, regions)                         | The factory-preamble prompt that primes every agent                                 |
+| Quality-rubric _dimension names_                                           | Rubric weights, per-reviewer assignments, specific REJECT criteria, A–F methodology |
+| Per-repo `AGENTS.md` (5-min start)                                         | Internal runbooks, role briefs, taste-encoded instructions                          |
+| Reference client architecture (how it works at a high level)               | Reference client source code (how it orchestrates 83 agents)                        |
 
 The line varies per org. The mechanics — five surfaces, two layers — are the same.
 

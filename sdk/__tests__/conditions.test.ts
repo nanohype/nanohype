@@ -18,9 +18,9 @@ describe('evalCondition', () => {
 
   it('evaluates || (RDS-needs-VPC dependency)', () => {
     expect(evalCondition('IncludeVpc || IncludeRds', r)).toBe(true);
-    expect(evalCondition('IncludeVpc || IncludeRds', { IncludeVpc: 'false', IncludeRds: 'false' })).toBe(
-      false,
-    );
+    expect(
+      evalCondition('IncludeVpc || IncludeRds', { IncludeVpc: 'false', IncludeRds: 'false' }),
+    ).toBe(false);
   });
 
   it('evaluates &&, !, and parentheses with precedence', () => {
@@ -42,21 +42,35 @@ describe('applyContentConditionals', () => {
   });
 
   it('keeps a block (dropping markers) when the condition is true', () => {
-    const src = ['before', '// #if IncludeRds', 'import { Db } from "./db";', '// #endif', 'after'].join(
-      '\n',
+    const src = [
+      'before',
+      '// #if IncludeRds',
+      'import { Db } from "./db";',
+      '// #endif',
+      'after',
+    ].join('\n');
+    expect(applyContentConditionals(src, resolved)).toBe(
+      ['before', 'import { Db } from "./db";', 'after'].join('\n'),
     );
-    expect(applyContentConditionals(src, resolved)).toBe(['before', 'import { Db } from "./db";', 'after'].join('\n'));
   });
 
   it('drops a block entirely when the condition is false', () => {
-    const src = ['before', '// #if IncludeVpc', 'import { Vpc } from "./vpc";', '// #endif', 'after'].join(
-      '\n',
-    );
+    const src = [
+      'before',
+      '// #if IncludeVpc',
+      'import { Vpc } from "./vpc";',
+      '// #endif',
+      'after',
+    ].join('\n');
     expect(applyContentConditionals(src, resolved)).toBe(['before', 'after'].join('\n'));
   });
 
   it('evaluates expression conditions (RDS keeps a VPC import)', () => {
-    const src = ['// #if IncludeVpc || IncludeRds', 'import { Vpc } from "./vpc";', '// #endif'].join('\n');
+    const src = [
+      '// #if IncludeVpc || IncludeRds',
+      'import { Vpc } from "./vpc";',
+      '// #endif',
+    ].join('\n');
     expect(applyContentConditionals(src, resolved)).toBe('import { Vpc } from "./vpc";');
   });
 
@@ -87,9 +101,14 @@ describe('applyContentConditionals', () => {
   });
 
   it('recognizes hash-comment markers too', () => {
-    const src = ['# #if IncludeRds', 'rds: true', '# #endif', '# #if IncludeVpc', 'vpc: true', '# #endif'].join(
-      '\n',
-    );
+    const src = [
+      '# #if IncludeRds',
+      'rds: true',
+      '# #endif',
+      '# #if IncludeVpc',
+      'vpc: true',
+      '# #endif',
+    ].join('\n');
     expect(applyContentConditionals(src, resolved)).toBe('rds: true');
   });
 

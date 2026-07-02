@@ -13,12 +13,12 @@ TypeScript HTTP service with the Hono framework and OpenTelemetry instrumentatio
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `A TypeScript HTTP service` | Project description |
-| `Framework` | string | `hono` | HTTP framework |
-| `IncludeDocker` | bool | `true` | Include Dockerfile and docker-compose |
+| Variable        | Type   | Default                     | Description                           |
+| --------------- | ------ | --------------------------- | ------------------------------------- |
+| `ProjectName`   | string | —                           | Kebab-case project name               |
+| `Description`   | string | `A TypeScript HTTP service` | Project description                   |
+| `Framework`     | string | `hono`                      | HTTP framework                        |
+| `IncludeDocker` | bool   | `true`                      | Include Dockerfile and docker-compose |
 
 ## Project layout
 

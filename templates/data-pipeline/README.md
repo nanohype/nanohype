@@ -13,13 +13,13 @@ Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document in
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | "Data pipeline for AI workloads" | Project description |
-| `EmbeddingProvider` | string | `openai` | Embedding provider name |
-| `ChunkStrategy` | string | `recursive` | Chunking strategy name |
-| `IncludeTests` | bool | `true` | Include vitest test suite |
+| Variable            | Type   | Default                          | Description               |
+| ------------------- | ------ | -------------------------------- | ------------------------- |
+| `ProjectName`       | string | _(required)_                     | Kebab-case project name   |
+| `Description`       | string | "Data pipeline for AI workloads" | Project description       |
+| `EmbeddingProvider` | string | `openai`                         | Embedding provider name   |
+| `ChunkStrategy`     | string | `recursive`                      | Chunking strategy name    |
+| `IncludeTests`      | bool   | `true`                           | Include vitest test suite |
 
 ## Project layout
 

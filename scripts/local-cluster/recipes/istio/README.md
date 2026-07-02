@@ -12,12 +12,12 @@ Teardown reclaims everything — kind clusters leave no trace on the host.
 
 ## Contents
 
-| Component | Purpose |
-|---|---|
-| kind control-plane | Kubernetes API server + kubelet |
-| `istio-system` namespace | istiod + ingress/egress gateways (demo profile) |
-| `apps` namespace | Where to apply workload + policy manifests; sidecar injection enabled |
-| Port mappings | host `8081` → node `30080`, host `8443` → node `30443` — available for NodePort-style demos |
+| Component                | Purpose                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| kind control-plane       | Kubernetes API server + kubelet                                                             |
+| `istio-system` namespace | istiod + ingress/egress gateways (demo profile)                                             |
+| `apps` namespace         | Where to apply workload + policy manifests; sidecar injection enabled                       |
+| Port mappings            | host `8081` → node `30080`, host `8443` → node `30443` — available for NodePort-style demos |
 
 ## Prerequisites
 

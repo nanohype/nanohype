@@ -13,14 +13,14 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `"An A2A protocol agent"` | Short project description |
-| `LlmProvider` | string | `"anthropic"` | LLM provider for agent reasoning |
-| `Transport` | string | `"http"` | A2A transport (`http` or `websocket`) |
-| `IncludeDiscovery` | bool | `true` | Include agent discovery and Agent Card |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable           | Type   | Default                   | Description                            |
+| ------------------ | ------ | ------------------------- | -------------------------------------- |
+| `ProjectName`      | string | _(required)_              | Kebab-case project name                |
+| `Description`      | string | `"An A2A protocol agent"` | Short project description              |
+| `LlmProvider`      | string | `"anthropic"`             | LLM provider for agent reasoning       |
+| `Transport`        | string | `"http"`                  | A2A transport (`http` or `websocket`)  |
+| `IncludeDiscovery` | bool   | `true`                    | Include agent discovery and Agent Card |
+| `IncludeTests`     | bool   | `true`                    | Include test suite                     |
 
 ## Project layout
 

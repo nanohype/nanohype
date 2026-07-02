@@ -1,0 +1,17 @@
+# Dependencies and build output
+node_modules/
+dist/
+package-lock.json
+
+# Generated — catalog.json is emitted by scripts/generate-catalog.mjs via
+# JSON.stringify(..., null, 2); prettier would collapse short arrays and
+# break verify:catalog's byte-diff. Regenerate, never reformat.
+catalog.json
+
+# Template skeletons are product — they ship to consumers with their own
+# per-template formatting. Deliberately excluded from the org identity pass.
+templates/*/skeleton/
+
+# Internal planning docs and issue drafts (mirrors lint:docs excludes)
+.plans/
+.github/ISSUE_DRAFTS/

@@ -13,12 +13,12 @@ Composable rate limiting with pluggable algorithms and state stores.
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-|----------|-------------|---------|-------------|
-| `ProjectName` | `__PROJECT_NAME__` | *(required)* | Kebab-case package name |
-| `Description` | `__DESCRIPTION__` | Rate limiting middleware with pluggable algorithms | Package description |
-| `Algorithm` | `__ALGORITHM__` | `token-bucket` | Default rate limiting algorithm |
-| `Store` | `__STORE__` | `memory` | Default state store |
+| Variable      | Placeholder        | Default                                            | Description                     |
+| ------------- | ------------------ | -------------------------------------------------- | ------------------------------- |
+| `ProjectName` | `__PROJECT_NAME__` | _(required)_                                       | Kebab-case package name         |
+| `Description` | `__DESCRIPTION__`  | Rate limiting middleware with pluggable algorithms | Package description             |
+| `Algorithm`   | `__ALGORITHM__`    | `token-bucket`                                     | Default rate limiting algorithm |
+| `Store`       | `__STORE__`        | `memory`                                           | Default state store             |
 
 ## Project layout
 

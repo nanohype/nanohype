@@ -22,10 +22,7 @@ const ALL_REPOS: ContractRepoInfo[] = [
  * and `GitHubSource.fetchContract` for the resolution rules. The repo's
  * visibility is stamped onto the result when it's a known descriptor.
  */
-export async function loadContract(
-  source: CatalogSource,
-  repo: ContractRepo,
-): Promise<Contract> {
+export async function loadContract(source: CatalogSource, repo: ContractRepo): Promise<Contract> {
   const content = await source.fetchContract(repo);
   const visibility = ALL_REPOS.find((r) => r.repo === repo)?.visibility;
   return visibility ? { repo, content, visibility } : { repo, content };

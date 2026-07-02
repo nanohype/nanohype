@@ -32,13 +32,16 @@
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
     "sync:library": "node scripts/sync-library.mjs",
     "verify:library": "node scripts/sync-library.mjs --check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**' '!.plans/**'"
   },
   "devDependencies": {
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^4.2.0",
-    "markdownlint-cli2": "^0.22.1"
+    "markdownlint-cli2": "^0.22.1",
+    "prettier": "^3.9.4"
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",

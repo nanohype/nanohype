@@ -17,11 +17,11 @@ Pluggable vector database abstraction for embedding storage and similarity searc
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Pluggable vector store for embedding storage and similarity search` | Project description |
-| `VectorProvider` | string | `memory` | Default vector backend (memory/pgvector/qdrant/pinecone or custom) |
+| Variable         | Type   | Default                                                              | Description                                                        |
+| ---------------- | ------ | -------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `ProjectName`    | string | --                                                                   | Kebab-case project name                                            |
+| `Description`    | string | `Pluggable vector store for embedding storage and similarity search` | Project description                                                |
+| `VectorProvider` | string | `memory`                                                             | Default vector backend (memory/pgvector/qdrant/pinecone or custom) |
 
 ## Project layout
 

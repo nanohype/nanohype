@@ -19,16 +19,16 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `LLM provider pack for Anthropic, OpenAI, Bedrock, Azure, and more` | Project description |
-| `DefaultProvider` | string | `anthropic` | Default LLM provider |
-| `IncludeBedrock` | bool | `false` | Include AWS Bedrock provider |
-| `IncludeAzure` | bool | `false` | Include Azure OpenAI provider |
-| `IncludeVertex` | bool | `false` | Include Google Vertex AI provider |
-| `IncludeHuggingFace` | bool | `false` | Include Hugging Face Inference provider |
-| `IncludeOllama` | bool | `false` | Include Ollama local inference provider |
+| Variable             | Type   | Default                                                             | Description                             |
+| -------------------- | ------ | ------------------------------------------------------------------- | --------------------------------------- |
+| `ProjectName`        | string | --                                                                  | Kebab-case project name                 |
+| `Description`        | string | `LLM provider pack for Anthropic, OpenAI, Bedrock, Azure, and more` | Project description                     |
+| `DefaultProvider`    | string | `anthropic`                                                         | Default LLM provider                    |
+| `IncludeBedrock`     | bool   | `false`                                                             | Include AWS Bedrock provider            |
+| `IncludeAzure`       | bool   | `false`                                                             | Include Azure OpenAI provider           |
+| `IncludeVertex`      | bool   | `false`                                                             | Include Google Vertex AI provider       |
+| `IncludeHuggingFace` | bool   | `false`                                                             | Include Hugging Face Inference provider |
+| `IncludeOllama`      | bool   | `false`                                                             | Include Ollama local inference provider |
 
 ## Project layout
 

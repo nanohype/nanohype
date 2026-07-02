@@ -42,7 +42,8 @@ async function findConsumers() {
         if (e.name === 'node_modules' || e.name === 'charts') continue; // don't descend into vendored copies
         await walk(p);
       } else if (e.name === 'Chart.yaml') {
-        if ((await readFile(p, 'utf8')).includes(`file://charts/${LIB_NAME}`)) dirs.push(dirname(p));
+        if ((await readFile(p, 'utf8')).includes(`file://charts/${LIB_NAME}`))
+          dirs.push(dirname(p));
       }
     }
   }
@@ -82,8 +83,10 @@ async function main() {
         copyFiles.join('\n') === srcFiles.join('\n') &&
         (
           await Promise.all(
-            srcFiles.map(async (f) =>
-              (await readFile(join(LIB_SRC, f), 'utf8')) === (await readFile(join(dest, f), 'utf8')),
+            srcFiles.map(
+              async (f) =>
+                (await readFile(join(LIB_SRC, f), 'utf8')) ===
+                (await readFile(join(dest, f), 'utf8')),
             ),
           )
         ).every(Boolean);

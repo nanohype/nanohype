@@ -13,27 +13,27 @@ The Kustomize-based addon variant (used by `storage-classes`, `priority-classes`
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `AddonName` | string | (required) | Kebab-case addon name |
-| `Category` | string | `operations` | `bootstrap`, `networking`, `security`, `observability`, `operations`, `argo-platform` |
-| `ChartRepo` | string | (required) | Upstream Helm repo URL |
-| `ChartName` | string | (required) | Upstream chart name |
-| `ChartVersion` | string | (required) | Pinned chart version (never floating — look up via `helm search repo`) |
-| `SyncWave` | string | `40` | ArgoCD sync wave |
+| Variable       | Type   | Default      | Description                                                                           |
+| -------------- | ------ | ------------ | ------------------------------------------------------------------------------------- |
+| `AddonName`    | string | (required)   | Kebab-case addon name                                                                 |
+| `Category`     | string | `operations` | `bootstrap`, `networking`, `security`, `observability`, `operations`, `argo-platform` |
+| `ChartRepo`    | string | (required)   | Upstream Helm repo URL                                                                |
+| `ChartName`    | string | (required)   | Upstream chart name                                                                   |
+| `ChartVersion` | string | (required)   | Pinned chart version (never floating — look up via `helm search repo`)                |
+| `SyncWave`     | string | `40`         | ArgoCD sync wave                                                                      |
 
 ## Sync waves (eks-gitops convention)
 
-| Category | Wave range |
-|---|---|
-| `bootstrap` | 0, 2 |
-| `networking` | 1 |
-| `karpenter` (under operations) | 5 |
-| `security` | 10–12 |
-| `policies` (under security) | 20–21 |
-| `observability` | 30–33 |
-| `operations` | 40–44 |
-| `argo-platform` | 50–52 |
+| Category                       | Wave range |
+| ------------------------------ | ---------- |
+| `bootstrap`                    | 0, 2       |
+| `networking`                   | 1          |
+| `karpenter` (under operations) | 5          |
+| `security`                     | 10–12      |
+| `policies` (under security)    | 20–21      |
+| `observability`                | 30–33      |
+| `operations`                   | 40–44      |
+| `argo-platform`                | 50–52      |
 
 Apps land at wave ≥100 (handled by `k8s-app-tenant`).
 

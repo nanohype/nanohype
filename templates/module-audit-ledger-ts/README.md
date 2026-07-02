@@ -13,15 +13,15 @@ An append-only audit ledger with pluggable storage backends. One `AuditLedger` p
 - Deterministic, content-addressed event ids so an append is idempotent across all backends
 - OTel counters: `audit_append_total` (by provider + result) and `audit_query_total`
 
-**Boundary:** this module owns *persistence only*. Domain logic — approval gates, edit-distance scoring, PII scrubbing — stays in the app that owns the events. Scrub `details` before appending.
+**Boundary:** this module owns _persistence only_. Domain logic — approval gates, edit-distance scoring, PII scrubbing — stays in the app that owns the events. Scrub `details` before appending.
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-| --- | --- | --- | --- |
-| `ProjectName` | `__PROJECT_NAME__` | — | Package name + directory (kebab-case, required) |
-| `Description` | `__DESCRIPTION__` | Append-only audit ledger… | package.json + README description |
-| `AuditProvider` | `__AUDIT_PROVIDER__` | `memory` | Default backend (memory, postgres, dynamodb, sqs, or a custom name) |
+| Variable        | Placeholder          | Default                   | Description                                                         |
+| --------------- | -------------------- | ------------------------- | ------------------------------------------------------------------- |
+| `ProjectName`   | `__PROJECT_NAME__`   | —                         | Package name + directory (kebab-case, required)                     |
+| `Description`   | `__DESCRIPTION__`    | Append-only audit ledger… | package.json + README description                                   |
+| `AuditProvider` | `__AUDIT_PROVIDER__` | `memory`                  | Default backend (memory, postgres, dynamodb, sqs, or a custom name) |
 
 ## Project layout
 

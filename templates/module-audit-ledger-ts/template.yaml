@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: module-audit-ledger-ts
-displayName: "Module: Audit Ledger"
+displayName: 'Module: Audit Ledger'
 description: >
   Append-only audit ledger with pluggable storage backends. One AuditLedger
   port (append + queryByContext) over four adapters: an in-memory store for
@@ -10,7 +10,7 @@ description: >
   at-least-once delivery). The module owns persistence only — domain logic such
   as approval gates, edit-distance scoring, and PII scrubbing stays in the app
   that owns the events.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: composable-modules
@@ -19,27 +19,27 @@ tags: [audit, ledger, compliance, postgres, dynamodb, sqs, typescript]
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Kebab-case project name, used as package name and directory"
-    prompt: "Project name"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Kebab-case project name, used as package name and directory'
+    prompt: 'Project name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case starting with a letter"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "Short project description for package.json and README"
-    prompt: "Project description"
-    default: "Append-only audit ledger with pluggable storage backends"
+    placeholder: '__DESCRIPTION__'
+    description: 'Short project description for package.json and README'
+    prompt: 'Project description'
+    default: 'Append-only audit ledger with pluggable storage backends'
 
   - name: AuditProvider
     type: string
-    placeholder: "__AUDIT_PROVIDER__"
-    description: "Default audit backend (memory, postgres, dynamodb, sqs, or a custom name)"
-    prompt: "Audit backend"
-    default: "memory"
+    placeholder: '__AUDIT_PROVIDER__'
+    description: 'Default audit backend (memory, postgres, dynamodb, sqs, or a custom name)'
+    prompt: 'Audit backend'
+    default: 'memory'
 
 conditionals: []
 
@@ -52,5 +52,5 @@ prerequisites: []
 hooks:
   post:
     - name: install-dependencies
-      description: "Install npm dependencies"
-      run: "npm install"
+      description: 'Install npm dependencies'
+      run: 'npm install'

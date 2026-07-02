@@ -14,11 +14,11 @@ Composable background job processing with pluggable brokers.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `Background job processing with pluggable queue providers` | Project description |
-| `QueueProvider` | string | `memory` | Default queue provider (memory/bullmq/sqs or custom) |
+| Variable        | Type   | Default                                                    | Description                                          |
+| --------------- | ------ | ---------------------------------------------------------- | ---------------------------------------------------- |
+| `ProjectName`   | string | —                                                          | Kebab-case project name                              |
+| `Description`   | string | `Background job processing with pluggable queue providers` | Project description                                  |
+| `QueueProvider` | string | `memory`                                                   | Default queue provider (memory/bullmq/sqs or custom) |
 
 ## Project layout
 

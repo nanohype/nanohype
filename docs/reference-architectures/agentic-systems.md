@@ -411,16 +411,16 @@ Regression suites should include edge cases: tasks that require error recovery, 
 
 ## 7. Decision Matrix: Choosing a Pattern
 
-| Factor | ReAct | Plan-and-Execute | Reflection |
-|---|---|---|---|
-| Task complexity | Low to medium | Medium to high | Any |
-| Steps known in advance | No | Roughly yes | N/A |
-| Auditability need | Medium (reasoning trace) | High (explicit plan) | Medium |
-| Latency tolerance | Low (starts immediately) | Higher (planning phase) | Higher (critique pass) |
-| Token budget | Moderate | Higher (plan + execution) | Higher (generate + critique) |
-| Error recovery | Implicit (next step adapts) | Explicit (replan) | Implicit (revise) |
-| Best for | General-purpose agents | Multi-step workflows | Quality-critical output |
-| Combine with | Reflection for quality | ReAct within each step | ReAct or Plan-and-Execute |
+| Factor                 | ReAct                       | Plan-and-Execute          | Reflection                   |
+| ---------------------- | --------------------------- | ------------------------- | ---------------------------- |
+| Task complexity        | Low to medium               | Medium to high            | Any                          |
+| Steps known in advance | No                          | Roughly yes               | N/A                          |
+| Auditability need      | Medium (reasoning trace)    | High (explicit plan)      | Medium                       |
+| Latency tolerance      | Low (starts immediately)    | Higher (planning phase)   | Higher (critique pass)       |
+| Token budget           | Moderate                    | Higher (plan + execution) | Higher (generate + critique) |
+| Error recovery         | Implicit (next step adapts) | Explicit (replan)         | Implicit (revise)            |
+| Best for               | General-purpose agents      | Multi-step workflows      | Quality-critical output      |
+| Combine with           | Reflection for quality      | ReAct within each step    | ReAct or Plan-and-Execute    |
 
 **Rules of thumb:**
 

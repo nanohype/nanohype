@@ -1,9 +1,9 @@
 ---
 name: New Template Request
 about: Propose a new template for the nanohype catalog
-title: "[Template] "
+title: '[Template] '
 labels: new-template
-assignees: ""
+assignees: ''
 ---
 
 ## Template Name

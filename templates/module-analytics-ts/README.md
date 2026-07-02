@@ -17,11 +17,11 @@ Event tracking and product analytics with pluggable backends.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Event tracking and product analytics` | Project description |
-| `AnalyticsProvider` | string | `posthog` | Default analytics provider (posthog/segment/mixpanel/amplitude/mock or custom) |
+| Variable            | Type   | Default                                | Description                                                                    |
+| ------------------- | ------ | -------------------------------------- | ------------------------------------------------------------------------------ |
+| `ProjectName`       | string | --                                     | Kebab-case project name                                                        |
+| `Description`       | string | `Event tracking and product analytics` | Project description                                                            |
+| `AnalyticsProvider` | string | `posthog`                              | Default analytics provider (posthog/segment/mixpanel/amplitude/mock or custom) |
 
 ## Project layout
 

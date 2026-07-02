@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
-      - "*.md"
+      - 'docs/**'
+      - '*.md'
   pull_request:
     paths:
-      - "docs/**"
-      - "*.md"
+      - 'docs/**'
+      - '*.md'
 
 permissions:
   contents: read

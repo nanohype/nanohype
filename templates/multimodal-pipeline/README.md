@@ -14,14 +14,14 @@ Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | "A multimodal processing pipeline" | Project description |
-| `LlmProvider` | string | `anthropic` | anthropic or openai |
-| `IncludeAudio` | bool | `true` | Include audio processing support |
-| `IncludeVideo` | bool | `false` | Include video processing support |
-| `IncludeTests` | bool | `true` | Include vitest test suite |
+| Variable       | Type   | Default                            | Description                      |
+| -------------- | ------ | ---------------------------------- | -------------------------------- |
+| `ProjectName`  | string | _(required)_                       | Kebab-case project name          |
+| `Description`  | string | "A multimodal processing pipeline" | Project description              |
+| `LlmProvider`  | string | `anthropic`                        | anthropic or openai              |
+| `IncludeAudio` | bool   | `true`                             | Include audio processing support |
+| `IncludeVideo` | bool   | `false`                            | Include video processing support |
+| `IncludeTests` | bool   | `true`                             | Include vitest test suite        |
 
 ## Project layout
 

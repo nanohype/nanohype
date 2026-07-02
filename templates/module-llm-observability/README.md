@@ -15,12 +15,12 @@ AI-specific telemetry module with LLM call tracing, cost tracking, quality monit
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `LLM observability module with tracing, cost tracking, and quality monitoring` | Description |
-| `Exporter` | string | `console` | Default exporter (console/otlp/json-file or custom) |
-| `IncludeCostTracking` | bool | `true` | Include cost tracking and anomaly detection |
+| Variable              | Type   | Default                                                                        | Description                                         |
+| --------------------- | ------ | ------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `ProjectName`         | string | —                                                                              | Kebab-case project name                             |
+| `Description`         | string | `LLM observability module with tracing, cost tracking, and quality monitoring` | Description                                         |
+| `Exporter`            | string | `console`                                                                      | Default exporter (console/otlp/json-file or custom) |
+| `IncludeCostTracking` | bool   | `true`                                                                         | Include cost tracking and anomaly detection         |
 
 ## Project layout
 

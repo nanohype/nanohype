@@ -15,11 +15,11 @@ AWS variant only for now; GCP and Azure follow the same shape and can be added b
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
+| Variable        | Type   | Default    | Description                                             |
+| --------------- | ------ | ---------- | ------------------------------------------------------- |
 | `ComponentName` | string | (required) | Snake_case component name (directory + resource prefix) |
-| `Description` | string | (required) | One-sentence component description |
-| `Multitenant` | bool | `false` | Add `modules/tenant/` + `for_each` skeleton |
+| `Description`   | string | (required) | One-sentence component description                      |
+| `Multitenant`   | bool   | `false`    | Add `modules/tenant/` + `for_each` skeleton             |
 
 ## Project layout
 

@@ -32,15 +32,15 @@ The ECS Fargate path in this template is a historical fallback. Prefer EKS via `
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | `infra` | Kebab-case project name |
-| `Description` | string | `AWS CDK infrastructure for AI services` | Project description |
-| `AwsRegion` | string | `us-east-1` | AWS deployment region |
-| `ComputeTarget` | enum | `lambda` | Compute platform: `lambda` (preferred) or `ecs` (fallback) |
-| `IncludeVpc` | bool | `false` | Include VPC networking |
-| `IncludeRds` | bool | `false` | Include RDS PostgreSQL |
-| `IncludeMonitoring` | bool | `true` | Include CloudWatch monitoring |
+| Variable            | Type   | Default                                  | Description                                                |
+| ------------------- | ------ | ---------------------------------------- | ---------------------------------------------------------- |
+| `ProjectName`       | string | `infra`                                  | Kebab-case project name                                    |
+| `Description`       | string | `AWS CDK infrastructure for AI services` | Project description                                        |
+| `AwsRegion`         | string | `us-east-1`                              | AWS deployment region                                      |
+| `ComputeTarget`     | enum   | `lambda`                                 | Compute platform: `lambda` (preferred) or `ecs` (fallback) |
+| `IncludeVpc`        | bool   | `false`                                  | Include VPC networking                                     |
+| `IncludeRds`        | bool   | `false`                                  | Include RDS PostgreSQL                                     |
+| `IncludeMonitoring` | bool   | `true`                                   | Include CloudWatch monitoring                              |
 
 ## Project layout
 

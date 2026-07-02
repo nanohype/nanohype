@@ -4,23 +4,23 @@ on:
   # Weekly cron — Sunday 06:00 UTC. Full catalog runs take a while; the
   # weekly cadence matches how fast the ecosystem drifts in practice.
   schedule:
-    - cron: "0 6 * * 0"
+    - cron: '0 6 * * 0'
   # Gate PRs that touch templates, composites, or the doctor itself: fail on
   # hard errors so typecheck/build/lint/ref debt can't land silently. Advisory
   # findings (outdated deps, dead deps) are reported but don't block.
   pull_request:
     paths:
-      - "templates/**"
-      - "composites/**"
-      - "scripts/template-doctor/**"
-      - ".github/workflows/template-doctor.yml"
+      - 'templates/**'
+      - 'composites/**'
+      - 'scripts/template-doctor/**'
+      - '.github/workflows/template-doctor.yml'
   # Manual trigger for on-demand runs (e.g., before cutting a release).
   workflow_dispatch:
     inputs:
       only:
-        description: "Limit to specific check groups (comma-separated: ts,go,java,python,cross)"
+        description: 'Limit to specific check groups (comma-separated: ts,go,java,python,cross)'
         required: false
-        default: "ts,go,java,python,cross"
+        default: 'ts,go,java,python,cross'
 
 jobs:
   doctor:
@@ -37,25 +37,25 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
           # go-service's pgx/otel deps require go 1.25; keep the doctor on a
           # current toolchain so it validates skeletons against what they build on.
-          go-version: "1.26"
+          go-version: '1.26'
 
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: "temurin"
-          java-version: "25"
+          distribution: 'temurin'
+          java-version: '25'
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Run doctor
         id: doctor

@@ -11,11 +11,11 @@ Scaffolds a structured launch package with go/no-go criteria organized by functi
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `LaunchType` | enum | `ga` | Launch phase: alpha, beta, or ga |
-| `IncludeComms` | bool | `true` | Include communications plan |
+| Variable       | Type   | Default    | Description                      |
+| -------------- | ------ | ---------- | -------------------------------- |
+| `ProjectName`  | string | (required) | Kebab-case project name          |
+| `LaunchType`   | enum   | `ga`       | Launch phase: alpha, beta, or ga |
+| `IncludeComms` | bool   | `true`     | Include communications plan      |
 
 ## Project layout
 

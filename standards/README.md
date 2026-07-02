@@ -111,7 +111,7 @@ The canonical tag/label taxonomy every cloud resource and k8s object on the stac
 The taxonomy is three tiers:
 
 - **Required (10)** — the billing + ownership + security skeleton, auto-injected on every resource: `environment`, `managed-by`, `project`, `repository`, `cost-center`, `business-unit`, `data-classification`, `compliance`, `component`, `team`.
-- **Recommended (5)** — the *own / trace / expire* idiom: `owner` (escalation handle), `revision` (deployed source rev), `provisioner` (the factory job that created it), `lifecycle` (`ephemeral` | `persistent`), `expiry` (the date an ephemeral resource is reapable). All auto-derivable; `lifecycle`+`expiry` make orphan-reaping policy-driven, `provisioner`+`revision` carry provenance.
+- **Recommended (5)** — the _own / trace / expire_ idiom: `owner` (escalation handle), `revision` (deployed source rev), `provisioner` (the factory job that created it), `lifecycle` (`ephemeral` | `persistent`), `expiry` (the date an ephemeral resource is reapable). All auto-derivable; `lifecycle`+`expiry` make orphan-reaping policy-driven, `provisioner`+`revision` carry provenance.
 - **Contextual (4)** — applied only where meaningful: `tenant`, `platform` (per-tenant / per-app identity), `model-family`, `model-id` (AI-workload OTel only).
 
 Each dimension renders per surface by deterministic transform:
@@ -133,7 +133,7 @@ The bar for how every system is observed and what dashboard it ships to represen
 
 - **RED + USE + golden signals** — request-serving services expose Rate / Errors / Duration (latency as p50/p95/p99 from a histogram, never an average); saturable resources expose Utilization / Saturation / Errors. Panels and alerts query the **system's own nouns** (reconcile loop, vend pipeline, queue, model gateway, tofu run) — generic node/CPU dashboards and embedded community boards do not count as representing the system.
 - **At least one SLO per system** — an SLI (good/valid ratio) over a 30-day window against an objective. Default availability objective `0.999`; add a latency SLO for latency-sensitive paths. The remaining error budget is `(1 - objective)` minus what's been spent.
-- **Multi-window multi-burn-rate alerts** — alert on the *rate* the budget burns, not instantaneous error ratio. The canonical four windows: page at 14.4× (1h/5m) and 6× (6h/30m), ticket at 3× (1d/2h) and 1× (3d/6h). An alert fires only when both its long and short window exceed the burn-rate factor.
+- **Multi-window multi-burn-rate alerts** — alert on the _rate_ the budget burns, not instantaneous error ratio. The canonical four windows: page at 14.4× (1h/5m) and 6× (6h/30m), ticket at 3× (1d/2h) and 1× (3d/6h). An alert fires only when both its long and short window exceed the burn-rate factor.
 - **Recording-rule convention** — `<metric>:sli_error:ratio_rate<window>` over each window; burn-rate alerts reference these rather than recomputing inline.
 - **The required dashboard** — five rows: an SLO/error-budget row (30d SLI vs objective, budget remaining, fast/slow burn) plus traffic, errors, latency (p50/p95/p99), and saturation.
 

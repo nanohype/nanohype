@@ -14,12 +14,12 @@ Multi-agent orchestrator with task decomposition, capability-based routing, and 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `Multi-agent orchestrator` | Short project description |
-| `LlmProvider` | string | `anthropic` | `anthropic` or `openai` |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable       | Type   | Default                    | Description               |
+| -------------- | ------ | -------------------------- | ------------------------- |
+| `ProjectName`  | string | _(required)_               | Kebab-case project name   |
+| `Description`  | string | `Multi-agent orchestrator` | Short project description |
+| `LlmProvider`  | string | `anthropic`                | `anthropic` or `openai`   |
+| `IncludeTests` | bool   | `true`                     | Include test suite        |
 
 ## Project layout
 

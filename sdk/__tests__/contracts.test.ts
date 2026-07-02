@@ -67,7 +67,8 @@ describe('loadAllContracts', () => {
     // (404). The load must degrade, not throw.
     const partial = {
       async fetchContract(repo: string) {
-        if (repo === 'eks-fleet') throw new NanohypeError('AGENTS.md for repo \'eks-fleet\' not found: 404');
+        if (repo === 'eks-fleet')
+          throw new NanohypeError("AGENTS.md for repo 'eks-fleet' not found: 404");
         return `# ${repo} — agent entry point\n\n${'x'.repeat(150)}`;
       },
     } as unknown as CatalogSource;

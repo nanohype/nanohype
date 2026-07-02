@@ -18,16 +18,16 @@ Generic Kubernetes deployment with raw manifests and an optional Helm chart. Wor
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Description` | string | `Kubernetes deployment` | Project description |
-| `Namespace` | string | `default` | Kubernetes namespace |
-| `Replicas` | string | `2` | Replica count |
-| `IncludeIngress` | bool | `true` | Include Ingress resource |
-| `IncludeHpa` | bool | `true` | Include HorizontalPodAutoscaler |
-| `IncludeHelm` | bool | `true` | Include Helm chart |
-| `IncludeCi` | bool | `true` | Include GitHub Actions workflow |
+| Variable         | Type   | Default                 | Description                     |
+| ---------------- | ------ | ----------------------- | ------------------------------- |
+| `ProjectName`    | string | (required)              | Kebab-case project name         |
+| `Description`    | string | `Kubernetes deployment` | Project description             |
+| `Namespace`      | string | `default`               | Kubernetes namespace            |
+| `Replicas`       | string | `2`                     | Replica count                   |
+| `IncludeIngress` | bool   | `true`                  | Include Ingress resource        |
+| `IncludeHpa`     | bool   | `true`                  | Include HorizontalPodAutoscaler |
+| `IncludeHelm`    | bool   | `true`                  | Include Helm chart              |
+| `IncludeCi`      | bool   | `true`                  | Include GitHub Actions workflow |
 
 ## Project layout
 

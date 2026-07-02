@@ -75,7 +75,7 @@ export async function renderComposite(
       const result = renderTemplate(tmplManifest, files, entryValues);
 
       // Prefix paths for non-root entries
-      const prefix = entry.root ? '' : (entry.path ? entry.path + '/' : '');
+      const prefix = entry.root ? '' : entry.path ? entry.path + '/' : '';
       for (const file of result.files) {
         const prefixedPath = prefix + file.path;
         // Last-writer-wins on path collisions

@@ -11,11 +11,11 @@ Brand guideline documentation covering color palette definitions, typography sca
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `BrandName` | string | (required) | Display name of the brand |
-| `IncludeVoiceTone` | bool | `true` | Include voice and tone guidelines |
+| Variable           | Type   | Default    | Description                       |
+| ------------------ | ------ | ---------- | --------------------------------- |
+| `ProjectName`      | string | (required) | Kebab-case project name           |
+| `BrandName`        | string | (required) | Display name of the brand         |
+| `IncludeVoiceTone` | bool   | `true`     | Include voice and tone guidelines |
 
 ## Project layout
 

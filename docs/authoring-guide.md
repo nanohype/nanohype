@@ -64,11 +64,11 @@ This is always `nanohype/v1`. Consumers reject manifests with any other value.
 
 ```yaml
 name: my-template
-displayName: "My Template"
+displayName: 'My Template'
 description: >
   A one-to-three sentence description of what this template scaffolds
   and why someone would reach for it.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 tags: [python, cli, async]
 ```
@@ -90,14 +90,14 @@ Variables are the inputs users provide when scaffolding. Declare them as an orde
 variables:
   - name: ProjectName
     type: string
-    placeholder: "__PROJECT_NAME__"
-    description: "Name of the project"
-    prompt: "Project name"
-    default: "myapp"
+    placeholder: '__PROJECT_NAME__'
+    description: 'Name of the project'
+    prompt: 'Project name'
+    default: 'myapp'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9-]*$"
-      message: "Must be lowercase kebab-case"
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
 ```
 
 Every variable needs four fields: `name`, `type`, `placeholder`, and `description`. Everything else is optional (but `prompt`, `default`, and `validation` are strongly recommended).
@@ -113,13 +113,13 @@ There are four types. Here is a complete example of each.
 ```yaml
 - name: GoModule
   type: string
-  placeholder: "__GO_MODULE__"
-  description: "Full Go module path"
-  default: "github.com/example/${ProjectName}"
+  placeholder: '__GO_MODULE__'
+  description: 'Full Go module path'
+  default: 'github.com/example/${ProjectName}'
   required: true
   validation:
-    pattern: "^[a-z][a-z0-9./-]*$"
-    message: "Must be a valid Go module path"
+    pattern: '^[a-z][a-z0-9./-]*$'
+    message: 'Must be a valid Go module path'
 ```
 
 **bool** -- True or false. Primarily used with conditionals to include or exclude files:
@@ -127,8 +127,8 @@ There are four types. Here is a complete example of each.
 ```yaml
 - name: IncludeDocker
   type: bool
-  placeholder: "__INCLUDE_DOCKER__"
-  description: "Include Dockerfile and docker-compose.yaml"
+  placeholder: '__INCLUDE_DOCKER__'
+  description: 'Include Dockerfile and docker-compose.yaml'
   default: false
 ```
 
@@ -137,10 +137,10 @@ There are four types. Here is a complete example of each.
 ```yaml
 - name: LogLevel
   type: enum
-  placeholder: "__LOG_LEVEL__"
-  description: "Default log level"
-  default: "info"
-  options: ["debug", "info", "warn", "error"]
+  placeholder: '__LOG_LEVEL__'
+  description: 'Default log level'
+  default: 'info'
+  options: ['debug', 'info', 'warn', 'error']
 ```
 
 **int** -- An integer value:
@@ -148,8 +148,8 @@ There are four types. Here is a complete example of each.
 ```yaml
 - name: HttpPort
   type: int
-  placeholder: "__HTTP_PORT__"
-  description: "Default HTTP port"
+  placeholder: '__HTTP_PORT__'
+  description: 'Default HTTP port'
   default: 8080
 ```
 
@@ -162,15 +162,15 @@ Defaults can reference other variables using `${VariableName}` syntax:
 ```yaml
 - name: ProjectName
   type: string
-  placeholder: "__PROJECT_NAME__"
-  description: "Project name"
-  default: "myapp"
+  placeholder: '__PROJECT_NAME__'
+  description: 'Project name'
+  default: 'myapp'
 
 - name: BinaryName
   type: string
-  placeholder: "__BINARY_NAME__"
-  description: "Output binary name"
-  default: "${ProjectName}"
+  placeholder: '__BINARY_NAME__'
+  description: 'Output binary name'
+  default: '${ProjectName}'
 ```
 
 Cross-references are resolved after the user provides all explicit values. Circular references are invalid -- consumers will reject them.
@@ -183,8 +183,8 @@ The `validation.pattern` field takes an ECMAScript regex. Consumers treat it as 
 
 ```yaml
 validation:
-  pattern: "^[a-z][a-z0-9-]*$"
-  message: "Must be lowercase kebab-case starting with a letter"
+  pattern: '^[a-z][a-z0-9-]*$'
+  message: 'Must be lowercase kebab-case starting with a letter'
 ```
 
 Validation runs after defaults are resolved, before placeholder substitution. It applies to `string` and `int` types. There is no validation for `bool` (it is inherently constrained) and `enum` values are validated against `options` automatically.
@@ -246,16 +246,16 @@ Conditionals let you include or exclude files based on a `bool` variable.
 variables:
   - name: IncludeDocker
     type: bool
-    placeholder: "__INCLUDE_DOCKER__"
-    description: "Include Docker configuration"
+    placeholder: '__INCLUDE_DOCKER__'
+    description: 'Include Docker configuration'
     default: false
 
 conditionals:
-  - path: "Dockerfile"
+  - path: 'Dockerfile'
     when: IncludeDocker
-  - path: "docker-compose.yaml"
+  - path: 'docker-compose.yaml'
     when: IncludeDocker
-  - path: ".dockerignore"
+  - path: '.dockerignore'
     when: IncludeDocker
 ```
 
@@ -278,13 +278,13 @@ hooks:
   pre: []
   post:
     - name: install-dependencies
-      description: "Install Python dependencies"
-      run: "pip install -r requirements.txt"
-      workdir: "."
+      description: 'Install Python dependencies'
+      run: 'pip install -r requirements.txt'
+      workdir: '.'
     - name: init-git
-      description: "Initialize git repository"
-      run: "git init && git add -A"
-      workdir: "."
+      description: 'Initialize git repository'
+      run: 'git init && git add -A'
+      workdir: '.'
 ```
 
 ### 6.1 Lifecycle
@@ -339,11 +339,11 @@ Prerequisites declare external tools the scaffolded output or hooks depend on.
 ```yaml
 prerequisites:
   - name: go
-    version: ">=1.22"
-    purpose: "Go compilation and module management"
+    version: '>=1.22'
+    purpose: 'Go compilation and module management'
     optional: false
   - name: goreleaser
-    purpose: "Automated release builds (only if release config is included)"
+    purpose: 'Automated release builds (only if release config is included)'
     optional: true
 ```
 
@@ -463,9 +463,9 @@ Use `type: string` (not `enum`) for the variable so users can add custom provide
 variables:
   - name: LlmProvider
     type: string
-    placeholder: "__LLM_PROVIDER__"
-    description: "LLM provider (built-in: anthropic, openai — or any registered custom provider)"
-    default: "anthropic"
+    placeholder: '__LLM_PROVIDER__'
+    description: 'LLM provider (built-in: anthropic, openai — or any registered custom provider)'
+    default: 'anthropic'
 ```
 
 Adding a new provider to a scaffolded project is then: create a file, implement the interface, self-register, add one import line.

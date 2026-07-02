@@ -12,13 +12,13 @@ Scaffolds a [Model Context Protocol](https://modelcontextprotocol.io) server in 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `ServerName` | string | _(required)_ | Human-readable server name for MCP clients |
-| `Description` | string | `"An MCP server"` | Short project description |
-| `Transport` | enum | `"stdio"` | Transport protocol: `stdio` or `streamable-http` |
-| `IncludeResources` | bool | `true` | Include example resource endpoints |
+| Variable           | Type   | Default           | Description                                      |
+| ------------------ | ------ | ----------------- | ------------------------------------------------ |
+| `ProjectName`      | string | _(required)_      | Kebab-case project name                          |
+| `ServerName`       | string | _(required)_      | Human-readable server name for MCP clients       |
+| `Description`      | string | `"An MCP server"` | Short project description                        |
+| `Transport`        | enum   | `"stdio"`         | Transport protocol: `stdio` or `streamable-http` |
+| `IncludeResources` | bool   | `true`            | Include example resource endpoints               |
 
 ## Project layout
 

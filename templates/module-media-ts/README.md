@@ -16,11 +16,11 @@ Media processing and delivery with pluggable providers.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Media processing and delivery with pluggable providers` | Project description |
-| `MediaProvider` | string | `cloudinary` | Default media provider (cloudinary/uploadcare/imgix/mock or custom) |
+| Variable        | Type   | Default                                                  | Description                                                         |
+| --------------- | ------ | -------------------------------------------------------- | ------------------------------------------------------------------- |
+| `ProjectName`   | string | --                                                       | Kebab-case project name                                             |
+| `Description`   | string | `Media processing and delivery with pluggable providers` | Project description                                                 |
+| `MediaProvider` | string | `cloudinary`                                             | Default media provider (cloudinary/uploadcare/imgix/mock or custom) |
 
 ## Project layout
 

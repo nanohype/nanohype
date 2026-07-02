@@ -16,12 +16,12 @@ API gateway with edge routing, per-route authentication, rate limiting, traffic 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `API gateway with routing, auth, and rate limiting` | Project description |
-| `Framework` | string | `hono` | HTTP framework |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable       | Type   | Default                                             | Description             |
+| -------------- | ------ | --------------------------------------------------- | ----------------------- |
+| `ProjectName`  | string | --                                                  | Kebab-case project name |
+| `Description`  | string | `API gateway with routing, auth, and rate limiting` | Project description     |
+| `Framework`    | string | `hono`                                              | HTTP framework          |
+| `IncludeTests` | bool   | `true`                                              | Include test suite      |
 
 ## Project layout
 

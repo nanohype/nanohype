@@ -28,9 +28,7 @@ function mockTemplate(
   };
 }
 
-function mockSource(
-  templates: Record<string, ReturnType<typeof mockTemplate>>,
-): CatalogSource {
+function mockSource(templates: Record<string, ReturnType<typeof mockTemplate>>): CatalogSource {
   return {
     async listTemplates(): Promise<CatalogEntry[]> {
       return Object.keys(templates).map((name) => ({
@@ -58,9 +56,7 @@ function mockSource(
 describe('renderComposite', () => {
   it('renders a single root entry at output root', async () => {
     const source = mockSource({
-      'my-template': mockTemplate('my-template', [], [
-        { path: 'README.md', content: 'hello' },
-      ]),
+      'my-template': mockTemplate('my-template', [], [{ path: 'README.md', content: 'hello' }]),
     });
     const manifest: CompositeManifest = {
       apiVersion: 'nanohype/v1',
@@ -144,7 +140,12 @@ describe('renderComposite', () => {
       version: '0.1.0',
       tags: ['test'],
       variables: [
-        { name: 'IncludeOptional', type: 'bool', placeholder: '__INCLUDE__', description: 'Include' },
+        {
+          name: 'IncludeOptional',
+          type: 'bool',
+          placeholder: '__INCLUDE__',
+          description: 'Include',
+        },
       ],
       templates: [
         { template: 'always' },
@@ -162,7 +163,14 @@ describe('renderComposite', () => {
     const source = mockSource({
       tmpl: mockTemplate(
         'tmpl',
-        [{ name: 'ProjectName', type: 'string', placeholder: '__PROJECT_NAME__', description: 'Name' }],
+        [
+          {
+            name: 'ProjectName',
+            type: 'string',
+            placeholder: '__PROJECT_NAME__',
+            description: 'Name',
+          },
+        ],
         [{ path: 'README.md', content: '# __PROJECT_NAME__' }],
       ),
     });
@@ -174,12 +182,8 @@ describe('renderComposite', () => {
       description: 'Test',
       version: '0.1.0',
       tags: ['test'],
-      variables: [
-        { name: 'Name', type: 'string', placeholder: '__NAME__', description: 'Name' },
-      ],
-      templates: [
-        { template: 'tmpl', root: true, variables: { ProjectName: '${Name}' } },
-      ],
+      variables: [{ name: 'Name', type: 'string', placeholder: '__NAME__', description: 'Name' }],
+      templates: [{ template: 'tmpl', root: true, variables: { ProjectName: '${Name}' } }],
     };
 
     const result = await renderComposite(manifest, { Name: 'my-project' }, source);
@@ -200,10 +204,7 @@ describe('renderComposite', () => {
       version: '0.1.0',
       tags: ['test'],
       variables: [],
-      templates: [
-        { template: 'first', root: true },
-        { template: 'second' },
-      ],
+      templates: [{ template: 'first', root: true }, { template: 'second' }],
     };
 
     const result = await renderComposite(manifest, {}, source);

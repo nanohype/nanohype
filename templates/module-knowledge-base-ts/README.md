@@ -17,11 +17,11 @@ Knowledge base integration with pluggable providers.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | -- | Kebab-case project name |
-| `Description` | string | `Knowledge base integration with pluggable providers` | Project description |
-| `Provider` | string | `notion` | Default provider (notion/confluence/google-docs/coda/mock or custom) |
+| Variable      | Type   | Default                                               | Description                                                          |
+| ------------- | ------ | ----------------------------------------------------- | -------------------------------------------------------------------- |
+| `ProjectName` | string | --                                                    | Kebab-case project name                                              |
+| `Description` | string | `Knowledge base integration with pluggable providers` | Project description                                                  |
+| `Provider`    | string | `notion`                                              | Default provider (notion/confluence/google-docs/coda/mock or custom) |
 
 ## Project layout
 

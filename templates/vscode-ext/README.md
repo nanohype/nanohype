@@ -12,15 +12,15 @@ VS Code extension with optional React webview panel and AI provider integration.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `ExtensionName` | string | — | Display name in VS Code |
-| `Publisher` | string | — | VS Code marketplace publisher ID |
-| `Description` | string | `A VS Code extension` | Extension description |
-| `ActivationEvent` | string | `onStartupFinished` | When the extension activates |
-| `IncludeWebview` | bool | `true` | Include React webview panel |
-| `IncludeAi` | bool | `true` | Include AI provider integration |
+| Variable          | Type   | Default               | Description                      |
+| ----------------- | ------ | --------------------- | -------------------------------- |
+| `ProjectName`     | string | —                     | Kebab-case project name          |
+| `ExtensionName`   | string | —                     | Display name in VS Code          |
+| `Publisher`       | string | —                     | VS Code marketplace publisher ID |
+| `Description`     | string | `A VS Code extension` | Extension description            |
+| `ActivationEvent` | string | `onStartupFinished`   | When the extension activates     |
+| `IncludeWebview`  | bool   | `true`                | Include React webview panel      |
+| `IncludeAi`       | bool   | `true`                | Include AI provider integration  |
 
 ## Project layout
 

@@ -17,13 +17,13 @@ pluggable providers. The Go-side analog of `module-auth-ts`.
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-|----------|-------------|---------|-------------|
-| `ProjectName` | `__PROJECT_NAME__` | *(required)* | Kebab-case module directory name |
-| `GoModule` | `__GO_MODULE__` | `github.com/${Org}/${ProjectName}` | Full Go module path |
-| `Org` | `__ORG__` | *(required)* | GitHub organization or username |
-| `Description` | `__DESCRIPTION__` | Composable authentication middleware... | Module description |
-| `AuthProvider` | `__AUTH_PROVIDER__` | `jwt` | Default provider name |
+| Variable       | Placeholder         | Default                                 | Description                      |
+| -------------- | ------------------- | --------------------------------------- | -------------------------------- |
+| `ProjectName`  | `__PROJECT_NAME__`  | _(required)_                            | Kebab-case module directory name |
+| `GoModule`     | `__GO_MODULE__`     | `github.com/${Org}/${ProjectName}`      | Full Go module path              |
+| `Org`          | `__ORG__`           | _(required)_                            | GitHub organization or username  |
+| `Description`  | `__DESCRIPTION__`   | Composable authentication middleware... | Module description               |
+| `AuthProvider` | `__AUTH_PROVIDER__` | `jwt`                                   | Default provider name            |
 
 ## Project layout
 

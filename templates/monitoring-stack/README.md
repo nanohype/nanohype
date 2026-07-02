@@ -15,12 +15,12 @@ Standalone observability bundle with Grafana, Prometheus, and Loki. One command 
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | (required) | Kebab-case project name |
-| `Description` | string | `Observability stack with Grafana, Prometheus, and Loki` | Project description |
-| `DeployTarget` | string | `docker-compose` | Primary deployment target |
-| `IncludeAlerts` | bool | `true` | Include Prometheus alert rules |
+| Variable        | Type   | Default                                                  | Description                    |
+| --------------- | ------ | -------------------------------------------------------- | ------------------------------ |
+| `ProjectName`   | string | (required)                                               | Kebab-case project name        |
+| `Description`   | string | `Observability stack with Grafana, Prometheus, and Loki` | Project description            |
+| `DeployTarget`  | string | `docker-compose`                                         | Primary deployment target      |
+| `IncludeAlerts` | bool   | `true`                                                   | Include Prometheus alert rules |
 
 ## Project layout
 

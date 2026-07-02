@@ -16,12 +16,12 @@ Composable feature flags with pluggable stores and AI variant tracking.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | _(required)_ | Kebab-case project name |
-| `Description` | string | `Feature flags with AI variant tracking` | Project description |
-| `FlagStore` | string | `memory` | Default flag store (memory/redis/json-file or custom) |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable       | Type   | Default                                  | Description                                           |
+| -------------- | ------ | ---------------------------------------- | ----------------------------------------------------- |
+| `ProjectName`  | string | _(required)_                             | Kebab-case project name                               |
+| `Description`  | string | `Feature flags with AI variant tracking` | Project description                                   |
+| `FlagStore`    | string | `memory`                                 | Default flag store (memory/redis/json-file or custom) |
+| `IncludeTests` | bool   | `true`                                   | Include test suite                                    |
 
 ## Project layout
 

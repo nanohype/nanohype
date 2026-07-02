@@ -32,7 +32,7 @@ export interface DirectoryUser {
   displayName: string;
   title?: string;
   department?: string;
-  state?: "active" | "suspended" | "inactive";
+  state?: 'active' | 'suspended' | 'inactive';
   customAttributes: Record<string, unknown>;
   /** ISO 8601 from WorkOS. */
   createdAt?: string;
@@ -69,7 +69,7 @@ interface RawDirectoryUser {
   first_name?: string | null;
   last_name?: string | null;
   job_title?: string | null;
-  state?: "active" | "suspended" | "inactive";
+  state?: 'active' | 'suspended' | 'inactive';
   custom_attributes?: Record<string, unknown>;
   created_at?: string;
 }
@@ -88,21 +88,21 @@ function primaryEmailOf(raw: RawDirectoryUser): string | undefined {
 function toDirectoryUser(raw: RawDirectoryUser): DirectoryUser {
   const attrs = raw.custom_attributes ?? {};
   const displayName =
-    [raw.first_name, raw.last_name].filter(Boolean).join(" ").trim() ||
+    [raw.first_name, raw.last_name].filter(Boolean).join(' ').trim() ||
     String(attrs.displayName ?? raw.id);
   const email = primaryEmailOf(raw);
   return {
     id: raw.id,
     ...(email !== undefined ? { email } : {}),
-    firstName: raw.first_name ?? "",
-    lastName: raw.last_name ?? "",
+    firstName: raw.first_name ?? '',
+    lastName: raw.last_name ?? '',
     displayName,
     ...(raw.job_title != null
       ? { title: raw.job_title }
-      : typeof attrs.title === "string"
+      : typeof attrs.title === 'string'
         ? { title: attrs.title }
         : {}),
-    ...(typeof attrs.department === "string" ? { department: attrs.department } : {}),
+    ...(typeof attrs.department === 'string' ? { department: attrs.department } : {}),
     ...(raw.state !== undefined ? { state: raw.state } : {}),
     customAttributes: attrs,
     ...(raw.created_at !== undefined ? { createdAt: raw.created_at } : {}),
@@ -111,22 +111,22 @@ function toDirectoryUser(raw: RawDirectoryUser): DirectoryUser {
 
 export function createWorkOsDirectoryClient(config: WorkOsDirectoryConfig): WorkOsDirectoryClient {
   const fetchImpl = config.fetchImpl ?? fetch;
-  const baseUrl = (config.baseUrl ?? "https://api.workos.com").replace(/\/$/, "");
+  const baseUrl = (config.baseUrl ?? 'https://api.workos.com').replace(/\/$/, '');
   const pageSize = config.pageSize ?? 100;
   const maxPages = config.maxPages ?? 50;
   const headers = {
     Authorization: `Bearer ${config.apiKey}`,
-    Accept: "application/json",
+    Accept: 'application/json',
   };
 
   async function* walk(params: { group?: string } = {}): AsyncGenerator<RawDirectoryUser> {
     let after: string | null | undefined;
     for (let page = 0; page < maxPages; page++) {
       const url = new URL(`${baseUrl}/directory_users`);
-      url.searchParams.set("directory", config.directoryId);
-      url.searchParams.set("limit", String(pageSize));
-      if (params.group) url.searchParams.set("group", params.group);
-      if (after) url.searchParams.set("after", after);
+      url.searchParams.set('directory', config.directoryId);
+      url.searchParams.set('limit', String(pageSize));
+      if (params.group) url.searchParams.set('group', params.group);
+      if (after) url.searchParams.set('after', after);
 
       const response = await fetchImpl(url.toString(), { headers });
       if (!response.ok) {
@@ -152,7 +152,7 @@ export function createWorkOsDirectoryClient(config: WorkOsDirectoryConfig): Work
     async findByCustomAttribute(attribute, value) {
       for await (const raw of walk()) {
         const attr = raw.custom_attributes?.[attribute];
-        if (typeof attr === "string" && attr === value) return toDirectoryUser(raw);
+        if (typeof attr === 'string' && attr === value) return toDirectoryUser(raw);
       }
       return null;
     },

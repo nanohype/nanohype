@@ -14,11 +14,11 @@ Composable caching with pluggable backends.
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|---|---|---|---|
-| `ProjectName` | string | — | Kebab-case project name |
-| `Description` | string | `Pluggable caching layer with TTL and namespace support` | Project description |
-| `CacheProvider` | string | `memory` | Default cache provider (memory/redis/memcached or custom) |
+| Variable        | Type   | Default                                                  | Description                                               |
+| --------------- | ------ | -------------------------------------------------------- | --------------------------------------------------------- |
+| `ProjectName`   | string | —                                                        | Kebab-case project name                                   |
+| `Description`   | string | `Pluggable caching layer with TTL and namespace support` | Project description                                       |
+| `CacheProvider` | string | `memory`                                                 | Default cache provider (memory/redis/memcached or custom) |
 
 ## Project layout
 

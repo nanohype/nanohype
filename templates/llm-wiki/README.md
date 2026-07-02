@@ -19,16 +19,16 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
 
 ## Variables
 
-| Variable | Type | Default | Description |
-|----------|------|---------|-------------|
-| `ProjectName` | string | *(required)* | Kebab-case project name |
-| `Description` | string | `"Multi-tenant LLM-maintained knowledge base"` | Short description |
-| `StorageProvider` | string | `"git"` | Default wiki storage backend |
-| `LlmProvider` | string | `"anthropic"` | Default LLM provider |
-| `SourceProvider` | string | `"local"` | Default source ingestion provider |
-| `IncludeApi` | bool | `true` | Include HTTP API server |
-| `IncludeCli` | bool | `true` | Include CLI interface |
-| `IncludeTests` | bool | `true` | Include test suite |
+| Variable          | Type   | Default                                        | Description                       |
+| ----------------- | ------ | ---------------------------------------------- | --------------------------------- |
+| `ProjectName`     | string | _(required)_                                   | Kebab-case project name           |
+| `Description`     | string | `"Multi-tenant LLM-maintained knowledge base"` | Short description                 |
+| `StorageProvider` | string | `"git"`                                        | Default wiki storage backend      |
+| `LlmProvider`     | string | `"anthropic"`                                  | Default LLM provider              |
+| `SourceProvider`  | string | `"local"`                                      | Default source ingestion provider |
+| `IncludeApi`      | bool   | `true`                                         | Include HTTP API server           |
+| `IncludeCli`      | bool   | `true`                                         | Include CLI interface             |
+| `IncludeTests`    | bool   | `true`                                         | Include test suite                |
 
 ## Project layout
 

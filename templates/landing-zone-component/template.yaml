@@ -1,7 +1,7 @@
 apiVersion: nanohype/v1
 
 name: landing-zone-component
-displayName: "Landing-zone Component (OpenTofu/Terragrunt)"
+displayName: 'Landing-zone Component (OpenTofu/Terragrunt)'
 description: >
   Scaffolds a new component into nanohype/landing-zone. Produces the
   components/<cloud>/<name>/ Tofu root module (main.tf, variables.tf,
@@ -10,7 +10,7 @@ description: >
   for multi-tenant components (used by druid, pipeline, gateway, llm,
   mlops, rag, governance). AWS variant for now; gcp and azure follow
   the same shape and can be added by copying.
-version: "0.1.0"
+version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: infrastructure
@@ -19,30 +19,30 @@ tags: [opentofu, terragrunt, aws, landing-zone, nanohype]
 variables:
   - name: ComponentName
     type: string
-    placeholder: "__COMPONENT_NAME__"
-    description: "Snake_case component name. Used as directory name and resource-prefix in tags."
-    prompt: "Component name"
+    placeholder: '__COMPONENT_NAME__'
+    description: 'Snake_case component name. Used as directory name and resource-prefix in tags.'
+    prompt: 'Component name'
     required: true
     validation:
-      pattern: "^[a-z][a-z0-9_]*$"
-      message: "Must be lowercase snake_case starting with a letter"
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case starting with a letter'
 
   - name: Description
     type: string
-    placeholder: "__DESCRIPTION__"
-    description: "What this component provisions (one sentence — appears in main.tf header + README + envcommon comment)."
-    prompt: "Description"
+    placeholder: '__DESCRIPTION__'
+    description: 'What this component provisions (one sentence — appears in main.tf header + README + envcommon comment).'
+    prompt: 'Description'
     required: true
 
   - name: Multitenant
     type: bool
-    placeholder: "__MULTITENANT__"
-    description: "If true, adds a modules/tenant/ submodule and wires var.tenants + for_each in main.tf."
-    prompt: "Multi-tenant pattern?"
-    default: "false"
+    placeholder: '__MULTITENANT__'
+    description: 'If true, adds a modules/tenant/ submodule and wires var.tenants + for_each in main.tf.'
+    prompt: 'Multi-tenant pattern?'
+    default: 'false'
 
 conditionals:
-  - path: "components/aws/__COMPONENT_NAME__/modules/tenant"
+  - path: 'components/aws/__COMPONENT_NAME__/modules/tenant'
     when: Multitenant
 
 composition:
@@ -51,12 +51,12 @@ composition:
 
 prerequisites:
   - name: tofu
-    version: ">=1.11.0"
-    purpose: "OpenTofu CLI — never terraform"
+    version: '>=1.11.0'
+    purpose: 'OpenTofu CLI — never terraform'
     optional: false
   - name: terragrunt
-    version: ">=0.59"
-    purpose: "Drives the live/ env-specific overrides + dependency wiring"
+    version: '>=0.59'
+    purpose: 'Drives the live/ env-specific overrides + dependency wiring'
     optional: false
   - name: tflint
     purpose: "Required by landing-zone's lint job — validates naming + documented variables/outputs"

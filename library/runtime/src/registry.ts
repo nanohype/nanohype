@@ -28,7 +28,7 @@ export function createRegistry<T>(kind: string): ProviderRegistry<T> {
     get(name) {
       const factory = factories.get(name);
       if (!factory) {
-        const available = [...factories.keys()].join(", ") || "<none>";
+        const available = [...factories.keys()].join(', ') || '<none>';
         throw new Error(`Unknown ${kind} provider "${name}". Available: ${available}`);
       }
       return factory();

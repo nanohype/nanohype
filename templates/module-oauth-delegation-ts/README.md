@@ -2,7 +2,7 @@
 
 Composable **outbound** OAuth 2.0 delegation module — stores per-user access tokens and calls third-party APIs on the user's behalf.
 
-> **Not inbound auth.** Use [module-auth-ts](../module-auth-ts/) to verify incoming requests. Use this module when your service needs to call Notion, Google, Atlassian, Slack, or HubSpot *as the user*.
+> **Not inbound auth.** Use [module-auth-ts](../module-auth-ts/) to verify incoming requests. Use this module when your service needs to call Notion, Google, Atlassian, Slack, or HubSpot _as the user_.
 
 ## What you get
 
@@ -17,10 +17,10 @@ Composable **outbound** OAuth 2.0 delegation module — stores per-user access t
 
 ## Variables
 
-| Variable | Placeholder | Default | Description |
-|----------|-------------|---------|-------------|
-| `ProjectName` | `__PROJECT_NAME__` | *(required)* | Kebab-case package name |
-| `Description` | `__DESCRIPTION__` | Per-user OAuth 2.0 delegation... | Package description |
+| Variable      | Placeholder        | Default                          | Description             |
+| ------------- | ------------------ | -------------------------------- | ----------------------- |
+| `ProjectName` | `__PROJECT_NAME__` | _(required)_                     | Kebab-case package name |
+| `Description` | `__DESCRIPTION__`  | Per-user OAuth 2.0 delegation... | Package description     |
 
 ## Project layout
 
@@ -77,7 +77,7 @@ import {
   notionProvider,
   googleProvider,
   InMemoryTokenStorage,
-} from "your-oauth-module";
+} from 'your-oauth-module';
 
 const router = createOAuthRouter({
   providers: {
@@ -88,7 +88,7 @@ const router = createOAuthRouter({
   stateSigningSecret: process.env.OAUTH_STATE_SIGNING_SECRET!,
   resolveUserId: async (req) => {
     // plug in your inbound auth — e.g., module-auth-ts's getAuthUser()
-    return req.headers.get("x-user-id");
+    return req.headers.get('x-user-id');
   },
   clientCredentials: {
     notion: {
@@ -105,10 +105,10 @@ const router = createOAuthRouter({
 });
 
 // In steady state, consumer code calls one thing:
-const accessToken = await router.getValidToken(userId, "notion");
+const accessToken = await router.getValidToken(userId, 'notion');
 if (accessToken) {
-  await fetch("https://api.notion.com/v1/users/me", {
-    headers: { Authorization: `Bearer ${accessToken}`, "Notion-Version": "2022-06-28" },
+  await fetch('https://api.notion.com/v1/users/me', {
+    headers: { Authorization: `Bearer ${accessToken}`, 'Notion-Version': '2022-06-28' },
   });
 }
 
@@ -120,20 +120,20 @@ if (accessToken) {
 
 Each adapter is a plain `OAuthProvider` object that self-registers at import time.
 
-| Provider | Auth URL | Notes |
-|----------|----------|-------|
-| `notion` | `api.notion.com/v1/oauth/authorize` | No refresh tokens — grants are long-lived |
-| `google` | `accounts.google.com/o/oauth2/v2/auth` | Sends `access_type=offline&prompt=consent` on first grant for refresh; reuses refresh token if response omits it |
-| `atlassian` | `auth.atlassian.com/authorize` | Adds `audience=api.atlassian.com` |
-| `slack` | `slack.com/oauth/v2/authorize` | Reads `authed_user.access_token` for user-scope flows |
-| `hubspot` | `app.hubspot.com/oauth/authorize` | Space-separated scopes |
+| Provider    | Auth URL                               | Notes                                                                                                            |
+| ----------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `notion`    | `api.notion.com/v1/oauth/authorize`    | No refresh tokens — grants are long-lived                                                                        |
+| `google`    | `accounts.google.com/o/oauth2/v2/auth` | Sends `access_type=offline&prompt=consent` on first grant for refresh; reuses refresh token if response omits it |
+| `atlassian` | `auth.atlassian.com/authorize`         | Adds `audience=api.atlassian.com`                                                                                |
+| `slack`     | `slack.com/oauth/v2/authorize`         | Reads `authed_user.access_token` for user-scope flows                                                            |
+| `hubspot`   | `app.hubspot.com/oauth/authorize`      | Space-separated scopes                                                                                           |
 
 ## Storage backends
 
-| Backend | Use case | Persistence | Encryption |
-|---------|----------|-------------|------------|
-| `InMemoryTokenStorage` | Tests, local dev | Process memory | None |
-| `DDBKmsTokenStorage` | Production | DynamoDB | KMS envelope, `EncryptionContext: { purpose, userId, provider }` |
+| Backend                | Use case         | Persistence    | Encryption                                                       |
+| ---------------------- | ---------------- | -------------- | ---------------------------------------------------------------- |
+| `InMemoryTokenStorage` | Tests, local dev | Process memory | None                                                             |
+| `DDBKmsTokenStorage`   | Production       | DynamoDB       | KMS envelope, `EncryptionContext: { purpose, userId, provider }` |
 
 `DDBKmsTokenStorage` depends on `@aws-sdk/client-dynamodb`, `@aws-sdk/client-kms`, and `@smithy/node-http-handler` as **optional peer dependencies** — install them only if you use this backend. DynamoDB key schema: PK `userId`, SK `provider`. The KMS `EncryptionContext` binds each ciphertext to its user/provider pair, so a leaked blob cannot be decrypted for a different user.
 
@@ -156,15 +156,15 @@ The per-key mutex deduplicates concurrent refreshes within a single Node.js proc
 Some consumers have a signed `/start` URL as their only caller-identity signal, with no parallel session on the `/callback` side. Their `resolveUserId` needs to answer both cases:
 
 ```typescript
-import { readStatePayloadUnverified, type ResolveUserId } from "your-oauth-module";
+import { readStatePayloadUnverified, type ResolveUserId } from 'your-oauth-module';
 
 const resolveUserId: ResolveUserId = async (req) => {
   const url = new URL(req.url);
-  const signedToken = url.searchParams.get("t");
+  const signedToken = url.searchParams.get('t');
   if (signedToken) return verifyMySignedToken(signedToken); // /start
 
   // /callback — no signed URL token present. Fall back to the cookie.
-  const cookie = req.headers.get("cookie") ?? "";
+  const cookie = req.headers.get('cookie') ?? '';
   const payload = readStatePayloadUnverified(cookie);
   return payload?.userId ?? null;
 };
@@ -174,31 +174,31 @@ const resolveUserId: ResolveUserId = async (req) => {
 
 ## module-auth-ts vs module-oauth-delegation-ts
 
-| | `module-auth-ts` | `module-oauth-delegation-ts` |
-|---|---|---|
-| Direction | Inbound — verify requests | Outbound — call APIs on user's behalf |
-| Question answered | "Is this request authenticated?" | "Can we call Notion as this user?" |
-| State | Request-scoped (no storage) | Durable per-(userId, provider) row |
-| Surface | Middleware + `requireAuth`/`requireRole` guards | Four handlers + `getValidToken()` |
-| Providers | JWT, Clerk, Auth0, Supabase, API key | Notion, Google, Atlassian, Slack, HubSpot |
+|                   | `module-auth-ts`                                | `module-oauth-delegation-ts`              |
+| ----------------- | ----------------------------------------------- | ----------------------------------------- |
+| Direction         | Inbound — verify requests                       | Outbound — call APIs on user's behalf     |
+| Question answered | "Is this request authenticated?"                | "Can we call Notion as this user?"        |
+| State             | Request-scoped (no storage)                     | Durable per-(userId, provider) row        |
+| Surface           | Middleware + `requireAuth`/`requireRole` guards | Four handlers + `getValidToken()`         |
+| Providers         | JWT, Clerk, Auth0, Supabase, API key            | Notion, Google, Atlassian, Slack, HubSpot |
 
 Most services want both: `module-auth-ts` to decide who's calling, `module-oauth-delegation-ts` to call downstream services on their behalf.
 
 ## Adding a custom provider
 
 ```typescript
-import { registerProvider } from "your-oauth-module/providers";
-import type { OAuthProvider } from "your-oauth-module";
+import { registerProvider } from 'your-oauth-module/providers';
+import type { OAuthProvider } from 'your-oauth-module';
 
 const githubProvider: OAuthProvider = {
-  name: "github",
+  name: 'github',
   authUrl:
-    "https://github.com/login/oauth/authorize" +
-    "?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state={state}" +
-    "&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}",
-  tokenUrl: "https://github.com/login/oauth/access_token",
+    'https://github.com/login/oauth/authorize' +
+    '?client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}&state={state}' +
+    '&code_challenge={code_challenge}&code_challenge_method={code_challenge_method}',
+  tokenUrl: 'https://github.com/login/oauth/access_token',
   revokeUrl: undefined,
-  defaultScopes: ["repo", "read:user"],
+  defaultScopes: ['repo', 'read:user'],
   usePkce: true,
   parseTokenResponse(raw) {
     const r = raw as { access_token: string; refresh_token?: string; expires_in?: number };
@@ -210,5 +210,5 @@ const githubProvider: OAuthProvider = {
   },
 };
 
-registerProvider("github", () => githubProvider);
+registerProvider('github', () => githubProvider);
 ```
