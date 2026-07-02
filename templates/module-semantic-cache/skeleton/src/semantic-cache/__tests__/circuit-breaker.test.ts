@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   createCircuitBreaker,
   CircuitBreakerOpenError,
@@ -38,6 +38,7 @@ describe("circuit breaker", () => {
   });
 
   it("probes half-open after the reset timeout and closes on success", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({
       failureThreshold: 1,
       resetTimeoutMs: 5,
@@ -46,25 +47,30 @@ describe("circuit breaker", () => {
     await expect(cb.execute(fail)).rejects.toThrow("boom");
     expect(cb.getState()).toBe("open");
 
-    // Wait past the reset window so the next call probes.
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Advance past the reset window so the next call probes.
+    vi.advanceTimersByTime(10);
 
     await expect(cb.execute(ok)).resolves.toBe("ok");
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 
   it("re-opens when the half-open probe fails", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({
       failureThreshold: 1,
       resetTimeoutMs: 5,
     });
 
     await expect(cb.execute(fail)).rejects.toThrow("boom");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    vi.advanceTimersByTime(10);
 
     // The probe fails — breaker goes straight back to open.
     await expect(cb.execute(fail)).rejects.toThrow("boom");
     expect(cb.getState()).toBe("open");
+
+    vi.useRealTimers();
   });
 
   it("reset() returns the breaker to closed", async () => {
@@ -79,14 +85,17 @@ describe("circuit breaker", () => {
   });
 
   it("decays old failures outside the sliding window", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 2, windowMs: 5 });
 
     await expect(cb.execute(fail)).rejects.toThrow("boom");
-    // Let the first failure age out of the window.
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Advance so the first failure ages out of the window.
+    vi.advanceTimersByTime(10);
 
     // A second failure alone shouldn't trip the breaker — the first decayed.
     await expect(cb.execute(fail)).rejects.toThrow("boom");
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 });

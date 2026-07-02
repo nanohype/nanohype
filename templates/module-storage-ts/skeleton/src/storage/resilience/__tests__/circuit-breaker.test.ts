@@ -54,42 +54,51 @@ describe("circuit breaker", () => {
   });
 
   it("transitions to half-open after timeout", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 1, resetTimeoutMs: 50 });
 
     await expect(cb.execute(() => Promise.reject(new Error("fail")))).rejects.toThrow("fail");
     expect(cb.getState()).toBe("open");
 
-    // Wait for the reset timeout
-    await new Promise((r) => setTimeout(r, 60));
+    // Advance past the reset timeout
+    vi.advanceTimersByTime(60);
 
     // Next call should transition to half-open and execute
     const result = await cb.execute(() => Promise.resolve("recovered"));
     expect(result).toBe("recovered");
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 
   it("closes on success in half-open", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 1, resetTimeoutMs: 50 });
 
     await expect(cb.execute(() => Promise.reject(new Error("fail")))).rejects.toThrow("fail");
 
-    await new Promise((r) => setTimeout(r, 60));
+    vi.advanceTimersByTime(60);
 
     await cb.execute(() => Promise.resolve("ok"));
     expect(cb.getState()).toBe("closed");
+
+    vi.useRealTimers();
   });
 
   it("re-opens on failure in half-open", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 1, resetTimeoutMs: 50 });
 
     await expect(cb.execute(() => Promise.reject(new Error("fail")))).rejects.toThrow("fail");
     expect(cb.getState()).toBe("open");
 
-    await new Promise((r) => setTimeout(r, 60));
+    vi.advanceTimersByTime(60);
 
     // Fail again during half-open — should re-open
     await expect(cb.execute(() => Promise.reject(new Error("fail again")))).rejects.toThrow("fail again");
     expect(cb.getState()).toBe("open");
+
+    vi.useRealTimers();
   });
 
   it("reset returns to closed", async () => {
@@ -130,6 +139,7 @@ describe("circuit breaker", () => {
   });
 
   it("successful half-open probe clears failure timestamps", async () => {
+    vi.useFakeTimers();
     const cb = createCircuitBreaker({ failureThreshold: 3, resetTimeoutMs: 50, windowMs: 60_000 });
 
     // Trip the breaker
@@ -138,7 +148,7 @@ describe("circuit breaker", () => {
     }
     expect(cb.getState()).toBe("open");
 
-    await new Promise((r) => setTimeout(r, 60));
+    vi.advanceTimersByTime(60);
 
     // Successful probe resets to closed with clean slate
     await cb.execute(() => Promise.resolve("ok"));
@@ -148,5 +158,7 @@ describe("circuit breaker", () => {
     await expect(cb.execute(() => Promise.reject(new Error("f1")))).rejects.toThrow("f1");
     await expect(cb.execute(() => Promise.reject(new Error("f2")))).rejects.toThrow("f2");
     expect(cb.getState()).toBe("closed"); // only 2 of 3
+
+    vi.useRealTimers();
   });
 });
