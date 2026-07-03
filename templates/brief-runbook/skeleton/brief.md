@@ -8,7 +8,7 @@ A runbook is the operational knowledge base for a service. It exists so that an 
 
 The runbook covers three modes of operation: normal (monitoring, health checks, routine maintenance), degraded (known failure modes with documented remediation), and critical (incident response with escalation paths). Every section must assume the reader is under time pressure and may be unfamiliar with the service internals.
 
-The infrastructure provider (__INFRA_PROVIDER__) determines the operational tooling, access patterns, and failure modes that the runbook must address. AWS failure modes differ from GCP failure modes differ from Fly.io failure modes. Console access, CLI commands, and monitoring integrations should all be __INFRA_PROVIDER__-specific.
+The infrastructure provider (__INFRA_PROVIDER__) determines the operational tooling, access patterns, and failure modes that the runbook must address. AWS failure modes differ from Fly.io failure modes differ from Vercel failure modes. Console access, CLI commands, and monitoring integrations should all be __INFRA_PROVIDER__-specific.
 
 The severity levels (__INCIDENT_SEVERITY_LEVELS__) determine the response expectations for each class of incident. The runbook must define what constitutes each severity level for __SERVICE_NAME__ specifically (not just the organization's generic definitions) and what response actions, communication requirements, and escalation paths apply to each.
 

@@ -274,8 +274,6 @@ export interface TagDimension {
   meaning: string;
   render: {
     aws: string | null;
-    azure: string | null;
-    gcp: string | null;
     k8s: string | null;
     otel: string | null;
   };
@@ -295,7 +293,7 @@ export interface ResourceTaggingStandard {
       app_extension: Record<string, string>;
     };
     dimensions: TagDimension[];
-    required_by_surface: Record<'aws' | 'azure' | 'gcp' | 'k8s' | 'otel', string[]>;
+    required_by_surface: Record<'aws' | 'k8s' | 'otel', string[]>;
   };
 }
 

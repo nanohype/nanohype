@@ -2,7 +2,7 @@
 
 Scaffolds a new OpenTofu component into [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone). Produces the `components/<cloud>/<name>/` root module plus the `live/_envcommon/<cloud>/<name>.hcl` dependency-wiring file. Optionally adds a `modules/tenant/` submodule for multi-tenant components.
 
-AWS variant only for now; GCP and Azure follow the same shape and can be added by copying + tweaking provider blocks.
+Components target AWS, the org's cloud substrate.
 
 ## What you get
 

@@ -3,7 +3,7 @@ import type { UploadData } from "../types.js";
 
 // -- Provider Helpers -------------------------------------------------------
 //
-// Shared utilities used by cloud storage providers (S3, R2, GCS).
+// Shared utilities used by cloud storage providers (S3, R2).
 //
 // - toBuffer()   Collects UploadData into a Buffer with a configurable
 //                size limit to prevent unbounded memory growth.

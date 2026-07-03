@@ -28,7 +28,7 @@ variables:
   - name: DeployTarget
     type: string
     placeholder: '__DEPLOY_TARGET__'
-    description: 'Deployment target (infra-fly, infra-aws, infra-gcp, k8s-deploy)'
+    description: 'Deployment target (infra-fly, infra-aws, k8s-deploy)'
     default: 'infra-fly'
 
   - name: IncludeQueue

@@ -35,7 +35,6 @@ runbook/
 - [compliance-checklist](../compliance-checklist/) -- compliance controls for the service
 - [monitoring-stack](../monitoring-stack/) -- observability infrastructure
 - [infra-aws](../infra-aws/) -- AWS infrastructure
-- [infra-gcp](../infra-gcp/) -- GCP infrastructure
 
 ## Nests inside
 

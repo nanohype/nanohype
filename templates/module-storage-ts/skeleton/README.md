@@ -2,7 +2,7 @@
 
 __DESCRIPTION__
 
-Composable blob storage module with pluggable backends. Supports local filesystem, AWS S3, Cloudflare R2, and Google Cloud Storage out of the box.
+Composable blob storage module with pluggable backends. Supports local filesystem, AWS S3, and Cloudflare R2 out of the box.
 
 ## Quick Start
 
@@ -13,7 +13,7 @@ import { createStorageClient } from "./storage/index.js";
 const storage = await createStorageClient("__STORAGE_PROVIDER__", {
   // Provider-specific config goes here
   basePath: "./data",       // local provider
-  // bucket: "my-bucket",   // s3/r2/gcs
+  // bucket: "my-bucket",   // s3/r2
 });
 
 // Upload
@@ -67,16 +67,6 @@ const storage = await createStorageClient("r2", {
 });
 ```
 
-### Google Cloud Storage
-
-```typescript
-const storage = await createStorageClient("gcs", {
-  bucket: "my-bucket",
-  projectId: "my-gcp-project",       // optional if resolvable
-  keyFilename: "./service-account.json", // optional if using ADC
-});
-```
-
 ## Custom Providers
 
 Implement the `StorageProvider` interface and register it:
@@ -102,17 +92,17 @@ const storage = await createStorageClient("my-provider", { /* config */ });
 ## Architecture
 
 - **StorageClient wrapper** -- `createStorageClient()` initializes a provider by name and returns a `StorageClient` that delegates all operations (upload, download, delete, list, getSignedUrl) to the underlying provider. Application code never touches provider internals.
-- **Provider registry with self-registration** -- each provider module (local, s3, r2, gcs) calls `registerProvider()` at import time. The barrel import ensures all built-in providers are available. Adding a custom provider is one class + one `registerProvider()` call.
+- **Provider registry with self-registration** -- each provider module (local, s3, r2) calls `registerProvider()` at import time. The barrel import ensures all built-in providers are available. Adding a custom provider is one class + one `registerProvider()` call.
 - **`toBuffer` with size limits** -- the shared `toBuffer()` helper collects `UploadData` (Buffer, Uint8Array, string, or Readable stream) into a single Buffer with a configurable maximum size (default 100 MB). Streams are checked incrementally -- if the limit is exceeded mid-stream, the stream is destroyed immediately.
 - **`withRetry` exponential backoff** -- cloud operations use `withRetry()` which retries on transient network errors (ECONNRESET, ETIMEDOUT, 429, 5xx) with exponential backoff and jitter. Non-retryable errors propagate immediately.
 - **Zod input validation** -- `createStorageClient()` validates its arguments against a schema before resolving the provider, catching configuration errors at construction time.
 - **Bootstrap guard** -- detects unresolved scaffolding placeholders and halts with a diagnostic message before any provider initialization.
-- **Credential resolution per provider** -- S3 uses the standard AWS credential chain, GCS uses Application Default Credentials or a service account key file, R2 uses explicit access keys. Each provider handles its own auth.
+- **Credential resolution per provider** -- S3 uses the standard AWS credential chain, R2 uses explicit access keys. Each provider handles its own auth.
 
 ## Production Readiness
 
-- [ ] Set provider-specific environment variables or credentials (AWS, GCS, R2)
-- [ ] Choose a cloud provider (s3, r2, gcs) -- local provider is for development only
+- [ ] Set provider-specific environment variables or credentials (AWS, R2)
+- [ ] Choose a cloud provider (s3, r2) -- local provider is for development only
 - [ ] Configure bucket names and regions for your environment
 - [ ] Review and tune `toBuffer` size limit for your upload workloads
 - [ ] Set `LOG_LEVEL=warn` for production

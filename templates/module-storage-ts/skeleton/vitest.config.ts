@@ -8,14 +8,13 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the local provider, registry, and circuit breaker. SDK-backed
-      // providers (s3/gcs/r2 and their shared helpers), the client facade, and
+      // providers (s3/r2 and their shared helpers), the client facade, and
       // wiring are integration-exercised.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/storage/bootstrap.ts",
         "src/storage/client.ts",
-        "src/storage/providers/gcs.ts",
         "src/storage/providers/helpers.ts",
         "src/storage/providers/r2.ts",
         "src/storage/providers/s3.ts",

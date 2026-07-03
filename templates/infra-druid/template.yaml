@@ -54,7 +54,7 @@ variables:
   - name: DeepStorageType
     type: string
     placeholder: '__DEEP_STORAGE_TYPE__'
-    description: 'Deep storage backend (s3, google, azure, hdfs, local)'
+    description: 'Deep storage backend (s3, hdfs, local)'
     prompt: 'Deep storage type'
     default: 's3'
 

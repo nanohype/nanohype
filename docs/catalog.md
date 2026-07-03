@@ -27,7 +27,6 @@ A decision guide for selecting and composing templates. Read this to understand 
 | "Process images/audio/video"    | multimodal-pipeline | module-storage-ts, rag-pipeline                             | ts-service + infra-aws |
 | "Deploy to AWS"                 | infra-aws           | —                                                           | —                      |
 | "Deploy to Fly.io"              | infra-fly           | —                                                           | —                      |
-| "Deploy to GCP"                 | infra-gcp           | —                                                           | —                      |
 | "Deploy to Vercel"              | infra-vercel        | —                                                           | —                      |
 | "Kubernetes deployment"         | k8s-deploy          | —                                                           | —                      |
 | "Monorepo for everything"       | monorepo            | (all others nest inside)                                    | —                      |
@@ -54,7 +53,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 | Multi-model support      | Any with LlmProvider                   | Provider registry — swap models at config level    |
 | Offline/local models     | rag-pipeline (embedding), agentic-loop | Local provider stubs in registry                   |
 | Real-time updates        | module-queue-ts + ts-service           | Job processing with webhook delivery               |
-| File handling            | module-storage-ts                      | S3/R2/GCS/local abstraction                        |
+| File handling            | module-storage-ts                      | S3/R2/local abstraction                            |
 | Auth required            | module-auth-ts + ts-service            | JWT/Clerk/Auth0/Supabase/API key                   |
 | Background jobs          | module-queue-ts                        | BullMQ/SQS/in-memory                               |
 | Caching layer            | module-cache-ts                        | Redis/Valkey/in-memory                             |
@@ -80,9 +79,9 @@ A decision guide for selecting and composing templates. Read this to understand 
 │  │              │  │              │  │                    │  │
 │  │ agentic-loop │  │ ts-service   │  │ infra-aws         │  │
 │  │ rag-pipeline │  │ go-service   │  │ infra-fly         │  │
-│  │ mcp-server   │  │ go-cli       │  │ infra-gcp         │  │
-│  │ eval-harness │  │ chrome-ext   │  │ infra-vercel      │  │
-│  │ prompt-lib   │  │ vscode-ext   │  │ k8s-deploy        │  │
+│  │ mcp-server   │  │ go-cli       │  │ infra-vercel      │  │
+│  │ eval-harness │  │ chrome-ext   │  │ k8s-deploy        │  │
+│  │ prompt-lib   │  │ vscode-ext   │  │                    │  │
 │  │ a2a-agent    │  │ next-app     │  │                    │  │
 │  │ guardrails   │  │ slack-bot    │  │                    │  │
 │  │ multimodal   │  │ discord-bot  │  │                    │  │
@@ -172,8 +171,6 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **infra-fly** — Reach for this when deploying to Fly.io. Simpler than AWS, faster to set up, good for services that don't need the full AWS ecosystem. Dockerfile + fly.toml + deploy script.
 
-**infra-gcp** — Reach for this when deploying to GCP. Cloud Run service, Cloud SQL, monitoring dashboards. gcloud CLI deploy scripts with GitHub Actions CI.
-
 **infra-vercel** — Reach for this when deploying to Vercel. vercel.json with framework presets, environment variable management, GitHub Actions for preview and production deploys.
 
 **k8s-deploy** — Reach for this when deploying to Kubernetes. Helm chart with proper security hardening (non-root, read-only FS, resource limits), HPA, rolling updates, ingress with TLS. Raw manifests as alternative.
@@ -192,7 +189,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-observability-ts** — Add this when the service needs production monitoring. OpenTelemetry traces, metrics, and structured logging with pluggable exporters (console, OTLP, Datadog).
 
-**module-storage-ts** — Add this when the service needs file/blob storage. Upload, download, list, delete, and signed URLs with local, S3, R2, and GCS backends.
+**module-storage-ts** — Add this when the service needs file/blob storage. Upload, download, list, delete, and signed URLs with local, S3, and R2 backends.
 
 **module-queue-ts** — Add this when the service needs background job processing. In-memory for dev, BullMQ for Redis-backed production, SQS for AWS-native. Priority, retries, delays, graceful shutdown.
 
@@ -216,7 +213,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-feature-flags-ts** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
 
-**module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface across Anthropic, OpenAI, Groq (always included), plus Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama (conditional). Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
+**module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface across Anthropic, OpenAI, Groq (always included), plus Bedrock, Vertex AI, Hugging Face, and Ollama (conditional). Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
 
 **module-project-mgmt-ts** — Add this when AI agents need to create and manage work items. Unified interface across Linear (GraphQL), Jira (REST), Asana, and Shortcut. Priority mapping, pagination abstraction, comment threading.
 

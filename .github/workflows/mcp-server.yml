@@ -3,9 +3,9 @@ name: MCP Server
 on:
   push:
     branches: [main]
-    paths: ['mcp-server/**', 'sdk/**', 'schemas/**']
+    paths: ['mcp-server/**', 'sdk/**', 'schemas/**', 'library/config/**', 'package.json', 'package-lock.json']
   pull_request:
-    paths: ['mcp-server/**', 'sdk/**', 'schemas/**']
+    paths: ['mcp-server/**', 'sdk/**', 'schemas/**', 'library/config/**', 'package.json', 'package-lock.json']
 
 permissions:
   contents: read
@@ -25,8 +25,14 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             sdk/package-lock.json
             mcp-server/package-lock.json
+
+      # The lint config re-exports library/config/eslint.base.mjs, whose
+      # imports (@eslint/js, typescript-eslint) resolve from the repo root.
+      - name: Install root tooling dependencies
+        run: npm ci
 
       # The MCP server depends on @nanohype/sdk via file:../sdk, so the sibling
       # package must be installed and built before the MCP package resolves it.
@@ -56,6 +62,6 @@ jobs:
         working-directory: mcp-server
         run: npm run build
 
-      - name: Test
+      - name: Test with coverage floors
         working-directory: mcp-server
-        run: npm test
+        run: npm run test:coverage

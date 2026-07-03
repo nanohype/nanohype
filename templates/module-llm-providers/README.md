@@ -9,7 +9,7 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 - OpenAI provider (GPT-4o, GPT-4o-mini, o1) with streaming and circuit breaker
 - Groq provider (Llama, Mixtral) with streaming and circuit breaker
 - Mock provider with deterministic keyword-matched responses (always included)
-- Optional: AWS Bedrock, Azure OpenAI, Google Vertex AI, Hugging Face, Ollama
+- Optional: AWS Bedrock, Google Vertex AI, Hugging Face, Ollama
 - Unified streaming via `AsyncIterable<StreamChunk>` normalization
 - Token counting via js-tiktoken with cached encoders
 - Gateway adapter for bridging to the module-llm-gateway interface
@@ -19,16 +19,15 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 
 ## Variables
 
-| Variable             | Type   | Default                                                             | Description                             |
-| -------------------- | ------ | ------------------------------------------------------------------- | --------------------------------------- |
-| `ProjectName`        | string | --                                                                  | Kebab-case project name                 |
-| `Description`        | string | `LLM provider pack for Anthropic, OpenAI, Bedrock, Azure, and more` | Project description                     |
-| `DefaultProvider`    | string | `anthropic`                                                         | Default LLM provider                    |
-| `IncludeBedrock`     | bool   | `false`                                                             | Include AWS Bedrock provider            |
-| `IncludeAzure`       | bool   | `false`                                                             | Include Azure OpenAI provider           |
-| `IncludeVertex`      | bool   | `false`                                                             | Include Google Vertex AI provider       |
-| `IncludeHuggingFace` | bool   | `false`                                                             | Include Hugging Face Inference provider |
-| `IncludeOllama`      | bool   | `false`                                                             | Include Ollama local inference provider |
+| Variable             | Type   | Default                                                      | Description                             |
+| -------------------- | ------ | ------------------------------------------------------------ | --------------------------------------- |
+| `ProjectName`        | string | --                                                           | Kebab-case project name                 |
+| `Description`        | string | `LLM provider pack for Anthropic, OpenAI, Bedrock, and more` | Project description                     |
+| `DefaultProvider`    | string | `anthropic`                                                  | Default LLM provider                    |
+| `IncludeBedrock`     | bool   | `false`                                                      | Include AWS Bedrock provider            |
+| `IncludeVertex`      | bool   | `false`                                                      | Include Google Vertex AI provider       |
+| `IncludeHuggingFace` | bool   | `false`                                                      | Include Hugging Face Inference provider |
+| `IncludeOllama`      | bool   | `false`                                                      | Include Ollama local inference provider |
 
 ## Project layout
 
@@ -49,7 +48,6 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
         openai.ts               # GPT-4o via openai SDK
         groq.ts                 # Llama via groq-sdk
         bedrock.ts              # (conditional) AWS Bedrock
-        azure-openai.ts         # (conditional) Azure OpenAI
         vertex.ts               # (conditional) Google Vertex AI
         huggingface.ts          # (conditional) Hugging Face Inference
         ollama.ts               # (conditional) Ollama local inference

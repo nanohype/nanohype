@@ -44,7 +44,7 @@ spec:
         - podSelector:
             matchLabels:
               {{- include "__PROJECT_NAME__.selectorLabels" . | nindent 14 }}
-    # Deep storage over HTTPS (S3 / GCS / Azure blob). IMDS blocked.
+    # Deep storage over HTTPS (S3). IMDS blocked.
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0

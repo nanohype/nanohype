@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-06-26T00:18:05.000Z",
+  "generated_at": "2026-07-02T18:56:22.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -742,25 +742,6 @@
       "path": "templates/infra-fly"
     },
     {
-      "name": "infra-gcp",
-      "displayName": "GCP Cloud Run Deployment",
-      "description": "Scaffolds a GCP deployment configuration using gcloud CLI. Deploys to Cloud Run with a multi-stage Dockerfile, deploy scripts, and optional Cloud SQL PostgreSQL, Cloud Monitoring dashboards, and GitHub Actions CI/CD workflow. Designed to pair with service templates for a complete deploy pipeline.",
-      "version": "0.1.0",
-      "category": "infrastructure",
-      "persona": [
-        "engineering"
-      ],
-      "tags": [
-        "gcp",
-        "cloud-run",
-        "deployment",
-        "infrastructure",
-        "docker"
-      ],
-      "kind": "template",
-      "path": "templates/infra-gcp"
-    },
-    {
       "name": "infra-vercel",
       "displayName": "Vercel Deployment",
       "description": "Scaffolds a Vercel deployment configuration with vercel.json, environment variable setup, deploy scripts, and an optional GitHub Actions CI/CD workflow for preview deploys on pull requests and production deploys on push to main. Designed to pair with Next.js and TypeScript service templates for a complete deploy pipeline.",
@@ -842,7 +823,7 @@
     {
       "name": "landing-zone-component",
       "displayName": "Landing-zone Component (OpenTofu/Terragrunt)",
-      "description": "Scaffolds a new component into nanohype/landing-zone. Produces the components/<cloud>/<name>/ Tofu root module (main.tf, variables.tf, outputs.tf, versions.tf) plus the live/_envcommon/<cloud>/<name>.hcl dependency-wiring file. Optionally adds a modules/tenant/ submodule for multi-tenant components (used by druid, pipeline, gateway, llm, mlops, rag, governance). AWS variant for now; gcp and azure follow the same shape and can be added by copying.",
+      "description": "Scaffolds a new component into nanohype/landing-zone. Produces the components/<cloud>/<name>/ Tofu root module (main.tf, variables.tf, outputs.tf, versions.tf) plus the live/_envcommon/<cloud>/<name>.hcl dependency-wiring file. Optionally adds a modules/tenant/ submodule for multi-tenant components (used by druid, pipeline, gateway, llm, mlops, rag, governance). Components target AWS, the org's cloud substrate.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [
@@ -1156,7 +1137,7 @@
     {
       "name": "module-llm-providers",
       "displayName": "Module: LLM Providers",
-      "description": "Shared LLM provider pack — the canonical interface for all AI templates. Ships with Anthropic, OpenAI, and Groq providers out of the box, plus optional Bedrock, Azure OpenAI, Vertex AI, Hugging Face, and Ollama providers. Factory-based registry, streaming, token counting via js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.",
+      "description": "Shared LLM provider pack — the canonical interface for all AI templates. Ships with Anthropic, OpenAI, and Groq providers out of the box, plus optional Bedrock, Vertex AI, Hugging Face, and Ollama providers. Factory-based registry, streaming, token counting via js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1378,7 +1359,7 @@
     {
       "name": "module-storage-ts",
       "displayName": "Blob Storage Module",
-      "description": "Composable blob storage abstraction with pluggable backends. Ships with providers for local filesystem, AWS S3, Cloudflare R2 (S3-compatible), and Google Cloud Storage. Uses a self-registering provider pattern so custom backends can be added without modifying core code. Handles streams for large files and supports signed URL generation.",
+      "description": "Composable blob storage abstraction with pluggable backends. Ships with providers for local filesystem, AWS S3, and Cloudflare R2 (S3-compatible). Uses a self-registering provider pattern so custom backends can be added without modifying core code. Handles streams for large files and supports signed URL generation.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [

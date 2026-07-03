@@ -41,7 +41,6 @@ console.log(`\nTotal tokens: ${final.usage.outputTokens}`);
 | `groq` | groq-sdk | llama-3.3-70b-versatile | `GROQ_API_KEY` | Yes |
 | `mock` | none | mock-model | none | Yes |
 | `bedrock` | @aws-sdk/client-bedrock-runtime | anthropic.claude-sonnet-4-6 | IAM / AWS credentials | Conditional |
-| `azure-openai` | openai (reused) | gpt-4o | `AZURE_OPENAI_API_KEY` + `AZURE_OPENAI_ENDPOINT` | Conditional |
 | `vertex` | @google-cloud/vertexai | gemini-2.0-flash | Google ADC | Conditional |
 | `huggingface` | @huggingface/inference | meta-llama/Llama-3.3-70B-Instruct | `HF_TOKEN` | Conditional |
 | `ollama` | native fetch | llama3.2 | none (local) | Conditional |

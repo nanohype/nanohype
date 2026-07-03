@@ -20,7 +20,7 @@ export interface ProviderConfig {
 }
 
 export interface StorageProvider {
-  /** Unique provider name (e.g. "local", "s3", "r2", "gcs"). */
+  /** Unique provider name (e.g. "local", "s3", "r2"). */
   readonly name: string;
 
   /** Initialize the provider with backend-specific configuration. */

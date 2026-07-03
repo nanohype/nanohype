@@ -112,7 +112,7 @@ helm uninstall __PROJECT_NAME__ --namespace monitoring
 Before deploying to production, consider:
 
 - **Authentication**: Change the default Grafana admin password. Enable OAuth or LDAP for team access.
-- **Storage**: Replace Docker volumes with persistent storage. For Prometheus, consider remote write to long-term storage (Thanos, Cortex). For Loki, switch to object storage (S3, GCS).
+- **Storage**: Replace Docker volumes with persistent storage. For Prometheus, consider remote write to long-term storage (Thanos, Cortex). For Loki, switch to object storage (S3).
 - **High Availability**: Run multiple Prometheus replicas with deduplication. Use Loki's microservices mode for horizontal scaling.
 - **Alerting**: Configure Alertmanager for routing alerts to Slack, PagerDuty, or email. The included alert rules are starting points -- tune thresholds for your workload.
 - **TLS**: Terminate TLS at the ingress layer or configure each component with certificates.

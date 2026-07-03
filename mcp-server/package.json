@@ -26,6 +26,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit && eslint 'src/**/*.ts' '__tests__/**/*.ts'",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build"
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.8.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^10.4.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.59.3",

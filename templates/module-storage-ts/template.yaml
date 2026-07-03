@@ -4,8 +4,8 @@ name: module-storage-ts
 displayName: 'Blob Storage Module'
 description: >
   Composable blob storage abstraction with pluggable backends. Ships with
-  providers for local filesystem, AWS S3, Cloudflare R2 (S3-compatible),
-  and Google Cloud Storage. Uses a self-registering provider pattern so
+  providers for local filesystem, AWS S3, and Cloudflare R2
+  (S3-compatible). Uses a self-registering provider pattern so
   custom backends can be added without modifying core code. Handles
   streams for large files and supports signed URL generation.
 version: '0.1.0'
@@ -35,7 +35,7 @@ variables:
   - name: StorageProvider
     type: string
     placeholder: '__STORAGE_PROVIDER__'
-    description: 'Default storage backend (local, s3, r2, gcs, or a custom provider name)'
+    description: 'Default storage backend (local, s3, r2, or a custom provider name)'
     prompt: 'Storage provider'
     default: 'local'
 

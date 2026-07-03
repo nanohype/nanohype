@@ -8,7 +8,6 @@
 import "./local.js";
 import "./s3.js";
 import "./r2.js";
-import "./gcs.js";
 
 export type { StorageProvider, ProviderConfig } from "./types.js";
 export { registerProvider, getProvider, listProviders } from "./registry.js";

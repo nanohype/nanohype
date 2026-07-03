@@ -2,8 +2,8 @@
 // Cross-checks standards/resource-tagging.json beyond what JSON Schema can express:
 // the denormalized required_by_surface lists must agree with dimensions[].
 //
-//   - aws / azure / gcp: the required set is the EXACT render of every required-tier
-//     dimension that applies to that cloud (a full derivation — cloudgov reads it verbatim).
+//   - aws: the required set is the EXACT render of every required-tier
+//     dimension that applies to the cloud (a full derivation — cloudgov reads it verbatim).
 //   - k8s / otel: every listed key must be a real render of some dimension (no typos /
 //     orphans); the required subset here is curated, not a full derivation.
 //
@@ -24,7 +24,7 @@ const setEq = (a, b) =>
   a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
 
 // Full-derivation surfaces: required_by_surface must equal the rendered required dims exactly.
-for (const surface of ['aws', 'azure', 'gcp']) {
+for (const surface of ['aws']) {
   const derived = dimensions
     .filter((d) => d.tier === 'required' && d.render[surface] != null)
     .map((d) => d.render[surface]);
