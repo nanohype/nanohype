@@ -41,7 +41,7 @@
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "eslint": "^10.6.0",
-    "js-yaml": "^4.2.0",
+    "js-yaml": "^5.2.1",
     "markdownlint-cli2": "^0.22.1",
     "prettier": "^3.9.4",
     "typescript-eslint": "^8.62.1"

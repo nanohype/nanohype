@@ -53,7 +53,7 @@ describe('readResource', () => {
     const result = await readResource(source, 'nanohype://standards');
     const parsed = JSON.parse(result.contents[0].text);
     expect(parsed['language-toolchain'].kind).toBe('nanohype/standards/language-toolchain');
-    expect(parsed['quality-rubric-dimensions'].content.dimensions).toHaveLength(9);
+    expect(parsed['quality-rubric-dimensions'].content.dimensions).toHaveLength(10);
   });
 
   it('resolves nanohype://standards/{name} to one standard', async () => {

@@ -44,10 +44,10 @@ describe('loadStandard', () => {
     expect(s.content.regions_preferred).toContain('us-west-2');
   });
 
-  it('loads quality-rubric-dimensions with nine named dimensions', async () => {
+  it('loads quality-rubric-dimensions with ten named dimensions', async () => {
     const s = await loadStandard(source, 'quality-rubric-dimensions');
     if (s.kind !== 'nanohype/standards/quality-rubric-dimensions') throw new Error('kind narrow');
-    expect(s.content.dimensions).toHaveLength(9);
+    expect(s.content.dimensions).toHaveLength(10);
     const ids = s.content.dimensions.map((d) => d.id);
     for (const required of [
       'architecture',
@@ -59,6 +59,7 @@ describe('loadStandard', () => {
       'code_quality',
       'documentation',
       'consistency',
+      'ai_systems',
     ]) {
       expect(ids).toContain(required);
     }
