@@ -15,7 +15,7 @@ import { extname } from 'node:path';
 
 import _Ajv2020 from 'ajv/dist/2020.js';
 import _addFormats from 'ajv-formats';
-import jsYaml from 'js-yaml';
+import * as jsYaml from 'js-yaml';
 
 const Ajv2020 = _Ajv2020.default ?? _Ajv2020;
 const addFormats = _addFormats.default ?? _addFormats;
