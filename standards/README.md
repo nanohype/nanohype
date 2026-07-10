@@ -78,7 +78,7 @@ Direct Anthropic SDK is permitted only when the intake brief explicitly requires
 
 ## Quality rubric — `quality-rubric-dimensions.json`
 
-Nine dimensions every build is graded against. This file names them and summarizes each. The internal review process (which reviewer grades which dimension, what weights apply, the A–F rubric thresholds, and the merge-gate enforcement choreography) is intentionally **not** public.
+Ten dimensions every build is graded against. This file names them and summarizes each. The internal review process (which reviewer grades which dimension, what weights apply, the A–F rubric thresholds, and the merge-gate enforcement choreography) is intentionally **not** public.
 
 1. **Architecture & Domain Modeling** — bounded contexts, layering, model-to-code mapping
 2. **Design Patterns & Reuse** — abstraction levels, pattern justification, reuse over reinvention
