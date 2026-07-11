@@ -140,6 +140,18 @@ The bar for how every system is observed and what dashboard it ships to represen
 
 ---
 
+## SEO baseline — `seo-baseline.json`
+
+Every public site the factory ships presents **one canonical origin** and a fixed set of discovery artifacts. Read it when building or reviewing a site's SEO surface.
+
+- **Apex is canonical** — the bare apex serves (`https://example.com/`). If `www` exists it **301-redirects to the apex**, enforced at the edge. Never redirect the apex to `www` (inverted canonical) and never serve both apex and `www` with `200` (duplicate content). HTTP 301s to HTTPS; no plaintext origin. The `rel=canonical` tag equals the served apex origin exactly (protocol + host).
+- **Four required files** — `/robots.txt` (allow all, agents welcome, points at the sitemap), `/sitemap.xml` (build-generated from the route table, never hand-maintained), `/llms.txt` (machine-readable site summary for agents, linked from the head), and `/og.png` (1200×630 Open Graph share image).
+- **Required head tags** — `<title>` (unique per page), meta description, `rel=canonical`, the Open Graph set (`og:type`/`og:url`/`og:title`/`og:description`/`og:image`/`og:site_name`), the Twitter card set, and meta `robots`. The `google-site-verification` meta tag and schema.org JSON-LD are optional.
+- **One GSC property per site** — a single Google Search Console **URL-prefix** property at the apex, verified by the `google-site-verification` **meta tag** (not a per-repo HTML file), all sites under one Google account. No Domain-plus-prefix duplication and no separate `www` property.
+- **Shared implementation** — head tags come from a shared SEO component and the files from shared build-time sitemap/robots generators, consumed as a package rather than per-repo hand-rolled copies that drift (for static sites the head component renders at build time so the tags are present in the served HTML).
+
+---
+
 ## Versioning
 
 Each file declares its `version` (a positive integer). Bump the version field on any breaking shape change. Agents that consume these standards should pin to a major version range (the `version` field == major; minor evolution within a major must be backwards-compatible).

@@ -174,7 +174,8 @@ export type StandardName =
   | 'quality-rubric-dimensions'
   | 'testing-rubric'
   | 'resource-tagging'
-  | 'observability-slo';
+  | 'observability-slo'
+  | 'seo-baseline';
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -349,6 +350,50 @@ export interface ObservabilitySloStandard {
   };
 }
 
+/** One required or optional file the SEO surface must serve. */
+export interface SeoRequiredFile {
+  path: string;
+  description: string;
+}
+
+/** One head tag the Seo component emits, and whether it is required. */
+export interface SeoHeadTag {
+  id: string;
+  required: boolean;
+  summary: string;
+}
+
+/** Standards file: SEO baseline — canonical apex host, discovery files, head tags, one GSC property per site. */
+export interface SeoBaselineStandard {
+  kind: 'nanohype/standards/seo-baseline';
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    canonical_host: {
+      rule: 'apex' | 'www';
+      summary: string;
+      redirect?: string;
+    };
+    gsc: {
+      property_type: 'url-prefix' | 'domain';
+      property?: string;
+      verification: 'meta-tag' | 'dns-txt' | 'html-file';
+      summary: string;
+    };
+    required_files: SeoRequiredFile[];
+    head_tags: SeoHeadTag[];
+    rules: { id: string; summary: string; severity?: 'reject' | 'warn' }[];
+    implementation?: {
+      pattern: string;
+      summary: string;
+      provides: string[];
+    };
+    do?: string[];
+    do_not?: string[];
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
@@ -358,7 +403,8 @@ export type Standard =
   | QualityRubricDimensionsStandard
   | TestingRubricStandard
   | ResourceTaggingStandard
-  | ObservabilitySloStandard;
+  | ObservabilitySloStandard
+  | SeoBaselineStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
@@ -374,6 +420,7 @@ export interface Standards {
   'testing-rubric': TestingRubricStandard;
   'resource-tagging': ResourceTaggingStandard;
   'observability-slo': ObservabilitySloStandard;
+  'seo-baseline': SeoBaselineStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */

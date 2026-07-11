@@ -18,7 +18,8 @@
         "nanohype/standards/quality-rubric-dimensions",
         "nanohype/standards/testing-rubric",
         "nanohype/standards/resource-tagging",
-        "nanohype/standards/observability-slo"
+        "nanohype/standards/observability-slo",
+        "nanohype/standards/seo-baseline"
       ]
     },
     "version": {
@@ -410,6 +411,82 @@
                   "conventions": { "type": "object" }
                 }
               },
+              "do": { "type": "array", "items": { "type": "string" } },
+              "do_not": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/seo-baseline" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["canonical_host", "gsc", "required_files", "head_tags", "rules"],
+            "properties": {
+              "canonical_host": {
+                "type": "object",
+                "required": ["rule", "summary"],
+                "properties": {
+                  "rule": { "type": "string", "enum": ["apex", "www"] },
+                  "summary": { "type": "string" },
+                  "redirect": { "type": "string" }
+                }
+              },
+              "gsc": {
+                "type": "object",
+                "required": ["property_type", "verification", "summary"],
+                "properties": {
+                  "property_type": { "type": "string", "enum": ["url-prefix", "domain"] },
+                  "property": { "type": "string" },
+                  "verification": {
+                    "type": "string",
+                    "enum": ["meta-tag", "dns-txt", "html-file"]
+                  },
+                  "summary": { "type": "string" }
+                }
+              },
+              "required_files": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["path", "description"],
+                  "properties": {
+                    "path": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "head_tags": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "required", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "required": { "type": "boolean" },
+                    "summary": { "type": "string" }
+                  }
+                }
+              },
+              "rules": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "summary": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                  }
+                }
+              },
+              "implementation": { "type": "object" },
               "do": { "type": "array", "items": { "type": "string" } },
               "do_not": { "type": "array", "items": { "type": "string" } }
             }
