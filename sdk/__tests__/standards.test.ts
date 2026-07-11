@@ -86,6 +86,19 @@ describe('loadStandard', () => {
     expect(s.content.dashboard_requirements.required_rows.some((r) => r.id === 'slo')).toBe(true);
   });
 
+  it('loads seo-baseline with the apex canonical rule, required files, and head tags', async () => {
+    const s = await loadStandard(source, 'seo-baseline');
+    if (s.kind !== 'nanohype/standards/seo-baseline') throw new Error('kind narrow');
+    expect(s.content.canonical_host.rule).toBe('apex');
+    expect(s.content.gsc.property_type).toBe('url-prefix');
+    expect(s.content.gsc.verification).toBe('meta-tag');
+    expect(s.content.required_files.some((f) => f.path === '/sitemap.xml')).toBe(true);
+    expect(s.content.head_tags.some((t) => t.id === 'canonical' && t.required)).toBe(true);
+    expect(s.content.rules.some((r) => r.id === 'apex-canonical' && r.severity === 'reject')).toBe(
+      true,
+    );
+  });
+
   it('throws NanohypeError when the standard is missing', async () => {
     const broken = new LocalSource({ rootDir: '/tmp/nonexistent-nanohype-standards' });
     await expect(loadStandard(broken, 'llm-policy')).rejects.toBeInstanceOf(NanohypeError);
@@ -108,6 +121,7 @@ describe('loadStandards (bundle)', () => {
     );
     expect(bundle['testing-rubric'].kind).toBe('nanohype/standards/testing-rubric');
     expect(bundle['observability-slo'].kind).toBe('nanohype/standards/observability-slo');
+    expect(bundle['seo-baseline'].kind).toBe('nanohype/standards/seo-baseline');
   });
 });
 
