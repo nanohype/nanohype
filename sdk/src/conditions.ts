@@ -18,9 +18,9 @@
  * such as `IncludeVpc || IncludeRds` are expressible.
  */
 
-import { TemplateRenderError } from './errors.js';
+import { TemplateRenderError } from "./errors.js";
 
-const FALSY = new Set(['', 'false', '0']);
+const FALSY = new Set(["", "false", "0"]);
 
 function isTruthy(value: string | undefined): boolean {
   return value !== undefined && !FALSY.has(value);
@@ -34,7 +34,7 @@ export function evalCondition(expr: string, resolved: Record<string, string>): b
 
   function parseOr(): boolean {
     let v = parseAnd();
-    while (peek() === '||') {
+    while (peek() === "||") {
       pos++;
       const r = parseAnd();
       v = v || r;
@@ -43,7 +43,7 @@ export function evalCondition(expr: string, resolved: Record<string, string>): b
   }
   function parseAnd(): boolean {
     let v = parseUnary();
-    while (peek() === '&&') {
+    while (peek() === "&&") {
       pos++;
       const r = parseUnary();
       v = v && r;
@@ -51,7 +51,7 @@ export function evalCondition(expr: string, resolved: Record<string, string>): b
     return v;
   }
   function parseUnary(): boolean {
-    if (peek() === '!') {
+    if (peek() === "!") {
       pos++;
       return !parseUnary();
     }
@@ -59,22 +59,22 @@ export function evalCondition(expr: string, resolved: Record<string, string>): b
   }
   function parsePrimary(): boolean {
     const t = peek();
-    if (t === '(') {
+    if (t === "(") {
       pos++;
       const v = parseOr();
-      if (peek() === ')') pos++;
+      if (peek() === ")") pos++;
       return v;
     }
     pos++; // consume identifier / literal (or undefined at end of input)
-    if (t === 'true') return true;
-    if (t === 'false') return false;
+    if (t === "true") return true;
+    if (t === "false") return false;
     return isTruthy(t === undefined ? undefined : resolved[t]);
   }
 
   return parseOr();
 }
 
-const LITERALS = new Set(['true', 'false']);
+const LITERALS = new Set(["true", "false"]);
 
 /** The distinct variable identifiers referenced by a condition expression. */
 export function conditionVariables(expr: string): string[] {
@@ -100,19 +100,19 @@ export function applyContentConditionals(
   content: string,
   resolved: Record<string, string>,
 ): string {
-  if (!content.includes('#if') && !content.includes('#endif')) return content;
+  if (!content.includes("#if") && !content.includes("#endif")) return content;
 
   const out: string[] = [];
   const keepStack: boolean[] = [];
   const keeping = (): boolean => keepStack.every(Boolean);
   let lineNo = 0;
 
-  for (const line of content.split('\n')) {
+  for (const line of content.split("\n")) {
     lineNo += 1;
     const ifMatch = IF_RE.exec(line);
     if (ifMatch) {
       const expr = ifMatch[1].trim();
-      if (expr === '') {
+      if (expr === "") {
         throw new TemplateRenderError(`Empty '#if' condition at line ${lineNo}`);
       }
       keepStack.push(keeping() && evalCondition(expr, resolved));
@@ -132,5 +132,5 @@ export function applyContentConditionals(
     throw new TemplateRenderError(`Unclosed '#if' block (${keepStack.length} still open)`);
   }
 
-  return out.join('\n');
+  return out.join("\n");
 }

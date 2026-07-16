@@ -1,6 +1,6 @@
-import type { CatalogSource } from './source.js';
-import type { Catalog } from './types.js';
-import { NanohypeError } from './errors.js';
+import { NanohypeError } from "./errors.js";
+import type { CatalogSource } from "./source.js";
+import type { Catalog } from "./types.js";
 
 /**
  * Load the catalog manifest (`catalog.json`) from a source.
@@ -16,7 +16,7 @@ import { NanohypeError } from './errors.js';
  */
 export async function loadCatalog(source: CatalogSource): Promise<Catalog> {
   const catalog = await source.fetchCatalogManifest();
-  if (catalog.kind !== 'nanohype/catalog') {
+  if (catalog.kind !== "nanohype/catalog") {
     throw new NanohypeError(
       `Unexpected catalog kind: ${String(catalog.kind)} (expected 'nanohype/catalog')`,
     );

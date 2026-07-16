@@ -9,6 +9,24 @@ permissions:
   contents: read
 
 jobs:
+  # Supply-chain gate. osv-scanner checks the committed lockfiles against the
+  # OSV database and exits non-zero on a known vulnerability. Pinned to an exact
+  # version (its behaviour can shift in a patch).
+  audit:
+    name: audit (osv-scanner)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: audit (osv-scanner)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        with:
+          scan-args: |-
+            --no-resolve
+            --recursive
+            ./
+
   validate:
     name: Validate template catalog
     runs-on: ubuntu-latest
@@ -20,7 +38,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies
@@ -68,7 +86,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies
@@ -100,7 +118,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Run template tests
         run: |

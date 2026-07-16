@@ -1,4 +1,5 @@
-import type { CatalogSource } from './source.js';
+import { NanohypeError } from "./errors.js";
+import type { CatalogSource } from "./source.js";
 import type {
   LanguageToolchainStandard,
   LLMPolicyStandard,
@@ -12,19 +13,18 @@ import type {
   Standards,
   TestingRubricStandard,
   VersionCurrencyStandard,
-} from './types.js';
-import { NanohypeError } from './errors.js';
+} from "./types.js";
 
 const ALL_STANDARDS: StandardName[] = [
-  'language-toolchain',
-  'version-currency',
-  'platform-tenant-contract',
-  'llm-policy',
-  'quality-rubric-dimensions',
-  'testing-rubric',
-  'resource-tagging',
-  'observability-slo',
-  'seo-baseline',
+  "language-toolchain",
+  "version-currency",
+  "platform-tenant-contract",
+  "llm-policy",
+  "quality-rubric-dimensions",
+  "testing-rubric",
+  "resource-tagging",
+  "observability-slo",
+  "seo-baseline",
 ];
 
 /** The canonical list of published standards file names. */
@@ -32,19 +32,19 @@ export const STANDARD_NAMES: readonly StandardName[] = ALL_STANDARDS;
 
 /** True when `value` names a published standard. */
 export function isStandardName(value: unknown): value is StandardName {
-  return typeof value === 'string' && (STANDARD_NAMES as readonly string[]).includes(value);
+  return typeof value === "string" && (STANDARD_NAMES as readonly string[]).includes(value);
 }
 
-const EXPECTED_KIND: Record<StandardName, Standard['kind']> = {
-  'language-toolchain': 'nanohype/standards/language-toolchain',
-  'version-currency': 'nanohype/standards/version-currency',
-  'platform-tenant-contract': 'nanohype/standards/platform-tenant-contract',
-  'llm-policy': 'nanohype/standards/llm-policy',
-  'quality-rubric-dimensions': 'nanohype/standards/quality-rubric-dimensions',
-  'testing-rubric': 'nanohype/standards/testing-rubric',
-  'resource-tagging': 'nanohype/standards/resource-tagging',
-  'observability-slo': 'nanohype/standards/observability-slo',
-  'seo-baseline': 'nanohype/standards/seo-baseline',
+const EXPECTED_KIND: Record<StandardName, Standard["kind"]> = {
+  "language-toolchain": "nanohype/standards/language-toolchain",
+  "version-currency": "nanohype/standards/version-currency",
+  "platform-tenant-contract": "nanohype/standards/platform-tenant-contract",
+  "llm-policy": "nanohype/standards/llm-policy",
+  "quality-rubric-dimensions": "nanohype/standards/quality-rubric-dimensions",
+  "testing-rubric": "nanohype/standards/testing-rubric",
+  "resource-tagging": "nanohype/standards/resource-tagging",
+  "observability-slo": "nanohype/standards/observability-slo",
+  "seo-baseline": "nanohype/standards/seo-baseline",
 };
 
 /**
@@ -77,14 +77,14 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
   const [toolchain, currency, contract, llm, rubric, testing, tagging, observability, seo] =
     await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
   return {
-    'language-toolchain': toolchain as LanguageToolchainStandard,
-    'version-currency': currency as VersionCurrencyStandard,
-    'platform-tenant-contract': contract as PlatformTenantContractStandard,
-    'llm-policy': llm as LLMPolicyStandard,
-    'quality-rubric-dimensions': rubric as QualityRubricDimensionsStandard,
-    'testing-rubric': testing as TestingRubricStandard,
-    'resource-tagging': tagging as ResourceTaggingStandard,
-    'observability-slo': observability as ObservabilitySloStandard,
-    'seo-baseline': seo as SeoBaselineStandard,
+    "language-toolchain": toolchain as LanguageToolchainStandard,
+    "version-currency": currency as VersionCurrencyStandard,
+    "platform-tenant-contract": contract as PlatformTenantContractStandard,
+    "llm-policy": llm as LLMPolicyStandard,
+    "quality-rubric-dimensions": rubric as QualityRubricDimensionsStandard,
+    "testing-rubric": testing as TestingRubricStandard,
+    "resource-tagging": tagging as ResourceTaggingStandard,
+    "observability-slo": observability as ObservabilitySloStandard,
+    "seo-baseline": seo as SeoBaselineStandard,
   };
 }

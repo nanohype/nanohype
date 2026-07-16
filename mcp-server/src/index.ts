@@ -31,32 +31,32 @@
  *   NANOHYPE_GITHUB_TOKEN=<token>    optional GitHub API token for higher rate limits
  */
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CatalogSource, GitHubSource, LocalSource } from '@nanohype/sdk';
-import { registerResources } from './resources.js';
-import { registerTools } from './tools.js';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { type CatalogSource, GitHubSource, LocalSource } from "@nanohype/sdk";
+import { registerResources } from "./resources.js";
+import { registerTools } from "./tools.js";
 
 export function makeSource(env: NodeJS.ProcessEnv = process.env): CatalogSource {
-  if (env.NANOHYPE_SOURCE === 'local') {
+  if (env.NANOHYPE_SOURCE === "local") {
     const rootDir = env.NANOHYPE_ROOT;
     if (!rootDir) {
       throw new Error(
-        'NANOHYPE_SOURCE=local requires NANOHYPE_ROOT to point at a local nanohype checkout',
+        "NANOHYPE_SOURCE=local requires NANOHYPE_ROOT to point at a local nanohype checkout",
       );
     }
     return new LocalSource({ rootDir });
   }
   return new GitHubSource({
-    repo: env.NANOHYPE_REPO ?? 'nanohype/nanohype',
-    ref: env.NANOHYPE_REF ?? 'main',
+    repo: env.NANOHYPE_REPO ?? "nanohype/nanohype",
+    ref: env.NANOHYPE_REF ?? "main",
     token: env.NANOHYPE_GITHUB_TOKEN,
   });
 }
 
 export function createServer(source: CatalogSource): Server {
   const server = new Server(
-    { name: '@nanohype/mcp', version: '0.1.0' },
+    { name: "@nanohype/mcp", version: "0.1.0" },
     { capabilities: { resources: {}, tools: {} } },
   );
   registerResources(server, source);
@@ -73,10 +73,10 @@ async function main(): Promise<void> {
 
 // Run as bin when invoked directly; do nothing on import (tests).
 const invokedAsBin =
-  import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('nanohype-mcp');
+  import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("nanohype-mcp");
 if (invokedAsBin) {
   main().catch((err: unknown) => {
-    console.error('[@nanohype/mcp] fatal:', err);
+    console.error("[@nanohype/mcp] fatal:", err);
     process.exit(1);
   });
 }

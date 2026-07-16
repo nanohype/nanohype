@@ -1,15 +1,15 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    include: ['__tests__/**/*.test.ts'],
+    include: ["__tests__/**/*.test.ts"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text'],
+      provider: "v8",
+      reporter: ["text"],
       // Explicit include so modules with zero tests still count against the
       // floor — the gate measures the whole src/ surface, not just what the
       // suite happened to load.
-      include: ['src/**/*.ts'],
+      include: ["src/**/*.ts"],
       // Honest floors set just below the measured actuals (see the numbers in
       // the comment on each threshold) so the gate catches a regression — a
       // new untested module dragging the denominator down — without flaking

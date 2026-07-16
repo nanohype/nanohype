@@ -18,7 +18,7 @@
 export class TimeoutError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'TimeoutError';
+    this.name = "TimeoutError";
   }
 }
 
@@ -29,7 +29,7 @@ export class TimeoutError extends Error {
 export async function withTimeout<T>(
   promise: Promise<T>,
   ms: number,
-  label = 'operation',
+  label = "operation",
 ): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const deadline = new Promise<never>((_, reject) => {
@@ -70,7 +70,7 @@ export async function withRetry<T>(factory: () => Promise<T>, options: RetryOpti
     } catch (err) {
       lastError = err;
       if (attempt === attempts) break;
-      const base = Math.min(initialDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
+      const base = Math.min(initialDelayMs * 2 ** (attempt - 1), maxDelayMs);
       const delay = jitter ? base * (0.5 + Math.random() * 0.5) : base;
       await sleep(delay);
     }

@@ -24,7 +24,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit && eslint 'src/**/*.ts' '__tests__/**/*.ts'",
+    "lint": "biome check .",
+    "format": "biome check --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
@@ -36,12 +37,10 @@
     "@nanohype/sdk": "file:../sdk"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@biomejs/biome": "2.5.3",
     "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.9",
-    "eslint": "^10.4.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.6"
   }
 }

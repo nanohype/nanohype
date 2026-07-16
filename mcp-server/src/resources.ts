@@ -1,10 +1,10 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+} from "@modelcontextprotocol/sdk/types.js";
 import {
-  CatalogSource,
+  type CatalogSource,
   CONTRACT_REPOS,
   isCatalogName,
   isContractRepo,
@@ -13,7 +13,7 @@ import {
   loadStandard,
   loadStandards,
   STANDARD_NAMES,
-} from '@nanohype/sdk';
+} from "@nanohype/sdk";
 
 interface StaticResource {
   uri: string;
@@ -30,18 +30,18 @@ interface StaticResource {
 export function listResources(): StaticResource[] {
   const resources: StaticResource[] = [
     {
-      uri: 'nanohype://catalog',
-      name: 'nanohype catalog',
+      uri: "nanohype://catalog",
+      name: "nanohype catalog",
       description:
-        'The full catalog.json manifest — every template and composite available on the nanohype stack with metadata.',
-      mimeType: 'application/json',
+        "The full catalog.json manifest — every template and composite available on the nanohype stack with metadata.",
+      mimeType: "application/json",
     },
     {
-      uri: 'nanohype://standards',
-      name: 'nanohype standards (bundle)',
+      uri: "nanohype://standards",
+      name: "nanohype standards (bundle)",
       description:
-        'All published standards files bundled under one resource. Includes language toolchain, version currency, platform-tenant contract, LLM policy, quality-rubric dimension names, the testing rubric, the resource-tagging taxonomy, the observability/SLO bar, and the SEO baseline.',
-      mimeType: 'application/json',
+        "All published standards files bundled under one resource. Includes language toolchain, version currency, platform-tenant contract, LLM policy, quality-rubric dimension names, the testing rubric, the resource-tagging taxonomy, the observability/SLO bar, and the SEO baseline.",
+      mimeType: "application/json",
     },
   ];
 
@@ -50,18 +50,18 @@ export function listResources(): StaticResource[] {
       uri: `nanohype://standards/${name}`,
       name: `standard: ${name}`,
       description: `The '${name}' standard as published JSON. See standards/README.md for the human-readable normative form.`,
-      mimeType: 'application/json',
+      mimeType: "application/json",
     });
   }
 
   for (const { repo, visibility } of CONTRACT_REPOS) {
     const access =
-      visibility === 'private' ? ' (private — requires a GitHub token to resolve)' : '';
+      visibility === "private" ? " (private — requires a GitHub token to resolve)" : "";
     resources.push({
       uri: `nanohype://contracts/${repo}`,
       name: `contract: ${repo}`,
       description: `The agent-facing AGENTS.md for the '${repo}' repo${access}. Five-minute orientation: what the repo gives you, contract surface, how to add a new thing, conventions, pointers.`,
-      mimeType: 'text/markdown',
+      mimeType: "text/markdown",
     });
   }
 
@@ -77,26 +77,26 @@ export async function readResource(
   source: CatalogSource,
   uri: string,
 ): Promise<{ contents: { uri: string; mimeType: string; text: string }[] }> {
-  if (uri === 'nanohype://catalog') {
+  if (uri === "nanohype://catalog") {
     const catalog = await loadCatalog(source);
     return {
       contents: [
         {
           uri,
-          mimeType: 'application/json',
+          mimeType: "application/json",
           text: JSON.stringify(catalog, null, 2),
         },
       ],
     };
   }
 
-  if (uri === 'nanohype://standards') {
+  if (uri === "nanohype://standards") {
     const bundle = await loadStandards(source);
     return {
       contents: [
         {
           uri,
-          mimeType: 'application/json',
+          mimeType: "application/json",
           text: JSON.stringify(bundle, null, 2),
         },
       ],
@@ -114,7 +114,7 @@ export async function readResource(
       contents: [
         {
           uri,
-          mimeType: 'application/json',
+          mimeType: "application/json",
           text: JSON.stringify(standard, null, 2),
         },
       ],
@@ -132,7 +132,7 @@ export async function readResource(
       contents: [
         {
           uri,
-          mimeType: 'text/markdown',
+          mimeType: "text/markdown",
           text: content,
         },
       ],
@@ -152,7 +152,7 @@ export async function readResource(
       contents: [
         {
           uri,
-          mimeType: 'application/json',
+          mimeType: "application/json",
           text: JSON.stringify(manifest, null, 2),
         },
       ],
@@ -170,7 +170,7 @@ export async function readResource(
       contents: [
         {
           uri,
-          mimeType: 'application/json',
+          mimeType: "application/json",
           text: JSON.stringify(manifest, null, 2),
         },
       ],

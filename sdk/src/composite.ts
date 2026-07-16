@@ -1,13 +1,13 @@
-import { VariableResolutionError } from './errors.js';
-import { renderTemplate } from './renderer.js';
-import type { CatalogSource } from './source.js';
+import { VariableResolutionError } from "./errors.js";
+import { renderTemplate } from "./renderer.js";
+import type { CatalogSource } from "./source.js";
 import type {
   CompositeManifest,
   CompositeRenderResult,
   SkeletonFile,
   TemplateHook,
-} from './types.js';
-import { validateCompositeManifest } from './validator.js';
+} from "./types.js";
+import { validateCompositeManifest } from "./validator.js";
 
 /**
  * Render a composite — fetches and renders each template entry according
@@ -42,14 +42,14 @@ export async function renderComposite(
         `Required composite variable '${v.name}' has no value and no default`,
       );
     } else {
-      resolved[v.name] = v.type === 'bool' ? 'false' : v.type === 'int' ? '0' : '';
+      resolved[v.name] = v.type === "bool" ? "false" : v.type === "int" ? "0" : "";
     }
   }
 
   // Evaluate conditions and order entries (root first)
   const activeEntries = manifest.templates.filter((entry) => {
     if (!entry.condition) return true;
-    return resolved[entry.condition] === 'true';
+    return resolved[entry.condition] === "true";
   });
 
   const rootEntry = activeEntries.find((e) => e.root);
@@ -62,8 +62,8 @@ export async function renderComposite(
     const entryValues: Record<string, string | boolean | number> = {};
     if (entry.variables) {
       for (const [key, val] of Object.entries(entry.variables)) {
-        if (typeof val === 'string') {
-          entryValues[key] = val.replace(/\$\{(\w+)\}/g, (_, ref: string) => resolved[ref] ?? '');
+        if (typeof val === "string") {
+          entryValues[key] = val.replace(/\$\{(\w+)\}/g, (_, ref: string) => resolved[ref] ?? "");
         } else {
           entryValues[key] = val;
         }
@@ -75,7 +75,7 @@ export async function renderComposite(
       const result = renderTemplate(tmplManifest, files, entryValues);
 
       // Prefix paths for non-root entries
-      const prefix = entry.root ? '' : entry.path ? entry.path + '/' : '';
+      const prefix = entry.root ? "" : entry.path ? entry.path + "/" : "";
       for (const file of result.files) {
         const prefixedPath = prefix + file.path;
         // Last-writer-wins on path collisions

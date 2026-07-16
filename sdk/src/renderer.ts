@@ -1,7 +1,7 @@
-import { applyContentConditionals, evalCondition } from './conditions.js';
-import { resolveVariables } from './resolver.js';
-import type { RenderResult, SkeletonFile, TemplateHook, TemplateManifest } from './types.js';
-import { validateManifest } from './validator.js';
+import { applyContentConditionals, evalCondition } from "./conditions.js";
+import { resolveVariables } from "./resolver.js";
+import type { RenderResult, SkeletonFile, TemplateHook, TemplateManifest } from "./types.js";
+import { validateManifest } from "./validator.js";
 
 /**
  * Render a template skeleton with resolved variable values.
@@ -32,7 +32,7 @@ export function renderTemplate(
   // Step 6: prerequisites (warnings only)
   for (const prereq of manifest.prerequisites ?? []) {
     warnings.push(
-      `Prerequisite: ${prereq.name}${prereq.version ? ` ${prereq.version}` : ''} — ${prereq.purpose}${prereq.optional ? ' (optional)' : ''}`,
+      `Prerequisite: ${prereq.name}${prereq.version ? ` ${prereq.version}` : ""} — ${prereq.purpose}${prereq.optional ? " (optional)" : ""}`,
     );
   }
 
@@ -59,7 +59,7 @@ export function renderTemplate(
   for (const file of files) {
     // Check conditionals — skip excluded files and their children
     const isExcluded = [...excludedPaths].some(
-      (exPath) => file.path === exPath || file.path.startsWith(exPath + '/'),
+      (exPath) => file.path === exPath || file.path.startsWith(exPath + "/"),
     );
     if (isExcluded) continue;
 

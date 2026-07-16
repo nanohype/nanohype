@@ -1,19 +1,19 @@
-import type { CatalogSource } from './source.js';
-import type { Contract, ContractRepo, ContractRepoInfo } from './types.js';
+import type { CatalogSource } from "./source.js";
+import type { Contract, ContractRepo, ContractRepoInfo } from "./types.js";
 
 // The single source of truth for the contract surface: every nanohype repo that
 // ships an AGENTS.md, plus whether it's public or private. KNOWN_CONTRACT_REPOS
 // (names) and CONTRACT_REPOS (descriptors) are derived from this.
 const ALL_REPOS: ContractRepoInfo[] = [
-  { repo: 'nanohype', visibility: 'public' },
-  { repo: 'landing-zone', visibility: 'public' },
-  { repo: 'eks-gitops', visibility: 'public' },
-  { repo: 'eks-agent-platform', visibility: 'public' },
-  { repo: 'kx', visibility: 'public' },
-  { repo: 'cloudgov', visibility: 'public' },
-  { repo: 'fab', visibility: 'public' },
-  { repo: 'portal', visibility: 'public' },
-  { repo: 'eks-fleet', visibility: 'public' },
+  { repo: "nanohype", visibility: "public" },
+  { repo: "landing-zone", visibility: "public" },
+  { repo: "eks-gitops", visibility: "public" },
+  { repo: "eks-agent-platform", visibility: "public" },
+  { repo: "kx", visibility: "public" },
+  { repo: "cloudgov", visibility: "public" },
+  { repo: "fab", visibility: "public" },
+  { repo: "portal", visibility: "public" },
+  { repo: "eks-fleet", visibility: "public" },
 ];
 
 /**
@@ -41,7 +41,7 @@ export async function loadAllContracts(source: CatalogSource): Promise<Contract[
   );
   const loaded: Contract[] = [];
   settled.forEach((result, i) => {
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       loaded.push(result.value);
     } else {
       const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
@@ -56,7 +56,7 @@ export const KNOWN_CONTRACT_REPOS: readonly ContractRepo[] = ALL_REPOS.map((r) =
 
 /** True when `value` names a known contract repo. */
 export function isContractRepo(value: unknown): value is ContractRepo {
-  return typeof value === 'string' && ALL_REPOS.some((r) => r.repo === value);
+  return typeof value === "string" && ALL_REPOS.some((r) => r.repo === value);
 }
 
 /** The contract repos with their visibility — for callers that label or gate on it. */
