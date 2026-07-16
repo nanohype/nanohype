@@ -22,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
           cache-dependency-path: |
             package-lock.json
@@ -46,9 +46,16 @@ jobs:
         working-directory: mcp-server
         run: npm ci
 
-      - name: Audit dependencies
-        working-directory: mcp-server
-        run: npm audit --audit-level=high --omit=dev
+      # Supply-chain gate. Replaces `npm audit`, whose npm advisory endpoints are
+      # unreliable; osv-scanner checks the committed lockfiles against the OSV
+      # database and exits non-zero on a known vulnerability. Pinned to an exact
+      # version (its behaviour can shift in a patch).
+      - name: audit (osv-scanner)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        with:
+          scan-args: |-
+            --recursive
+            ./
 
       - name: Typecheck
         working-directory: mcp-server

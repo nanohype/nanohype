@@ -23,9 +23,9 @@
  * for services that would otherwise hand-roll exactly this file.
  */
 
-import { trace } from '@opentelemetry/api';
+import { trace } from "@opentelemetry/api";
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 const LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
 
@@ -33,7 +33,7 @@ export interface LoggerConfig {
   /** Minimum level. Defaults to `LOG_LEVEL` env when valid, else `info`. */
   level?: LogLevel;
   /** Where lines go. Default `stderr`. */
-  stream?: 'stderr' | 'split';
+  stream?: "stderr" | "split";
   /** Fields stamped on every line (service name, static context). */
   bindings?: Record<string, unknown>;
 }
@@ -50,15 +50,15 @@ export interface Logger {
 }
 
 function envLevel(): LogLevel {
-  const level = process.env['LOG_LEVEL'] as LogLevel | undefined;
-  return level && LEVELS[level] !== undefined ? level : 'info';
+  const level = process.env["LOG_LEVEL"] as LogLevel | undefined;
+  return level && LEVELS[level] !== undefined ? level : "info";
 }
 
 function traceFields(): { trace_id?: string; span_id?: string } {
   const span = trace.getActiveSpan();
   if (!span) return {};
   const ctx = span.spanContext();
-  if (!ctx.traceId || ctx.traceId === '00000000000000000000000000000000') return {};
+  if (!ctx.traceId || ctx.traceId === "00000000000000000000000000000000") return {};
   return { trace_id: ctx.traceId, span_id: ctx.spanId };
 }
 
@@ -66,7 +66,7 @@ export function createLogger(cfg: LoggerConfig = {}): Logger {
   // Shared, mutable level state: setLevel on any child adjusts the whole
   // logger tree, matching how a LOG_LEVEL change is expected to behave.
   const state = { level: cfg.level ?? envLevel() };
-  const stream = cfg.stream ?? 'stderr';
+  const stream = cfg.stream ?? "stderr";
 
   function write(
     level: LogLevel,
@@ -76,18 +76,18 @@ export function createLogger(cfg: LoggerConfig = {}): Logger {
   ): void {
     if (LEVELS[level] < LEVELS[state.level]) return;
 
-    const contextFields = typeof context === 'string' ? {} : context;
+    const contextFields = typeof context === "string" ? {} : context;
     const entry = {
       level,
       timestamp: new Date().toISOString(),
-      message: typeof context === 'string' ? context : (message ?? ''),
+      message: typeof context === "string" ? context : (message ?? ""),
       ...traceFields(),
       ...bindings,
       ...contextFields,
     };
 
-    const line = JSON.stringify(entry) + '\n';
-    if (stream === 'split' && (level === 'debug' || level === 'info')) {
+    const line = JSON.stringify(entry) + "\n";
+    if (stream === "split" && (level === "debug" || level === "info")) {
       process.stdout.write(line);
     } else {
       process.stderr.write(line);
@@ -96,10 +96,10 @@ export function createLogger(cfg: LoggerConfig = {}): Logger {
 
   function make(bindings: Record<string, unknown>): Logger {
     return {
-      debug: (context, message) => write('debug', bindings, context, message),
-      info: (context, message) => write('info', bindings, context, message),
-      warn: (context, message) => write('warn', bindings, context, message),
-      error: (context, message) => write('error', bindings, context, message),
+      debug: (context, message) => write("debug", bindings, context, message),
+      info: (context, message) => write("info", bindings, context, message),
+      warn: (context, message) => write("warn", bindings, context, message),
+      error: (context, message) => write("error", bindings, context, message),
       child: (childBindings) => make({ ...bindings, ...childBindings }),
       setLevel: (level) => {
         state.level = level;

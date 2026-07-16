@@ -1,4 +1,8 @@
-import * as yaml from 'js-yaml';
+import * as yaml from "js-yaml";
+import { isContractRepo } from "../contracts.js";
+import { NanohypeError } from "../errors.js";
+import type { CatalogSource, GitHubSourceOptions } from "../source.js";
+import { isStandardName } from "../standards.js";
 import type {
   Catalog,
   CatalogEntry,
@@ -9,12 +13,8 @@ import type {
   Standard,
   StandardName,
   TemplateManifest,
-} from '../types.js';
-import type { CatalogSource, GitHubSourceOptions } from '../source.js';
-import { NanohypeError } from '../errors.js';
-import { isContractRepo } from '../contracts.js';
-import { isStandardName } from '../standards.js';
-import { isCatalogName } from '../validator.js';
+} from "../types.js";
+import { isCatalogName } from "../validator.js";
 
 interface CacheEntry<T> {
   data: T;
@@ -63,8 +63,8 @@ export class GitHubSource implements CatalogSource {
   private compositeCatalogCache: CacheEntry<CompositeCatalogEntry[]> | null = null;
 
   constructor(options: GitHubSourceOptions = {}) {
-    this.repo = options.repo ?? 'nanohype/nanohype';
-    this.ref = options.ref ?? 'main';
+    this.repo = options.repo ?? "nanohype/nanohype";
+    this.ref = options.ref ?? "main";
     // Fall back to GITHUB_TOKEN so a private contract repo resolves with no caller
     // config when the env var is present.
     this.token = options.token ?? process.env.GITHUB_TOKEN;
@@ -74,7 +74,7 @@ export class GitHubSource implements CatalogSource {
 
   private headers(): Record<string, string> {
     const h: Record<string, string> = {
-      Accept: 'application/vnd.github.v3+json',
+      Accept: "application/vnd.github.v3+json",
     };
     if (this.token) h.Authorization = `Bearer ${this.token}`;
     return h;
@@ -87,7 +87,7 @@ export class GitHubSource implements CatalogSource {
         signal: AbortSignal.timeout(this.requestTimeout),
       });
     } catch (err) {
-      if (err instanceof Error && err.name === 'TimeoutError') {
+      if (err instanceof Error && err.name === "TimeoutError") {
         throw new NanohypeError(`GitHub request timed out after ${this.requestTimeout}ms: ${url}`);
       }
       throw err;
@@ -111,7 +111,7 @@ export class GitHubSource implements CatalogSource {
     if (!res.ok) throw new NanohypeError(`Failed to list catalog: ${res.status}`);
 
     const dirs = (await res.json()) as { name: string; type: string }[];
-    const templateDirs = dirs.filter((d) => d.type === 'dir');
+    const templateDirs = dirs.filter((d) => d.type === "dir");
 
     const fetched = await mapConcurrent(
       templateDirs,
@@ -169,7 +169,7 @@ export class GitHubSource implements CatalogSource {
     }
     const manifest = yaml.load(await manifestRes.text()) as TemplateManifest;
 
-    if (manifest.apiVersion !== 'nanohype/v1') {
+    if (manifest.apiVersion !== "nanohype/v1") {
       throw new NanohypeError(`Unsupported apiVersion: ${manifest.apiVersion}`);
     }
 
@@ -185,7 +185,7 @@ export class GitHubSource implements CatalogSource {
 
     const skeletonPrefix = `templates/${name}/skeleton/`;
     const skeletonBlobs = tree.tree.filter(
-      (entry) => entry.type === 'blob' && entry.path.startsWith(skeletonPrefix),
+      (entry) => entry.type === "blob" && entry.path.startsWith(skeletonPrefix),
     );
 
     // Fetch file contents. Any failure aborts the render — a skeleton with
@@ -215,7 +215,7 @@ export class GitHubSource implements CatalogSource {
     if (!res.ok) throw new NanohypeError(`Failed to list composite catalog: ${res.status}`);
 
     const items = (await res.json()) as { name: string; type: string }[];
-    const yamlFiles = items.filter((f) => f.type === 'file' && f.name.endsWith('.yaml'));
+    const yamlFiles = items.filter((f) => f.type === "file" && f.name.endsWith(".yaml"));
 
     const fetched = await mapConcurrent(
       yamlFiles,
@@ -236,7 +236,7 @@ export class GitHubSource implements CatalogSource {
             `Invalid composite manifest '${file.name}': ${err instanceof Error ? err.message : String(err)}`,
           );
         }
-        if (manifest.kind !== 'composite') return null;
+        if (manifest.kind !== "composite") return null;
         return {
           name: manifest.name,
           displayName: manifest.displayName,
@@ -261,10 +261,10 @@ export class GitHubSource implements CatalogSource {
     if (!res.ok) throw new NanohypeError(`Composite '${name}' not found: ${res.status}`);
     const manifest = yaml.load(await res.text()) as CompositeManifest;
 
-    if (manifest.apiVersion !== 'nanohype/v1') {
+    if (manifest.apiVersion !== "nanohype/v1") {
       throw new NanohypeError(`Unsupported apiVersion: ${manifest.apiVersion}`);
     }
-    if (manifest.kind !== 'composite') {
+    if (manifest.kind !== "composite") {
       throw new NanohypeError(`Expected kind 'composite', got '${manifest.kind}'`);
     }
 
@@ -272,7 +272,7 @@ export class GitHubSource implements CatalogSource {
   }
 
   async fetchCatalogManifest(): Promise<Catalog> {
-    const res = await this.get(this.raw('catalog.json'));
+    const res = await this.get(this.raw("catalog.json"));
     if (!res.ok) throw new NanohypeError(`catalog.json not found: ${res.status}`);
     return (await res.json()) as Catalog;
   }
@@ -300,8 +300,8 @@ export class GitHubSource implements CatalogSource {
     // `<org>/<repo>`. Otherwise we still target the configured ref on the
     // explicit repo path (an MCP server pointed at a fork's `nanohype` will
     // pull contracts from the matching forked siblings, which is correct).
-    const [org] = this.repo.split('/');
-    const targetRepo = repo === 'nanohype' ? this.repo : `${org}/${repo}`;
+    const [org] = this.repo.split("/");
+    const targetRepo = repo === "nanohype" ? this.repo : `${org}/${repo}`;
 
     // With a token, resolve via the authenticated contents API — it works for
     // both public and private repos (raw.githubusercontent can't authenticate
@@ -318,8 +318,8 @@ export class GitHubSource implements CatalogSource {
         content?: string;
         encoding?: string;
       };
-      if (body.encoding === 'base64' && body.content) {
-        return Buffer.from(body.content, 'base64').toString('utf-8');
+      if (body.encoding === "base64" && body.content) {
+        return Buffer.from(body.content, "base64").toString("utf-8");
       }
       throw new NanohypeError(`AGENTS.md for repo '${repo}' returned an unexpected encoding`);
     }

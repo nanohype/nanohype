@@ -24,14 +24,14 @@
  * changes land upstream with their tests, then re-sync; a copy that drifts
  * from the source is the defect.
  */
-import { cp, copyFile, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
-import { dirname, join, relative, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { copyFile, cp, mkdir, readdir, readFile, rm, stat } from "node:fs/promises";
+import { dirname, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(SCRIPT_DIR, '..');
-const NANOHYPE_DIR = process.env.NANOHYPE_DIR ?? join(ROOT, '..', 'nanohype');
-const CHECK = process.argv.includes('--check');
+const ROOT = join(SCRIPT_DIR, "..");
+const NANOHYPE_DIR = process.env.NANOHYPE_DIR ?? join(ROOT, "..", "nanohype");
+const CHECK = process.argv.includes("--check");
 
 /** Recursively list files under a dir, relative to it (sorted). */
 async function listFiles(dir, base = dir) {
@@ -46,7 +46,7 @@ async function listFiles(dir, base = dir) {
 
 async function readOrNull(path) {
   try {
-    return await readFile(path, 'utf8');
+    return await readFile(path, "utf8");
   } catch {
     return null;
   }
@@ -56,7 +56,7 @@ async function readOrNull(path) {
 async function syncFile(srcPath, destPath) {
   const rel = relative(ROOT, destPath);
   if (CHECK) {
-    const src = await readFile(srcPath, 'utf8');
+    const src = await readFile(srcPath, "utf8");
     if (src === (await readOrNull(destPath))) {
       console.log(`ok  ${rel}`);
       return 0;
@@ -81,14 +81,14 @@ async function syncDir(srcDir, destDir) {
     } catch {
       copyFiles = null;
     }
-    const sameList = copyFiles !== null && copyFiles.join('\n') === srcFiles.join('\n');
+    const sameList = copyFiles !== null && copyFiles.join("\n") === srcFiles.join("\n");
     const sameBytes =
       sameList &&
       (
         await Promise.all(
           srcFiles.map(
             async (f) =>
-              (await readFile(join(srcDir, f), 'utf8')) === (await readOrNull(join(destDir, f))),
+              (await readFile(join(srcDir, f), "utf8")) === (await readOrNull(join(destDir, f))),
           ),
         )
       ).every(Boolean);
@@ -133,7 +133,7 @@ async function main() {
     process.exit(2);
   }
 
-  const manifest = JSON.parse(await readFile(join(SCRIPT_DIR, 'vendored.json'), 'utf8'));
+  const manifest = JSON.parse(await readFile(join(SCRIPT_DIR, "vendored.json"), "utf8"));
   const entries = manifest.entries ?? [];
   const exclusiveDirs = manifest.exclusiveDirs ?? [];
 
@@ -152,7 +152,7 @@ async function main() {
   }
 
   if (CHECK) {
-    const allowedDests = new Set(entries.map((e) => e.dest.split('/').join(sep)));
+    const allowedDests = new Set(entries.map((e) => e.dest.split("/").join(sep)));
     for (const dir of exclusiveDirs) {
       drift += await checkExclusive(dir, allowedDests);
     }

@@ -1,5 +1,5 @@
-import { VariableResolutionError } from './errors.js';
-import type { TemplateVariable } from './types.js';
+import { VariableResolutionError } from "./errors.js";
+import type { TemplateVariable } from "./types.js";
 
 const MAX_RESOLVE_PASSES = 10;
 
@@ -28,7 +28,7 @@ export function resolveVariables(
         `Required variable '${v.name}' has no value and no default`,
       );
     } else {
-      resolved[v.name] = v.type === 'bool' ? 'false' : v.type === 'int' ? '0' : '';
+      resolved[v.name] = v.type === "bool" ? "false" : v.type === "int" ? "0" : "";
     }
   }
 
@@ -69,9 +69,9 @@ export function resolveVariables(
 
   // Validate enum membership
   for (const v of variables) {
-    if (v.type === 'enum' && v.options && !v.options.includes(resolved[v.name])) {
+    if (v.type === "enum" && v.options && !v.options.includes(resolved[v.name])) {
       throw new VariableResolutionError(
-        `Variable '${v.name}' value '${resolved[v.name]}' not in options: ${v.options.join(', ')}`,
+        `Variable '${v.name}' value '${resolved[v.name]}' not in options: ${v.options.join(", ")}`,
       );
     }
   }

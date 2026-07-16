@@ -34,12 +34,12 @@
  * `onOpen`/`onClose` into whatever metrics surface the consumer has.
  */
 
-export type CircuitState = 'closed' | 'open' | 'half_open';
+export type CircuitState = "closed" | "open" | "half_open";
 
 export class CircuitOpenError extends Error {
   constructor(name: string) {
     super(`circuit open: ${name}`);
-    this.name = 'CircuitOpenError';
+    this.name = "CircuitOpenError";
   }
 }
 
@@ -74,7 +74,7 @@ export interface CircuitBreakerConfig {
 export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker {
   const now = cfg.now ?? (() => Date.now());
 
-  let state: CircuitState = 'closed';
+  let state: CircuitState = "closed";
   let failures: number[] = [];
   let openedAt = 0;
   let halfOpenInFlight = false;
@@ -87,16 +87,16 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
   }
 
   function tripOpen(t: number): void {
-    state = 'open';
+    state = "open";
     openedAt = t;
     failures = [];
     cfg.onOpen?.(cfg.name);
   }
 
   function maybeEnterHalfOpen(t: number): void {
-    if (state !== 'open') return;
+    if (state !== "open") return;
     if (t - openedAt >= cfg.halfOpenAfterMs) {
-      state = 'half_open';
+      state = "half_open";
       halfOpenInFlight = false;
     }
   }
@@ -105,8 +105,8 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
     state: () => state,
 
     reset(): void {
-      const wasClosed = state === 'closed';
-      state = 'closed';
+      const wasClosed = state === "closed";
+      state = "closed";
       failures = [];
       halfOpenInFlight = false;
       if (!wasClosed) cfg.onClose?.(cfg.name);
@@ -115,14 +115,14 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
     async exec<T>(fn: () => Promise<T>): Promise<T> {
       const t = now();
 
-      if (state === 'open') {
+      if (state === "open") {
         maybeEnterHalfOpen(t);
-        if (state === 'open') {
+        if (state === "open") {
           throw new CircuitOpenError(cfg.name);
         }
       }
 
-      if (state === 'half_open') {
+      if (state === "half_open") {
         if (halfOpenInFlight) {
           // Only one probe at a time — reject fast so we don't pile on the
           // downstream while waiting for the canary to resolve.
@@ -131,7 +131,7 @@ export function createCircuitBreaker(cfg: CircuitBreakerConfig): CircuitBreaker 
         halfOpenInFlight = true;
         try {
           const result = await fn();
-          state = 'closed';
+          state = "closed";
           failures = [];
           halfOpenInFlight = false;
           cfg.onClose?.(cfg.name);

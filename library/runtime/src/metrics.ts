@@ -22,13 +22,13 @@
  */
 
 import {
-  metrics as otelMetrics,
   type Attributes,
   type Counter,
   type Histogram,
   type ObservableGauge,
   type ObservableResult,
-} from '@opentelemetry/api';
+  metrics as otelMetrics,
+} from "@opentelemetry/api";
 
 export interface InstrumentOptions {
   /** OTel unit string (`ms`, `tokens`, `1`, …). Applied on first creation. */
@@ -120,11 +120,11 @@ export function createMetrics(cfg: MetricsConfig): Metrics {
     },
 
     timing(name, ms, attributes): void {
-      histogramInstrument(name, { unit: 'ms' }).record(ms, attributes);
+      histogramInstrument(name, { unit: "ms" }).record(ms, attributes);
     },
 
     distribution(name, value, attributes, opts): void {
-      histogramInstrument(name, { unit: '1', ...opts }).record(value, attributes);
+      histogramInstrument(name, { unit: "1", ...opts }).record(value, attributes);
     },
 
     setObservable(name, value, attributes = {}): void {

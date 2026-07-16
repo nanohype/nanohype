@@ -1,27 +1,27 @@
 export class NanohypeError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'NanohypeError';
+    this.name = "NanohypeError";
   }
 }
 
 export class ManifestValidationError extends NanohypeError {
   constructor(message: string) {
     super(message);
-    this.name = 'ManifestValidationError';
+    this.name = "ManifestValidationError";
   }
 }
 
 export class VariableResolutionError extends NanohypeError {
   constructor(message: string) {
     super(message);
-    this.name = 'VariableResolutionError';
+    this.name = "VariableResolutionError";
   }
 }
 
 export class TemplateRenderError extends NanohypeError {
   constructor(message: string) {
     super(message);
-    this.name = 'TemplateRenderError';
+    this.name = "TemplateRenderError";
   }
 }

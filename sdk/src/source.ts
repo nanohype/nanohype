@@ -4,11 +4,11 @@ import type {
   CompositeCatalogEntry,
   CompositeManifest,
   ContractRepo,
+  SkeletonFile,
   Standard,
   StandardName,
-  SkeletonFile,
   TemplateManifest,
-} from './types.js';
+} from "./types.js";
 
 export interface CatalogSource {
   listTemplates(): Promise<CatalogEntry[]>;

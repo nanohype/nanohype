@@ -1,6 +1,6 @@
 export interface TemplateVariable {
   name: string;
-  type: 'string' | 'bool' | 'enum' | 'int';
+  type: "string" | "bool" | "enum" | "int";
   placeholder: string;
   description: string;
   prompt?: string;
@@ -31,7 +31,7 @@ export interface TemplatePrerequisite {
 
 export interface TemplateManifest {
   apiVersion: string;
-  kind?: 'template' | 'brief';
+  kind?: "template" | "brief";
   name: string;
   displayName: string;
   description: string;
@@ -79,7 +79,7 @@ export interface CompositeEntry {
 
 export interface CompositeManifest {
   apiVersion: string;
-  kind: 'composite';
+  kind: "composite";
   name: string;
   displayName: string;
   description: string;
@@ -114,18 +114,18 @@ export interface CompositeRenderResult {
 
 /** Stable kind discriminator for a supporting repo's agent-facing contract. */
 export type ContractRepo =
-  | 'nanohype'
-  | 'landing-zone'
-  | 'eks-gitops'
-  | 'eks-agent-platform'
-  | 'kx'
-  | 'cloudgov'
-  | 'fab'
-  | 'portal'
-  | 'eks-fleet';
+  | "nanohype"
+  | "landing-zone"
+  | "eks-gitops"
+  | "eks-agent-platform"
+  | "kx"
+  | "cloudgov"
+  | "fab"
+  | "portal"
+  | "eks-fleet";
 
 /** Whether a contract repo is publicly readable or needs an authenticated token. */
-export type RepoVisibility = 'public' | 'private';
+export type RepoVisibility = "public" | "private";
 
 /** A contract repo plus its visibility — the descriptor the loader resolves against. */
 export interface ContractRepoInfo {
@@ -142,7 +142,7 @@ export interface CatalogTemplate {
   category: string;
   persona?: string[];
   tags: string[];
-  kind: 'template' | 'brief';
+  kind: "template" | "brief";
   path: string;
 }
 
@@ -158,7 +158,7 @@ export interface CatalogComposite {
 
 /** Parsed catalog.json. The top-level discovery surface for external clients. */
 export interface Catalog {
-  kind: 'nanohype/catalog';
+  kind: "nanohype/catalog";
   version: string;
   generated_at: string;
   templates: CatalogTemplate[];
@@ -167,15 +167,15 @@ export interface Catalog {
 
 /** Names of the published standards files (matches `standards/<name>.json` minus the .json). */
 export type StandardName =
-  | 'language-toolchain'
-  | 'version-currency'
-  | 'platform-tenant-contract'
-  | 'llm-policy'
-  | 'quality-rubric-dimensions'
-  | 'testing-rubric'
-  | 'resource-tagging'
-  | 'observability-slo'
-  | 'seo-baseline';
+  | "language-toolchain"
+  | "version-currency"
+  | "platform-tenant-contract"
+  | "llm-policy"
+  | "quality-rubric-dimensions"
+  | "testing-rubric"
+  | "resource-tagging"
+  | "observability-slo"
+  | "seo-baseline";
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -193,7 +193,7 @@ export interface Toolchain {
 
 /** Standards file: language toolchain. */
 export interface LanguageToolchainStandard {
-  kind: 'nanohype/standards/language-toolchain';
+  kind: "nanohype/standards/language-toolchain";
   version: string;
   title: string;
   summary: string;
@@ -204,12 +204,12 @@ export interface LanguageToolchainStandard {
 
 /** Standards file: version currency policy. */
 export interface VersionCurrencyStandard {
-  kind: 'nanohype/standards/version-currency';
+  kind: "nanohype/standards/version-currency";
   version: string;
   title: string;
   summary: string;
   content: {
-    rules: { id: string; summary: string; severity?: 'reject' | 'warn' }[];
+    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
     registries: Record<string, string>;
     accepted_pin_reasons: string[];
   };
@@ -217,7 +217,7 @@ export interface VersionCurrencyStandard {
 
 /** Standards file: platform-tenant contract. */
 export interface PlatformTenantContractStandard {
-  kind: 'nanohype/standards/platform-tenant-contract';
+  kind: "nanohype/standards/platform-tenant-contract";
   version: string;
   title: string;
   summary: string;
@@ -231,7 +231,7 @@ export interface PlatformTenantContractStandard {
 
 /** Standards file: LLM policy. */
 export interface LLMPolicyStandard {
-  kind: 'nanohype/standards/llm-policy';
+  kind: "nanohype/standards/llm-policy";
   version: string;
   title: string;
   summary: string;
@@ -246,7 +246,7 @@ export interface LLMPolicyStandard {
 
 /** Standards file: quality-rubric dimension names (depth — weights, assignments, REJECT criteria — stays private). */
 export interface QualityRubricDimensionsStandard {
-  kind: 'nanohype/standards/quality-rubric-dimensions';
+  kind: "nanohype/standards/quality-rubric-dimensions";
   version: string;
   title: string;
   summary: string;
@@ -257,21 +257,21 @@ export interface QualityRubricDimensionsStandard {
 
 /** Standards file: testing rubric — the org test baseline (shape, coverage floor, practices). */
 export interface TestingRubricStandard {
-  kind: 'nanohype/standards/testing-rubric';
+  kind: "nanohype/standards/testing-rubric";
   version: string;
   title: string;
   summary: string;
   content: {
     shape: string;
     coverage_floor: { branches: number; lines: number; functions: number; statements: number };
-    rules: { id: string; summary: string; severity?: 'reject' | 'warn' }[];
+    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
   };
 }
 
 /** One canonical tag/label dimension and how it renders on each surface. A null render means the dimension does not apply to that surface. */
 export interface TagDimension {
   id: string;
-  tier: 'required' | 'recommended' | 'contextual';
+  tier: "required" | "recommended" | "contextual";
   meaning: string;
   render: {
     aws: string | null;
@@ -282,7 +282,7 @@ export interface TagDimension {
 
 /** Standards file: resource tagging/labeling taxonomy. The single source of truth for the canonical tag set and its per-surface rendering. */
 export interface ResourceTaggingStandard {
-  kind: 'nanohype/standards/resource-tagging';
+  kind: "nanohype/standards/resource-tagging";
   version: string;
   title: string;
   summary: string;
@@ -294,7 +294,7 @@ export interface ResourceTaggingStandard {
       app_extension: Record<string, string>;
     };
     dimensions: TagDimension[];
-    required_by_surface: Record<'aws' | 'k8s' | 'otel', string[]>;
+    required_by_surface: Record<"aws" | "k8s" | "otel", string[]>;
   };
 }
 
@@ -308,7 +308,7 @@ export interface SliType {
 
 /** One multi-window multi-burn-rate alert pair. */
 export interface BurnRateWindow {
-  severity: 'page' | 'ticket';
+  severity: "page" | "ticket";
   long: string;
   short: string;
   factor: number;
@@ -317,7 +317,7 @@ export interface BurnRateWindow {
 
 /** Standards file: observability + SLO bar (RED/USE, golden signals, SLO error-budget burn, dashboard requirements). */
 export interface ObservabilitySloStandard {
-  kind: 'nanohype/standards/observability-slo';
+  kind: "nanohype/standards/observability-slo";
   version: string;
   title: string;
   summary: string;
@@ -365,25 +365,25 @@ export interface SeoHeadTag {
 
 /** Standards file: SEO baseline — canonical apex host, discovery files, head tags, one GSC property per site. */
 export interface SeoBaselineStandard {
-  kind: 'nanohype/standards/seo-baseline';
+  kind: "nanohype/standards/seo-baseline";
   version: string;
   title: string;
   summary: string;
   content: {
     canonical_host: {
-      rule: 'apex' | 'www';
+      rule: "apex" | "www";
       summary: string;
       redirect?: string;
     };
     gsc: {
-      property_type: 'url-prefix' | 'domain';
+      property_type: "url-prefix" | "domain";
       property?: string;
-      verification: 'meta-tag' | 'dns-txt' | 'html-file';
+      verification: "meta-tag" | "dns-txt" | "html-file";
       summary: string;
     };
     required_files: SeoRequiredFile[];
     head_tags: SeoHeadTag[];
-    rules: { id: string; summary: string; severity?: 'reject' | 'warn' }[];
+    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
     implementation?: {
       pattern: string;
       summary: string;
@@ -412,15 +412,15 @@ export type Standard =
  * already validated against the schema by the SDK.
  */
 export interface Standards {
-  'language-toolchain': LanguageToolchainStandard;
-  'version-currency': VersionCurrencyStandard;
-  'platform-tenant-contract': PlatformTenantContractStandard;
-  'llm-policy': LLMPolicyStandard;
-  'quality-rubric-dimensions': QualityRubricDimensionsStandard;
-  'testing-rubric': TestingRubricStandard;
-  'resource-tagging': ResourceTaggingStandard;
-  'observability-slo': ObservabilitySloStandard;
-  'seo-baseline': SeoBaselineStandard;
+  "language-toolchain": LanguageToolchainStandard;
+  "version-currency": VersionCurrencyStandard;
+  "platform-tenant-contract": PlatformTenantContractStandard;
+  "llm-policy": LLMPolicyStandard;
+  "quality-rubric-dimensions": QualityRubricDimensionsStandard;
+  "testing-rubric": TestingRubricStandard;
+  "resource-tagging": ResourceTaggingStandard;
+  "observability-slo": ObservabilitySloStandard;
+  "seo-baseline": SeoBaselineStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */
