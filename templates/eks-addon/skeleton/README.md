@@ -7,7 +7,7 @@ Helm-based addon for `nanohype/eks-gitops`. Uses chart `__CHART_NAME__` from `__
 ```
 addons/__CATEGORY__/__ADDON_NAME__/
   values.yaml                  # base values
-  values-dev.yaml              # dev delta only
+  values-development.yaml      # development delta only
   values-staging.yaml          # staging delta only
   values-production.yaml       # prod delta only
 ```

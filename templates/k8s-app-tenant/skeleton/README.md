@@ -10,7 +10,7 @@ A Platform tenant on the [`nanohype/eks-agent-platform`](https://github.com/nano
 chart/
   Chart.yaml
   values.yaml                    # base values (all environments)
-  values-dev.yaml                # dev delta
+  values-development.yaml        # development delta
   values-staging.yaml            # staging delta
   values-production.yaml         # prod delta
   templates/                     # deployment, service, serviceaccount, networkpolicy
@@ -35,7 +35,7 @@ platform.yaml                    # Platform CR — apply once
 ## Iterating
 
 - **Code change** → bump image tag in `values-<env>.yaml` → commit → ArgoCD reconciles.
-- **Chart change** → edit `chart/templates/*.yaml` → render locally with `helm template chart/ -f chart/values-dev.yaml` → commit.
+- **Chart change** → edit `chart/templates/*.yaml` → render locally with `helm template chart/ -f chart/values-development.yaml` → commit.
 - **New egress** → add entry to `chart/values.yaml` `networkPolicy.egress` → render → commit.
 - **New IRSA policy** → edit `platform.yaml` `spec.irsa.policies` → reapply → operator reconciles the role.
 
@@ -53,5 +53,5 @@ Run against [`nanohype/kx`](https://github.com/nanohype/kx) (local kind cluster 
 ```sh
 cd ~/codes/kx && task up
 kubectl apply -f platform.yaml
-helm install __APP_NAME__ chart/ -f chart/values-dev.yaml
+helm install __APP_NAME__ chart/ -f chart/values-development.yaml
 ```

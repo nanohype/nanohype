@@ -5,7 +5,7 @@ displayName: 'EKS GitOps Addon (Helm)'
 description: >
   Scaffolds a new Helm-based addon into nanohype/eks-gitops. Produces the
   addons/<category>/<name>/values.yaml + per-env delta files
-  (values-{dev,staging,production}.yaml) following the eks-gitops
+  (values-{development,staging,production}.yaml) following the eks-gitops
   Helm values pattern (base + delta-only). The Kustomize variant
   (used by storage-classes, priority-classes, karpenter-resources)
   needs a different layout and is not covered here.

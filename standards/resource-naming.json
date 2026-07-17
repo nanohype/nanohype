@@ -1,0 +1,95 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/resource-naming",
+  "version": "1",
+  "title": "Resource naming standard",
+  "summary": "The canonical grammar for naming cloud and k8s resources on the nanohype stack. Defines the domain split between env-first cloud-substrate names and environment-token-free k8s-facing names, the cluster-identity model that supports co-located sibling clusters, the reserved environment values, the per-surface delimiter transforms, and the collision + length guards every name-constructing component enforces. landing-zone / eks-agent-platform / eks-fleet build names from it; portal validates vend input against it; cloudgov gates CI against it.",
+  "content": {
+    "environments": ["development", "staging", "production", "hub", "org"],
+    "domains": [
+      {
+        "id": "cloud-substrate",
+        "applies_to": "AWS resources provisioned by OpenTofu that live once per environment account — S3, IAM, KMS, DynamoDB, SNS/SQS, SSM.",
+        "rule": "Env-first, dash-delimited: <environment>-<component>[-<tenant>][-<purpose>]. The environment leads because these resources share one account per environment and IAM/SSM/KMS names sit next to each other in policies.",
+        "example": "development-governance-acme-guardrails, alias/development-platform-secrets"
+      },
+      {
+        "id": "cluster-scoped-substrate",
+        "applies_to": "AWS resources tied to one specific cluster — the EKS cluster itself, its addon IRSA roles, managed-monitoring, agent-iam, and every eks-agent-platform component.",
+        "rule": "Key on the full cluster name <environment>-<clusterName>, never the hardcoded literal 'eks'. Co-located sibling clusters in one account must not collide, so the cluster discriminator is load-bearing here.",
+        "example": "development-analytics-cert-manager (not development-eks-cert-manager)"
+      },
+      {
+        "id": "k8s-facing",
+        "applies_to": "ArgoCD Applications, Helm release names, and Kubernetes namespaces.",
+        "rule": "No environment token — the destination cluster already is the environment, so a token is redundant noise. Namespace idiom: tenants-<app> for a tenant workload (operator-reconciled), tenants-<team> for the CR-home namespace, <addon> (or its upstream default) for platform addons.",
+        "example": "cert-manager, tenants-competitive-intelligence"
+      },
+      {
+        "id": "cross-environment",
+        "applies_to": "The few views that list resources across environments or clusters from one place — fleet-hub ApplicationSets, the portal cluster list.",
+        "rule": "Keep the environment token: <environment>-<name>. This is the one place the token disambiguates rather than repeats, because the view spans environments.",
+        "example": "cluster-development-analytics"
+      }
+    ],
+    "cluster_identity": {
+      "tuple": ["account", "region", "environment", "name"],
+      "aws_cluster_name": "<environment>-<clusterName>",
+      "cluster_name_rules": "clusterName is required, RFC-1123, <= 15 characters, unique per (account, region, environment), and MUST NOT equal the environment token. The same clusterName may recur across accounts — EKS names are unique per account per region, so 'development-analytics' can exist in two different accounts. The base token is role-based — 'platform' for workload clusters, 'fleet' for the hub — never the generic 'eks'; the eks-fleet vend boundary requires it explicitly (no default) because a shared default collides the moment a second cluster is vended into the same account and environment.",
+      "shared_per_environment": ["network/VPC", "secrets", "backup", "dns", "org-*"],
+      "per_cluster": [
+        "the EKS cluster",
+        "cluster-addons IRSA roles",
+        "managed-monitoring",
+        "observability",
+        "agent-iam",
+        "eks-agent-platform components"
+      ],
+      "network_note": "The VPC is shared per environment and named by environment (<environment>-vpc), cluster-agnostic. The per-cluster subnet ownership + Karpenter discovery tags (kubernetes.io/cluster/<cluster>, karpenter.sh/discovery=<cluster>) are applied by the cluster component (aws_ec2_tag), so co-located sibling clusters each stamp their own onto the shared subnets."
+    },
+    "product_prefix": "The eks- prefix on product/repo names (eks-fleet, eks-agent-platform, eks-gitops) is the cloud-provider axis, reserved so parallel aks-/gke- versions can exist. It is NOT the cluster token: a generic 'eks' cluster token carried no information and was dropped in favor of role-based tokens (platform, fleet), but the eks- product prefix stays because it scopes the Kubernetes-layer repos against landing-zone (cloud substrate) and cloudgov (governance) — the name is the only thing that says 'EKS'.",
+    "transforms": {
+      "aws": "kebab-case tokens joined by '-'. Glue database names (hyphens disallowed) replace '-' with '_'.",
+      "ssm": "Slash-hierarchical, repo-rooted: /<repo>/<environment>/<component>[/<cluster>][/<tenant>]/<key>. One rooted shape, not six.",
+      "kms": "Dash-style alias matching the adjacent IAM role names: alias/<environment>-<component>[-<tenant>][-<purpose>]. No slash-path aliases.",
+      "k8s": "RFC-1123 label. Any generated name that can exceed 63 characters carries a deterministic hash-truncation fallback (the pattern the operator's PlatformNamespace already uses)."
+    },
+    "limits": {
+      "s3_bucket": 63,
+      "iam_role": 64,
+      "note": "Every component that concatenates an unbounded caller variable (tenant_id, clusterName) into an S3 or IAM name validates that input's length at the variable boundary, so the name cannot overflow at apply. The clusterName base token is capped at 12 characters (enforced by the eks-fleet CRD, portal Validate(), rackctl, and the cluster component's tofu validation) so the derived <environment>-<clusterName> stays within the tightest cluster-scoped budget — agent-iam's account+region-qualified model-artifacts bucket (<cluster>-<account>-<region>-model-artifacts), which leaves 12 chars for the base in us-west-2 (fewer in a longer region, caught by a plan-time precondition). Individual eks-agent-platform components additionally validate their own looser region-less budgets (full name <= 27) as defense-in-depth. Bucket names embed the account id (or an org/repo prefix) for global uniqueness — env+domain+tenant alone is insufficient because the S3 namespace is global across all AWS accounts."
+    },
+    "rules": [
+      {
+        "id": "no-doubled-env",
+        "severity": "reject",
+        "summary": "A caller-supplied base name (clusterName, tenant_id, platform_name) must not equal the environment token. The <env>-<env>-* shape is rejected at the variable boundary — a tofu validation block, an eks-fleet CEL rule, and portal's Validate()."
+      },
+      {
+        "id": "cluster-name-required-unique",
+        "severity": "reject",
+        "summary": "clusterName is required and unique per (account, region, environment); there is no generic 'eks' default. Cluster-scoped substrate keys IAM/IRSA/resource names on <environment>-<clusterName>, never the hardcoded literal 'eks'."
+      },
+      {
+        "id": "bucket-global-uniqueness",
+        "severity": "reject",
+        "summary": "Every S3 bucket name embeds the account id (or an org/repo prefix) so it is globally unique across all AWS accounts. environment+domain+tenant alone is insufficient."
+      },
+      {
+        "id": "length-validated",
+        "severity": "reject",
+        "summary": "Any component concatenating an unbounded variable into an S3 (63) or IAM (64) name validates its length at the variable boundary rather than failing opaquely at apply."
+      },
+      {
+        "id": "k8s-no-env-token",
+        "severity": "warn",
+        "summary": "k8s/ArgoCD-facing names (Applications, Helm releases, namespaces) carry no environment token, except cross-environment views (fleet-hub ApplicationSets, portal cluster list) which keep <environment>-<name>."
+      },
+      {
+        "id": "single-delimiter-style",
+        "severity": "warn",
+        "summary": "One delimiter style per resource type: dash for IAM/KMS/S3/SNS/DynamoDB, slash-hierarchical repo-rooted for SSM. No mixed dash/slash KMS aliases, no divergent SSM namespace roots."
+      }
+    ]
+  }
+}

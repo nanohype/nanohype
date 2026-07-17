@@ -29,7 +29,7 @@ spec:
       annotations:
         argocd.argoproj.io/sync-wave: '{{ "{{syncWave}}" }}'
     spec:
-      project: tenant-__TENANT__
+      project: __APP_NAME__
       sources:
         - repoURL: https://github.com/__GITOPS_REPO__.git
           targetRevision: main
@@ -43,7 +43,7 @@ spec:
           ref: values
       destination:
         server: '{{ "{{server}}" }}'
-        namespace: tenants-__TENANT__
+        namespace: tenants-__APP_NAME__
       syncPolicy:
         automated:
           prune: true

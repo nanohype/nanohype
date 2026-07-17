@@ -4,4 +4,4 @@
 # - higher replica count (3+)
 # - stricter resource limits
 # - longer retention periods
-# - tighter security context (if base allows looser for dev)
+# - tighter security context (if base allows looser for development)

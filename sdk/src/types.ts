@@ -174,6 +174,7 @@ export type StandardName =
   | "quality-rubric-dimensions"
   | "testing-rubric"
   | "resource-tagging"
+  | "resource-naming"
   | "observability-slo"
   | "seo-baseline";
 
@@ -394,6 +395,37 @@ export interface SeoBaselineStandard {
   };
 }
 
+/** Standards file: the resource naming grammar. The single source of truth for how cloud and k8s resources are named on the stack — the env-first cloud / env-token-free k8s domain split, the co-located-sibling cluster-identity model, and the collision + length guards. */
+export interface ResourceNamingStandard {
+  kind: "nanohype/standards/resource-naming";
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    environments: string[];
+    domains: {
+      id: string;
+      applies_to: string;
+      rule: string;
+      example?: string;
+    }[];
+    cluster_identity: {
+      tuple: string[];
+      aws_cluster_name: string;
+      cluster_name_rules: string;
+      shared_per_environment?: string[];
+      per_cluster?: string[];
+    };
+    transforms: Record<string, string>;
+    limits: {
+      s3_bucket: number;
+      iam_role: number;
+      note?: string;
+    };
+    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
@@ -403,6 +435,7 @@ export type Standard =
   | QualityRubricDimensionsStandard
   | TestingRubricStandard
   | ResourceTaggingStandard
+  | ResourceNamingStandard
   | ObservabilitySloStandard
   | SeoBaselineStandard;
 
@@ -419,6 +452,7 @@ export interface Standards {
   "quality-rubric-dimensions": QualityRubricDimensionsStandard;
   "testing-rubric": TestingRubricStandard;
   "resource-tagging": ResourceTaggingStandard;
+  "resource-naming": ResourceNamingStandard;
   "observability-slo": ObservabilitySloStandard;
   "seo-baseline": SeoBaselineStandard;
 }

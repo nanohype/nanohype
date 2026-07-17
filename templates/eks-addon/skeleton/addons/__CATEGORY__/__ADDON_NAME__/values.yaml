@@ -1,6 +1,6 @@
 # __ADDON_NAME__ — base Helm values shared across all environments.
 #
-# Per-env deltas live in values-{dev,staging,production}.yaml. Those files
+# Per-env deltas live in values-{development,staging,production}.yaml. Those files
 # contain ONLY the differences from this file (never full copies).
 #
 # Chart: __CHART_NAME__ from __CHART_REPO__ pinned to __CHART_VERSION__.
@@ -29,6 +29,6 @@
 #   # The role ARN is an output of the landing-zone component that owns this
 #   # addon's IRSA role — wire it from there; never hand-author account IDs here.
 #
-# Cluster-wide defaults that should be the same across dev/staging/prod
+# Cluster-wide defaults that should be the same across development/staging/prod
 # go here. Anything that differs per environment (replica count, log level,
 # resource sizes, instance types) goes in the per-env delta files.

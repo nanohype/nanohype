@@ -29,7 +29,7 @@
       {
         "id": "environment",
         "tier": "required",
-        "meaning": "Deploy stage: dev, staging, production, or org.",
+        "meaning": "Deploy stage: development, staging, production, hub, or org.",
         "render": {
           "aws": "Environment",
           "k8s": "platform.nanohype.dev/environment",
