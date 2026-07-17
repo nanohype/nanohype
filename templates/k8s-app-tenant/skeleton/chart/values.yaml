@@ -1,4 +1,4 @@
-# Base values for __APP_NAME__. Per-environment deltas live in values-{dev,staging,production}.yaml.
+# Base values for __APP_NAME__. Per-environment deltas live in values-{development,staging,production}.yaml.
 
 image:
   repository: __IMAGE__
@@ -104,7 +104,7 @@ externalSecret:
   enabled: false
   secretStore: aws-secrets-manager
   refreshInterval: 1h
-  remoteRefSecret: __APP_NAME__/dev/app-secrets   # override per-env in values-{env}.yaml
+  remoteRefSecret: __APP_NAME__/development/app-secrets   # override per-env in values-{env}.yaml
 
 # PrometheusRule (kube-prometheus-stack → Mimir). Per the observability-slo
 # standard it renders SLI recording rules + multi-window multi-burn-rate

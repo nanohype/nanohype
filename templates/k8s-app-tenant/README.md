@@ -4,7 +4,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 
 ## What you get
 
-- **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-dev.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
+- **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-development.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
   - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), `terminationGracePeriodSeconds` headroom
   - `service.yaml` — ClusterIP
   - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to its IAM role by a landing-zone EKS Pod Identity association, so no role-arn annotation and never inline IAM
@@ -39,7 +39,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
   chart/
     Chart.yaml
     values.yaml                    # base values for all environments
-    values-dev.yaml                # dev delta only
+    values-development.yaml        # development delta only
     values-staging.yaml            # staging delta only
     values-production.yaml         # prod delta only
     dashboards/
@@ -89,7 +89,7 @@ If any of these are missing on the target cluster, the rendered app's `platform.
 
 ## How to roll out
 
-1. Render: `helm template chart/ -f chart/values-dev.yaml` (sanity)
+1. Render: `helm template chart/ -f chart/values-development.yaml` (sanity)
 2. Apply the Platform + BudgetPolicy CRs: `kubectl apply -f platform.yaml`
 3. Wait for `Platform.status.phase = Ready`
 4. Set any per-env secret paths in `values-{env}.yaml`; the pod's IAM role is bound by the landing-zone `<app>-platform` component's EKS Pod Identity association (no role ARN in the chart)

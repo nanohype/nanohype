@@ -18,6 +18,7 @@
         "nanohype/standards/quality-rubric-dimensions",
         "nanohype/standards/testing-rubric",
         "nanohype/standards/resource-tagging",
+        "nanohype/standards/resource-naming",
         "nanohype/standards/observability-slo",
         "nanohype/standards/seo-baseline"
       ]
@@ -316,6 +317,68 @@
                 "type": "object",
                 "required": ["aws", "k8s", "otel"],
                 "additionalProperties": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "kind": { "const": "nanohype/standards/resource-naming" } } },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": ["environments", "domains", "cluster_identity", "transforms", "limits", "rules"],
+            "properties": {
+              "environments": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "domains": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "applies_to", "rule"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "applies_to": { "type": "string" },
+                    "rule": { "type": "string" },
+                    "example": { "type": "string" }
+                  }
+                }
+              },
+              "cluster_identity": {
+                "type": "object",
+                "required": ["tuple", "aws_cluster_name", "cluster_name_rules"],
+                "properties": {
+                  "tuple": { "type": "array", "items": { "type": "string" } },
+                  "aws_cluster_name": { "type": "string" },
+                  "cluster_name_rules": { "type": "string" },
+                  "shared_per_environment": { "type": "array", "items": { "type": "string" } },
+                  "per_cluster": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "transforms": { "type": "object", "additionalProperties": { "type": "string" } },
+              "limits": {
+                "type": "object",
+                "required": ["s3_bucket", "iam_role"],
+                "properties": {
+                  "s3_bucket": { "type": "integer", "minimum": 1 },
+                  "iam_role": { "type": "integer", "minimum": 1 },
+                  "note": { "type": "string" }
+                }
+              },
+              "rules": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["id", "summary"],
+                  "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                    "summary": { "type": "string" },
+                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                  }
+                }
               }
             }
           }

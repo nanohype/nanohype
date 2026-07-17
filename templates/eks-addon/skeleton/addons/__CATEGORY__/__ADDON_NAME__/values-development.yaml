@@ -1,0 +1,7 @@
+# Development delta from values.yaml. ONLY include keys that differ from base.
+
+# Common development overrides:
+# - lower replica count
+# - smaller resource requests
+# - debug-level logging
+# - shorter retention periods

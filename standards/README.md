@@ -126,6 +126,23 @@ The `required_by_surface` block is the flat, directly-consumable list of require
 
 ---
 
+## Resource naming — `resource-naming.json`
+
+The grammar for _how a resource is named_, the companion to resource tagging's _what metadata it carries_. Read it when constructing a resource name in `landing-zone` / `eks-agent-platform` / `eks-fleet`, validating a cluster-vend request in `portal`, or gating names in `cloudgov`.
+
+The core is a **domain split** — a resource's name shape follows where the resource lives, because that determines what the name has to disambiguate:
+
+- **Cloud substrate** (S3, IAM, KMS, DynamoDB, SNS/SQS, SSM — one account per environment) is **env-first**, dash-delimited: `<environment>-<component>[-<tenant>][-<purpose>]`. The environment leads because these names sit side by side in IAM policies and SSM trees.
+- **Cluster-scoped substrate** (the EKS cluster, its addon IRSA, monitoring, agent-iam, every eks-agent-platform component) keys on the **full cluster name** `<environment>-<clusterName>`, never the literal `eks` — so co-located sibling clusters don't collide.
+- **k8s / ArgoCD-facing** names (Applications, Helm releases, namespaces) carry **no environment token** — the destination cluster already _is_ the environment.
+- **Cross-environment views** (fleet-hub ApplicationSets, the portal cluster list) keep the token: `<environment>-<name>` — the one place it disambiguates rather than repeats.
+
+**Cluster identity** is the tuple `(account, region, environment, name)`. The AWS EKS cluster name is `<environment>-<clusterName>`, where `clusterName` is required, RFC-1123, unique per `(account, region, environment)`, and must not equal the environment token. There is no generic `eks` default — a shared default collides the moment a second cluster is vended into one account and environment. Co-located clusters share the per-environment substrate (network/VPC, secrets, backup, dns); only cluster-scoped substrate re-keys per cluster.
+
+Names are guarded, not hoped: the `no-doubled-env` rule (`<env>-<env>-*` rejected at the variable boundary), `bucket-global-uniqueness` (every S3 name embeds the account id), and `length-validated` (unbounded `tenant_id` / `clusterName` length-checked so an S3 63 / IAM 64 name can't overflow at apply). `cloudgov` reads the `reject`-tier rules to gate CI, the same way it reads `resource-tagging.json`.
+
+---
+
 ## Observability and SLO — `observability-slo.json`
 
 The bar for how every system is observed and what dashboard it ships to represent itself. Read it when wiring a service's metrics, authoring a Grafana dashboard, or grading the systems-thinking surface.

@@ -7,7 +7,7 @@ The Kustomize-based addon variant (used by `storage-classes`, `priority-classes`
 ## What you get
 
 - `addons/<category>/<name>/values.yaml` — base Helm values (all environments) — comments call out what to override
-- `addons/<category>/<name>/values-dev.yaml` — dev delta only
+- `addons/<category>/<name>/values-development.yaml` — development delta only
 - `addons/<category>/<name>/values-staging.yaml` — staging delta only
 - `addons/<category>/<name>/values-production.yaml` — prod delta only
 
@@ -45,7 +45,7 @@ eks-gitops/
     __CATEGORY__/
       __ADDON_NAME__/
         values.yaml                  # base
-        values-dev.yaml              # dev delta
+        values-development.yaml      # development delta
         values-staging.yaml          # staging delta
         values-production.yaml       # prod delta
 ```

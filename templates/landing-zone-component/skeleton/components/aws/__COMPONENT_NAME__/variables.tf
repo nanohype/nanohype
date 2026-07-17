@@ -1,5 +1,5 @@
 variable "environment" {
-  description = "Environment name (dev, staging, production, org). Injected via terragrunt env.hcl."
+  description = "Environment name (development, staging, production, org). Injected via terragrunt env.hcl."
   type        = string
 }
 

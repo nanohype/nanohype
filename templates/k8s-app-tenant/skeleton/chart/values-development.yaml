@@ -1,0 +1,13 @@
+# Development delta — only differences from values.yaml.
+image:
+  tag: development
+
+replicaCount: 1
+
+commonLabels:
+  platform.nanohype.dev/environment: development
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
