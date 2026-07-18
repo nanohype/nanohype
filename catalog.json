@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-07-02T18:56:22.000Z",
+  "generated_at": "2026-07-17T02:22:00.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -511,7 +511,7 @@
     {
       "name": "eks-addon",
       "displayName": "EKS GitOps Addon (Helm)",
-      "description": "Scaffolds a new Helm-based addon into nanohype/eks-gitops. Produces the addons/<category>/<name>/values.yaml + per-env delta files (values-{dev,staging,production}.yaml) following the eks-gitops Helm values pattern (base + delta-only). The Kustomize variant (used by storage-classes, priority-classes, karpenter-resources) needs a different layout and is not covered here.",
+      "description": "Scaffolds a new Helm-based addon into nanohype/eks-gitops. Produces the addons/<category>/<name>/values.yaml + per-env delta files (values-{development,staging,production}.yaml) following the eks-gitops Helm values pattern (base + delta-only). The Kustomize variant (used by storage-classes, priority-classes, karpenter-resources) needs a different layout and is not covered here.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [
