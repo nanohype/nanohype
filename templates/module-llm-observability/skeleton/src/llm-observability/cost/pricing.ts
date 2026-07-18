@@ -39,11 +39,7 @@ export function getModelPricing(model: string): ModelPricing {
 /**
  * Calculate cost for a request given token counts and model.
  */
-export function calculateCost(
-  model: string,
-  inputTokens: number,
-  outputTokens: number,
-): number {
+export function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
   const pricing = getModelPricing(model);
   return (inputTokens * pricing.input) / 1_000_000 + (outputTokens * pricing.output) / 1_000_000;
 }

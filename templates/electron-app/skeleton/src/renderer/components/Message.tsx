@@ -33,9 +33,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           maxWidth: "85%",
           padding: "8px 12px",
           borderRadius: "6px",
-          background: isUser
-            ? "color-mix(in srgb, var(--accent) 10%, transparent)"
-            : "var(--card)",
+          background: isUser ? "color-mix(in srgb, var(--accent) 10%, transparent)" : "var(--card)",
           color: "var(--foreground)",
           fontSize: "13px",
           lineHeight: "1.5",
@@ -72,9 +70,7 @@ function renderContent(content: string) {
 
   while ((match = codeBlockRegex.exec(content)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(
-        ...renderParagraphs(content.slice(lastIndex, match.index), parts.length),
-      );
+      parts.push(...renderParagraphs(content.slice(lastIndex, match.index), parts.length));
     }
     parts.push(
       <pre
@@ -93,7 +89,7 @@ function renderContent(content: string) {
         }}
       >
         <code>{match[1]}</code>
-      </pre>,
+      </pre>
     );
     lastIndex = match.index + match[0].length;
   }

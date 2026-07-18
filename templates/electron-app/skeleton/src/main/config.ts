@@ -9,25 +9,15 @@ import { z } from "zod";
 //
 
 const configSchema = z.object({
-  LLM_PROVIDER: z
-    .string()
-    .default("__LLM_PROVIDER__"),
+  LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
 
-  ANTHROPIC_API_KEY: z
-    .string()
-    .optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
 
-  OPENAI_API_KEY: z
-    .string()
-    .optional(),
+  OPENAI_API_KEY: z.string().optional(),
 
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
 export type Config = z.infer<typeof configSchema>;

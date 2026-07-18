@@ -102,12 +102,8 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             fontSize: "13px",
             transition: "border-color 0.15s var(--ease-out)",
           }}
-          onFocus={(e) =>
-            (e.currentTarget.style.borderColor = "var(--accent)")
-          }
-          onBlur={(e) =>
-            (e.currentTarget.style.borderColor = "var(--input-border)")
-          }
+          onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "var(--input-border)")}
         />
         <button
           type="submit"
@@ -116,31 +112,22 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             padding: "8px 16px",
             borderRadius: "6px",
             border: "none",
-            background:
-              isLoading || !input.trim()
-                ? "var(--muted)"
-                : "var(--accent)",
-            color:
-              isLoading || !input.trim()
-                ? "var(--dim)"
-                : "var(--accent-foreground)",
+            background: isLoading || !input.trim() ? "var(--muted)" : "var(--accent)",
+            color: isLoading || !input.trim() ? "var(--dim)" : "var(--accent-foreground)",
             fontSize: "13px",
             cursor: isLoading || !input.trim() ? "default" : "pointer",
             fontWeight: 600,
-            transition:
-              "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
+            transition: "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
           }}
           onMouseEnter={(e) => {
-            if (!isLoading && input.trim())
-              e.currentTarget.style.filter = "brightness(1.15)";
+            if (!isLoading && input.trim()) e.currentTarget.style.filter = "brightness(1.15)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.filter = "brightness(1)";
             e.currentTarget.style.transform = "scale(1)";
           }}
           onMouseDown={(e) => {
-            if (!isLoading && input.trim())
-              e.currentTarget.style.transform = "scale(0.96)";
+            if (!isLoading && input.trim()) e.currentTarget.style.transform = "scale(0.96)";
           }}
           onMouseUp={(e) => {
             e.currentTarget.style.transform = "scale(1)";

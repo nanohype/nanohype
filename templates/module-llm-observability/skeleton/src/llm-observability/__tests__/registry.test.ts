@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  registerExporter,
-  getExporter,
-  listExporters,
-} from "../exporters/registry.js";
+import { registerExporter, getExporter, listExporters } from "../exporters/registry.js";
 import type { LlmExporter } from "../exporters/types.js";
 
 // ── Exporter Registry Tests ────────────────────────────────────────
@@ -32,9 +28,7 @@ describe("LLM exporter registry", () => {
   });
 
   it("throws when retrieving an unregistered exporter", () => {
-    expect(() => getExporter("nonexistent-exporter")).toThrow(
-      /Unknown LLM exporter/,
-    );
+    expect(() => getExporter("nonexistent-exporter")).toThrow(/Unknown LLM exporter/);
   });
 
   it("lists all registered exporter names", () => {

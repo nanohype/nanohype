@@ -12,5 +12,5 @@ export default tseslint.config(
     // Node build/config scripts (esbuild.config.mjs, vite/vitest config).
     files: ["**/*.mjs", "**/*.config.{js,ts}"],
     languageOptions: { globals: globals.node },
-  },
+  }
 );

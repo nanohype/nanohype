@@ -21,7 +21,7 @@ export type { TracerOptions, SpanContext } from "./types.js";
 export class TracedError extends Error {
   constructor(
     public readonly span: LlmSpan,
-    public readonly cause: unknown,
+    public readonly cause: unknown
   ) {
     super(cause instanceof Error ? cause.message : String(cause));
     this.name = "TracedError";
@@ -47,7 +47,7 @@ export function createLlmTracer(options: TracerOptions) {
    */
   async function trace(
     fn: () => Promise<LlmResponse>,
-    tags: Record<string, string> = {},
+    tags: Record<string, string> = {}
   ): Promise<{ response: LlmResponse; span: LlmSpan }> {
     const id = randomUUID();
     const startedAt = new Date(now());

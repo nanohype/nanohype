@@ -58,7 +58,7 @@ export function App() {
         setIsLoading(false);
       }
     },
-    [messages],
+    [messages]
   );
 
   return (
@@ -71,18 +71,20 @@ export function App() {
       }}
     >
       <header
-        style={{
-          padding: "10px 16px",
-          borderBottom: "1px solid var(--border)",
-          fontWeight: 600,
-          fontSize: "13px",
-          letterSpacing: "-0.015em",
-          color: "var(--foreground)",
-          background: "var(--card)",
-          // -webkit-app-region makes the custom title bar draggable; not in
-          // @types/react's CSSProperties, so cast.
-          WebkitAppRegion: "drag",
-        } as CSSProperties}
+        style={
+          {
+            padding: "10px 16px",
+            borderBottom: "1px solid var(--border)",
+            fontWeight: 600,
+            fontSize: "13px",
+            letterSpacing: "-0.015em",
+            color: "var(--foreground)",
+            background: "var(--card)",
+            // -webkit-app-region makes the custom title bar draggable; not in
+            // @types/react's CSSProperties, so cast.
+            WebkitAppRegion: "drag",
+          } as CSSProperties
+        }
       >
         __PROJECT_NAME__
       </header>
@@ -98,7 +100,7 @@ declare global {
       sendMessage: (
         messages: Array<{ role: string; content: string }>,
         provider?: string,
-        model?: string,
+        model?: string
       ) => Promise<{ content: string; error?: string }>;
     };
   }

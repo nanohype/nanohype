@@ -63,7 +63,9 @@ describe("cost calculator", () => {
     const calculator = createCostCalculator();
 
     calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 100, outputTokens: 50 }));
-    calculator.record(makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }));
+    calculator.record(
+      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 })
+    );
 
     const summary = calculator.query();
     expect(summary.totalRequests).toBe(2);
@@ -93,8 +95,12 @@ describe("cost calculator", () => {
   it("breaks down cost by model", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 }));
-    calculator.record(makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 }));
+    calculator.record(
+      makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 })
+    );
+    calculator.record(
+      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 })
+    );
 
     const summary = calculator.query();
     expect(summary.byModel["claude-sonnet-4-6"]).toBeGreaterThan(0);

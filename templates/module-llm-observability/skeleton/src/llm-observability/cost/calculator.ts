@@ -54,7 +54,7 @@ export function createCostCalculator() {
     if (filters.tags) {
       const requiredTags = filters.tags;
       filtered = filtered.filter((e) =>
-        Object.entries(requiredTags).every(([k, v]) => e.tags[k] === v),
+        Object.entries(requiredTags).every(([k, v]) => e.tags[k] === v)
       );
     }
     if (filters.since) {

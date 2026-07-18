@@ -5,11 +5,7 @@ import { registerProvider } from "./registry.js";
 class OpenAIProvider implements AiProvider {
   readonly defaultModel = "gpt-4o";
 
-  async sendMessage(
-    messages: ChatMessage[],
-    apiKey: string,
-    model?: string,
-  ): Promise<string> {
+  async sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string> {
     const client = new OpenAI({ apiKey });
 
     const response = await client.chat.completions.create({
