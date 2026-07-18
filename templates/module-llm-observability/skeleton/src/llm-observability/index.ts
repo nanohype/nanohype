@@ -19,8 +19,10 @@ import type { LlmExporter } from "./exporters/types.js";
 import type { QualityStats, QualityWindow } from "./quality/types.js";
 
 // Conditional cost imports — tree-shaken when cost/ directory is excluded
-let createCostCalculator: (() => ReturnType<typeof import("./cost/calculator.js").createCostCalculator>) | undefined;
-let calculateCostFn: ((model: string, inputTokens: number, outputTokens: number) => number) | undefined;
+let createCostCalculator:
+  (() => ReturnType<typeof import("./cost/calculator.js").createCostCalculator>) | undefined;
+let calculateCostFn:
+  ((model: string, inputTokens: number, outputTokens: number) => number) | undefined;
 
 try {
   const costModule = await import("./cost/calculator.js");
@@ -39,7 +41,9 @@ export interface LlmObserver {
   /** Get quality statistics over a sliding window. */
   getQualityStats(window?: QualityWindow): QualityStats;
   /** Get cost entries (empty if cost tracking is disabled). */
-  getCosts(filters?: import("./cost/types.js").CostFilters): import("./cost/types.js").CostSummary | null;
+  getCosts(
+    filters?: import("./cost/types.js").CostFilters
+  ): import("./cost/types.js").CostSummary | null;
   /** Flush exporters and shut down. */
   close(): Promise<void>;
 }
@@ -90,7 +94,7 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
 
   async function traceFn(
     fn: () => Promise<LlmResponse>,
-    tags: Record<string, string> = {},
+    tags: Record<string, string> = {}
   ): Promise<LlmResponse> {
     let response: LlmResponse;
     let span: LlmSpan;
@@ -102,12 +106,7 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
       // fabricated empty response.
       if (err instanceof TracedError) {
         exporter.exportSpan(err.span);
-        llmMetrics.recordTrace(
-          err.span.model,
-          err.span.provider,
-          err.span.durationMs,
-          false,
-        );
+        llmMetrics.recordTrace(err.span.model, err.span.provider, err.span.durationMs, false);
         throw err.cause;
       }
       throw err;
@@ -142,7 +141,9 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
     return qualityMonitor.getStats(window);
   }
 
-  function getCosts(filters?: import("./cost/types.js").CostFilters): import("./cost/types.js").CostSummary | null {
+  function getCosts(
+    filters?: import("./cost/types.js").CostFilters
+  ): import("./cost/types.js").CostSummary | null {
     if (!costCalculator) return null;
     return costCalculator.query(filters);
   }
@@ -163,6 +164,13 @@ export { getExporter, listExporters, registerExporter } from "./exporters/index.
 export { logger } from "./logger.js";
 export { createLlmMetrics } from "./metrics.js";
 export type { LlmExporter } from "./exporters/types.js";
-export type { ObserverConfig, LlmSpan, LlmResponse, LlmEvent, CostEntry, QualityScore } from "./types.js";
+export type {
+  ObserverConfig,
+  LlmSpan,
+  LlmResponse,
+  LlmEvent,
+  CostEntry,
+  QualityScore,
+} from "./types.js";
 export type { TracerOptions, SpanContext } from "./tracer/types.js";
 export type { QualityStats, QualityWindow } from "./quality/types.js";

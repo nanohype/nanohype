@@ -17,17 +17,17 @@ function createConsoleExporter(): LlmExporter {
       const cost = span.cost > 0 ? ` $${span.cost.toFixed(6)}` : "";
       console.log(
         `[LLM] ${status} ${span.provider}/${span.model} ` +
-        `${span.durationMs}ms ` +
-        `in=${span.inputTokens} out=${span.outputTokens}${cost}` +
-        (span.error ? ` err="${span.error}"` : ""),
+          `${span.durationMs}ms ` +
+          `in=${span.inputTokens} out=${span.outputTokens}${cost}` +
+          (span.error ? ` err="${span.error}"` : "")
       );
     },
 
     exportCost(entry: CostEntry): void {
       console.log(
         `[LLM:COST] ${entry.provider}/${entry.model} ` +
-        `$${entry.cost.toFixed(6)} ` +
-        `in=${entry.inputTokens} out=${entry.outputTokens}`,
+          `$${entry.cost.toFixed(6)} ` +
+          `in=${entry.inputTokens} out=${entry.outputTokens}`
       );
     },
 

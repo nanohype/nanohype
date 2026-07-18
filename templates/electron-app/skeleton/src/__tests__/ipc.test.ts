@@ -50,9 +50,7 @@ describe("provider registry", () => {
     registerProvider("anthropic", () => stubProvider());
     registerProvider("openai", () => stubProvider());
 
-    expect(() => getProvider("cohere")).toThrowError(
-      /Unknown AI provider: "cohere"/,
-    );
+    expect(() => getProvider("cohere")).toThrowError(/Unknown AI provider: "cohere"/);
     expect(() => getProvider("cohere")).toThrowError(/Available:/);
   });
 

@@ -14,10 +14,7 @@ const factories = new Map<string, () => LlmExporter>();
  * Register an exporter factory under the given name.
  * Called at module load time by each exporter module.
  */
-export function registerExporter(
-  name: string,
-  factory: () => LlmExporter,
-): void {
+export function registerExporter(name: string, factory: () => LlmExporter): void {
   factories.set(name, factory);
 }
 
@@ -29,9 +26,7 @@ export function getExporter(name: string): LlmExporter {
   const factory = factories.get(name);
   if (!factory) {
     const available = [...factories.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown LLM exporter "${name}". Registered exporters: ${available}`,
-    );
+    throw new Error(`Unknown LLM exporter "${name}". Registered exporters: ${available}`);
   }
   return factory();
 }

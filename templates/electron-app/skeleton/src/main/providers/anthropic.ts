@@ -5,11 +5,7 @@ import { registerProvider } from "./registry.js";
 class AnthropicProvider implements AiProvider {
   readonly defaultModel = "claude-sonnet-4-20250514";
 
-  async sendMessage(
-    messages: ChatMessage[],
-    apiKey: string,
-    model?: string,
-  ): Promise<string> {
+  async sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string> {
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({

@@ -62,15 +62,11 @@ function emit(level: LogLevel, message: string, fields?: Record<string, unknown>
  *   logger.info("span captured", { model: "claude-sonnet-4-6", durationMs: 340 });
  */
 export const logger = {
-  debug: (message: string, fields?: Record<string, unknown>) =>
-    emit("debug", message, fields),
+  debug: (message: string, fields?: Record<string, unknown>) => emit("debug", message, fields),
 
-  info: (message: string, fields?: Record<string, unknown>) =>
-    emit("info", message, fields),
+  info: (message: string, fields?: Record<string, unknown>) => emit("info", message, fields),
 
-  warn: (message: string, fields?: Record<string, unknown>) =>
-    emit("warn", message, fields),
+  warn: (message: string, fields?: Record<string, unknown>) => emit("warn", message, fields),
 
-  error: (message: string, fields?: Record<string, unknown>) =>
-    emit("error", message, fields),
+  error: (message: string, fields?: Record<string, unknown>) => emit("error", message, fields),
 };

@@ -16,37 +16,28 @@ interface SendMessagePayload {
 }
 
 export function registerIpcHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(
-    "ai:send-message",
-    async (_event, payload: SendMessagePayload) => {
-      const providerName =
-        payload.provider ?? process.env.LLM_PROVIDER ?? "__LLM_PROVIDER__";
+  ipcMain.handle("ai:send-message", async (_event, payload: SendMessagePayload) => {
+    const providerName = payload.provider ?? process.env.LLM_PROVIDER ?? "__LLM_PROVIDER__";
 
-      const apiKey = resolveApiKey(providerName);
-      if (!apiKey) {
-        return {
-          content: "",
-          error: `No API key found for provider "${providerName}". Set the corresponding environment variable.`,
-        };
-      }
+    const apiKey = resolveApiKey(providerName);
+    if (!apiKey) {
+      return {
+        content: "",
+        error: `No API key found for provider "${providerName}". Set the corresponding environment variable.`,
+      };
+    }
 
-      try {
-        const provider = getProvider(providerName);
-        const content = await provider.sendMessage(
-          payload.messages,
-          apiKey,
-          payload.model,
-        );
-        return { content };
-      } catch (err) {
-        return {
-          content: "",
-          error:
-            err instanceof Error ? err.message : "Failed to get AI response",
-        };
-      }
-    },
-  );
+    try {
+      const provider = getProvider(providerName);
+      const content = await provider.sendMessage(payload.messages, apiKey, payload.model);
+      return { content };
+    } catch (err) {
+      return {
+        content: "",
+        error: err instanceof Error ? err.message : "Failed to get AI response",
+      };
+    }
+  });
 }
 
 /**

@@ -19,9 +19,7 @@ describe("LLM tracer", () => {
   it("wraps an async LLM call and captures a span", async () => {
     const tracer = createLlmTracer({ serviceName: "test-service" });
 
-    const { response, span } = await tracer.trace(
-      async () => makeResponse(),
-    );
+    const { response, span } = await tracer.trace(async () => makeResponse());
 
     expect(response.text).toBe("Hello, world!");
     expect(span.model).toBe("claude-sonnet-4-6");
@@ -78,10 +76,10 @@ describe("LLM tracer", () => {
       defaultTags: { environment: "test", team: "platform" },
     });
 
-    const { span } = await tracer.trace(
-      async () => makeResponse(),
-      { user: "alice", team: "overridden" },
-    );
+    const { span } = await tracer.trace(async () => makeResponse(), {
+      user: "alice",
+      team: "overridden",
+    });
 
     expect(span.tags["environment"]).toBe("test");
     expect(span.tags["user"]).toBe("alice");
@@ -105,7 +103,7 @@ describe("LLM tracer", () => {
     const tracer = createLlmTracer({ serviceName: "test-service" });
 
     const { span } = await tracer.trace(async () =>
-      makeResponse({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }),
+      makeResponse({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 })
     );
 
     expect(span.model).toBe("gpt-4o");
