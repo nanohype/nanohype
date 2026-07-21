@@ -329,7 +329,14 @@
         "properties": {
           "content": {
             "type": "object",
-            "required": ["environments", "domains", "cluster_identity", "transforms", "limits", "rules"],
+            "required": [
+              "environments",
+              "domains",
+              "cluster_identity",
+              "transforms",
+              "limits",
+              "rules"
+            ],
             "properties": {
               "environments": { "type": "array", "minItems": 1, "items": { "type": "string" } },
               "domains": {

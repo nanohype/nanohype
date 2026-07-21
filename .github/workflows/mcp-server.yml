@@ -11,6 +11,28 @@ permissions:
   contents: read
 
 jobs:
+  # Supply-chain gate. Replaces `npm audit`, whose npm advisory endpoints are
+  # unreliable; osv-scanner checks the committed lockfiles against the OSV
+  # database and exits non-zero on a known vulnerability. Pinned to an exact
+  # version (its behaviour can shift in a patch).
+  #
+  # Runs as its own job so a new advisory still blocks the merge but never
+  # short-circuits the typecheck/lint/build/test signal below.
+  audit:
+    name: audit (osv-scanner)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: audit (osv-scanner)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        with:
+          scan-args: |-
+            --no-resolve
+            --recursive
+            ./
+
   build-and-test:
     name: Build and test MCP server
     runs-on: ubuntu-latest
@@ -45,18 +67,6 @@ jobs:
       - name: Install dependencies
         working-directory: mcp-server
         run: npm ci
-
-      # Supply-chain gate. Replaces `npm audit`, whose npm advisory endpoints are
-      # unreliable; osv-scanner checks the committed lockfiles against the OSV
-      # database and exits non-zero on a known vulnerability. Pinned to an exact
-      # version (its behaviour can shift in a patch).
-      - name: audit (osv-scanner)
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
-        with:
-          scan-args: |-
-            --no-resolve
-            --recursive
-            ./
 
       - name: Typecheck
         working-directory: mcp-server
