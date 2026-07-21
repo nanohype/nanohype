@@ -41,3 +41,6 @@ tmp/
 
 # Template doctor report artifact
 scripts/template-doctor/.report.tsv
+
+# Local planning notes
+.plans/

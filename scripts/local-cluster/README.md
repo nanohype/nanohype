@@ -2,7 +2,7 @@
 
 Recipe-based local-cluster tooling for validating nanohype templates that have a cluster-side component. Each recipe defines a reproducible local environment; a `verify` command renders a template (or composite) into a temp dir and runs the right checks against it.
 
-Lives alongside the other repo scripts because it's development tooling, not a template. If the shape stabilizes, it could graduate into its own template (`templates/infra-local-cluster/`) — punted for now.
+Lives alongside the other repo scripts because it's development tooling, not a template.
 
 ## Quick start
 
@@ -62,7 +62,7 @@ Every recipe is a directory under `recipes/` with four executables and a config:
 | `up.sh`            | Create the cluster and install any baseline components (Istio, operators, etc). Idempotent. |
 | `down.sh`          | Delete the cluster. Idempotent.                                                             |
 | `status.sh`        | Report what's running. Useful for debugging.                                                |
-| `README.md`        | Documents the recipe's footprint, port mappings, and evolution plan.                        |
+| `README.md`        | Documents the recipe's footprint and port mappings.                                         |
 
 Recipes source `../../lib/common.sh` for color output helpers, tool-presence checks, and the `nanohype-<recipe>` cluster-naming convention.
 
@@ -96,7 +96,7 @@ The harness is designed to run unattended on CI:
 - `verify FORMAT=json` emits a single JSON object for machine consumption
 - Missing optional tools produce `SKIP` results rather than failing the whole run
 
-A future GitHub Actions workflow can do roughly:
+Wiring it into a GitHub Actions job looks like:
 
 ```yaml
 - uses: helm/kind-action@v1
@@ -106,7 +106,7 @@ A future GitHub Actions workflow can do roughly:
     make -C scripts/local-cluster verify-all FORMAT=json > results.json
 ```
 
-Not wired into this repo's CI yet — tracked separately once the harness has seen enough use to confirm the shape.
+This repo's own PR gate deliberately stays on the fast checks (schema, catalog, standards, lint) — spinning kind clusters is opt-in, run locally or from a workflow you add downstream.
 
 ## Adding a new recipe
 

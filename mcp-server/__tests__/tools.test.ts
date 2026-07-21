@@ -27,7 +27,6 @@ describe("listTools", () => {
     const tool = listTools().find((t) => t.name === "get_contract")!;
     const repoEnum = (tool.inputSchema.properties as { repo: { enum: string[] } }).repo.enum;
     expect(repoEnum).toEqual([...KNOWN_CONTRACT_REPOS]);
-    expect(repoEnum).not.toContain("aks-gitops");
     expect(repoEnum).toEqual(expect.arrayContaining(["fab", "portal", "eks-fleet"]));
   });
 

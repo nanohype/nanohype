@@ -18,7 +18,9 @@ If you're a human reading this looking for "how do I use the templates," skip do
 
 ## The stack
 
-Five public repos form the system. Four are the deploy substrate; the fifth (`fab`) is the reference factory client — open-source so you can clone it, configure your skills overlay, and run your own factory.
+Nine public repos form the system: the catalog you're reading, the deploy substrate it targets, the tooling that operates that substrate, and `fab` — the reference factory client, open-source so you can clone it, configure your skills overlay, and run your own factory.
+
+Each one ships an `AGENTS.md` at its root. The machine-readable list is the SDK's `CONTRACT_REPOS`, and `loadContract(repo)` fetches any of them.
 
 | Repo                                                                            | Role                                                                                                                                                                                                                                                                                                                                                                 | Agent entry point              |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
@@ -26,8 +28,11 @@ Five public repos form the system. Four are the deploy substrate; the fifth (`fa
 | [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone)             | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, per-app `<app>-platform` components                                                                                                                                                                                                                                                | `landing-zone/AGENTS.md`       |
 | [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops)                 | ArgoCD addon catalog for EKS clusters (App-of-Apps pattern)                                                                                                                                                                                                                                                                                                          | `eks-gitops/AGENTS.md`         |
 | [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs                                                                                                                                                                                                                                                    | `eks-agent-platform/AGENTS.md` |
+| [`nanohype/eks-fleet`](https://github.com/nanohype/eks-fleet) | Cluster factory. Vends EKS clusters via Crossplane from a `Cluster` API | `eks-fleet/AGENTS.md` |
 | [`nanohype/kx`](https://github.com/nanohype/kx)                                 | Local kind workspace that mirrors `eks-gitops`. Run the same charts locally before deploying                                                                                                                                                                                                                                                                         | `kx/AGENTS.md`                 |
-| [`nanohype/fab`](https://github.com/nanohype/fab)                               | Reference factory client. Orchestrates 83 Claude agents across Discovery → Design → Build → Verify → Ship → Operate. Dual transports — Managed Agents (default) or `@anthropic-ai/claude-agent-sdk` (local). Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.fab/skills/` | `fab/skills/README.md`         |
+| [`nanohype/cloudgov`](https://github.com/nanohype/cloudgov) | AWS security & cost governance CLI. IAM least-privilege, cost, infrastructure hygiene, security posture, plus a Platform-tenant conformance auditor | `cloudgov/AGENTS.md` |
+| [`nanohype/portal`](https://github.com/nanohype/portal) | Self-hosted operations portal. Go API + React SPA that runs the cloud substrate from one UI with one audit trail | `portal/AGENTS.md` |
+| [`nanohype/fab`](https://github.com/nanohype/fab)                               | Reference factory client. Orchestrates 80 Claude agents across Discovery → Design → Build → Verify → Ship. Four transports, selected by `FAB_RUNTIME`. Ships baseline skills (quality-check, factory-preamble, intake-guide, 31 curator/engineer baselines); overlay your personal recipe via `~/.fab/skills/` | `fab/skills/README.md`         |
 
 The boundary between layers:
 
@@ -63,8 +68,12 @@ The production bar every build meets, in machine-readable JSON under [`standards
 | [`version-currency.json`](../standards/version-currency.json)                   | EOL policy, version floor, accepted `@pin` reasons, per-language registries                                                                                                              |
 | [`platform-tenant-contract.json`](../standards/platform-tenant-contract.json)   | The required artifacts (chart, ApplicationSet entry, Platform CR), the minimum Platform CR shape, OTel resource attrs, and what NOT to do                                                |
 | [`llm-policy.json`](../standards/llm-policy.json)                               | Bedrock-primary, IRSA auth, model tiers (sonnet default / opus escalation / haiku light), region preferences, prompt-caching requirement                                                 |
-| [`quality-rubric-dimensions.json`](../standards/quality-rubric-dimensions.json) | The nine quality dimensions every build is graded against. Dimension names + summaries only — the weights, reviewer assignments, and merge-gate enforcement live in the reference client |
+| [`quality-rubric-dimensions.json`](../standards/quality-rubric-dimensions.json) | The ten quality dimensions every build is graded against. Dimension names + summaries only — the weights, reviewer assignments, and merge-gate enforcement live in the reference client |
 | [`testing-rubric.json`](../standards/testing-rubric.json)                       | The testing-strategy bar — per-language coverage floors enforced in-config, the testing-trophy shape, and `security-critical-100` (100% on audit ledgers, auth, and approval gates)      |
+| [`resource-tagging.json`](../standards/resource-tagging.json) | The org-wide tag/label taxonomy every cloud resource and k8s object carries — vendor-neutral dimensions, per-surface rendering (AWS tags, k8s labels, OTel attributes), casing transforms, required tiers |
+| [`resource-naming.json`](../standards/resource-naming.json) | The naming grammar for cloud and k8s resources — the env-first cloud vs. environment-token-free k8s split, the cluster-identity model, reserved environment values, collision + length guards |
+| [`observability-slo.json`](../standards/observability-slo.json) | RED for services, USE for resources, the four golden signals, and at least one SLO with a multi-window multi-burn-rate error budget. Fixes the dashboard a system ships to represent itself |
+| [`seo-baseline.json`](../standards/seo-baseline.json) | The discovery surface every public site the factory ships presents — canonical-host rule, required files (robots.txt, sitemap.xml, llms.txt, og.png), required head tags |
 
 Each file is validated against [`schemas/standards.schema.json`](../schemas/standards.schema.json). [`standards/README.md`](../standards/README.md) is the human-readable normative form.
 
@@ -78,7 +87,11 @@ Each repo in the stack has an `AGENTS.md` at its root — short, agent-facing, a
 2. `eks-agent-platform/AGENTS.md` — the CRD surface. Platform / AgentFleet / ModelGateway / BudgetPolicy / EvalSuite. How to declare a tenant.
 3. `landing-zone/AGENTS.md` — cloud substrate. The `<app>-platform` per-app component pattern. OIDC trust setup.
 4. `eks-gitops/AGENTS.md` — addon catalog. ApplicationSet entry shape. Sync waves.
-5. `kx/AGENTS.md` — local kind mirror. When to use it.
+5. `eks-fleet/AGENTS.md` — the `Cluster` API. How a cluster gets vended.
+6. `kx/AGENTS.md` — local kind mirror. When to use it.
+7. `cloudgov/AGENTS.md` — the governance checks your output is audited against.
+8. `portal/AGENTS.md` — the operations surface over the substrate.
+9. `fab/AGENTS.md` — the reference factory client, if you're studying how one consumes all of the above.
 
 If you're skipping straight to delivery, only `eks-agent-platform/AGENTS.md` is mandatory — its Platform CR is what your output must conform to.
 
@@ -110,7 +123,7 @@ await renderTemplate({
 
 For agents running remotely without a checkout, use `GitHubSource` instead — same API, fetches manifests from the GitHub API.
 
-`loadStandards()` returns a typed bundle covering all eight standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
+`loadStandards()` returns a typed bundle covering all ten standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
 
 ## MCP server
 
@@ -138,12 +151,14 @@ Full integration snippets for Claude Desktop, Claude API tool-use, and AWS Bedro
 
 [`fab`](https://github.com/nanohype/fab) is the open-source reference implementation of "AI client consuming this Platform Reference to produce shipped software." Clone it to study, fork it to extend, or — most likely — install it and configure a personal **skill overlay** to layer your opinions on top without forking.
 
-Fab runs the same workflows against two transports:
+Fab runs the same workflows against four transports:
 
-- **Managed Agents** (default) — Anthropic-hosted REST API. Sessions + sandboxes live on Anthropic infrastructure.
-- **Local** — `@anthropic-ai/claude-agent-sdk` in-process. Workflows run against your local filesystem.
+- **`managed-agents`** (default) — Anthropic-hosted REST API. Sessions + sandboxes live on Anthropic infrastructure.
+- **`sdk`** — `@anthropic-ai/claude-agent-sdk` running the agent loop in fab's own process.
+- **`sdk-k8s`** — the `sdk` loop, each role-session dispatched as its own isolated pod on the eks-agent-platform substrate.
+- **`claude-cli`** — a `claude -p` subprocess per role-session, billed against your Claude subscription.
 
-Pick by setting `FAB_RUNTIME=managed-agents | local`. The two are behaviorally 1:1 for the application-level workflow flow; transport-level trade-offs (durability, sandboxing, deploy step, threading) are documented in [`fab/docs/transports.md`](https://github.com/nanohype/fab/blob/main/docs/transports.md).
+Pick by setting `FAB_RUNTIME=managed-agents | sdk | sdk-k8s | claude-cli`. All four are behaviorally 1:1 for the application-level workflow flow; transport-level trade-offs (durability, sandboxing, deploy step, threading) are documented in [`fab/docs/transports.md`](https://github.com/nanohype/fab/blob/main/docs/transports.md).
 
 The overlay system. Fab ships baseline skills (`quality-check`, `factory-preamble`, `intake-guide`, role briefs) as markdown files in `fab/skills/`. When loading a skill, fab walks four locations in priority order — `$FAB_SKILLS_DIR` → `~/.fab/skills/` → `<cwd>/.fab/skills/` → bundled — and the first match wins as the base. `<skill>.append.md` files from every layer get concatenated for additive overlays. Result: anyone can clone fab and run a competent factory; your personal overlay at `~/.fab/skills/` produces _your_ factory.
 
@@ -153,10 +168,10 @@ What fab does, broadly:
 2. Loads the public standards via the SDK (and adds private review-process layers on top)
 3. Selects templates from the catalog based on the brief
 4. Renders the selected templates + plans the multi-template composition
-5. Orchestrates 65 Claude managed agents across Find → Design → Build → Verify → Ship phases
+5. Orchestrates 80 Claude agents across Discovery → Design → Build → Verify → Ship phases
 6. Produces a PR that meets the production bar, with evidence
 
-Your client doesn't have to be 83 agents. A single Claude session that reads the catalog, picks one template, renders it, and meets the bar is a conformant client. The reference exists to show the upper bound, not set the minimum.
+Your client doesn't have to be 80 agents. A single Claude session that reads the catalog, picks one template, renders it, and meets the bar is a conformant client. The reference exists to show the upper bound, not set the minimum.
 
 ## Quickstart: build your own client
 
@@ -167,7 +182,7 @@ The minimum-viable client:
 3. **Pick a template**: choose by category, persona, or tags. For most AI workloads, start with a composite like `ai-chatbot` or `agent-team` from `composites/`.
 4. **Render via the SDK**: `import { renderTemplate, GitHubSource } from "@nanohype/sdk"`. Or implement the [consumer-guide](spec/consumer-guide.md) algorithm in your language of choice — it's ~150 lines of string-replacement, no template engine needed.
 5. **Conform to the platform-tenant contract**: produce a Helm chart in `<app>/chart/` + ApplicationSet entry + Platform CR. The shape is in `standards/platform-tenant-contract.json`.
-6. **Hit the bar**: ensure the rendered output exposes the four phases (build/lint/test/docs), uses current-stable versions, ships with OTel resource attrs, and passes the nine quality-rubric dimensions.
+6. **Hit the bar**: ensure the rendered output exposes the four phases (build/lint/test/docs), uses current-stable versions, ships with OTel resource attrs, and passes the ten quality-rubric dimensions.
 
 That's the conformant client. Everything fab does on top — multi-agent orchestration, merge-gate enforcement, evidence-bound verdicts — is the choreography that makes the bar consistently reachable, not a separate bar.
 
@@ -178,7 +193,7 @@ Every public artifact carries a `version` field (positive integer = major versio
 Current versions:
 
 - `catalog.json`: v1
-- `standards/*.json`: v1 each (all five)
+- `standards/*.json`: v1 each (all ten)
 - `@nanohype/sdk`: see [`sdk/package.json`](../sdk/package.json)
 - `@nanohype/mcp`: see [`mcp-server/package.json`](../mcp-server/package.json)
 

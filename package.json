@@ -37,7 +37,7 @@
     "verify:library": "node scripts/sync-library.mjs --check",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.github/ISSUE_DRAFTS/**' '!.plans/**'"
+    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.plans/**'"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.3",
