@@ -48,6 +48,8 @@
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",
+    "fast-uri": "^3.1.3",
+    "linkify-it": "^5.0.2",
     "markdownlint-cli2": {
       "js-yaml": "^4.2.0",
       "markdown-it": "^14.2.0"
