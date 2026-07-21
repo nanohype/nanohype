@@ -84,7 +84,6 @@ describe("loadAllContracts", () => {
 
 describe("KNOWN_CONTRACT_REPOS", () => {
   it("reflects the current contract surface", () => {
-    expect(KNOWN_CONTRACT_REPOS).not.toContain("aks-gitops");
     expect(KNOWN_CONTRACT_REPOS).toContain("fab");
     expect(KNOWN_CONTRACT_REPOS).toContain("portal");
     expect(KNOWN_CONTRACT_REPOS).toContain("eks-fleet");
@@ -99,7 +98,7 @@ describe("isContractRepo", () => {
   });
 
   it("rejects anything outside the known set", () => {
-    expect(isContractRepo("aks-gitops")).toBe(false);
+    expect(isContractRepo("not-a-repo")).toBe(false);
     expect(isContractRepo("../nanohype")).toBe(false);
     expect(isContractRepo("nanohype/main/evil")).toBe(false);
     expect(isContractRepo(42)).toBe(false);

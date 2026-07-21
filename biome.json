@@ -7,14 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": [
-      "**",
-      "!**/package-lock.json",
-      "!catalog.json",
-      "!templates/*/skeleton",
-      "!.plans",
-      "!.github/ISSUE_DRAFTS"
-    ]
+    "includes": ["**", "!**/package-lock.json", "!catalog.json", "!templates/*/skeleton", "!.plans"]
   },
   "css": {
     "parser": {

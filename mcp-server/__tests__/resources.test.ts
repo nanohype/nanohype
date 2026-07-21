@@ -21,10 +21,11 @@ describe("listResources", () => {
     for (const name of STANDARD_NAMES) {
       expect(uris).toContain(`nanohype://standards/${name}`);
     }
-    for (const repo of KNOWN_CONTRACT_REPOS) {
-      expect(uris).toContain(`nanohype://contracts/${repo}`);
-    }
-    expect(uris).not.toContain("nanohype://contracts/aks-gitops");
+    // Exactly the canonical repos — no more, no less. Catches both a missing
+    // contract resource and one advertised for a repo the SDK doesn't know.
+    expect(uris.filter((u) => u.startsWith("nanohype://contracts/"))).toEqual(
+      KNOWN_CONTRACT_REPOS.map((repo) => `nanohype://contracts/${repo}`),
+    );
   });
 
   it("every resource carries a name, description, and mimeType", () => {

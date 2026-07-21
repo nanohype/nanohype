@@ -1,8 +1,6 @@
 # monitoring — kind cluster sized for the monitoring-stack template
 
-Single-node kind cluster with a pre-created `monitoring` namespace. Intentionally minimal today — the `monitoring-stack` template ships its own Prometheus Operator CRDs via its Helm chart, so the cluster starts empty.
-
-When `monitoring-stack` hardens (tracked as future work; the template owner mentioned this is upcoming), this recipe's `up.sh` will gain operator installation so validations can exercise the full CRD surface without re-applying the whole chart. The README of `monitoring-stack` will be the source of truth for what's needed.
+Single-node kind cluster with a pre-created `monitoring` namespace. Intentionally minimal — the `monitoring-stack` template ships its own Prometheus Operator CRDs via its Helm chart, so the cluster starts empty and `up.sh` installs no operators. The chart under validation brings everything it needs; `monitoring-stack`'s own README is the source of truth for its prerequisites.
 
 ## Footprint
 

@@ -44,7 +44,7 @@ For nanohype the cut landed at:
 | LLM policy (Bedrock-primary, model tiers, regions)                         | The factory-preamble prompt that primes every agent                                 |
 | Quality-rubric _dimension names_                                           | Rubric weights, per-reviewer assignments, specific REJECT criteria, A–F methodology |
 | Per-repo `AGENTS.md` (5-min start)                                         | Internal runbooks, role briefs, taste-encoded instructions                          |
-| Reference client architecture (how it works at a high level)               | Reference client source code (how it orchestrates 83 agents)                        |
+| Reference client architecture (how it works at a high level)               | Reference client source code (how it orchestrates its full agent roster)            |
 
 The line varies per org. The mechanics — five surfaces, two layers — are the same.
 
@@ -89,6 +89,6 @@ Everything described here is live in this repo. Read in order:
 4. [`catalog.json`](../catalog.json) — the catalog manifest
 5. [`sdk/`](../sdk/) — the SDK
 6. [`mcp-server/`](../mcp-server/) — the MCP server
-7. [`/Users/bs/codes/nanohype/CLAUDE.md`](https://github.com/nanohype/nanohype/blob/main/CLAUDE.md) — the org-level public/private cut
+7. [the org-level `CLAUDE.md`](https://github.com/nanohype/nanohype/blob/main/CLAUDE.md) — the org-level public/private cut
 
 Studying those seven files in order is the fastest way to internalize the pattern. Then come back here when you're ready to apply it elsewhere.

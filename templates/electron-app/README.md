@@ -45,7 +45,7 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
         Chat.tsx             # Chat interface
         Message.tsx          # Message display
       styles/
-        globals.css          # Armature design tokens
+        globals.css          # Global styles / design tokens
     __tests__/               # (optional) Tests
       ipc.test.ts
   package.json

@@ -17,13 +17,13 @@ The default AWS path is `k8s-app-tenant` (Helm chart + Platform CR on `eks-agent
 - **HTTP services that handle non-trivial concurrent load** → use `k8s-app-tenant`
 - **Anything that needs IRSA + per-tenant ResourceQuota + ArgoCD-managed rollouts** → use `k8s-app-tenant`
 
-The ECS Fargate path in this template is a historical fallback. Prefer EKS via `k8s-app-tenant` over ECS — same container, better tenant isolation, same observability stack as the rest of the nanohype-org infrastructure.
+The ECS Fargate path in this template is the secondary option. Prefer EKS via `k8s-app-tenant` over ECS — same container, better tenant isolation, same observability stack as the rest of the nanohype-org infrastructure.
 
 ## What you get
 
 - CDK app with modular, composable constructs
 - Lambda path: Node.js 22 runtime, esbuild bundling, API Gateway
-- ECS Fargate path (historical fallback — prefer EKS via `k8s-app-tenant`)
+- ECS Fargate path (secondary — prefer EKS via `k8s-app-tenant`)
 - Optional VPC with public/private subnets and NAT gateway
 - Optional RDS PostgreSQL with Secrets Manager credentials
 - Optional CloudWatch dashboards, alarms, and SNS notifications
