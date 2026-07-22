@@ -82,7 +82,7 @@ Compose with any of the application templates that produce a container-shipped s
 Designed to work with these repos already in place on the target cluster:
 
 - `nanohype/landing-zone` — provisions the EKS cluster, ArgoCD, base IAM, KMS keys, and the per-app `<app>-platform` component (IRSA role + Secrets Manager entries)
-- `nanohype/eks-gitops` — supplies cluster addons (cert-manager, external-secrets, ingress-nginx, observability, Kyverno policies) and the ApplicationSet that picks up `gitops/applicationset-entry.yaml`
+- `nanohype/eks-gitops` — supplies cluster addons (cert-manager, external-secrets, external-dns, the AWS Load Balancer Controller, Cilium, observability, Kyverno policies) and the ApplicationSet that picks up `gitops/applicationset-entry.yaml`. The load balancer controller is the cluster's only ingress implementation: it creates an `alb` IngressClass and does not mark it the cluster default, so any Ingress you add has to request `alb` by name, and its TLS terminates on the ALB against an ACM certificate rather than a Kubernetes Secret
 - `nanohype/eks-agent-platform` — runs the operator that reconciles your `platform.yaml`
 
 If any of these are missing on the target cluster, the rendered app's `platform.yaml` won't reconcile and the ApplicationSet entry won't have a parent to register against.
