@@ -42,21 +42,56 @@ readinessProbe:
   timeoutSeconds: 3
   failureThreshold: 2
 
+# This template targets a generic cluster, so it names no ingress controller.
+# An empty className renders an Ingress with no `ingressClassName`, which the
+# cluster's default IngressClass claims. If your cluster has no default class —
+# nanohype EKS clusters do not; see below — the Ingress is created and then
+# ignored by every controller, so name the class explicitly.
+#
+# Annotations are controller-specific and there is no portable set, so the
+# default is empty. Fill in the block for whichever controller serves the class:
+#
+#   AWS Load Balancer Controller (nanohype EKS clusters, `eks-gitops`
+#   addons/networking/aws-load-balancer-controller — it creates an `alb`
+#   IngressClass and does NOT mark it the cluster default):
+#
+#     className: alb
+#     annotations:
+#       alb.ingress.kubernetes.io/scheme: internet-facing   # or internal
+#       alb.ingress.kubernetes.io/target-type: ip           # pods are VPC IPs
+#       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+#       alb.ingress.kubernetes.io/ssl-redirect: "443"
+#       alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...
+#     tls: []
+#
+#   TLS on an ALB terminates against an ACM certificate named by that
+#   annotation, or one the controller matches to the rule host. It cannot read
+#   a Kubernetes TLS Secret, so `tls` stays empty.
+#
+#   ingress-nginx:
+#
+#     className: nginx
+#     annotations:
+#       nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#       nginx.ingress.kubernetes.io/proxy-body-size: 10m
+#     tls:
+#       - secretName: __PROJECT_NAME__-tls
+#         hosts:
+#           - __PROJECT_NAME__.example.com
+#
+#   A Secret-reading controller (ingress-nginx, Traefik, Contour) needs the
+#   `tls` list plus something that populates the Secret — cert-manager with an
+#   Issuer or ClusterIssuer you have created, or a Secret you manage yourself.
 ingress:
   enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+  className: ""
+  annotations: {}
   hosts:
     - host: __PROJECT_NAME__.example.com
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - secretName: __PROJECT_NAME__-tls
-      hosts:
-        - __PROJECT_NAME__.example.com
+  tls: []
 
 autoscaling:
   enabled: true

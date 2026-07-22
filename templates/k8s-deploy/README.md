@@ -11,7 +11,7 @@ Generic Kubernetes deployment with raw manifests and an optional Helm chart. Wor
 - Liveness and readiness probes on configurable health endpoints
 - Resource requests and limits for CPU and memory
 - RollingUpdate strategy with zero-downtime deploys
-- Optional Ingress with TLS termination (nginx ingress controller)
+- Optional Ingress, controller-agnostic — no class and no annotations are set, so the cluster's default IngressClass claims it; the values file carries ready-to-paste blocks for the AWS Load Balancer Controller and for ingress-nginx, including how TLS differs between them
 - Optional HorizontalPodAutoscaler with CPU and memory scaling
 - Optional Helm chart producing the same resources, fully parameterized
 - Optional GitHub Actions workflow for build, push, and deploy
@@ -38,7 +38,7 @@ Generic Kubernetes deployment with raw manifests and an optional Helm chart. Wor
     configmap.yaml          # Application configuration
     deployment.yaml         # Deployment + ServiceAccount
     service.yaml            # ClusterIP Service
-    ingress.yaml            # (optional) Ingress with TLS
+    ingress.yaml            # (optional) Ingress — set the class + annotations for your controller
     hpa.yaml                # (optional) HorizontalPodAutoscaler
   chart/                    # (optional) Helm chart
     Chart.yaml              # Chart metadata

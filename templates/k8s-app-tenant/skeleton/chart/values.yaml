@@ -64,12 +64,25 @@ probes:
 networkPolicy:
   enabled: true
   ingress:
-    # Allow traffic from same namespace + the cluster ingress controller.
+    # Same namespace, plus the load balancer in front of any Ingress this app
+    # adds.
+    #
+    # The load balancer is not a pod, so that second source cannot be a
+    # namespaceSelector. nanohype EKS clusters serve the `alb` class from the
+    # AWS Load Balancer Controller, and with `target-type: ip` the connection
+    # arrives from an ALB network interface in the cluster VPC — the source is a
+    # VPC address belonging to no namespace, so a namespaceSelector on an
+    # ingress-controller namespace drops it. 10.0.0.0/8 is the range the
+    # landing-zone network component allocates VPC CIDRs from; narrow it to the
+    # public subnet CIDRs per-env where the blast radius matters.
+    #
+    # On a cluster whose ingress controller does run as pods (ingress-nginx,
+    # Traefik), replace the ipBlock with a namespaceSelector on that
+    # controller's namespace instead.
     - from:
         - podSelector: {}
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
+        - ipBlock:
+            cidr: 10.0.0.0/8
       ports:
         - protocol: TCP
           port: __PORT__

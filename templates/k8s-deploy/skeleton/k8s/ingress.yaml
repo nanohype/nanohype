@@ -6,11 +6,27 @@ metadata:
   labels:
     app.kubernetes.io/name: __PROJECT_NAME__
     app.kubernetes.io/part-of: __PROJECT_NAME__
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  # Annotations are controller-specific and there is no portable set, so none
+  # are set here. Add the block for whichever controller serves your class:
+  #
+  #   AWS Load Balancer Controller (what nanohype EKS clusters run):
+  #     alb.ingress.kubernetes.io/scheme: internet-facing
+  #     alb.ingress.kubernetes.io/target-type: ip
+  #     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+  #     alb.ingress.kubernetes.io/ssl-redirect: "443"
+  #     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:...
+  #
+  #   ingress-nginx:
+  #     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  #     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
 spec:
-  ingressClassName: nginx
+  # No `ingressClassName`: this template targets a generic cluster and names no
+  # controller, so the cluster's default IngressClass claims this object. Set it
+  # explicitly on a cluster with no default class — nanohype EKS clusters serve
+  # `alb` via the AWS Load Balancer Controller and do not mark it the default,
+  # so an unnamed Ingress there is created and then ignored by everything.
+  #
+  #   ingressClassName: alb
   rules:
     - host: __PROJECT_NAME__.example.com
       http:
@@ -22,7 +38,14 @@ spec:
                 name: __PROJECT_NAME__
                 port:
                   name: http
-  tls:
-    - hosts:
-        - __PROJECT_NAME__.example.com
-      secretName: __PROJECT_NAME__-tls
+  # TLS depends on the controller. An ALB terminates against an ACM certificate
+  # supplied by the certificate-arn annotation above, or one it matches to the
+  # rule host; it cannot read a Kubernetes Secret, so it needs no `tls` block.
+  # A Secret-reading controller — ingress-nginx, Traefik, Contour — needs one,
+  # plus something that populates the Secret: cert-manager with an Issuer or
+  # ClusterIssuer you have created, or a Secret you manage yourself.
+  #
+  #   tls:
+  #     - hosts:
+  #         - __PROJECT_NAME__.example.com
+  #       secretName: __PROJECT_NAME__-tls
