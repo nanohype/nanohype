@@ -40,6 +40,7 @@ The boundary between layers:
 - **Per-tenant identity + access** (the tenant IAM role, its scoped datastore-access policy generated from `spec.datastores`, its capability-access policy generated from `spec.identity.capabilities`, KMS grants, Bedrock model-access) → `eks-agent-platform` operator reconciles via AWS SDK
 - **Per-tenant stateful substrate** (databases, buckets, queues, caches, streams) → declared in `Platform.spec.datastores`, provisioned by the generic `tenant-substrate` landing-zone module — no per-app component
 - **Per-tenant managed capabilities** (SES send, EventBridge Scheduler) → declared in `Platform.spec.identity.capabilities`, the operator generates the scoped grants (and mints the scheduler-invoke role) — no per-app policy
+- **Per-tenant secret reads** → secrets projected into the pod by the chart's `ExternalSecret` are read by the External Secrets controller's own identity (no tenant-role grant); the few a pod reads itself via the SDK are declared in `Platform.spec.identity.directSecretReads`, and the operator grants read on exactly those
 - **Cluster addons** (cert-manager, external-secrets, Kyverno, observability) → `eks-gitops`
 - **Local development** → `kx` (kind cluster mirroring eks-gitops)
 - **Application logic** → templates from `nanohype/templates/` scaffolded into an `<app>/chart/` + `<app>/platform.yaml`
