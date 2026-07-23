@@ -7,14 +7,14 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 - **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-development.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
   - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), `terminationGracePeriodSeconds` headroom
   - `service.yaml` — ClusterIP
-  - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to the per-Platform IAM role by an EKS Pod Identity association the operator creates from the Platform CR, so no role-arn annotation and never inline IAM
+  - `serviceaccount.yaml` — references the operator-owned `tenant-runtime` ServiceAccount (`serviceAccount.create: false`); the operator binds it to the per-Platform IAM role with an EKS Pod Identity association from the Platform CR, so no role-arn annotation and never inline IAM
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
   - `externalsecret.yaml` — _(toggle, off by default)_ AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
   - `prometheusrule.yaml` — _(on by default)_ SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
   - `grafana-dashboard.yaml` + `dashboards/<app>.json` — _(on by default)_ a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
   - `servicemonitor.yaml` — _(toggle, off by default)_ Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/`
-- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IAM role (scoped to `spec.identity.allowedModelFamilies`, plus a datastore-access policy generated from `spec.datastores`); the tenant's declared datastores are provisioned by the generic `tenant-substrate` module; the BudgetPolicy drives the spend kill-switch
+- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, the operator-owned `tenant-runtime` ServiceAccount, and the per-Platform IAM role (scoped to `spec.identity.allowedModelFamilies`, plus a datastore-access policy generated from `spec.datastores` and a capability-access policy generated from `spec.identity.capabilities`); the tenant's declared datastores are provisioned by the generic `tenant-substrate` module; the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
 ## Variables
@@ -47,7 +47,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
     templates/
       deployment.yaml
       service.yaml
-      serviceaccount.yaml          # name pinned to app; role bound via the operator's Pod Identity association
+      serviceaccount.yaml          # references operator-owned tenant-runtime; role bound via Pod Identity
       networkpolicy.yaml           # default-deny + egress allow-list
       externalsecret.yaml          # toggle: Secrets Manager → k8s Secret (off by default)
       prometheusrule.yaml          # SLO recording rules + burn-rate alerts (on by default)

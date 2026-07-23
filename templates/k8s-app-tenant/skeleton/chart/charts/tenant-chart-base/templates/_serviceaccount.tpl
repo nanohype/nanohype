@@ -1,10 +1,13 @@
 {{/*
-ServiceAccount for the tenant's pods. Its AWS identity is bound out of band by
-an EKS Pod Identity association (namespace + ServiceAccount -> IAM role) created
-by the eks-agent-platform operator from the Platform CR, so the pod assumes its
-role without any role-arn annotation and no inline IAM is defined here. The ServiceAccount
-name must match the association's `service_account`, so set `serviceAccount.name`
-to the app name (see values.yaml).
+ServiceAccount for the tenant's pods. The operator creates and owns the
+`tenant-runtime` ServiceAccount in the workload namespace and binds it to the
+per-Platform IAM role with an EKS Pod Identity association, so the pod assumes
+its role with no role-arn annotation and no inline IAM here. The chart therefore
+references that SA (serviceAccount.create: false, name: tenant-runtime) rather
+than minting its own — an SA the chart created would get no association and no
+credentials. This partial renders a chart-owned SA only if serviceAccount.create
+is set true (an externally-managed-association escape hatch), and is inert
+otherwise.
 
 Usage (consumer templates/serviceaccount.yaml):
   {{ include "tenant-chart-base.serviceaccount" . }}

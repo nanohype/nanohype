@@ -13,14 +13,15 @@ service:
   targetPort: __PORT__
 
 serviceAccount:
-  create: true
-  # Pinned to the app name so it matches the `service_account` of the EKS Pod
-  # Identity association the eks-agent-platform operator creates from the Platform
-  # CR — that association binds this ServiceAccount to the per-Platform IAM role,
-  # so the pod needs no role-arn annotation and the chart carries no AWS account
-  # values.
-  name: __APP_NAME__
-  # Extra annotations merged onto the ServiceAccount.
+  # The eks-agent-platform operator creates and owns the `tenant-runtime`
+  # ServiceAccount in the workload namespace and binds it to the per-Platform IAM
+  # role via an EKS Pod Identity association — so the pod runs as it with no
+  # role-arn annotation and the chart carries no AWS account values. The chart
+  # references that SA rather than minting its own: an SA the chart created would
+  # get no association and therefore no credentials.
+  create: false
+  name: tenant-runtime
+  # Extra annotations merged onto the ServiceAccount (only used if create: true).
   annotations: {}
 
 resources:
