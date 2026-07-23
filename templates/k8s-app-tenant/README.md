@@ -7,14 +7,14 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 - **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-development.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
   - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), `terminationGracePeriodSeconds` headroom
   - `service.yaml` — ClusterIP
-  - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to its IAM role by a landing-zone EKS Pod Identity association, so no role-arn annotation and never inline IAM
+  - `serviceaccount.yaml` — pod ServiceAccount, name pinned to the app name; bound to the per-Platform IAM role by an EKS Pod Identity association the operator creates from the Platform CR, so no role-arn annotation and never inline IAM
   - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
   - `externalsecret.yaml` — _(toggle, off by default)_ AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
   - `prometheusrule.yaml` — _(on by default)_ SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
   - `grafana-dashboard.yaml` + `dashboards/<app>.json` — _(on by default)_ a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
   - `servicemonitor.yaml` — _(toggle, off by default)_ Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/`
-- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role (scoped to `spec.identity.allowedModelFamilies`); the BudgetPolicy drives the spend kill-switch
+- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IAM role (scoped to `spec.identity.allowedModelFamilies`, plus a datastore-access policy generated from `spec.datastores`); the tenant's declared datastores are provisioned by the generic `tenant-substrate` module; the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
 ## Variables
@@ -47,7 +47,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
     templates/
       deployment.yaml
       service.yaml
-      serviceaccount.yaml          # name pinned to app; role bound via landing-zone Pod Identity association
+      serviceaccount.yaml          # name pinned to app; role bound via the operator's Pod Identity association
       networkpolicy.yaml           # default-deny + egress allow-list
       externalsecret.yaml          # toggle: Secrets Manager → k8s Secret (off by default)
       prometheusrule.yaml          # SLO recording rules + burn-rate alerts (on by default)
@@ -81,7 +81,7 @@ Compose with any of the application templates that produce a container-shipped s
 
 Designed to work with these repos already in place on the target cluster:
 
-- `nanohype/landing-zone` — provisions the EKS cluster, ArgoCD, base IAM, KMS keys, and the per-app `<app>-platform` component (IRSA role + Secrets Manager entries)
+- `nanohype/landing-zone` — provisions the EKS cluster, ArgoCD, base IAM, KMS keys, and the generic `tenant-substrate` module that provisions a tenant's declared datastores
 - `nanohype/eks-gitops` — supplies cluster addons (cert-manager, external-secrets, external-dns, the AWS Load Balancer Controller, Cilium, observability, Kyverno policies) and the ApplicationSet that picks up `gitops/applicationset-entry.yaml`. The load balancer controller is the cluster's only ingress implementation: it creates an `alb` IngressClass and does not mark it the cluster default, so any Ingress you add has to request `alb` by name, and its TLS terminates on the ALB against an ACM certificate rather than a Kubernetes Secret
 - `nanohype/eks-agent-platform` — runs the operator that reconciles your `platform.yaml`
 
@@ -92,7 +92,7 @@ If any of these are missing on the target cluster, the rendered app's `platform.
 1. Render: `helm template chart/ -f chart/values-development.yaml` (sanity)
 2. Apply the Platform + BudgetPolicy CRs: `kubectl apply -f platform.yaml`
 3. Wait for `Platform.status.phase = Ready`
-4. Set any per-env secret paths in `values-{env}.yaml`; the pod's IAM role is bound by the landing-zone `<app>-platform` component's EKS Pod Identity association (no role ARN in the chart)
+4. Set any per-env secret paths in `values-{env}.yaml`; the pod's IAM role is bound by the operator's EKS Pod Identity association, created from the Platform CR (no role ARN in the chart)
 5. Copy `gitops/applicationset-entry.yaml` into the gitops repo as a new entry in the appropriate ApplicationSet
 6. ArgoCD picks up the entry on next sync and rolls out the chart
 7. For new image tags: update `values-{env}.yaml` `image.tag`, commit, ArgoCD reconciles

@@ -25,7 +25,7 @@ Each one ships an `AGENTS.md` at its root. The machine-readable list is the SDK'
 | Repo                                                                            | Role                                                                                                                                                                                                                                                                                                                                                                 | Agent entry point              |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | [`nanohype/nanohype`](https://github.com/nanohype/nanohype)                     | Template catalog + SDK + the public Platform Reference itself (this file)                                                                                                                                                                                                                                                                                            | [`AGENTS.md`](../AGENTS.md)    |
-| [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone)             | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, per-app `<app>-platform` components                                                                                                                                                                                                                                                | `landing-zone/AGENTS.md`       |
+| [`nanohype/landing-zone`](https://github.com/nanohype/landing-zone)             | OpenTofu/Terragrunt monorepo. Cloud substrate: VPC, base IAM, KMS, observability, and the generic `tenant-substrate` module that provisions a tenant's datastores from `Platform.spec.datastores`                                                                                                                                                                                                                                                | `landing-zone/AGENTS.md`       |
 | [`nanohype/eks-gitops`](https://github.com/nanohype/eks-gitops)                 | ArgoCD addon catalog for EKS clusters (App-of-Apps pattern)                                                                                                                                                                                                                                                                                                          | `eks-gitops/AGENTS.md`         |
 | [`nanohype/eks-agent-platform`](https://github.com/nanohype/eks-agent-platform) | k8s-native control plane. Owns the `Platform` / `AgentFleet` / `ModelGateway` / `BudgetPolicy` / `EvalSuite` CRDs                                                                                                                                                                                                                                                    | `eks-agent-platform/AGENTS.md` |
 | [`nanohype/eks-fleet`](https://github.com/nanohype/eks-fleet) | Cluster factory. Vends EKS clusters via Crossplane from a `Cluster` API | `eks-fleet/AGENTS.md` |
@@ -37,7 +37,8 @@ Each one ships an `AGENTS.md` at its root. The machine-readable list is the SDK'
 The boundary between layers:
 
 - **Slow-moving cloud infra** (VPC, base IAM, KMS keys, cost pipeline, EventBridge, WAF) → `landing-zone`
-- **Per-tenant fast-moving AWS state** (IRSA roles, KMS grants, S3 bucket policies, Bedrock model-access) → `eks-agent-platform` operator reconciles via AWS SDK
+- **Per-tenant identity + access** (the tenant IAM role, its scoped datastore-access policy generated from `spec.datastores`, KMS grants, Bedrock model-access) → `eks-agent-platform` operator reconciles via AWS SDK
+- **Per-tenant stateful substrate** (databases, buckets, queues, caches, streams) → declared in `Platform.spec.datastores`, provisioned by the generic `tenant-substrate` landing-zone module — no per-app component
 - **Cluster addons** (cert-manager, external-secrets, Kyverno, observability) → `eks-gitops`
 - **Local development** → `kx` (kind cluster mirroring eks-gitops)
 - **Application logic** → templates from `nanohype/templates/` scaffolded into an `<app>/chart/` + `<app>/platform.yaml`
@@ -85,7 +86,7 @@ Each repo in the stack has an `AGENTS.md` at its root — short, agent-facing, a
 
 1. [`nanohype/AGENTS.md`](../AGENTS.md) — templates + SDK + catalog. The starting point.
 2. `eks-agent-platform/AGENTS.md` — the CRD surface. Platform / AgentFleet / ModelGateway / BudgetPolicy / EvalSuite. How to declare a tenant.
-3. `landing-zone/AGENTS.md` — cloud substrate. The `<app>-platform` per-app component pattern. OIDC trust setup.
+3. `landing-zone/AGENTS.md` — cloud substrate. The `tenant-substrate` module driven by `Platform.spec.datastores`. Pod Identity setup.
 4. `eks-gitops/AGENTS.md` — addon catalog. ApplicationSet entry shape. Sync waves.
 5. `eks-fleet/AGENTS.md` — the `Cluster` API. How a cluster gets vended.
 6. `kx/AGENTS.md` — local kind mirror. When to use it.

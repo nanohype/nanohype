@@ -8,14 +8,17 @@
 #   - ResourceQuota + LimitRange
 #   - Default-deny NetworkPolicy (the chart layers app-specific egress on top)
 #   - ArgoCD AppProject scoped to this Platform
-#   - Per-Platform IRSA role: a baseline policy + spec.identity.extraPolicyArns,
-#     scoped to the families in spec.identity.allowedModelFamilies
+#   - Per-Platform IAM role: a baseline policy + spec.identity.extraPolicyArns,
+#     scoped to the families in spec.identity.allowedModelFamilies, plus a
+#     datastore-access policy generated from spec.datastores
+# The datastores declared below are provisioned by the generic tenant-substrate
+# module from this same declaration — there is no per-app substrate component.
 # BudgetPolicy drives the spend kill-switch (fires at 120% of monthlyUsd when
 # killSwitchEnabled).
 #
-# The chart's pod identity is separate from this CR: the landing-zone
-# __APP_NAME__-platform component creates an EKS Pod Identity association binding
-# the chart's ServiceAccount to its IAM role, so the chart carries no role ARN.
+# The chart's pod identity comes from this CR: the eks-agent-platform operator
+# creates an EKS Pod Identity association binding the tenant ServiceAccount to
+# the per-Platform IAM role, so the chart carries no role ARN.
 #
 # Once Platform.status.phase is Ready, the ApplicationSet entry in __GITOPS_REPO__
 # takes over reconciling the chart.
@@ -58,3 +61,17 @@ spec:
     soc2: true
     hipaa: false
   isolation: namespace   # or vcluster for hard isolation
+  # Stateful substrate the tenant needs. Each entry names a datastore and its
+  # kind — relational | keyValue | objectStore | queue | cache | stream. The
+  # generic tenant-substrate module provisions each one and the operator
+  # generates the scoped IAM to reach it. Omit a kind's config block to take the
+  # young/light defaults (keyValue requires its partitionKey). deletionPolicy
+  # defaults to Retain, so deleting this CR orphans the datastore intact.
+  # Remove this block if the tenant has no stateful needs.
+  datastores:
+    - name: main
+      kind: relational
+    - name: events
+      kind: queue
+      queue:
+        maxReceiveCount: 3
