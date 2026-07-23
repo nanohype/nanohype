@@ -1,8 +1,8 @@
 {{/*
 ServiceAccount for the tenant's pods. Its AWS identity is bound out of band by
 an EKS Pod Identity association (namespace + ServiceAccount -> IAM role) created
-by landing-zone's <app>-platform component, so the pod assumes its role without
-any role-arn annotation and no inline IAM is defined here. The ServiceAccount
+by the eks-agent-platform operator from the Platform CR, so the pod assumes its
+role without any role-arn annotation and no inline IAM is defined here. The ServiceAccount
 name must match the association's `service_account`, so set `serviceAccount.name`
 to the app name (see values.yaml).
 

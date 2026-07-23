@@ -15,9 +15,10 @@ service:
 serviceAccount:
   create: true
   # Pinned to the app name so it matches the `service_account` of the EKS Pod
-  # Identity association that landing-zone's __APP_NAME__-platform component
-  # creates — that association binds this ServiceAccount to its IAM role, so the
-  # pod needs no role-arn annotation and the chart carries no AWS account values.
+  # Identity association the eks-agent-platform operator creates from the Platform
+  # CR — that association binds this ServiceAccount to the per-Platform IAM role,
+  # so the pod needs no role-arn annotation and the chart carries no AWS account
+  # values.
   name: __APP_NAME__
   # Extra annotations merged onto the ServiceAccount.
   annotations: {}
