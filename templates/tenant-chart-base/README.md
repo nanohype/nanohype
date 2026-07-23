@@ -6,7 +6,7 @@ A Helm **library chart** (`type: library`) holding the named templates every nan
 
 A `chart/` directory containing a library chart with these named templates (all in `templates/_*.tpl`):
 
-- `tenant-chart-base.serviceaccount` — the pod's ServiceAccount. No role-arn annotation and no inline IAM: landing-zone binds it to its IAM role with an EKS Pod Identity association, so `serviceAccount.name` is pinned to the app name to match.
+- `tenant-chart-base.serviceaccount` — the pod's ServiceAccount. No role-arn annotation and no inline IAM: the eks-agent-platform operator creates and owns the `tenant-runtime` ServiceAccount and binds it to the per-Platform IAM role with an EKS Pod Identity association, so the chart references it (`serviceAccount.create: false`, `name: tenant-runtime`) rather than minting its own — a chart-created SA would get no association and no credentials. The partial renders a chart-owned SA only if `serviceAccount.create` is set true.
 - `tenant-chart-base.networkpolicy` — the NetworkPolicy CR scaffold with values-driven `ingress` (varies by workload topology) and `egress` (the DNS + HTTPS-out baseline).
 - `tenant-chart-base.prometheusrule` — the PrometheusRule CR scaffold. Per the `observability-slo` standard it renders SLI recording rules over the burn-rate windows plus multi-window multi-burn-rate error-budget alerts (2 page, 2 ticket) from the `slo.*` values. `prometheusRule.groups` overrides it verbatim for latency or custom-shaped SLOs.
 - `tenant-chart-base.serviceMonitor` — an optional ServiceMonitor for apps that expose a Prometheus `/metrics` endpoint. Off by default (the baseline pushes metrics via OTLP to the cluster collector — the standard's equivalent scrape config).

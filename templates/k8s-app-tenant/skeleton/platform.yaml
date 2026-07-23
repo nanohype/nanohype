@@ -10,15 +10,17 @@
 #   - ArgoCD AppProject scoped to this Platform
 #   - Per-Platform IAM role: a baseline policy + spec.identity.extraPolicyArns,
 #     scoped to the families in spec.identity.allowedModelFamilies, plus a
-#     datastore-access policy generated from spec.datastores
+#     datastore-access policy generated from spec.datastores and a
+#     capability-access policy generated from spec.identity.capabilities
 # The datastores declared below are provisioned by the generic tenant-substrate
 # module from this same declaration — there is no per-app substrate component.
 # BudgetPolicy drives the spend kill-switch (fires at 120% of monthlyUsd when
 # killSwitchEnabled).
 #
 # The chart's pod identity comes from this CR: the eks-agent-platform operator
-# creates an EKS Pod Identity association binding the tenant ServiceAccount to
-# the per-Platform IAM role, so the chart carries no role ARN.
+# creates and owns the `tenant-runtime` ServiceAccount and binds it to the
+# per-Platform IAM role via an EKS Pod Identity association, so the pod runs as
+# it and the chart carries no role ARN (serviceAccount.create: false).
 #
 # Once Platform.status.phase is Ready, the ApplicationSet entry in __GITOPS_REPO__
 # takes over reconciling the chart.
@@ -56,7 +58,18 @@ spec:
     allowedModelFamilies:
       - anthropic
     # Extra managed IAM policies attached on top of the per-tenant baseline.
+    # The escape hatch for grants outside both the datastore and capability
+    # vocabularies — not for SES or EventBridge Scheduler, which are capabilities.
     extraPolicyArns: []
+    # Managed AWS capabilities the datastore vocabulary doesn't cover; the
+    # operator generates the scoped grants from this list. Omit the field if the
+    # tenant needs none.
+    #   ses                  — send email (ses:SendEmail, FromAddress-scoped to
+    #                          the tenant's sending domain)
+    #   eventBridgeScheduler — create + fire schedules; the operator mints the
+    #                          scheduler-invoke role targeting the tenant's queues
+    # capabilities:
+    #   - ses
   compliance:
     soc2: true
     hipaa: false
