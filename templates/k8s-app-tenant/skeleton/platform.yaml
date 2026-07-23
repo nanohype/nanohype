@@ -70,6 +70,12 @@ spec:
     #                          scheduler-invoke role targeting the tenant's queues
     # capabilities:
     #   - ses
+    # Secrets the pod reads itself via the AWS SDK, named under the tenant's own
+    # <platform>/<env>/ prefix; the operator grants read on exactly these. Most
+    # secrets arrive via the chart's ExternalSecret (projected by the cluster's
+    # External Secrets controller) and need no entry — omit the field for those.
+    # directSecretReads:
+    #   - grafana/oncall-webhook-hmac
   compliance:
     soc2: true
     hipaa: false
