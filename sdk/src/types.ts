@@ -519,7 +519,9 @@ export interface TelemetryPipelineStandard {
         traces: string;
         requires?: string;
       }>;
+      /** A bare tier id, not prose — a client reads this to know what a cluster gets by default. */
       default: string;
+      default_rationale?: string;
       unrouted_traces?: string;
     };
     signal_contract: {
