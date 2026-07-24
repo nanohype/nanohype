@@ -12,6 +12,7 @@ import type {
   Standard,
   StandardName,
   Standards,
+  TelemetryPipelineStandard,
   TestingRubricStandard,
   VersionCurrencyStandard,
 } from "./types.js";
@@ -26,6 +27,7 @@ const ALL_STANDARDS: StandardName[] = [
   "resource-tagging",
   "resource-naming",
   "observability-slo",
+  "telemetry-pipeline",
   "seo-baseline",
 ];
 
@@ -47,6 +49,7 @@ const EXPECTED_KIND: Record<StandardName, Standard["kind"]> = {
   "resource-tagging": "nanohype/standards/resource-tagging",
   "resource-naming": "nanohype/standards/resource-naming",
   "observability-slo": "nanohype/standards/observability-slo",
+  "telemetry-pipeline": "nanohype/standards/telemetry-pipeline",
   "seo-baseline": "nanohype/standards/seo-baseline",
 };
 
@@ -77,8 +80,19 @@ export async function loadStandard(source: CatalogSource, name: StandardName): P
  * than scanning the union).
  */
 export async function loadStandards(source: CatalogSource): Promise<Standards> {
-  const [toolchain, currency, contract, llm, rubric, testing, tagging, naming, observability, seo] =
-    await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
+  const [
+    toolchain,
+    currency,
+    contract,
+    llm,
+    rubric,
+    testing,
+    tagging,
+    naming,
+    observability,
+    telemetry,
+    seo,
+  ] = await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
   return {
     "language-toolchain": toolchain as LanguageToolchainStandard,
     "version-currency": currency as VersionCurrencyStandard,
@@ -89,6 +103,7 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     "resource-tagging": tagging as ResourceTaggingStandard,
     "resource-naming": naming as ResourceNamingStandard,
     "observability-slo": observability as ObservabilitySloStandard,
+    "telemetry-pipeline": telemetry as TelemetryPipelineStandard,
     "seo-baseline": seo as SeoBaselineStandard,
   };
 }

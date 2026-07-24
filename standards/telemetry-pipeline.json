@@ -1,0 +1,160 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/telemetry-pipeline",
+  "version": "1",
+  "title": "Telemetry pipeline standard",
+  "summary": "How telemetry moves on the nanohype stack, as three contracts. The collection contract: every workload emits OTLP to one stable in-cluster endpoint and never names a backend, so backends stay swappable without touching an application. The tier contract: a cluster declares floor or full, which changes where telemetry lands and nothing else \u2014 the endpoint, the collector and the emitting workload are identical at both. The signal contract: what the platform publishes back when it acts on telemetry, and where an agent discovers the resources to read. Companion to observability-slo, which owns what to measure and when to alert; this owns how the measurements travel and who may read them.",
+  "content": {
+    "principles": {
+      "neutral_waist": "OTLP is the contract, not the collector. A workload emits OTLP to a stable endpoint and never learns which collector implements it or which backend stores it. That is what makes a backend a deployment decision rather than an application rewrite \u2014 and it is the only reason a cluster can change tiers without a single tenant change.",
+      "one_egress": "Exports concentrate at one gateway per cluster, never at the node agent and never in the application. Collection and delivery are separate concerns: an agent that also exported would put the backend's identity, credentials and failure modes on every node.",
+      "absent_is_not_healthy": "A signal that is missing and a signal that reads zero are different facts and must stay distinguishable end to end. A pipeline that renders a silent workload as a healthy one turns an outage into a green dashboard.",
+      "cost_is_a_design_input": "Cardinality and retention are chosen at the pipeline, not discovered on an invoice. Dimension rollups, resource-attribute promotion and log duplication are decided explicitly, and the narrow choice is the default."
+    },
+    "collection_contract": {
+      "protocol": "OTLP. gRPC on 4317, HTTP/protobuf on 4318.",
+      "endpoint": "telemetry.<monitoring-namespace>.svc.cluster.local \u2014 a stable alias Service deliberately NOT named for the collector that implements it. A workload configures OTEL_EXPORTER_OTLP_ENDPOINT against this name and nothing else.",
+      "endpoint_rationale": "Naming the endpoint after the collector (otel-gateway, alloy, \u2026) makes every consumer a hostage of the implementation: swapping collectors becomes a coordinated edit across every tenant chart. The alias costs one Service and buys the freedom the whole waist exists for.",
+      "topology": [
+        {
+          "tier": "agent",
+          "shape": "DaemonSet",
+          "owns": "collection \u2014 node-local scrape, pod-log tailing, and OTLP ingest from workloads on the node",
+          "never": "exports to a backend"
+        },
+        {
+          "tier": "gateway",
+          "shape": "Deployment",
+          "owns": "cross-cutting processing and every backend export; publishes the tenant-facing endpoint alias",
+          "never": "scrapes nodes"
+        }
+      ],
+      "node_scoping": "A node agent scrapes only its own node. Cluster-wide scrape targets on a DaemonSet produce one copy of every series per node \u2014 an N-fold duplication that looks like healthy redundancy and reads as inflated rates.",
+      "workload_requirements": [
+        "Emit OTLP to the endpoint above; never to a backend's own protocol.",
+        "Carry service.namespace, service.version and the tenant/platform resource attributes so telemetry is attributable without a naming convention on the metric name.",
+        "Allow egress to the endpoint. A default-deny NetworkPolicy that omits it drops telemetry silently \u2014 the SDK retries and the workload stays healthy, so nothing surfaces."
+      ]
+    },
+    "tiers": {
+      "rule": "A cluster declares exactly one tier as an always-set label. Generators select on a value; they cannot branch on a key's absence, so a conditional label makes every tier-gated generator silently match nothing.",
+      "invariant": "Both tiers run the same agent, the same gateway and the same endpoint. Only the gateway's exporters differ. A workload chart is byte-identical across tiers \u2014 if a tier change requires an application change, the tiering is wrong.",
+      "levels": [
+        {
+          "id": "floor",
+          "intent": "the cheap, always-available substrate \u2014 a cluster is born here",
+          "metrics": "cloud-provider-native (CloudWatch, via the provider's Container Insights producer for infrastructure and EMF for application metrics)",
+          "logs": "cloud-provider-native log service",
+          "traces": "provider-native tracing service; never left unrouted and never silently discarded",
+          "requires": "nothing beyond the cluster itself"
+        },
+        {
+          "id": "full",
+          "intent": "the opted-up substrate, for clusters carrying workloads worth querying deeply",
+          "metrics": "floor plus a Prometheus-compatible store",
+          "logs": "floor plus a log-query store",
+          "traces": "a trace store",
+          "requires": "a managed-monitoring substrate provisioned for the cluster \u2014 opting up is not only a label change"
+        }
+      ],
+      "default": "floor. A vended cluster is born light and opting up is deliberate. Every cluster that already runs the higher tier pins it explicitly rather than inheriting it, so no live cluster can lose telemetry to a change in what the default means.",
+      "unrouted_traces": "A tier still routes every signal it accepts. If a backend genuinely does not exist for one, the pipeline still terminates it explicitly \u2014 omitting the pipeline makes the OTLP receiver answer UNIMPLEMENTED, so every SDK on the cluster logs export failures forever for a condition that is by design."
+    },
+    "signal_contract": {
+      "summary": "What the platform publishes when telemetry causes it to act, so the action is auditable and routable rather than buried in a controller's logs. Events go to the cluster's governance event bus; the bus archive is the compliance record.",
+      "events": [
+        {
+          "detail_type": "BurnRateBreach",
+          "source": "governance.nanohype.dev/slo",
+          "when": "both windows of a multi-window burn-rate pair exceed their factor, per observability-slo",
+          "detail_fields": [
+            "platformId",
+            "namespace",
+            "sloPolicy",
+            "sliType",
+            "sliMetric",
+            "objective",
+            "severity",
+            "breachedWindow",
+            "breachRatio",
+            "errorBudgetRemaining",
+            "reason"
+          ],
+          "severity": "critical for a page-tier pair, warning for a ticket tier \u2014 the observability-slo fleet_alerting tiers, which is also what routes it"
+        },
+        {
+          "detail_type": "BudgetBreach",
+          "source": "governance.nanohype.dev/budget",
+          "when": "month-to-date spend reaches the policy's hard cap",
+          "detail_fields": [
+            "platformId",
+            "namespace",
+            "budgetPolicy",
+            "monthlyUsd",
+            "currentSpendUsd",
+            "percentOfBudget",
+            "severity",
+            "reason"
+          ],
+          "severity": "critical"
+        }
+      ],
+      "rules": [
+        "Every event source and detail-type pair on a shared bus must be disjoint from every other, and a test must assert it. Two governance loops sharing a bus is fine; one matching the other's events is a tenant suspended for a latency regression.",
+        "Publishing an event is not the same as the action taking effect. A loop that acts on telemetry verifies the effect it intended and reports when the effect did not land \u2014 a control loop that records a false success is worse than one that never fired.",
+        "An event carries enough detail to render an audit line without re-reading cluster state."
+      ]
+    },
+    "discovery": {
+      "summary": "Where a client \u2014 a controller, an agent, an operator \u2014 finds the telemetry resources for a cluster without being told. One prefix, keyed by the consumer rather than the producer, so the contract holds regardless of which component produced the value.",
+      "prefix": "/eks-agent-platform/<cluster-name>/<component>/<key>",
+      "paths": [
+        {
+          "path": "managed-monitoring/amp_endpoint",
+          "is": "the Prometheus-compatible query endpoint, full tier only"
+        },
+        {
+          "path": "managed-monitoring/amp_workspace_id",
+          "is": "the metrics workspace identifier"
+        },
+        {
+          "path": "managed-monitoring/grafana_url",
+          "is": "the managed dashboard workspace URL"
+        },
+        {
+          "path": "observability/alerts_<severity>_topic_arn",
+          "is": "the notification topic for each severity tier (critical, warning, info)"
+        },
+        {
+          "path": "kill-switch/event_bus_name",
+          "is": "the governance event bus signal-contract events are published to"
+        },
+        {
+          "path": "kill-switch/state_machine_arn",
+          "is": "the automated-response machine the bus routes to"
+        }
+      ],
+      "absence_is_meaningful": "A path that does not exist means the cluster does not run that substrate \u2014 a floor cluster publishes no query endpoint. A consumer degrades and says so; it does not fail to start, and it does not treat the absence as an error."
+    },
+    "do": [
+      "Point every workload at the neutral endpoint and let the cluster decide the backend.",
+      "Concentrate exports at one gateway per cluster.",
+      "Scope a node agent's scrape to its own node.",
+      "Make the tier label always-set, and pin it explicitly on every cluster that already runs the higher tier.",
+      "Keep no-data distinguishable from zero through every hop, and refuse to act on a signal you do not have.",
+      "Assert event source and detail-type disjointness in a test when a bus carries more than one loop.",
+      "Verify that an automated action took effect, and publish a signal when it did not.",
+      "Measure custom-metric cardinality on the first cluster of a new tier, before vending a second. Cardinality is billed as it is emitted and narrowing later does not refund it, so this is a step in a runbook rather than an item in a backlog."
+    ],
+    "do_not": [
+      "Name the tenant-facing endpoint after the collector that implements it.",
+      "Export to a backend from the node agent, or from an application.",
+      "Run two log collectors over the same files \u2014 one pipeline owns logs, and duplicate ingestion is duplicate cost.",
+      "Gate a tier on a label that is only present sometimes.",
+      "Let a tier difference reach a workload chart.",
+      "Accept telemetry into a pipeline with no exporter, or leave a signal type unrouted so every SDK retries against UNIMPLEMENTED forever.",
+      "Promote unbounded resource attributes into metric dimensions without deciding the cardinality first.",
+      "Release an automated hold or suspension because the signal that justified it became unavailable \u2014 losing telemetry during an incident is when reverting the action is worst."
+    ]
+  }
+}
