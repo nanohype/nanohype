@@ -1016,10 +1016,14 @@
                 ],
                 "properties": {
                   "protocol": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "OTLP",
+                    "description": "Must name OTLP \u2014 the protocol IS the contract; a standard that admits another value is not describing this pipeline."
                   },
                   "endpoint": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^telemetry\\.",
+                    "description": "Must begin with the collector-agnostic alias name. A standard that lets the endpoint be named for its implementation defeats the neutral waist it exists to define."
                   },
                   "endpoint_rationale": {
                     "type": "string"
@@ -1032,10 +1036,10 @@
                       "required": ["tier", "shape", "owns"],
                       "properties": {
                         "tier": {
-                          "type": "string"
+                          "enum": ["agent", "gateway"]
                         },
                         "shape": {
-                          "type": "string"
+                          "enum": ["DaemonSet", "Deployment"]
                         },
                         "owns": {
                           "type": "string"
@@ -1053,7 +1057,11 @@
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "minItems": 1
+                  },
+                  "ingest": {
+                    "type": "string"
                   }
                 }
               },
@@ -1075,7 +1083,8 @@
                       "required": ["id", "intent", "metrics", "logs", "traces"],
                       "properties": {
                         "id": {
-                          "type": "string"
+                          "enum": ["floor", "full"],
+                          "description": "The tier vocabulary is closed \u2014 this standard defines it, so an unknown id means a document describing a different system."
                         },
                         "intent": {
                           "type": "string"
@@ -1096,9 +1105,12 @@
                     }
                   },
                   "default": {
-                    "type": "string"
+                    "enum": ["floor", "full"]
                   },
                   "unrouted_traces": {
+                    "type": "string"
+                  },
+                  "default_rationale": {
                     "type": "string"
                   }
                 }
@@ -1124,10 +1136,14 @@
                       ],
                       "properties": {
                         "detail_type": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^[A-Z][A-Za-z0-9]*$",
+                          "description": "PascalCase, matching the EventBridge detail-type on the wire."
                         },
                         "source": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^[a-z0-9.]+\\.nanohype\\.dev(/[a-z0-9-]+)?$",
+                          "description": "An API-group-shaped source, so a reader can tell which control loop emitted it."
                         },
                         "when": {
                           "type": "string"
@@ -1136,10 +1152,13 @@
                           "type": "array",
                           "items": {
                             "type": "string"
-                          }
+                          },
+                          "minItems": 1
                         },
                         "severity": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "critical|warning|info",
+                          "description": "Must reference the observability-slo fleet_alerting tiers \u2014 that is what routes the event."
                         }
                       }
                     }
@@ -1148,7 +1167,8 @@
                     "type": "array",
                     "items": {
                       "type": "string"
-                    }
+                    },
+                    "minItems": 1
                   }
                 }
               },
@@ -1160,7 +1180,9 @@
                     "type": "string"
                   },
                   "prefix": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^/",
+                    "description": "An absolute parameter path."
                   },
                   "paths": {
                     "type": "array",
@@ -1170,7 +1192,8 @@
                       "required": ["path", "is"],
                       "properties": {
                         "path": {
-                          "type": "string"
+                          "type": "string",
+                          "pattern": "^[a-z0-9-]+/"
                         },
                         "is": {
                           "type": "string"
@@ -1185,12 +1208,14 @@
               },
               "do": {
                 "type": "array",
+                "minItems": 1,
                 "items": {
                   "type": "string"
                 }
               },
               "do_not": {
                 "type": "array",
+                "minItems": 1,
                 "items": {
                   "type": "string"
                 }

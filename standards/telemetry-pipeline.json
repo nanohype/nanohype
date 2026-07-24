@@ -19,13 +19,13 @@
         {
           "tier": "agent",
           "shape": "DaemonSet",
-          "owns": "collection \u2014 node-local scrape, pod-log tailing, and OTLP ingest from workloads on the node",
-          "never": "exports to a backend"
+          "owns": "collection \u2014 node-local scrape and pod-log tailing",
+          "never": "exports to a backend, and does not accept workload OTLP: opening an ingest port on a DaemonSet puts a hostPort on every node, and the workload already has a stable cluster-wide endpoint to reach"
         },
         {
           "tier": "gateway",
           "shape": "Deployment",
-          "owns": "cross-cutting processing and every backend export; publishes the tenant-facing endpoint alias",
+          "owns": "all OTLP ingest \u2014 from the node agents and directly from workloads \u2014 plus cross-cutting processing and every backend export; publishes the tenant-facing endpoint alias",
           "never": "scrapes nodes"
         }
       ],
@@ -34,7 +34,8 @@
         "Emit OTLP to the endpoint above; never to a backend's own protocol.",
         "Carry service.namespace, service.version and the tenant/platform resource attributes so telemetry is attributable without a naming convention on the metric name.",
         "Allow egress to the endpoint. A default-deny NetworkPolicy that omits it drops telemetry silently \u2014 the SDK retries and the workload stays healthy, so nothing surfaces."
-      ]
+      ],
+      "ingest": "Workloads emit to the gateway through the alias Service, not to the node agent. Terminating ingest at one place keeps the endpoint a single name with a single set of receivers, and keeps the agent free of a hostPort."
     },
     "tiers": {
       "rule": "A cluster declares exactly one tier as an always-set label. Generators select on a value; they cannot branch on a key's absence, so a conditional label makes every tier-gated generator silently match nothing.",
@@ -57,7 +58,8 @@
           "requires": "a managed-monitoring substrate provisioned for the cluster \u2014 opting up is not only a label change"
         }
       ],
-      "default": "floor. A vended cluster is born light and opting up is deliberate. Every cluster that already runs the higher tier pins it explicitly rather than inheriting it, so no live cluster can lose telemetry to a change in what the default means.",
+      "default": "floor",
+      "default_rationale": "floor. A vended cluster is born light and opting up is deliberate. Every cluster that already runs the higher tier pins it explicitly rather than inheriting it, so no live cluster can lose telemetry to a change in what the default means.",
       "unrouted_traces": "A tier still routes every signal it accepts. If a backend genuinely does not exist for one, the pipeline still terminates it explicitly \u2014 omitting the pipeline makes the OTLP receiver answer UNIMPLEMENTED, so every SDK on the cluster logs export failures forever for a condition that is by design."
     },
     "signal_contract": {
