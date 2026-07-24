@@ -7,7 +7,9 @@
   "required": ["kind", "version", "title", "summary", "content"],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "kind": {
       "type": "string",
       "enum": [
@@ -20,6 +22,7 @@
         "nanohype/standards/resource-tagging",
         "nanohype/standards/resource-naming",
         "nanohype/standards/observability-slo",
+        "nanohype/standards/telemetry-pipeline",
         "nanohype/standards/seo-baseline"
       ]
     },
@@ -44,7 +47,13 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/language-toolchain" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/language-toolchain"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
@@ -54,7 +63,15 @@
               "toolchains": {
                 "type": "object",
                 "propertyNames": {
-                  "enum": ["typescript", "go", "python", "rust", "java", "kotlin", "csharp"]
+                  "enum": [
+                    "typescript",
+                    "go",
+                    "python",
+                    "rust",
+                    "java",
+                    "kotlin",
+                    "csharp"
+                  ]
                 },
                 "additionalProperties": {
                   "type": "object",
@@ -70,16 +87,36 @@
                     "versionLookup"
                   ],
                   "properties": {
-                    "install": { "type": "string" },
-                    "build": { "type": "string" },
-                    "lint": { "type": "string" },
-                    "test": { "type": "string" },
-                    "docs": { "type": "string" },
-                    "typecheck": { "type": "string" },
-                    "lockfile": { "type": "string" },
-                    "manifest": { "type": "string" },
-                    "registry": { "type": "string" },
-                    "versionLookup": { "type": "string" }
+                    "install": {
+                      "type": "string"
+                    },
+                    "build": {
+                      "type": "string"
+                    },
+                    "lint": {
+                      "type": "string"
+                    },
+                    "test": {
+                      "type": "string"
+                    },
+                    "docs": {
+                      "type": "string"
+                    },
+                    "typecheck": {
+                      "type": "string"
+                    },
+                    "lockfile": {
+                      "type": "string"
+                    },
+                    "manifest": {
+                      "type": "string"
+                    },
+                    "registry": {
+                      "type": "string"
+                    },
+                    "versionLookup": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -89,7 +126,13 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/version-currency" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/version-currency"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
@@ -102,14 +145,32 @@
                   "type": "object",
                   "required": ["id", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "summary": { "type": "string" },
-                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["reject", "warn"]
+                    }
                   }
                 }
               },
-              "registries": { "type": "object", "additionalProperties": { "type": "string" } },
-              "accepted_pin_reasons": { "type": "array", "items": { "type": "string" } }
+              "registries": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "accepted_pin_reasons": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -117,7 +178,11 @@
     },
     {
       "if": {
-        "properties": { "kind": { "const": "nanohype/standards/platform-tenant-contract" } }
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/platform-tenant-contract"
+          }
+        }
       },
       "then": {
         "properties": {
@@ -136,32 +201,55 @@
                   "type": "object",
                   "required": ["path", "description"],
                   "properties": {
-                    "path": { "type": "string" },
-                    "description": { "type": "string" }
+                    "path": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
                   }
                 }
               },
-              "platform_cr_shape": { "type": "object" },
+              "platform_cr_shape": {
+                "type": "object"
+              },
               "otel_resource_attrs": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "required": ["name", "required", "description"],
                   "properties": {
-                    "name": { "type": "string" },
-                    "required": { "type": "boolean" },
-                    "description": { "type": "string" }
+                    "name": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
                   }
                 }
               },
-              "do_not": { "type": "array", "items": { "type": "string" } }
+              "do_not": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/llm-policy" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/llm-policy"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
@@ -174,26 +262,49 @@
               "requirements"
             ],
             "properties": {
-              "primary_provider": { "type": "string" },
+              "primary_provider": {
+                "type": "string"
+              },
               "models": {
                 "type": "object",
                 "required": ["default", "escalation", "light"],
                 "properties": {
-                  "default": { "type": "string" },
-                  "escalation": { "type": "string" },
-                  "light": { "type": "string" }
+                  "default": {
+                    "type": "string"
+                  },
+                  "escalation": {
+                    "type": "string"
+                  },
+                  "light": {
+                    "type": "string"
+                  }
                 }
               },
-              "regions_preferred": { "type": "array", "items": { "type": "string" } },
-              "sdk_by_language": { "type": "object", "additionalProperties": { "type": "string" } },
+              "regions_preferred": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sdk_by_language": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
               "requirements": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "required": ["id", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "summary": { "type": "string" }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "summary": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -204,7 +315,11 @@
     },
     {
       "if": {
-        "properties": { "kind": { "const": "nanohype/standards/quality-rubric-dimensions" } }
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/quality-rubric-dimensions"
+          }
+        }
       },
       "then": {
         "properties": {
@@ -220,9 +335,16 @@
                   "required": ["id", "name", "summary"],
                   "additionalProperties": false,
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
-                    "name": { "type": "string" },
-                    "summary": { "type": "string" }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -232,22 +354,46 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/testing-rubric" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/testing-rubric"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
             "type": "object",
             "required": ["shape", "coverage_floor", "rules"],
             "properties": {
-              "shape": { "type": "string" },
+              "shape": {
+                "type": "string"
+              },
               "coverage_floor": {
                 "type": "object",
                 "required": ["branches", "lines", "functions", "statements"],
                 "properties": {
-                  "branches": { "type": "integer", "minimum": 0, "maximum": 100 },
-                  "lines": { "type": "integer", "minimum": 0, "maximum": 100 },
-                  "functions": { "type": "integer", "minimum": 0, "maximum": 100 },
-                  "statements": { "type": "integer", "minimum": 0, "maximum": 100 }
+                  "branches": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "lines": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "functions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "statements": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
                 }
               },
               "rules": {
@@ -257,9 +403,17 @@
                   "type": "object",
                   "required": ["id", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "summary": { "type": "string" },
-                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["reject", "warn"]
+                    }
                   }
                 }
               }
@@ -269,23 +423,51 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/resource-tagging" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/resource-tagging"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
             "type": "object",
-            "required": ["transforms", "reserved_prefixes", "dimensions", "required_by_surface"],
+            "required": [
+              "transforms",
+              "reserved_prefixes",
+              "dimensions",
+              "required_by_surface"
+            ],
             "properties": {
-              "transforms": { "type": "object", "additionalProperties": { "type": "string" } },
+              "transforms": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
               "reserved_prefixes": {
                 "type": "object",
                 "required": ["k8s", "otel", "app_extension"],
                 "properties": {
-                  "k8s": { "type": "array", "items": { "type": "string" } },
-                  "otel": { "type": "array", "items": { "type": "string" } },
+                  "k8s": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "otel": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
                   "app_extension": {
                     "type": "object",
-                    "additionalProperties": { "type": "string" }
+                    "additionalProperties": {
+                      "type": "string"
+                    }
                   }
                 }
               },
@@ -297,17 +479,31 @@
                   "required": ["id", "tier", "meaning", "render"],
                   "additionalProperties": false,
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "tier": { "type": "string", "enum": ["required", "recommended", "contextual"] },
-                    "meaning": { "type": "string" },
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "tier": {
+                      "type": "string",
+                      "enum": ["required", "recommended", "contextual"]
+                    },
+                    "meaning": {
+                      "type": "string"
+                    },
                     "render": {
                       "type": "object",
                       "required": ["aws", "k8s", "otel"],
                       "additionalProperties": false,
                       "properties": {
-                        "aws": { "type": ["string", "null"] },
-                        "k8s": { "type": ["string", "null"] },
-                        "otel": { "type": ["string", "null"] }
+                        "aws": {
+                          "type": ["string", "null"]
+                        },
+                        "k8s": {
+                          "type": ["string", "null"]
+                        },
+                        "otel": {
+                          "type": ["string", "null"]
+                        }
                       }
                     }
                   }
@@ -316,7 +512,12 @@
               "required_by_surface": {
                 "type": "object",
                 "required": ["aws", "k8s", "otel"],
-                "additionalProperties": { "type": "array", "items": { "type": "string" } }
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               },
               "conditional_requirements": {
                 "type": "array",
@@ -333,16 +534,29 @@
                   ],
                   "additionalProperties": false,
                   "properties": {
-                    "dimension": { "type": "string" },
-                    "surface": { "type": "string", "enum": ["aws", "k8s", "otel"] },
-                    "tag": { "type": "string" },
+                    "dimension": {
+                      "type": "string"
+                    },
+                    "surface": {
+                      "type": "string",
+                      "enum": ["aws", "k8s", "otel"]
+                    },
+                    "tag": {
+                      "type": "string"
+                    },
                     "required_on_kinds": {
                       "type": "array",
                       "minItems": 1,
-                      "items": { "type": "string" }
+                      "items": {
+                        "type": "string"
+                      }
                     },
-                    "value": { "type": "string" },
-                    "rationale": { "type": "string" }
+                    "value": {
+                      "type": "string"
+                    },
+                    "rationale": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -352,7 +566,13 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/resource-naming" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/resource-naming"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
@@ -366,7 +586,13 @@
               "rules"
             ],
             "properties": {
-              "environments": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "environments": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
               "domains": {
                 "type": "array",
                 "minItems": 1,
@@ -374,10 +600,19 @@
                   "type": "object",
                   "required": ["id", "applies_to", "rule"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "applies_to": { "type": "string" },
-                    "rule": { "type": "string" },
-                    "example": { "type": "string" }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "applies_to": {
+                      "type": "string"
+                    },
+                    "rule": {
+                      "type": "string"
+                    },
+                    "example": {
+                      "type": "string"
+                    }
                   }
                 }
               },
@@ -385,21 +620,53 @@
                 "type": "object",
                 "required": ["tuple", "aws_cluster_name", "cluster_name_rules"],
                 "properties": {
-                  "tuple": { "type": "array", "items": { "type": "string" } },
-                  "aws_cluster_name": { "type": "string" },
-                  "cluster_name_rules": { "type": "string" },
-                  "shared_per_environment": { "type": "array", "items": { "type": "string" } },
-                  "per_cluster": { "type": "array", "items": { "type": "string" } }
+                  "tuple": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "aws_cluster_name": {
+                    "type": "string"
+                  },
+                  "cluster_name_rules": {
+                    "type": "string"
+                  },
+                  "shared_per_environment": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "per_cluster": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
                 }
               },
-              "transforms": { "type": "object", "additionalProperties": { "type": "string" } },
+              "transforms": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
               "limits": {
                 "type": "object",
                 "required": ["s3_bucket", "iam_role"],
                 "properties": {
-                  "s3_bucket": { "type": "integer", "minimum": 1 },
-                  "iam_role": { "type": "integer", "minimum": 1 },
-                  "note": { "type": "string" }
+                  "s3_bucket": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "iam_role": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "note": {
+                    "type": "string"
+                  }
                 }
               },
               "rules": {
@@ -409,9 +676,17 @@
                   "type": "object",
                   "required": ["id", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "summary": { "type": "string" },
-                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["reject", "warn"]
+                    }
                   }
                 }
               }
@@ -421,57 +696,109 @@
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/observability-slo" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/observability-slo"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
             "type": "object",
-            "required": ["principles", "slo", "burn_rate_alerts", "dashboard_requirements"],
+            "required": [
+              "principles",
+              "slo",
+              "burn_rate_alerts",
+              "dashboard_requirements"
+            ],
             "properties": {
               "principles": {
                 "type": "object",
                 "required": ["red", "use", "golden_signals"],
                 "properties": {
-                  "red": { "type": "string" },
-                  "use": { "type": "string" },
-                  "golden_signals": { "type": "array", "items": { "type": "string" } },
-                  "domain_semantics": { "type": "string" },
-                  "instrumentation": { "type": "string" }
+                  "red": {
+                    "type": "string"
+                  },
+                  "use": {
+                    "type": "string"
+                  },
+                  "golden_signals": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "domain_semantics": {
+                    "type": "string"
+                  },
+                  "instrumentation": {
+                    "type": "string"
+                  }
                 }
               },
               "slo": {
                 "type": "object",
-                "required": ["definition", "window_days", "sli_types", "error_budget"],
+                "required": [
+                  "definition",
+                  "window_days",
+                  "sli_types",
+                  "error_budget"
+                ],
                 "properties": {
-                  "definition": { "type": "string" },
-                  "window_days": { "type": "integer", "minimum": 1 },
+                  "definition": {
+                    "type": "string"
+                  },
+                  "window_days": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
                   "sli_types": {
                     "type": "array",
                     "minItems": 1,
                     "items": {
                       "type": "object",
-                      "required": ["id", "good_over_valid", "default_objective"],
+                      "required": [
+                        "id",
+                        "good_over_valid",
+                        "default_objective"
+                      ],
                       "properties": {
-                        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
-                        "good_over_valid": { "type": "string" },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        },
+                        "good_over_valid": {
+                          "type": "string"
+                        },
                         "default_objective": {
                           "type": "number",
                           "exclusiveMinimum": 0,
                           "exclusiveMaximum": 1
                         },
-                        "default_threshold_seconds": { "type": "number", "exclusiveMinimum": 0 }
+                        "default_threshold_seconds": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        }
                       }
                     }
                   },
-                  "error_budget": { "type": "string" }
+                  "error_budget": {
+                    "type": "string"
+                  }
                 }
               },
               "burn_rate_alerts": {
                 "type": "object",
                 "required": ["method", "windows"],
                 "properties": {
-                  "method": { "type": "string" },
-                  "burn_rate_definition": { "type": "string" },
+                  "method": {
+                    "type": "string"
+                  },
+                  "burn_rate_definition": {
+                    "type": "string"
+                  },
                   "windows": {
                     "type": "array",
                     "minItems": 1,
@@ -479,17 +806,31 @@
                       "type": "object",
                       "required": ["severity", "long", "short", "factor"],
                       "properties": {
-                        "severity": { "type": "string", "enum": ["page", "ticket"] },
-                        "long": { "type": "string" },
-                        "short": { "type": "string" },
-                        "factor": { "type": "number", "exclusiveMinimum": 0 },
-                        "budget_consumed": { "type": "string" }
+                        "severity": {
+                          "type": "string",
+                          "enum": ["page", "ticket"]
+                        },
+                        "long": {
+                          "type": "string"
+                        },
+                        "short": {
+                          "type": "string"
+                        },
+                        "factor": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "budget_consumed": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
                 }
               },
-              "recording_rules": { "type": "object" },
+              "recording_rules": {
+                "type": "object"
+              },
               "fleet_alerting": {
                 "type": "object",
                 "required": [
@@ -499,7 +840,9 @@
                   "composite_rollup"
                 ],
                 "properties": {
-                  "summary": { "type": "string" },
+                  "summary": {
+                    "type": "string"
+                  },
                   "severity_tiers": {
                     "type": "array",
                     "minItems": 1,
@@ -507,10 +850,23 @@
                       "type": "object",
                       "required": ["id", "intent"],
                       "properties": {
-                        "id": { "type": "string", "enum": ["critical", "warning", "info"] },
-                        "intent": { "type": "string", "enum": ["page", "ticket", "record"] },
-                        "topic_suffix": { "type": "string" },
-                        "examples": { "type": "array", "items": { "type": "string" } }
+                        "id": {
+                          "type": "string",
+                          "enum": ["critical", "warning", "info"]
+                        },
+                        "intent": {
+                          "type": "string",
+                          "enum": ["page", "ticket", "record"]
+                        },
+                        "topic_suffix": {
+                          "type": "string"
+                        },
+                        "examples": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   },
@@ -518,16 +874,28 @@
                     "type": "object",
                     "required": ["required"],
                     "properties": {
-                      "rationale": { "type": "string" },
-                      "required": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+                      "rationale": {
+                        "type": "string"
+                      },
+                      "required": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "conditional": {
                         "type": "array",
                         "items": {
                           "type": "object",
                           "required": ["tag", "when"],
                           "properties": {
-                            "tag": { "type": "string" },
-                            "when": { "type": "string" }
+                            "tag": {
+                              "type": "string"
+                            },
+                            "when": {
+                              "type": "string"
+                            }
                           }
                         }
                       }
@@ -537,9 +905,15 @@
                     "type": "object",
                     "required": ["rule"],
                     "properties": {
-                      "rule": { "type": "string" },
-                      "naming": { "type": "string" },
-                      "recovery": { "type": "string" }
+                      "rule": {
+                        "type": "string"
+                      },
+                      "naming": {
+                        "type": "string"
+                      },
+                      "recovery": {
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -555,49 +929,331 @@
                       "type": "object",
                       "required": ["id", "panels"],
                       "properties": {
-                        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
-                        "panels": { "type": "array", "items": { "type": "string" } }
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_]*$"
+                        },
+                        "panels": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   },
-                  "conventions": { "type": "object" }
+                  "conventions": {
+                    "type": "object"
+                  }
                 }
               },
-              "do": { "type": "array", "items": { "type": "string" } },
-              "do_not": { "type": "array", "items": { "type": "string" } }
+              "do": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "do_not": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
       }
     },
     {
-      "if": { "properties": { "kind": { "const": "nanohype/standards/seo-baseline" } } },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/telemetry-pipeline"
+          }
+        }
+      },
       "then": {
         "properties": {
           "content": {
             "type": "object",
-            "required": ["canonical_host", "gsc", "required_files", "head_tags", "rules"],
+            "required": [
+              "principles",
+              "collection_contract",
+              "tiers",
+              "signal_contract",
+              "discovery"
+            ],
+            "properties": {
+              "principles": {
+                "type": "object",
+                "required": [
+                  "neutral_waist",
+                  "one_egress",
+                  "absent_is_not_healthy"
+                ],
+                "properties": {
+                  "neutral_waist": {
+                    "type": "string"
+                  },
+                  "one_egress": {
+                    "type": "string"
+                  },
+                  "absent_is_not_healthy": {
+                    "type": "string"
+                  },
+                  "cost_is_a_design_input": {
+                    "type": "string"
+                  }
+                }
+              },
+              "collection_contract": {
+                "type": "object",
+                "required": [
+                  "protocol",
+                  "endpoint",
+                  "topology",
+                  "workload_requirements"
+                ],
+                "properties": {
+                  "protocol": {
+                    "type": "string"
+                  },
+                  "endpoint": {
+                    "type": "string"
+                  },
+                  "endpoint_rationale": {
+                    "type": "string"
+                  },
+                  "topology": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "object",
+                      "required": ["tier", "shape", "owns"],
+                      "properties": {
+                        "tier": {
+                          "type": "string"
+                        },
+                        "shape": {
+                          "type": "string"
+                        },
+                        "owns": {
+                          "type": "string"
+                        },
+                        "never": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "node_scoping": {
+                    "type": "string"
+                  },
+                  "workload_requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "tiers": {
+                "type": "object",
+                "required": ["rule", "invariant", "levels", "default"],
+                "properties": {
+                  "rule": {
+                    "type": "string"
+                  },
+                  "invariant": {
+                    "type": "string"
+                  },
+                  "levels": {
+                    "type": "array",
+                    "minItems": 2,
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "intent", "metrics", "logs", "traces"],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "intent": {
+                          "type": "string"
+                        },
+                        "metrics": {
+                          "type": "string"
+                        },
+                        "logs": {
+                          "type": "string"
+                        },
+                        "traces": {
+                          "type": "string"
+                        },
+                        "requires": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "type": "string"
+                  },
+                  "unrouted_traces": {
+                    "type": "string"
+                  }
+                }
+              },
+              "signal_contract": {
+                "type": "object",
+                "required": ["summary", "events", "rules"],
+                "properties": {
+                  "summary": {
+                    "type": "string"
+                  },
+                  "events": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "detail_type",
+                        "source",
+                        "when",
+                        "detail_fields",
+                        "severity"
+                      ],
+                      "properties": {
+                        "detail_type": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "when": {
+                          "type": "string"
+                        },
+                        "detail_fields": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "severity": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "discovery": {
+                "type": "object",
+                "required": ["summary", "prefix", "paths"],
+                "properties": {
+                  "summary": {
+                    "type": "string"
+                  },
+                  "prefix": {
+                    "type": "string"
+                  },
+                  "paths": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["path", "is"],
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "is": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "absence_is_meaningful": {
+                    "type": "string"
+                  }
+                }
+              },
+              "do": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "do_not": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "nanohype/standards/seo-baseline"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "type": "object",
+            "required": [
+              "canonical_host",
+              "gsc",
+              "required_files",
+              "head_tags",
+              "rules"
+            ],
             "properties": {
               "canonical_host": {
                 "type": "object",
                 "required": ["rule", "summary"],
                 "properties": {
-                  "rule": { "type": "string", "enum": ["apex", "www"] },
-                  "summary": { "type": "string" },
-                  "redirect": { "type": "string" }
+                  "rule": {
+                    "type": "string",
+                    "enum": ["apex", "www"]
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "redirect": {
+                    "type": "string"
+                  }
                 }
               },
               "gsc": {
                 "type": "object",
                 "required": ["property_type", "verification", "summary"],
                 "properties": {
-                  "property_type": { "type": "string", "enum": ["url-prefix", "domain"] },
-                  "property": { "type": "string" },
+                  "property_type": {
+                    "type": "string",
+                    "enum": ["url-prefix", "domain"]
+                  },
+                  "property": {
+                    "type": "string"
+                  },
                   "verification": {
                     "type": "string",
                     "enum": ["meta-tag", "dns-txt", "html-file"]
                   },
-                  "summary": { "type": "string" }
+                  "summary": {
+                    "type": "string"
+                  }
                 }
               },
               "required_files": {
@@ -607,8 +1263,12 @@
                   "type": "object",
                   "required": ["path", "description"],
                   "properties": {
-                    "path": { "type": "string" },
-                    "description": { "type": "string" }
+                    "path": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
                   }
                 }
               },
@@ -619,9 +1279,16 @@
                   "type": "object",
                   "required": ["id", "required", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "required": { "type": "boolean" },
-                    "summary": { "type": "string" }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    }
                   }
                 }
               },
@@ -632,15 +1299,35 @@
                   "type": "object",
                   "required": ["id", "summary"],
                   "properties": {
-                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                    "summary": { "type": "string" },
-                    "severity": { "type": "string", "enum": ["reject", "warn"] }
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]*$"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "enum": ["reject", "warn"]
+                    }
                   }
                 }
               },
-              "implementation": { "type": "object" },
-              "do": { "type": "array", "items": { "type": "string" } },
-              "do_not": { "type": "array", "items": { "type": "string" } }
+              "implementation": {
+                "type": "object"
+              },
+              "do": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "do_not": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             }
           }
         }

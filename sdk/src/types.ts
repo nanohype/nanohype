@@ -176,6 +176,7 @@ export type StandardName =
   | "resource-tagging"
   | "resource-naming"
   | "observability-slo"
+  | "telemetry-pipeline"
   | "seo-baseline";
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
@@ -225,7 +226,11 @@ export interface PlatformTenantContractStandard {
   content: {
     required_artifacts: { path: string; description: string }[];
     platform_cr_shape: Record<string, unknown>;
-    otel_resource_attrs: { name: string; required: boolean; description: string }[];
+    otel_resource_attrs: {
+      name: string;
+      required: boolean;
+      description: string;
+    }[];
     do_not: string[];
   };
 }
@@ -264,7 +269,12 @@ export interface TestingRubricStandard {
   summary: string;
   content: {
     shape: string;
-    coverage_floor: { branches: number; lines: number; functions: number; statements: number };
+    coverage_floor: {
+      branches: number;
+      lines: number;
+      functions: number;
+      statements: number;
+    };
     rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
   };
 }
@@ -462,6 +472,78 @@ export interface ResourceNamingStandard {
   };
 }
 
+/**
+ * How telemetry moves: the OTLP collection contract every workload emits
+ * against, the floor|full cluster tier that changes only where it lands, the
+ * events the platform publishes when telemetry makes it act, and the discovery
+ * paths a client resolves those resources from.
+ *
+ * Companion to `ObservabilitySloStandard`, which owns *what* to measure and when
+ * to alert. This owns how the measurements travel and who may read them.
+ */
+export interface TelemetryPipelineStandard {
+  kind: "nanohype/standards/telemetry-pipeline";
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    principles: {
+      neutral_waist: string;
+      one_egress: string;
+      absent_is_not_healthy: string;
+      cost_is_a_design_input?: string;
+    };
+    collection_contract: {
+      protocol: string;
+      /** The stable alias Service every workload targets, never the collector's own name. */
+      endpoint: string;
+      endpoint_rationale?: string;
+      topology: Array<{
+        tier: string;
+        shape: string;
+        owns: string;
+        never?: string;
+      }>;
+      node_scoping?: string;
+      workload_requirements: string[];
+    };
+    tiers: {
+      rule: string;
+      /** What must NOT vary across tiers — the property the tiering exists to preserve. */
+      invariant: string;
+      levels: Array<{
+        id: string;
+        intent: string;
+        metrics: string;
+        logs: string;
+        traces: string;
+        requires?: string;
+      }>;
+      default: string;
+      unrouted_traces?: string;
+    };
+    signal_contract: {
+      summary: string;
+      events: Array<{
+        detail_type: string;
+        source: string;
+        when: string;
+        detail_fields: string[];
+        severity: string;
+      }>;
+      rules: string[];
+    };
+    discovery: {
+      summary: string;
+      prefix: string;
+      paths: Array<{ path: string; is: string }>;
+      absence_is_meaningful?: string;
+    };
+    do?: string[];
+    do_not?: string[];
+  };
+}
+
 /** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
@@ -473,6 +555,7 @@ export type Standard =
   | ResourceTaggingStandard
   | ResourceNamingStandard
   | ObservabilitySloStandard
+  | TelemetryPipelineStandard
   | SeoBaselineStandard;
 
 /**
@@ -490,6 +573,7 @@ export interface Standards {
   "resource-tagging": ResourceTaggingStandard;
   "resource-naming": ResourceNamingStandard;
   "observability-slo": ObservabilitySloStandard;
+  "telemetry-pipeline": TelemetryPipelineStandard;
   "seo-baseline": SeoBaselineStandard;
 }
 
