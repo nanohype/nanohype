@@ -296,7 +296,24 @@ export interface ResourceTaggingStandard {
     };
     dimensions: TagDimension[];
     required_by_surface: Record<"aws" | "k8s" | "otel", string[]>;
+    /**
+     * Tags required only on certain resource kinds, not universally. Each entry names a
+     * dimension, the surface + tag it renders as, and the resource kinds it is required on —
+     * e.g. BackupPolicy on backup-eligible kinds, without which a resource is silently
+     * unprotected. Optional: absent on standards versions predating conditional requirements.
+     */
+    conditional_requirements?: ConditionalTagRequirement[];
   };
+}
+
+/** A tag required only on certain resource kinds (see ResourceTaggingStandard). */
+export interface ConditionalTagRequirement {
+  dimension: string;
+  surface: "aws" | "k8s" | "otel";
+  tag: string;
+  required_on_kinds: string[];
+  value: string;
+  rationale: string;
 }
 
 /** One SLI definition: the good/valid ratio and its default objective. */

@@ -3,7 +3,7 @@
   "kind": "nanohype/standards/resource-tagging",
   "version": "1",
   "title": "Resource tagging and labeling standard",
-  "summary": "The canonical org-wide tag/label taxonomy every cloud resource and k8s object on the nanohype stack carries. Defines vendor-neutral dimensions, their per-surface rendering (AWS tag keys, k8s labels, OTel attributes), the deterministic casing transforms, the reserved namespaces, and which dimensions are required. cloudgov reads the required-tier keys from this file to gate CI; landing-zone and the eks-agent-platform operator inject them; tenant charts label workloads from it.",
+  "summary": "The canonical org-wide tag/label taxonomy every cloud resource and k8s object on the nanohype stack carries. Defines vendor-neutral dimensions, their per-surface rendering (AWS tag keys, k8s labels, OTel attributes), the deterministic casing transforms, the reserved namespaces, which dimensions are required, and conditional requirements — tags required only on certain resource kinds, such as BackupPolicy on backup-eligible kinds, without which a resource is silently unprotected. cloudgov reads the required-tier keys from this file to gate CI; landing-zone and the eks-agent-platform operator inject them; tenant charts label workloads from it.",
   "content": {
     "transforms": {
       "aws": "Render the canonical kebab-case id as PascalCase (split on '-', capitalize each part, join). cost-center -> CostCenter.",
@@ -215,6 +215,16 @@
           "k8s": null,
           "otel": "agents.model_id"
         }
+      },
+      {
+        "id": "backup-policy",
+        "tier": "contextual",
+        "meaning": "The AWS Backup plan key whose vault selection tag-matches this resource, so it is protected. Cloud tag only. Required on backup-eligible resource kinds (see conditional_requirements): a backup-eligible resource without this tag is silently unprotected — the tag-based selection never picks it up and nothing errors until a restore is attempted. tenant-substrate stamps it on every datastore from spec.datastores; anything created outside a component is caught by the eks-gitops Kyverno rule and cloudgov.",
+        "render": {
+          "aws": "BackupPolicy",
+          "k8s": null,
+          "otel": null
+        }
       }
     ],
     "required_by_surface": {
@@ -237,6 +247,16 @@
         "platform.nanohype.dev/team"
       ],
       "otel": ["agents.tenant", "agents.platform"]
-    }
+    },
+    "conditional_requirements": [
+      {
+        "dimension": "backup-policy",
+        "surface": "aws",
+        "tag": "BackupPolicy",
+        "required_on_kinds": ["Aurora", "RDS", "DynamoDB", "S3", "EFS"],
+        "value": "The AWS Backup plan key (e.g. \"daily\") whose vault selection tag-matches this value.",
+        "rationale": "A backup-eligible resource without a BackupPolicy tag is silently unprotected — the tag-based backup selection never selects it, and nothing errors until a restore is attempted. This is the highest-probability coverage failure because it produces no signal. Enforced preventively where the resource is minted (tenant-substrate stamps it from spec.datastores) and detectively by the eks-gitops Kyverno rule and cloudgov, which flag a backup-eligible resource of one of required_on_kinds that lacks the tag."
+      }
+    ]
   }
 }

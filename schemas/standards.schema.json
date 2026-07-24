@@ -317,6 +317,34 @@
                 "type": "object",
                 "required": ["aws", "k8s", "otel"],
                 "additionalProperties": { "type": "array", "items": { "type": "string" } }
+              },
+              "conditional_requirements": {
+                "type": "array",
+                "description": "Tags required only on certain resource kinds, not universally.",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "dimension",
+                    "surface",
+                    "tag",
+                    "required_on_kinds",
+                    "value",
+                    "rationale"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "dimension": { "type": "string" },
+                    "surface": { "type": "string", "enum": ["aws", "k8s", "otel"] },
+                    "tag": { "type": "string" },
+                    "required_on_kinds": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": { "type": "string" }
+                    },
+                    "value": { "type": "string" },
+                    "rationale": { "type": "string" }
+                  }
+                }
               }
             }
           }
