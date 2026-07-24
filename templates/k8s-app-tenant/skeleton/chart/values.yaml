@@ -109,6 +109,16 @@ networkPolicy:
       ports:
         - protocol: TCP
           port: 443
+    # OTLP export to the cluster's OpenTelemetry Collector gateway
+    # (telemetry.monitoring.svc:4318). Required whenever otel.enabled renders
+    # OTEL_EXPORTER_OTLP_ENDPOINT; a gRPC tenant (otel.protocol grpc) adds 4317.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4318
 
 # Secret material via External Secrets Operator (the eks-gitops external-secrets
 # addon provisions the `aws-secrets-manager` ClusterSecretStore). Off by default —
@@ -128,9 +138,10 @@ externalSecret:
 # (set it to a non-empty list and it is emitted verbatim instead of the SLO default).
 #
 # Off by default: a PrometheusRule is inert without a Prometheus Operator to
-# evaluate it, and the managed-Prometheus stack this platform runs (grafana-agent
-# scraping pod annotations into Amazon Managed Prometheus, alerting in Amazon
-# Managed Grafana) doesn't run one. Set `enabled: true` on a cluster that does —
+# evaluate it, and the managed-Prometheus stack this platform runs (the
+# OpenTelemetry Collector agent scraping pod annotations into Amazon Managed
+# Prometheus, alerting in Amazon Managed Grafana) doesn't run one. Set
+# `enabled: true` on a cluster that does —
 # e.g. the local kx workspace with kube-prometheus-stack.
 prometheusRule:
   enabled: false
