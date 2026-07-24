@@ -24,7 +24,7 @@ ENV NODE_ENV=production
 # before user code, exporting to the cluster collector. Requires
 # @opentelemetry/auto-instrumentations-node in production deps.
 ENV NODE_OPTIONS="--require @opentelemetry/auto-instrumentations-node/register"
-ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector.observability.svc.cluster.local:4318"
+ENV OTEL_EXPORTER_OTLP_ENDPOINT="http://telemetry.monitoring.svc.cluster.local:4318"
 ENV OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 
 COPY package.json package-lock.json* ./
