@@ -175,6 +175,10 @@ serviceMonitor:
 # OTel Collector tags downstream exporters using these.
 otel:
   enabled: true
+  # The cluster's OpenTelemetry Collector gateway, addressed by its stable,
+  # implementation-neutral Service alias. Override only for a non-default collector.
+  endpoint: "http://telemetry.monitoring.svc.cluster.local:4318"
+  protocol: "http/protobuf"
   resourceAttributes:
     agents.tenant: __TENANT__
     agents.platform: __APP_NAME__

@@ -46,9 +46,9 @@ spec:
               value: {{ $v | quote }}
             {{- end }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://otel-collector.observability.svc.cluster.local:4318"
+              value: {{ .Values.otel.endpoint | quote }}
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
-              value: "http/protobuf"
+              value: {{ .Values.otel.protocol | quote }}
           {{- if .Values.externalSecret.enabled }}
           envFrom:
             - secretRef:
