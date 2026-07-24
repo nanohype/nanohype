@@ -3,7 +3,7 @@
   "kind": "nanohype/standards/observability-slo",
   "version": "1",
   "title": "Observability and SLO standard",
-  "summary": "The production bar for how every system on the nanohype stack is observed: RED for services, USE for resources, the four golden signals, and at least one SLO with a multi-window multi-burn-rate error budget. Defines the dashboard a system MUST ship to represent itself (golden-signal rows + an SLO/error-budget row keyed on the system's own nouns, never only generic node/k8s infra), the recording-rule naming convention, and the canonical burn-rate alert windows. tenant-chart-base renders the PrometheusRule + ServiceMonitor from this standard's shape; every tenant chart inherits it; the quality gate reads it when grading the Systems-Thinking and Observability surface.",
+  "summary": "The production bar for how every system on the nanohype stack is observed: RED for services, USE for resources, the four golden signals, and at least one SLO with a multi-window multi-burn-rate error budget. Defines the dashboard a system MUST ship to represent itself (golden-signal rows + an SLO/error-budget row keyed on the system's own nouns, never only generic node/k8s infra), the recording-rule naming convention, and the canonical burn-rate alert windows. Also defines the fleet-alerting contract — severity tiers, the standard alarm-dimension set, and per-cluster composite rollups — that the observability landing-zone component renders so a hard-down cluster pages once instead of once per alarm. tenant-chart-base renders the PrometheusRule + ServiceMonitor from this standard's shape; every tenant chart inherits it; the quality gate reads it when grading the Systems-Thinking and Observability surface.",
   "content": {
     "principles": {
       "red": "Every request-serving service exposes Rate (requests/s), Errors (error ratio), and Duration (latency). Latency is recorded as a histogram and shown as p50/p95/p99 quantiles — never as an average or a single gauge.",
@@ -68,6 +68,44 @@
       "sli_error_ratio": "<metric>:sli_error:ratio_rate<window> — the error ratio over each burn-rate window (5m, 30m, 1h, 2h, 6h, 1d, 3d). Burn-rate alerts reference these instead of recomputing the ratio inline.",
       "note": "<metric> is the OTLP→Prometheus form of the service name (dashes → underscores). Recording rules live in the system's own PrometheusRule, evaluated every 30s."
     },
+    "fleet_alerting": {
+      "summary": "How CloudWatch alarms across the fleet are severity-tiered, tagged with a standard dimension set, and rolled up per cluster so a hard-down cluster pages once instead of once per alarm. The split that falls out: definitions live with the resources they watch (an alarm references local metric ARNs and dimensions), destinations centralize (shared-observability owns the severity SNS topics). The observability landing-zone component renders alarms and per-cluster composites from this shape.",
+      "severity_tiers": [
+        {
+          "id": "critical",
+          "intent": "page",
+          "topic_suffix": "alerts-critical",
+          "examples": ["API server 5xx", "failed / not-ready nodes"]
+        },
+        {
+          "id": "warning",
+          "intent": "ticket",
+          "topic_suffix": "alerts-warning",
+          "examples": ["node CPU / memory saturation", "elevated pod restarts"]
+        },
+        {
+          "id": "info",
+          "intent": "record",
+          "topic_suffix": "alerts-info",
+          "examples": ["an alarm returning to OK"]
+        }
+      ],
+      "standard_dimensions": {
+        "rationale": "Every fleet alarm and composite carries these as resource tags so severity-and-scope routing (SNS message-attribute filters, or the EventBridge fan-out) and per-cluster rollup group on one consistent key set instead of parsing alarm names.",
+        "required": ["Environment", "ClusterName", "Severity"],
+        "conditional": [
+          {
+            "tag": "Tenant",
+            "when": "the alarm watches a single tenant's resource rather than shared cluster infrastructure"
+          }
+        ]
+      },
+      "composite_rollup": {
+        "rule": "Per cluster, per severity, one composite alarm ORs together every child alarm of that severity. The composite carries the SNS action for its tier; the child metric alarms carry no notification action and exist only to compute state. A cluster in a hard-down state therefore emits one page from the critical composite, not one per firing child.",
+        "naming": "<cluster>-health-<severity> for the composite (health-critical, health-degraded); children keep their specific <cluster>-<condition> names.",
+        "recovery": "The composite's OK transition notifies the info tier, so recovery is a single record, not one per child clearing."
+      }
+    },
     "dashboard_requirements": {
       "required_rows": [
         {
@@ -99,12 +137,16 @@
       "Ship the dashboard and a metric scrape on by default (pod scrape annotations, or a ServiceMonitor where a Prometheus Operator runs) — metrics and the board are not opt-in. Ship SLO alerting in the form the cluster evaluates: a Grafana-managed alert group on a managed-Prometheus stack (grafana-agent + AMP/AMG), or a PrometheusRule where a Prometheus Operator runs. A PrometheusRule alone is inert without an operator.",
       "Declare at least one availability SLO per system; add a latency SLO for latency-sensitive paths.",
       "Show latency as p50/p95/p99 from a histogram.",
-      "Reference recording rules from burn-rate alerts so alert evaluation is cheap and consistent."
+      "Reference recording rules from burn-rate alerts so alert evaluation is cheap and consistent.",
+      "Route fleet notifications only from per-cluster composite alarms; leave child metric alarms actionless so N simultaneous firings collapse to one page.",
+      "Tag every fleet alarm and composite with Environment, ClusterName, and Severity so routing and rollup key on tags, not on parsed alarm names."
     ],
     "do_not": [
       "Ship a board that only embeds community grafanaCom/gnetId infra dashboards and call the system observed.",
       "Alert on instantaneous error ratio in place of a multi-window burn rate.",
       "Show latency as an average or a single gauge.",
+      "Attach SNS actions to individual child alarms — that is exactly the one-page-per-alarm storm the composite rollup exists to prevent.",
+      "Encode severity or scope only in the alarm name; a downstream router cannot filter reliably on a name.",
       "Leave the dashboard or the metric scrape disabled by default. (A PrometheusRule/ServiceMonitor may default off — they are inert without a Prometheus Operator, which the managed-Prometheus stack doesn't run; SLO alerting then lives in a Grafana-managed alert group instead.)"
     ]
   }

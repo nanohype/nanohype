@@ -359,6 +359,25 @@ export interface ObservabilitySloStandard {
       windows: BurnRateWindow[];
     };
     recording_rules?: Record<string, string>;
+    fleet_alerting?: {
+      summary: string;
+      severity_tiers: {
+        id: "critical" | "warning" | "info";
+        intent: "page" | "ticket" | "record";
+        topic_suffix?: string;
+        examples?: string[];
+      }[];
+      standard_dimensions: {
+        rationale?: string;
+        required: string[];
+        conditional?: { tag: string; when: string }[];
+      };
+      composite_rollup: {
+        rule: string;
+        naming?: string;
+        recovery?: string;
+      };
+    };
     dashboard_requirements: {
       required_rows: { id: string; panels: string[] }[];
       conventions?: Record<string, string>;
