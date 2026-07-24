@@ -490,6 +490,60 @@
                 }
               },
               "recording_rules": { "type": "object" },
+              "fleet_alerting": {
+                "type": "object",
+                "required": [
+                  "summary",
+                  "severity_tiers",
+                  "standard_dimensions",
+                  "composite_rollup"
+                ],
+                "properties": {
+                  "summary": { "type": "string" },
+                  "severity_tiers": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "required": ["id", "intent"],
+                      "properties": {
+                        "id": { "type": "string", "enum": ["critical", "warning", "info"] },
+                        "intent": { "type": "string", "enum": ["page", "ticket", "record"] },
+                        "topic_suffix": { "type": "string" },
+                        "examples": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  },
+                  "standard_dimensions": {
+                    "type": "object",
+                    "required": ["required"],
+                    "properties": {
+                      "rationale": { "type": "string" },
+                      "required": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+                      "conditional": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["tag", "when"],
+                          "properties": {
+                            "tag": { "type": "string" },
+                            "when": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "composite_rollup": {
+                    "type": "object",
+                    "required": ["rule"],
+                    "properties": {
+                      "rule": { "type": "string" },
+                      "naming": { "type": "string" },
+                      "recovery": { "type": "string" }
+                    }
+                  }
+                }
+              },
               "dashboard_requirements": {
                 "type": "object",
                 "required": ["required_rows"],
