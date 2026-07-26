@@ -10,17 +10,21 @@ export default defineConfig({
       // floor — the gate measures the whole src/ surface, not just what the
       // suite happened to load.
       include: ["src/**/*.ts"],
-      // Honest floors set just below the measured actuals (see the numbers in
-      // the comment on each threshold) so the gate catches a regression — a
-      // new untested module dragging the denominator down — without flaking
-      // on minor fluctuation. index.ts (bin wiring + source resolution) is
-      // currently untested and drags functions down; raise these when it
-      // grows tests. Run via `npm run test:coverage`.
+      // Honest floors set just below the measured actuals so the gate catches a
+      // regression — a new untested module dragging the denominator down —
+      // without flaking on minor fluctuation. All four sit above the org floor
+      // (branches 60 / functions 75 / lines 75 / statements 75, from
+      // standards/testing-rubric.json). Run via `npm run test:coverage`.
+      //
+      // What is left uncovered in index.ts is main() and the invoked-as-bin
+      // guard: process wiring that only runs when the binary is executed. The
+      // logic that used to hide behind it — source resolution from the
+      // environment, and handler registration — is tested.
       thresholds: {
-        lines: 76, // measured 77.86
-        functions: 56, // measured 58.33
-        branches: 76, // measured 78.57
-        statements: 76, // measured 78.19
+        lines: 89, // measured 90.98
+        functions: 80, // measured 83.33
+        branches: 90, // measured 92.85
+        statements: 89, // measured 91.72
       },
     },
   },

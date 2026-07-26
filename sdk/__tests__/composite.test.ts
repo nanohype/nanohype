@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { renderComposite } from "../src/composite.js";
 import type { CatalogSource } from "../src/source.js";
 import type {
+  Catalog,
   CatalogEntry,
   CompositeCatalogEntry,
   CompositeManifest,
   SkeletonFile,
+  Standard,
   TemplateManifest,
 } from "../src/types.js";
 
@@ -49,6 +51,19 @@ function mockSource(templates: Record<string, ReturnType<typeof mockTemplate>>):
     },
     async fetchComposite(): Promise<CompositeManifest> {
       throw new Error("Not implemented");
+    },
+    // renderComposite reaches none of these, but the double is typed as a
+    // CatalogSource and so has to be one — a partial stub that compiles only
+    // because nothing checked it is how a mock drifts away from the interface
+    // it stands in for.
+    async fetchCatalogManifest(): Promise<Catalog> {
+      throw new Error("mockSource: fetchCatalogManifest is not part of the composite path");
+    },
+    async fetchStandard(): Promise<Standard> {
+      throw new Error("mockSource: fetchStandard is not part of the composite path");
+    },
+    async fetchContract(): Promise<string> {
+      throw new Error("mockSource: fetchContract is not part of the composite path");
     },
   };
 }
