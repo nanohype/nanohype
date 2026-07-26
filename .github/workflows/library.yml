@@ -53,5 +53,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Test
-        run: npm test
+      # Coverage thresholds live in vitest.config.ts, so vitest itself fails the
+      # run when one is missed — no separate assertion step.
+      - name: Test with coverage floors
+        run: npm run test:coverage
