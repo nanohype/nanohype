@@ -13,6 +13,7 @@ as the `tenant-chart-base` library chart.
 | `src/registry.ts`         | `createRegistry<T>` — the provider-registry convention for pluggable seams (LLM, embeddings, vector stores, aggregators)                                                               |
 | `src/workos-directory.ts` | Typed WorkOS Directory Sync client: port-injected `fetch`, bounded cursor pagination, find-by-email / custom-attribute / group / created-since                                         |
 | `src/pii.ts`              | PII redaction over the union category set: secrets and tokens, SSN and cards, compensation, HR cases, health, DOB, contact info, AWS accounts, customer and infrastructure identifiers |
+| `src/guardrails.ts`       | Prompt-assembly hardening for untrusted text: reserved-tag stripping plus an unforgeable per-call fence, so a crawled page or retrieved document reaches the model as data, not instructions |
 
 Every module is dependency-free (native `fetch` types only) and side-effect
 free at import time. Observability is deliberately left to the consumer: the
@@ -61,6 +62,18 @@ npm test             # vitest — full coverage colocated per module (src/*.test
   9-digit SSNs are deliberately not matched — the false-positive rate against
   legitimate account numbers is unacceptable for a raw regex. See the header
   of `src/pii.ts`.
+- **Guardrails are structural, not semantic.** Neither function inspects
+  meaning, and neither is a content filter. They make the boundary between
+  instruction and data explicit and unforgeable: reserved tags become visible
+  markers, and the fence carries a random per-call suffix the fenced text
+  cannot predict, so it cannot close the fence early. A filter can be talked
+  around; a delimiter the attacker cannot guess cannot be closed. Fencing is
+  necessary and not sufficient — it gives the model what it needs to refuse,
+  it does not force refusal, so pair it with an eval that measures whether
+  your prompts actually hold. Tag matching requires a name boundary so
+  `<systemd>` on a crawled page survives intact; over-stripping reads as the
+  safe direction until you remember it silently corrupts the content being
+  analyzed. See the header of `src/guardrails.ts`.
 - **WorkOS pagination.** `/directory_users` does not support server-side
   filtering by email or custom attribute, so the finders paginate and scan
   client-side, bounded at `maxPages` (default 50). Caching is the caller's

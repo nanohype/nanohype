@@ -30,6 +30,17 @@ export default defineConfig({
           branches: 100,
           statements: 100,
         },
+
+        // guardrails.ts is the instruction/data boundary — the only thing
+        // separating an attacker-authored crawled page or retrieved document
+        // from the prompt's own instructions. An untested branch here is a
+        // way in that nobody proved is closed.
+        "src/guardrails.ts": {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+          statements: 100,
+        },
       },
     },
   },
