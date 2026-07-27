@@ -71,7 +71,7 @@ The production bar every build meets, in machine-readable JSON under [`standards
 | [`language-toolchain.json`](../standards/language-toolchain.json)               | Per-language `{install, build, lint, test, docs}` command sets + manifest, lockfile, registry, version-lookup                                                                                                                                                                                                                                  |
 | [`version-currency.json`](../standards/version-currency.json)                   | EOL policy, version floor, accepted `@pin` reasons, per-language registries                                                                                                                                                                                                                                                                    |
 | [`platform-tenant-contract.json`](../standards/platform-tenant-contract.json)   | The required artifacts (chart, ApplicationSet entry, Platform CR), the minimum Platform CR shape, OTel resource attrs, and what NOT to do                                                                                                                                                                                                      |
-| [`llm-policy.json`](../standards/llm-policy.json)                               | Bedrock-primary, IRSA auth, model tiers (sonnet default / opus escalation / haiku light), region preferences, prompt-caching requirement                                                                                                                                                                                                       |
+| [`llm-policy.json`](../standards/llm-policy.json)                               | Bedrock-primary, IAM-role auth (Pod Identity on EKS), model tiers (sonnet default / opus-4-8 escalation / haiku light), region preferences, prompt-caching requirement                                                                                                                                                                          |
 | [`quality-rubric-dimensions.json`](../standards/quality-rubric-dimensions.json) | The ten quality dimensions every build is graded against. Dimension names + summaries only — the weights, reviewer assignments, and merge-gate enforcement live in the reference client                                                                                                                                                        |
 | [`testing-rubric.json`](../standards/testing-rubric.json)                       | The testing-strategy bar — per-language coverage floors enforced in-config, the testing-trophy shape, and `security-critical-100` (100% on audit ledgers, auth, and approval gates)                                                                                                                                                            |
 | [`resource-tagging.json`](../standards/resource-tagging.json)                   | The org-wide tag/label taxonomy every cloud resource and k8s object carries — vendor-neutral dimensions, per-surface rendering (AWS tags, k8s labels, OTel attributes), casing transforms, required tiers                                                                                                                                      |
@@ -112,28 +112,35 @@ import {
   renderTemplate,
 } from "@nanohype/sdk";
 
-// Discovery
-const source = new LocalSource("/path/to/nanohype-repo");
+// Discovery — LocalSource takes { rootDir }, not a bare path string
+const source = new LocalSource({ rootDir: "/path/to/nanohype-repo" });
 const catalog = await loadCatalog(source);
 const standards = await loadStandards(source);
 
 // Selection (your client decides which template fits)
 const templateName = catalog.templates.find(
   (t) => t.category === "ai-systems" && t.tags.includes("rag"),
-)?.name;
+)?.name; // e.g. "rag-pipeline"
 
-// Render
-await renderTemplate({
-  source,
-  templateName,
-  outputDir: "/path/to/output",
-  variables: { ProjectName: "my-rag-bot", LlmProvider: "anthropic" },
+// Fetch skeleton, then render — renderTemplate is sync and writes nothing to disk
+const { manifest, files } = await source.fetchTemplate(templateName!);
+const result = renderTemplate(manifest, files, {
+  ProjectName: "my-rag-bot",
+  LlmProvider: "anthropic",
 });
+// result.files — SkeletonFile[] with rendered paths and content
+// consumer writes them (and runs hooks) however it likes
 ```
 
-For agents running remotely without a checkout, use `GitHubSource` instead — same API, fetches manifests from the GitHub API.
+For agents running remotely without a checkout, use `GitHubSource` instead
+(`new GitHubSource({ repo: "nanohype/nanohype" })`) — same `CatalogSource`
+API, fetches manifests from the GitHub API.
 
-`loadStandards()` returns a typed bundle covering all ten standards files. `loadContract(repo)` fetches the corresponding `AGENTS.md` so your agent can present the deploy contract for any specific repo. See [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering algorithm.
+`loadStandards()` returns a typed bundle covering all ten standards files.
+`loadContract(source, repo)` fetches the corresponding `AGENTS.md` so your
+agent can present the deploy contract for any specific repo. See
+[`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering
+algorithm.
 
 ## MCP server
 

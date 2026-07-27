@@ -23,15 +23,15 @@ curl https://raw.githubusercontent.com/nanohype/nanohype/main/catalog.json \
 Render programmatically (TypeScript):
 
 ```ts
-import { GitHubSource, renderTemplate } from '@nanohype/sdk';
+import { GitHubSource, renderTemplate } from "@nanohype/sdk";
 
-const source = new GitHubSource('nanohype/nanohype');
-await renderTemplate({
-  source,
-  templateName: 'rag-pipeline',
-  outputDir: './my-rag-bot',
-  variables: { ProjectName: 'my-rag-bot', LlmProvider: 'anthropic' },
+const source = new GitHubSource({ repo: "nanohype/nanohype" });
+const { manifest, files } = await source.fetchTemplate("rag-pipeline");
+const result = renderTemplate(manifest, files, {
+  ProjectName: "my-rag-bot",
+  LlmProvider: "anthropic",
 });
+// result.files — write these to disk yourself; hooks are returned, not executed
 ```
 
 Or via MCP (Claude Desktop snippet):

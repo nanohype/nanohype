@@ -23,7 +23,7 @@
     "requirements": [
       {
         "id": "iam-role-auth",
-        "summary": "Authenticate via IAM role assumption (IRSA on EKS, ECS task role, Lambda execution role). No API keys in code, env vars, or secrets."
+        "summary": "Authenticate via IAM role assumption (EKS Pod Identity on EKS, ECS task role, Lambda execution role). No API keys in code, env vars, or secrets."
       },
       {
         "id": "default-sonnet",

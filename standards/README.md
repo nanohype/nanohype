@@ -42,14 +42,21 @@ A tenant ships three artifacts:
 
 1. A Helm chart in `<app>/chart/` with per-env values files
 2. An ApplicationSet entry referenced by `nanohype/eks-gitops`
-3. A Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary
+3. A Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary **and** its stateful substrate
 
-The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IRSA role. The chart's own ServiceAccount carries the `eks.amazonaws.com/role-arn` annotation rendered from a per-env Helm value pointing at the landing-zone-owned IRSA role.
+The Platform CR is the declaration surface. In particular:
+
+- **`spec.datastores`** — relational / keyValue / objectStore / queue / cache / stream. The generic `tenant-substrate` module provisions them; the operator generates the scoped IAM from the same list. There is no per-app landing-zone component for datastores.
+- **`spec.identity.capabilities`** — managed AWS capabilities outside the datastore vocabulary (SES send, EventBridge Scheduler). The operator generates those grants.
+- **`spec.identity.directSecretReads`** — the few secret names a pod resolves itself via the AWS SDK (not ExternalSecret projection). Empty means the tenant role holds no Secrets Manager grant.
+
+The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IAM role. Identity is **EKS Pod Identity**: the operator creates a Pod Identity association binding the tenant ServiceAccount (`tenant-runtime`) to that role. The chart's ServiceAccount carries **no** `eks.amazonaws.com/role-arn` annotation.
 
 What you must **not** do inside a chart:
 
-- Scaffold IAM roles (the operator + landing-zone own IRSA)
-- Add cloud-substrate tofu (substrate lives in `nanohype/landing-zone`)
+- Scaffold IAM roles or annotate the ServiceAccount with a role ARN (the operator owns Pod Identity)
+- Hand-write a per-app landing-zone component for databases, buckets, queues, caches, or streams (declare `spec.datastores`)
+- Add cloud-substrate tofu for gaps the vocabulary does not cover outside `nanohype/landing-zone` / `nanohype/eks-gitops`
 - Add cluster-level addons (addons live in `nanohype/eks-gitops`)
 - Skip per-env values files (every chart has three, even if some are empty)
 - Hardcode AWS account IDs, region names, or KMS ARNs
@@ -60,12 +67,12 @@ OTel resource attributes every pod must emit: `agents.tenant`, `agents.platform`
 
 ## LLM policy — `llm-policy.json`
 
-Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (IRSA on EKS, task role on ECS, execution role on Lambda) — never API keys.
+Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (Pod Identity on EKS, task role on ECS, execution role on Lambda) — never API keys. On-demand invoke uses cross-region inference profile IDs (`us.anthropic.…`); bare foundation-model IDs are refused.
 
-Models:
+Models (from `llm-policy.json`):
 
 - **Default**: `anthropic.claude-sonnet-4-6` — most work
-- **Escalation**: `anthropic.claude-opus-4-6` — complex reasoning, architecture decisions
+- **Escalation**: `anthropic.claude-opus-4-8` — complex reasoning, architecture decisions
 - **Light**: `anthropic.claude-haiku-4-5` — classification, routing, filter steps
 
 Regions in order of preference: `us-west-2`, `us-east-1`, `eu-central-1`. Verify the chosen model is available in the deploy region before committing IaC.
@@ -89,6 +96,7 @@ Ten dimensions every build is graded against. This file names them and summarize
 7. **Code Quality & Craft** — naming, complexity, boundary error handling, explicit timeouts
 8. **Documentation & Developer Experience** — README, runbook, CLAUDE.md, regenerated API docs
 9. **Consistency & Polish** — convention inheritance, code shape, no aspirational comments
+10. **AI & Agent Systems** — eval suites for non-deterministic components, prompt discipline, model routing + fallback, token/cost metering, structured-output validation, prompt-injection defense, tool-use least privilege (N/A when there is no LLM surface)
 
 ---
 
