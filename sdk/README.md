@@ -62,6 +62,9 @@ interface CatalogSource {
   fetchTemplate(name: string): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }>;
   listComposites(): Promise<CompositeCatalogEntry[]>;
   fetchComposite(name: string): Promise<CompositeManifest>;
+  fetchCatalogManifest(): Promise<Catalog>;
+  fetchStandard(name: StandardName): Promise<Standard>;
+  fetchContract(repo: ContractRepo): Promise<string>;
 }
 ```
 
