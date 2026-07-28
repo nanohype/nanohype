@@ -90,6 +90,47 @@ describe("resolveVariables", () => {
     ).toThrow("Must be kebab-case");
   });
 
+  it("names the variable and value alongside the template's own message", () => {
+    // A template-authored message explains the rule and cannot name what broke
+    // it. Both halves have to survive, or a caller gets a bare rule with no
+    // indication of which variable it applies to.
+    expect(() =>
+      resolveVariables(
+        [v({ name: "Name", validation: { pattern: "[a-z-]+", message: "Must be kebab-case" } })],
+        { Name: "Not Kebab" },
+      ),
+    ).toThrow(/Variable 'Name' value 'Not Kebab'.*Must be kebab-case/);
+  });
+
+  it("says when the failing value came from a default the caller never set", () => {
+    // The k8s-app-tenant case: AppName is required to be kebab-case, AppMetric
+    // defaults to ${AppName} and must be snake_case, so any hyphenated app name
+    // fails validation on a variable the caller never supplied. That is
+    // documented template behaviour; the error just has to be diagnosable.
+    expect(() =>
+      resolveVariables(
+        [
+          v({ name: "AppName", validation: { pattern: "[a-z][a-z0-9-]*" } }),
+          v({
+            name: "AppMetric",
+            default: "${AppName}",
+            validation: { pattern: "[a-z][a-z0-9_]*", message: "Must be lowercase snake_case" },
+          }),
+        ],
+        { AppName: "my-app" },
+      ),
+    ).toThrow(/Variable 'AppMetric' value 'my-app' \(defaulted from `\$\{AppName\}`.*snake_case/);
+  });
+
+  it("does not claim a caller-supplied value came from a default", () => {
+    expect(() =>
+      resolveVariables(
+        [v({ name: "AppMetric", default: "fallback", validation: { pattern: "[a-z_]+" } })],
+        { AppMetric: "NOT-SNAKE" },
+      ),
+    ).toThrow(/AppMetric' value 'NOT-SNAKE': /);
+  });
+
   it("passes valid regex patterns", () => {
     const result = resolveVariables([v({ name: "Name", validation: { pattern: "[a-z-]+" } })], {
       Name: "my-app",

@@ -42,5 +42,27 @@
     "@vitest/coverage-v8": "^4.1.9",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nanohype/nanohype.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/nanohype/nanohype/tree/main/sdk#readme",
+  "bugs": {
+    "url": "https://github.com/nanohype/nanohype/issues"
+  },
+  "keywords": [
+    "nanohype",
+    "platform",
+    "kubernetes",
+    "templates",
+    "scaffolding",
+    "catalog",
+    "eks",
+    "gitops"
+  ]
 }
