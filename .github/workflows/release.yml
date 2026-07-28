@@ -1,0 +1,132 @@
+name: release
+
+# Publishes @nanohype/sdk and @nanohype/mcp to npm.
+#
+# Tag-driven, because a release should be a thing you can point at afterwards:
+# `sdk-v0.2.0` publishes the SDK at that version, `mcp-v0.1.0` the MCP server.
+# The two version independently, so they get separate tags rather than one
+# release train.
+#
+# ── Auth ──────────────────────────────────────────────────────────────────────
+# npm trusted publishing (OIDC). No NPM_TOKEN, no long-lived secret in the repo,
+# and it is what makes automated releases possible at all here: the publishing
+# account runs 2FA in `auth-and-writes` mode, so an interactive `npm publish`
+# demands a fresh OTP every time and cannot be automated. A trusted publisher is
+# the supported way out, not a workaround.
+#
+# One-time setup, per package, after the package exists on the registry:
+#   npmjs.com → the package → Settings → Trusted Publisher → GitHub Actions
+#   repository: nanohype/nanohype   workflow: release.yml
+# The first publish of a brand-new package still has to be done by hand, because
+# there is no package page to configure until it exists.
+#
+# `--provenance` attaches a signed attestation linking the tarball to this
+# workflow run and commit. It requires `id-token: write` and a public repo, and
+# it is why `publishConfig` does NOT set `provenance: true` — that would apply to
+# a laptop publish too, which cannot generate one and fails outright.
+
+on:
+  push:
+    tags:
+      - 'sdk-v*'
+      - 'mcp-v*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Which package to publish
+        required: true
+        type: choice
+        options: [sdk, mcp]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      # sdk-v* → sdk (@nanohype/sdk); mcp-v* → mcp-server (@nanohype/mcp).
+      # The directory and the package name differ, so both are resolved here
+      # rather than assumed downstream.
+      - name: Resolve the target
+        id: target
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            key='${{ inputs.package }}'
+            tag_version=''
+          else
+            key="${GITHUB_REF_NAME%%-v*}"
+            tag_version="${GITHUB_REF_NAME#*-v}"
+          fi
+          case "$key" in
+            sdk) dir=sdk ;;
+            mcp) dir=mcp-server ;;
+            *) echo "::error::unrecognised release key '$key' (expected sdk or mcp)"; exit 1 ;;
+          esac
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "tag_version=$tag_version" >> "$GITHUB_OUTPUT"
+
+      - name: Install
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      # A tag that disagrees with package.json publishes a version nobody asked
+      # for under a name that says otherwise. Cheap to check, silent if skipped.
+      - name: Tag must match the manifest version
+        if: steps.target.outputs.tag_version != ''
+        run: |
+          set -euo pipefail
+          manifest=$(node -p "require('./${{ steps.target.outputs.dir }}/package.json').version")
+          if [ "$manifest" != "${{ steps.target.outputs.tag_version }}" ]; then
+            echo "::error::tag says ${{ steps.target.outputs.tag_version }}, ${{ steps.target.outputs.dir }}/package.json says $manifest"
+            exit 1
+          fi
+
+      # The repo-level gates plus the package's own suite. The SDK is the
+      # reference implementation of the rendering contract, so a release that
+      # skipped the template and catalog validation would be the least
+      # trustworthy artifact in the org.
+      # Deliberately not `npm run lint` (root `biome check .`). That script is
+      # not gated by any workflow and does not currently pass — the package
+      # suites below run biome inside sdk/ and mcp-server/, which is what CI
+      # actually enforces. Adding a failing gate here would make releases
+      # impossible; fixing the root formatting is its own change, not a rider on
+      # a release.
+      - name: Verify the repo
+        run: |
+          npm run validate:schema
+          npm run validate:standards
+          npm run validate:manifest
+          npm run verify:catalog
+
+      - name: Verify the package
+        working-directory: ${{ steps.target.outputs.dir }}
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
+
+      - name: Build
+        working-directory: ${{ steps.target.outputs.dir }}
+        run: npm run build
+
+      # --dry-run first so the tarball contents appear in the log of the run
+      # that published them. `files` is easy to get wrong in the direction of
+      # shipping too much, and the log is the only place that is visible after
+      # the fact.
+      - name: Show what will ship
+        working-directory: ${{ steps.target.outputs.dir }}
+        run: npm publish --dry-run
+
+      - name: Publish
+        working-directory: ${{ steps.target.outputs.dir }}
+        run: npm publish --provenance --access public

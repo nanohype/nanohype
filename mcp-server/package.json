@@ -48,5 +48,26 @@
     "body-parser": "^2.3.0",
     "fast-uri": "^3.1.3",
     "hono": "^4.12.27"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nanohype/nanohype.git",
+    "directory": "mcp-server"
+  },
+  "homepage": "https://github.com/nanohype/nanohype/tree/main/mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/nanohype/nanohype/issues"
+  },
+  "keywords": [
+    "nanohype",
+    "mcp",
+    "model-context-protocol",
+    "platform",
+    "kubernetes",
+    "eks",
+    "catalog"
+  ]
 }

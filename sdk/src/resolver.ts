@@ -17,12 +17,19 @@ export function resolveVariables(
 ): Record<string, string> {
   const resolved: Record<string, string> = {};
 
+  // Variables the caller never supplied, so the value under validation came
+  // from the template's own default. Carried to the error message: the hardest
+  // resolution failure to diagnose is one on a variable you never set, where
+  // the value is derived from a variable you did.
+  const fromDefault = new Set<string>();
+
   // Apply provided values, then defaults, then type zero-values
   for (const v of variables) {
     if (v.name in values) {
       resolved[v.name] = String(values[v.name]);
     } else if (v.default !== undefined) {
       resolved[v.name] = String(v.default);
+      fromDefault.add(v.name);
     } else if (v.required) {
       throw new VariableResolutionError(
         `Required variable '${v.name}' has no value and no default`,
@@ -81,9 +88,18 @@ export function resolveVariables(
     if (v.validation?.pattern) {
       const regex = new RegExp(`^(?:${v.validation.pattern})$`);
       if (!regex.test(resolved[v.name])) {
+        // A template-authored message explains the RULE; it cannot know which
+        // variable or which value tripped it. Previously it replaced the naming
+        // rather than adding to it, so `scaffold k8s-app-tenant --var
+        // AppName=my-app` failed with a bare "Must be lowercase snake_case"
+        // naming nothing — on AppMetric, which the caller never set and which
+        // defaults to ${AppName}. Compose instead of choosing.
+        const rule = v.validation.message || `does not match pattern: ${v.validation.pattern}`;
+        const origin = fromDefault.has(v.name)
+          ? ` (defaulted from \`${v.default}\`, not supplied by the caller)`
+          : "";
         throw new VariableResolutionError(
-          v.validation.message ||
-            `Variable '${v.name}' value '${resolved[v.name]}' does not match pattern: ${v.validation.pattern}`,
+          `Variable '${v.name}' value '${resolved[v.name]}'${origin}: ${rule}`,
         );
       }
     }
