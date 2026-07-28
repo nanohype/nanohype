@@ -1,0 +1,45 @@
+name: Tokens
+
+on:
+  push:
+    branches: [main]
+    paths: ['tokens/**']
+  pull_request:
+    paths: ['tokens/**']
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test tokens
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tokens
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tokens/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      # The parity gate: tokens.css and tokens.ts are two copies of the same
+      # values, and this is what stops them drifting. A token added to one and
+      # not the other fails here rather than reaching a consumer as `undefined`.
+      - name: Parity between the stylesheet and the typed mirror
+        run: npm test
