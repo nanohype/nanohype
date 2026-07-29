@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { reward, computeIcc, renderIccMarkdown, type RoutingLogEntry } from "../diagnostics/icc.js";
+import { describe, expect, it } from "vitest";
+import { computeIcc, type RoutingLogEntry, renderIccMarkdown, reward } from "../diagnostics/icc.js";
 
 describe("reward", () => {
   it("mirrors adaptive's composite score (0.7 success + 0.3 inverse-latency)", () => {

@@ -6,7 +6,7 @@
  * ratios, preserves all examples, and rejects invalid ratios.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { splitDataset } from "../dataset/split.js";
 import type { TrainingExample } from "../dataset/types.js";
 

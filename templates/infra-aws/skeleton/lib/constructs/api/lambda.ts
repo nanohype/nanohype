@@ -1,5 +1,5 @@
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
+import type * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import type { ComputeConstruct } from "../compute/lambda";
 
@@ -30,19 +30,13 @@ export class ApiConstruct extends Construct {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: [
-          "Content-Type",
-          "Authorization",
-          "X-Amz-Date",
-          "X-Api-Key",
-        ],
+        allowHeaders: ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key"],
       },
     });
 
-    const integration = new apigateway.LambdaIntegration(
-      props.compute.lambdaFunction,
-      { proxy: true }
-    );
+    const integration = new apigateway.LambdaIntegration(props.compute.lambdaFunction, {
+      proxy: true,
+    });
 
     this.apiGateway.root.addMethod("ANY", integration);
     this.apiGateway.root.addResource("{proxy+}").addMethod("ANY", integration);

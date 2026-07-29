@@ -8,11 +8,11 @@
 // downstream agents to consume.
 //
 
-import type { Agent, AgentExecutionContext } from "./types.js";
-import type { SubTask, AgentResult } from "../types.js";
-import { getProvider } from "../providers/index.js";
-import { registerAgent } from "./registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/index.js";
+import type { AgentResult, SubTask } from "../types.js";
+import { registerAgent } from "./registry.js";
+import type { Agent, AgentExecutionContext } from "./types.js";
 
 const SYSTEM_PROMPT = `You are a research agent in a multi-agent system. Your job is to gather and synthesize information about the given topic.
 
@@ -24,7 +24,7 @@ Respond with a structured analysis including:
 Be concise and factual. Focus on information that would be useful for downstream agents working on related subtasks.`;
 
 function createResearcherAgent(): Agent {
-  let providerName = "mock";
+  const providerName = "mock";
 
   return {
     name: "researcher",
@@ -45,9 +45,10 @@ function createResearcherAgent(): Agent {
 
         // Include any relevant shared context in the prompt
         const existingContext = context.getAll();
-        const contextSummary = Object.keys(existingContext).length > 0
-          ? `\n\nContext from previous agents:\n${JSON.stringify(existingContext, null, 2)}`
-          : "";
+        const contextSummary =
+          Object.keys(existingContext).length > 0
+            ? `\n\nContext from previous agents:\n${JSON.stringify(existingContext, null, 2)}`
+            : "";
 
         const prompt = `${subtask.description}${contextSummary}`;
 

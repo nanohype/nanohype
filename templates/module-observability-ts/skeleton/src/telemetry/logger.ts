@@ -1,4 +1,4 @@
-import { trace, context } from "@opentelemetry/api";
+import { context, trace } from "@opentelemetry/api";
 
 /**
  * Structured logger integrated with OpenTelemetry context.
@@ -65,15 +65,11 @@ function emit(level: LogLevel, message: string, fields?: Record<string, unknown>
  *   {"timestamp":"...","level":"info","message":"request handled","traceId":"...","spanId":"...","path":"/api/health","durationMs":12}
  */
 export const logger = {
-  debug: (message: string, fields?: Record<string, unknown>) =>
-    emit("debug", message, fields),
+  debug: (message: string, fields?: Record<string, unknown>) => emit("debug", message, fields),
 
-  info: (message: string, fields?: Record<string, unknown>) =>
-    emit("info", message, fields),
+  info: (message: string, fields?: Record<string, unknown>) => emit("info", message, fields),
 
-  warn: (message: string, fields?: Record<string, unknown>) =>
-    emit("warn", message, fields),
+  warn: (message: string, fields?: Record<string, unknown>) => emit("warn", message, fields),
 
-  error: (message: string, fields?: Record<string, unknown>) =>
-    emit("error", message, fields),
+  error: (message: string, fields?: Record<string, unknown>) => emit("error", message, fields),
 };

@@ -1,9 +1,11 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 // Acquire the VS Code API for communicating with the extension host
 const vscode = acquireVsCodeApi();
 
 interface Message {
+  /** Stable identity for list rendering — index keys remount on every append. */
+  id: string;
   role: "user" | "assistant";
   content: string;
 }
@@ -16,7 +18,7 @@ export function App() {
     const text = input.trim();
     if (!text) return;
 
-    const userMessage: Message = { role: "user", content: text };
+    const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
@@ -53,9 +55,9 @@ export function App() {
             No messages yet. Type something below to get started.
           </p>
         )}
-        {messages.map((msg, i) => (
+        {messages.map((msg) => (
           <div
-            key={i}
+            key={msg.id}
             style={{
               marginBottom: "8px",
               padding: "6px 10px",
@@ -90,6 +92,7 @@ export function App() {
           }}
         />
         <button
+          type="button"
           onClick={sendMessage}
           style={{
             padding: "6px 16px",

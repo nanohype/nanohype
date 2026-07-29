@@ -9,8 +9,8 @@
 //
 
 import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 function extractBearerToken(request: AuthRequest): string | null {
   const header =

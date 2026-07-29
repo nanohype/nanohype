@@ -13,5 +13,5 @@ import "./openai.js";
 import "./mock.js";
 
 // Re-export the public API
-export { registerProvider, getProvider, listProviders } from "./registry.js";
-export type { LlmProvider, ChatMessage } from "./types.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
+export type { ChatMessage, LlmProvider } from "./types.js";

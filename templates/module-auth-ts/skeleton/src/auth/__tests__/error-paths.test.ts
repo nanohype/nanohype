@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as jose from "jose";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { jwtProvider } from "../providers/jwt.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -54,9 +54,7 @@ describe("jwt provider — error paths", () => {
   });
 
   it("returns authenticated: false for a token signed with wrong secret", async () => {
-    const wrongSecret = new TextEncoder().encode(
-      "completely-different-secret-value-for-testing"
-    );
+    const wrongSecret = new TextEncoder().encode("completely-different-secret-value-for-testing");
     const token = await new jose.SignJWT({ sub: "user-wrong-key" })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("1h")
@@ -91,9 +89,7 @@ describe("jwt provider — error paths", () => {
   });
 
   it("returns authenticated: false for a malformed Bearer token", async () => {
-    const result = await jwtProvider.verifyRequest(
-      fakeRequest("not.a.valid.jwt.at.all")
-    );
+    const result = await jwtProvider.verifyRequest(fakeRequest("not.a.valid.jwt.at.all"));
 
     expect(result.authenticated).toBe(false);
     expect(result.error).toBeDefined();

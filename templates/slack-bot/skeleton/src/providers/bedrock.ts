@@ -1,11 +1,8 @@
-import {
-  BedrockRuntimeClient,
-  ConverseCommand,
-} from "@aws-sdk/client-bedrock-runtime";
-import type { LlmProvider, ChatMessage } from "./types.js";
-import { registerProvider } from "./registry.js";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
+import { llmDuration, llmErrorsTotal, llmRequestsTotal, recordLlmTokens } from "../metrics.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { llmRequestsTotal, llmErrorsTotal, llmDuration, recordLlmTokens } from "../metrics.js";
+import { registerProvider } from "./registry.js";
+import type { ChatMessage, LlmProvider } from "./types.js";
 
 // Bedrock via the Converse API — the org-default LLM path. Auth is the AWS
 // credential chain (IRSA on the cluster), never API keys. A cachePoint after

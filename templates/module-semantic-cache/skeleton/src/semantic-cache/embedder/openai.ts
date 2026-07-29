@@ -51,9 +51,7 @@ function createOpenaiEmbedder(): EmbeddingProvider {
           model: MODEL,
           input: texts,
         });
-        return response.data
-          .sort((a, b) => a.index - b.index)
-          .map((item) => item.embedding);
+        return response.data.sort((a, b) => a.index - b.index).map((item) => item.embedding);
       });
     },
   };

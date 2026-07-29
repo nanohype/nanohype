@@ -5,15 +5,14 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { Processor, ProcessedInput, Modality } from "./types.js";
-
 export {
-  registerProcessor,
   getProcessorByMimeType,
   getProcessorByModality,
   listProcessors,
   listSupportedMimeTypes,
+  registerProcessor,
 } from "./registry.js";
+export type { Modality, ProcessedInput, Processor } from "./types.js";
 
 // Import processor modules to trigger registration
 import "./image.js";

@@ -5,21 +5,17 @@
  * LLM provider registries.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  registerProcessor,
   getProcessorByMimeType,
   getProcessorByModality,
   listProcessors,
   listSupportedMimeTypes,
+  registerProcessor,
 } from "../processors/registry.js";
-import {
-  registerProvider,
-  getProvider,
-  listProviders,
-} from "../providers/registry.js";
-import type { Processor, ProcessedInput } from "../processors/types.js";
-import type { MultimodalLlmProvider, AnalysisResult } from "../providers/types.js";
+import type { ProcessedInput, Processor } from "../processors/types.js";
+import { getProvider, listProviders, registerProvider } from "../providers/registry.js";
+import type { AnalysisResult, MultimodalLlmProvider } from "../providers/types.js";
 
 const mockProcessor: Processor = {
   modality: "image",

@@ -37,8 +37,7 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
     __tests__/                   # Vitest test suite (conditional)
   package.json
   tsconfig.json
-  eslint.config.js
-  .prettierrc
+  biome.json
   vitest.config.ts
   README.md
 ```

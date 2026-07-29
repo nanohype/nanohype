@@ -12,6 +12,6 @@ import "./cost.js";
 import "./adaptive.js";
 import "./linucb.js";
 
-export { registerStrategy, getStrategy, listStrategies } from "./registry.js";
 export type { RoutingStrategyFactory } from "./registry.js";
-export type { RoutingStrategy, RoutingContext } from "./types.js";
+export { getStrategy, listStrategies, registerStrategy } from "./registry.js";
+export type { RoutingContext, RoutingStrategy } from "./types.js";

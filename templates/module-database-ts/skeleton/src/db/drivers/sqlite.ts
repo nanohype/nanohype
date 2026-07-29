@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import type { DatabaseDriver } from "./types.js";
 import { registerDriver } from "./registry.js";
+import type { DatabaseDriver } from "./types.js";
 
 // ── SQLite Driver ───────────────────────────────────────────────────
 //
@@ -18,9 +18,7 @@ const sqliteDriver: DatabaseDriver = {
 
   async connect(url: string): Promise<unknown> {
     // Strip sqlite:// or file: prefix if present
-    const path = url
-      .replace(/^sqlite:\/\//, "")
-      .replace(/^file:/, "");
+    const path = url.replace(/^sqlite:\/\//, "").replace(/^file:/, "");
 
     db = new Database(path);
     db.pragma("journal_mode = WAL");

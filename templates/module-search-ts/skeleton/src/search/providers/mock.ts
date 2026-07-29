@@ -1,14 +1,14 @@
-import type { SearchProvider } from "./types.js";
 import type {
-  SearchIndex,
+  FilterExpression,
+  SearchConfig,
   SearchDocument,
+  SearchHit,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchHit,
-  SearchConfig,
-  FilterExpression,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { SearchProvider } from "./types.js";
 
 // ── Mock Provider ─────────────────────────────────────────────────
 //
@@ -26,7 +26,10 @@ function createMockProvider(): SearchProvider {
 
   /** Tokenize text into lowercase terms. */
   function tokenize(text: string): string[] {
-    return text.toLowerCase().split(/\W+/).filter((t) => t.length > 0);
+    return text
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((t) => t.length > 0);
   }
 
   /** Compute term frequency for each term in tokens. */
@@ -64,11 +67,7 @@ function createMockProvider(): SearchProvider {
   }
 
   /** Score a document against a query using TF-IDF. */
-  function tfidfScore(
-    doc: SearchDocument,
-    queryTerms: string[],
-    idf: Map<string, number>,
-  ): number {
+  function tfidfScore(doc: SearchDocument, queryTerms: string[], idf: Map<string, number>): number {
     const docTokens = tokenize(doc.content);
     const tf = termFrequency(docTokens);
     let score = 0;

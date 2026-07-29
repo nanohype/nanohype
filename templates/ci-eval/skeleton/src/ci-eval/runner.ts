@@ -7,17 +7,16 @@
 // the factory closure.
 //
 
-import { readFile } from "node:fs/promises";
-import { glob } from "node:fs/promises";
-import { resolve, basename } from "node:path";
+import { glob, readFile } from "node:fs/promises";
+import { basename, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
-import { getProvider } from "./providers/index.js";
-import type { LlmProvider } from "./providers/index.js";
 import { evaluateAssertion } from "./assertions.js";
 import type { Config } from "./config.js";
-import type { EvalResult, SuiteScore } from "./types.js";
 import type { Logger } from "./logger.js";
+import type { LlmProvider } from "./providers/index.js";
+import { getProvider } from "./providers/index.js";
+import type { EvalResult, SuiteScore } from "./types.js";
 
 // ── Suite file schema ───────────────────────────────────────────────
 
@@ -72,10 +71,7 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
     return SuiteFileSchema.parse(raw);
   }
 
-  async function runCase(
-    provider: LlmProvider,
-    caseSpec: CaseSpec,
-  ): Promise<EvalResult> {
+  async function runCase(provider: LlmProvider, caseSpec: CaseSpec): Promise<EvalResult> {
     const start = Date.now();
     try {
       const output = await provider.complete(caseSpec.input);
@@ -84,12 +80,10 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
         evaluateAssertion(a.type, a.value, output),
       );
 
-      const allPass =
-        assertionResults.length === 0 || assertionResults.every((r) => r.pass);
+      const allPass = assertionResults.length === 0 || assertionResults.every((r) => r.pass);
       const score =
         assertionResults.length > 0
-          ? assertionResults.filter((r) => r.pass).length /
-            assertionResults.length
+          ? assertionResults.filter((r) => r.pass).length / assertionResults.length
           : 1;
 
       return {

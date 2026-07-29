@@ -1,10 +1,10 @@
 import "dotenv/config";
+import { Client, GatewayIntentBits } from "discord.js";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
-import { logger } from "./logger.js";
-import { Client, GatewayIntentBits } from "discord.js";
-import { registerMessageCreateHandler } from "./events/message-create.js";
 import { registerInteractionCreateHandler } from "./events/interaction-create.js";
+import { registerMessageCreateHandler } from "./events/message-create.js";
+import { logger } from "./logger.js";
 
 // ── Bootstrap ────────────────────────────────────────────────────────
 //

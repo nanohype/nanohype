@@ -1,13 +1,10 @@
-import {
-  BedrockRuntimeClient,
-  ConverseCommand,
-} from "@aws-sdk/client-bedrock-runtime";
-import type { GatewayProvider, ProviderPricing } from "./types.js";
-import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
-import { registerProvider } from "./registry.js";
+import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
+import { countTokens } from "../tokens/counter.js";
+import type { ChatMessage, ChatOptions, GatewayResponse } from "../types.js";
 import { readBedrockCacheTokens } from "./bedrock-cache.js";
 import { createCircuitBreaker } from "./circuit-breaker.js";
-import { countTokens } from "../tokens/counter.js";
+import { registerProvider } from "./registry.js";
+import type { GatewayProvider, ProviderPricing } from "./types.js";
 
 // ── Bedrock Provider ────────────────────────────────────────────────
 //

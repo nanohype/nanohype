@@ -6,8 +6,8 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider } from "./providers/index.js";
 import { cacheGetTotal, cacheOperationDuration } from "./metrics.js";
+import { getProvider } from "./providers/index.js";
 import type { CacheProvider } from "./providers/types.js";
 import type { CacheConfig, SetOptions } from "./types.js";
 
@@ -41,11 +41,7 @@ export interface Cache {
    * Cache-aside helper. Returns the cached value if present, otherwise
    * calls the factory function, stores the result, and returns it.
    */
-  getOrSet<T = unknown>(
-    key: string,
-    factory: () => Promise<T>,
-    opts?: SetOptions,
-  ): Promise<T>;
+  getOrSet<T = unknown>(key: string, factory: () => Promise<T>, opts?: SetOptions): Promise<T>;
 
   /** Shut down the cache and release resources. */
   close(): Promise<void>;
@@ -67,9 +63,11 @@ export interface Cache {
 /** Zod schema for validating createCache arguments. */
 const CreateCacheSchema = z.object({
   providerName: z.string().min(1, "providerName must be a non-empty string"),
-  config: z.object({
-    namespace: z.string().optional(),
-  }).passthrough(),
+  config: z
+    .object({
+      namespace: z.string().optional(),
+    })
+    .passthrough(),
 });
 
 export async function createCache(
@@ -78,7 +76,7 @@ export async function createCache(
 ): Promise<Cache> {
   const parsed = CreateCacheSchema.safeParse({ providerName, config });
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid cache config: ${issues}`);
   }
 

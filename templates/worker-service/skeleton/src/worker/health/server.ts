@@ -1,5 +1,5 @@
-import { Hono } from "hono";
 import { serve } from "@hono/node-server";
+import { Hono } from "hono";
 import type { Logger } from "../logger.js";
 
 // ── Health Server ─────────────────────────────────────────────────
@@ -33,7 +33,7 @@ export interface HealthServer {
 export function createHealthServer(
   port: number,
   status: HealthStatus,
-  logger: Logger
+  logger: Logger,
 ): HealthServer {
   const app = new Hono();
   let server: ReturnType<typeof serve> | null = null;
@@ -61,7 +61,7 @@ export function createHealthServer(
           consumer: consumerOk ? "polling" : "stopped",
           scheduler: schedulerOk ? "running" : "stopped",
         },
-        503
+        503,
       );
     }
 

@@ -37,9 +37,7 @@ export const BillingConfigSchema = z
 export function validateConfig(config: unknown): void {
   const parsed = BillingConfigSchema.safeParse(config);
   if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map((i) => `${i.path.join(".")}: ${i.message}`)
-      .join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid billing config: ${issues}`);
   }
 }

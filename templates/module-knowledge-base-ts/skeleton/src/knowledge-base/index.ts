@@ -8,41 +8,38 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
+import type { KnowledgeConfig } from "./config.js";
 import { KnowledgeConfigSchema } from "./config.js";
+import { knowledgeBaseDurationMs, knowledgeBaseRequestTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
-import {
-  knowledgeBaseRequestTotal,
-  knowledgeBaseDurationMs,
-} from "./metrics.js";
 import type { KnowledgeProvider } from "./providers/types.js";
 import type {
-  Page,
   Block,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "./types.js";
-import type { KnowledgeConfig } from "./config.js";
 
+export type { KnowledgeConfig } from "./config.js";
+export { KnowledgeConfigSchema } from "./config.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { KnowledgeProvider, KnowledgeProviderFactory } from "./providers/types.js";
+export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
 export type {
-  Page,
   Block,
   BlockType,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "./types.js";
-export { KnowledgeConfigSchema } from "./config.js";
-export type { KnowledgeConfig } from "./config.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
-export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
 
 // ── Knowledge Client Facade ───────────────────────────────────────
 
@@ -92,9 +89,7 @@ export async function createKnowledgeClient(
 ): Promise<KnowledgeClient> {
   const parsed = KnowledgeConfigSchema.safeParse(rawConfig);
   if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map((i) => `${i.path.join(".")}: ${i.message}`)
-      .join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid knowledge base config: ${issues}`);
   }
 
@@ -103,10 +98,7 @@ export async function createKnowledgeClient(
   const config = parsed.data;
   const provider = getProvider(config.provider);
 
-  function tracked<T>(
-    operation: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  function tracked<T>(operation: string, fn: () => Promise<T>): Promise<T> {
     const start = performance.now();
     return fn().then(
       (result) => {

@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   contains,
-  notContains,
-  matchesPattern,
   matchesJsonSchema,
+  matchesPattern,
   maxTokens,
+  notContains,
   satisfies,
 } from "../assertions.js";
 
@@ -158,25 +158,19 @@ describe("satisfies", () => {
   });
 
   it("works with an async predicate", async () => {
-    const assert = satisfies(
-      async (output) => {
-        await new Promise((r) => setTimeout(r, 1));
-        return output.includes("valid");
-      },
-      "async validator",
-    );
+    const assert = satisfies(async (output) => {
+      await new Promise((r) => setTimeout(r, 1));
+      return output.includes("valid");
+    }, "async validator");
     const result = await assert("this is valid output");
     expect(result.pass).toBe(true);
   });
 
   it("fails with an async predicate that returns false", async () => {
-    const assert = satisfies(
-      async (output) => {
-        await new Promise((r) => setTimeout(r, 1));
-        return output.startsWith("OK:");
-      },
-      "starts with OK",
-    );
+    const assert = satisfies(async (output) => {
+      await new Promise((r) => setTimeout(r, 1));
+      return output.startsWith("OK:");
+    }, "starts with OK");
     const result = await assert("ERROR: something went wrong");
     expect(result.pass).toBe(false);
   });

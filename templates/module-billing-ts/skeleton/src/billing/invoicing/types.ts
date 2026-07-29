@@ -17,11 +17,7 @@ export interface InvoiceGeneratorConfig {
 /** An invoice generator that creates invoices from aggregated usage. */
 export interface InvoiceGenerator {
   /** Generate an invoice from line items for a customer and billing period. */
-  generate(
-    customerId: string,
-    period: BillingPeriod,
-    lineItems: LineItem[],
-  ): Invoice;
+  generate(customerId: string, period: BillingPeriod, lineItems: LineItem[]): Invoice;
 }
 
 /** Supported invoice output formats. */

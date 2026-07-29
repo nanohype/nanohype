@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider, ChatMessage } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ChatMessage, LlmProvider } from "./types.js";
 
 // Direct Anthropic API — an alternate to the Bedrock default
 // (set LLM_PROVIDER=anthropic). Requires ANTHROPIC_API_KEY. The SDK client is

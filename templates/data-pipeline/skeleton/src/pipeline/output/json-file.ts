@@ -11,11 +11,10 @@
 
 import { appendFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
-
-import type { EmbeddedChunk } from "../types.js";
-import type { OutputAdapter, OutputAdapterConfig } from "./types.js";
-import { registerAdapter } from "./registry.js";
 import { logger } from "../logger.js";
+import type { EmbeddedChunk } from "../types.js";
+import { registerAdapter } from "./registry.js";
+import type { OutputAdapter, OutputAdapterConfig } from "./types.js";
 
 class JsonFileAdapter implements OutputAdapter {
   readonly name = "json-file";

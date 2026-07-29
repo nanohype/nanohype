@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { evaluate, notFoundResult } from "../evaluator.js";
 import type { Flag, TargetingContext } from "../types.js";
 
@@ -114,9 +114,7 @@ describe("evaluator", () => {
   describe("allowlist", () => {
     it("matches users in the allowlist", () => {
       const flag = makeFlag({
-        rules: [
-          { type: "allowlist", userIds: ["user-1", "user-2"], variant: "treatment" },
-        ],
+        rules: [{ type: "allowlist", userIds: ["user-1", "user-2"], variant: "treatment" }],
       });
 
       const result = evaluate(flag, { userId: "user-1" });
@@ -127,9 +125,7 @@ describe("evaluator", () => {
 
     it("does not match users outside the allowlist", () => {
       const flag = makeFlag({
-        rules: [
-          { type: "allowlist", userIds: ["user-1", "user-2"], variant: "treatment" },
-        ],
+        rules: [{ type: "allowlist", userIds: ["user-1", "user-2"], variant: "treatment" }],
       });
 
       const result = evaluate(flag, { userId: "user-99" });

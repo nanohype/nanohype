@@ -1,17 +1,17 @@
 import { createHmac } from "node:crypto";
-import type { MediaProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  MediaAsset,
-  UploadOptions,
-  TransformOptions,
   DeliveryUrl,
   ListOptions,
   ListResult,
+  MediaAsset,
   MediaConfig,
+  TransformOptions,
+  UploadOptions,
 } from "../types.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
 import { registerProvider } from "./registry.js";
+import type { MediaProvider } from "./types.js";
 
 // ── imgix Provider ───────────────────────────────────────────────
 //
@@ -83,8 +83,7 @@ function createImgixProvider(): MediaProvider {
 
       if (!source || !token) {
         throw new Error(
-          "imgix requires source and token " +
-          "(via config or IMGIX_SOURCE, IMGIX_TOKEN env vars)",
+          "imgix requires source and token " + "(via config or IMGIX_SOURCE, IMGIX_TOKEN env vars)",
         );
       }
 
@@ -95,7 +94,7 @@ function createImgixProvider(): MediaProvider {
     async upload(_data: Buffer | Uint8Array, _options?: UploadOptions): Promise<MediaAsset> {
       throw new Error(
         "imgix does not support uploads -- assets must already exist in the configured source. " +
-        "Use module-storage or another provider for uploads, then reference by path.",
+          "Use module-storage or another provider for uploads, then reference by path.",
       );
     },
 
@@ -115,9 +114,7 @@ function createImgixProvider(): MediaProvider {
     },
 
     async list(_options?: ListOptions): Promise<ListResult> {
-      throw new Error(
-        "imgix does not support listing -- query your storage backend directly.",
-      );
+      throw new Error("imgix does not support listing -- query your storage backend directly.");
     },
 
     async close(): Promise<void> {
@@ -151,7 +148,8 @@ export function getResponsiveSrcSet(
       params.set("w", w.toString());
       if (baseTransforms?.height) params.set("h", baseTransforms.height.toString());
       if (baseTransforms?.fit) params.set("fit", FIT_MAP[baseTransforms.fit] ?? "crop");
-      if (baseTransforms?.format && baseTransforms.format !== "auto") params.set("fm", baseTransforms.format);
+      if (baseTransforms?.format && baseTransforms.format !== "auto")
+        params.set("fm", baseTransforms.format);
       if (baseTransforms?.format === "auto") params.set("auto", "format");
       if (baseTransforms?.quality) params.set("q", baseTransforms.quality.toString());
 

@@ -15,13 +15,10 @@ export const workerJobTotal = meter.createCounter("worker_job_total", {
 });
 
 /** Queue job processing duration in milliseconds, labeled by job name. */
-export const workerJobDuration = meter.createHistogram(
-  "worker_job_duration_ms",
-  {
-    description: "Queue job processing latency in milliseconds",
-    unit: "ms",
-  }
-);
+export const workerJobDuration = meter.createHistogram("worker_job_duration_ms", {
+  description: "Queue job processing latency in milliseconds",
+  unit: "ms",
+});
 
 /** Total cron job executions, labeled by job name and outcome status. */
 export const workerCronTotal = meter.createCounter("worker_cron_total", {

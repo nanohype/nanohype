@@ -4,11 +4,7 @@
 // specific routes. Use these after the auth middleware has run to
 // protect endpoints that require authentication or specific roles.
 
-import {
-  AUTH_USER_KEY,
-  AUTH_RESULT_KEY,
-  type AuthenticatedRequest,
-} from "./middleware.js";
+import { AUTH_RESULT_KEY, AUTH_USER_KEY, type AuthenticatedRequest } from "./middleware.js";
 import type { AuthResult, AuthUser } from "./types.js";
 
 /**
@@ -33,9 +29,7 @@ export type GuardHandler = (...args: unknown[]) => unknown | Promise<unknown>;
  * app.get("/api/profile", requireAuth, (req, res) => { ... });
  * ```
  */
-export const requireAuth: GuardHandler = async (
-  ...args: unknown[]
-): Promise<unknown> => {
+export const requireAuth: GuardHandler = async (...args: unknown[]): Promise<unknown> => {
   const firstArg = args[0] as Record<string, unknown>;
 
   // ── Hono ─────────────────────────────────────────────────────────
@@ -51,10 +45,7 @@ export const requireAuth: GuardHandler = async (
     const result = raw[AUTH_RESULT_KEY] as AuthResult | undefined;
 
     if (!result?.authenticated) {
-      return c.json(
-        { error: result?.error ?? "Authentication required" },
-        401,
-      );
+      return c.json({ error: result?.error ?? "Authentication required" }, 401);
     }
 
     return next();
@@ -121,10 +112,7 @@ export function requireRole(role: string): GuardHandler {
       }
 
       if (!user.roles.includes(role)) {
-        return c.json(
-          { error: `Forbidden: requires role "${role}"` },
-          403,
-        );
+        return c.json({ error: `Forbidden: requires role "${role}"` }, 403);
       }
 
       return next();

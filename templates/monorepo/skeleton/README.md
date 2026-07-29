@@ -28,7 +28,7 @@ __PROJECT_NAME__/
 | `pnpm dev` | Start all packages in dev/watch mode |
 | `pnpm lint` | Lint all packages |
 | `pnpm test` | Run tests across all packages |
-| `pnpm format` | Format code with Prettier |
+| `pnpm format` | Format code with Biome |
 | `pnpm clean` | Remove all build artifacts and node_modules |
 
 ## Adding a new package

@@ -6,6 +6,8 @@
 // for tokens and persist them.
 
 import {
+  errorMessage,
+  MissingCredentialsError,
   OAuthError,
   ProviderError,
   RedirectMismatchError,
@@ -15,16 +17,9 @@ import {
   UnauthenticatedError,
   UnknownProviderError,
   UserMismatchError,
-  MissingCredentialsError,
-  errorMessage,
 } from "../errors.js";
 import { logger } from "../logger.js";
-import {
-  assertStateFresh,
-  clearStateCookie,
-  readStateCookie,
-  verifyState,
-} from "../state.js";
+import { assertStateFresh, clearStateCookie, readStateCookie, verifyState } from "../state.js";
 import type {
   ClientCredentials,
   OAuthProvider,
@@ -93,7 +88,11 @@ export function createCallbackHandler(
       const raw = await postForm(fetchImpl, adapter.tokenUrl, body, providerName);
       const grant: TokenGrant = adapter.parseTokenResponse(raw);
       if (!grant.accessToken) {
-        throw new ProviderError(providerName, "missing_access_token", "token response missing access_token");
+        throw new ProviderError(
+          providerName,
+          "missing_access_token",
+          "token response missing access_token",
+        );
       }
 
       await config.storage.put(userId, providerName, grant);
@@ -136,7 +135,11 @@ function handleCallbackError(err: unknown, cookieDomain?: string): Response {
     return new Response(err.message, { status: 404 });
   }
   if (err instanceof ProviderError) {
-    logger.warn("callback provider error", { provider: err.provider, code: err.code, status: err.status });
+    logger.warn("callback provider error", {
+      provider: err.provider,
+      code: err.code,
+      status: err.status,
+    });
     return new Response(err.code, { status: 502, headers: { "set-cookie": clear } });
   }
   if (err instanceof OAuthError) {

@@ -1,3 +1,4 @@
+import type { Readable } from "node:stream";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -6,8 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl as awsGetSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Readable } from "node:stream";
-
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
   ListOptions,
   ListResult,
@@ -15,10 +15,9 @@ import type {
   UploadData,
   UploadOptions,
 } from "../types.js";
-import type { ProviderConfig, StorageProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { toBuffer, withRetry } from "./helpers.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ProviderConfig, StorageProvider } from "./types.js";
 
 // -- Cloudflare R2 Provider ----------------------------------------------
 //
@@ -65,11 +64,7 @@ class R2StorageProvider implements StorageProvider {
     });
   }
 
-  async upload(
-    key: string,
-    data: UploadData,
-    opts?: UploadOptions
-  ): Promise<void> {
+  async upload(key: string, data: UploadData, opts?: UploadOptions): Promise<void> {
     const body = await toBuffer(data);
 
     await this.cb.execute(() =>
@@ -81,9 +76,9 @@ class R2StorageProvider implements StorageProvider {
             Body: body,
             ContentType: opts?.contentType,
             Metadata: opts?.metadata,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -94,9 +89,9 @@ class R2StorageProvider implements StorageProvider {
           new GetObjectCommand({
             Bucket: this.bucket,
             Key: key,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 
     if (!response.Body) {
@@ -118,9 +113,9 @@ class R2StorageProvider implements StorageProvider {
           new DeleteObjectCommand({
             Bucket: this.bucket,
             Key: key,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -133,9 +128,9 @@ class R2StorageProvider implements StorageProvider {
             Prefix: prefix ?? undefined,
             MaxKeys: opts?.maxKeys,
             ContinuationToken: opts?.cursor,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 
     const objects: StorageObject[] = (response.Contents ?? []).map((item) => ({
@@ -161,7 +156,6 @@ class R2StorageProvider implements StorageProvider {
       expiresIn: expiresIn ?? 3600,
     });
   }
-
 }
 
 // Self-register

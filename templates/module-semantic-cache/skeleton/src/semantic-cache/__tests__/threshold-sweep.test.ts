@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  sweepThresholds,
-  sweepEmbeddings,
   renderSweepMarkdown,
   type SweepSample,
+  sweepEmbeddings,
+  sweepThresholds,
 } from "../threshold-sweep.js";
 
 // Same-intent pairs cluster high (≥0.95); different-intent pairs sit lower

@@ -5,9 +5,9 @@
 // Security numbers, and credit card numbers. Replaces detected PII
 // with redaction placeholders.
 
-import type { Filter } from "./types.js";
 import type { Direction, FilterResult, Violation } from "../types.js";
 import { registerFilter } from "./registry.js";
+import type { Filter } from "./types.js";
 
 /**
  * PII patterns with their redaction labels. Each entry has a regex,

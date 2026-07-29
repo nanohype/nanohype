@@ -24,9 +24,7 @@ export function getSkill(name: string): Skill {
   const skill = skills.get(name);
   if (!skill) {
     const available = [...skills.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown skill "${name}". Registered skills: ${available}`,
-    );
+    throw new Error(`Unknown skill "${name}". Registered skills: ${available}`);
   }
   return skill;
 }
@@ -44,4 +42,3 @@ export function listSkills(): string[] {
 export function getAllSkills(): Skill[] {
   return [...skills.values()];
 }
-

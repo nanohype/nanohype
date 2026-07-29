@@ -9,11 +9,11 @@
 //
 
 import type {
-  SearchIndex,
+  SearchConfig,
   SearchDocument,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchConfig,
 } from "../types.js";
 
 /** Provider factory -- returns a new SearchProvider instance each time. */

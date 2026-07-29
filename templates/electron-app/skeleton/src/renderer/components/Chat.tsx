@@ -1,11 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Message } from "../types";
 import { MessageBubble } from "./Message";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: number;
-}
 
 interface ChatProps {
   messages: Message[];
@@ -17,6 +12,9 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Scrolling to the bottom when the list grows is the whole point of this
+  // effect. Dropping the dependency would satisfy the rule and break autoscroll.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `messages` is the trigger, not a value the body reads
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -59,8 +57,8 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             Send a message to get started.
           </div>
         )}
-        {messages.map((msg, i) => (
-          <MessageBubble key={`msg-${i}`} message={msg} />
+        {messages.map((msg) => (
+          <MessageBubble key={msg.id} message={msg} />
         ))}
         {isLoading && (
           <div

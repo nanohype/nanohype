@@ -29,9 +29,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           maxWidth: "85%",
           padding: "8px 12px",
           borderRadius: "6px",
-          background: isUser
-            ? "color-mix(in srgb, var(--accent) 10%, transparent)"
-            : "var(--card)",
+          background: isUser ? "color-mix(in srgb, var(--accent) 10%, transparent)" : "var(--card)",
           color: "var(--foreground)",
           fontSize: "13px",
           lineHeight: "1.5",
@@ -64,14 +62,11 @@ function renderContent(content: string) {
   const parts: React.ReactNode[] = [];
   const codeBlockRegex = /```(?:\w+)?\n([\s\S]*?)```/g;
   let lastIndex = 0;
-  let match: RegExpExecArray | null;
 
-  while ((match = codeBlockRegex.exec(content)) !== null) {
+  for (const match of content.matchAll(codeBlockRegex)) {
     // Text before code block
     if (match.index > lastIndex) {
-      parts.push(
-        ...renderParagraphs(content.slice(lastIndex, match.index), parts.length),
-      );
+      parts.push(...renderParagraphs(content.slice(lastIndex, match.index), parts.length));
     }
     // Code block
     parts.push(
@@ -109,6 +104,9 @@ function renderParagraphs(text: string, keyOffset: number): React.ReactNode[] {
     .split("\n\n")
     .filter((p) => p.trim())
     .map((paragraph, i) => (
+      // This list is re-derived from `text` on every render and never reordered
+      // or spliced. Keying by content would collide on repeated paragraphs.
+      // biome-ignore lint/suspicious/noArrayIndexKey: position is this list's only identity
       <p key={`p-${keyOffset}-${i}`} style={{ margin: "2px 0" }}>
         {paragraph.trim()}
       </p>

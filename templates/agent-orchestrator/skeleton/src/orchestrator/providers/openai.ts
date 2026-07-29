@@ -1,7 +1,7 @@
 import OpenAI from "openai";
-import type { LlmProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { LlmProvider } from "./types.js";
 
 // ── OpenAI Provider ─────────────────────────────────────────────────
 //

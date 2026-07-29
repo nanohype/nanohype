@@ -1,9 +1,9 @@
-import { validateBootstrap } from "./bootstrap.js";
-import { NodeSDK } from "@opentelemetry/sdk-node";
 import { resourceFromAttributes } from "@opentelemetry/resources";
-import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { NodeSDK } from "@opentelemetry/sdk-node";
 import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
+import { validateBootstrap } from "./bootstrap.js";
 import { getExporter } from "./exporters/index.js";
 import { logger } from "./logger.js";
 
@@ -115,8 +115,8 @@ export async function shutdownTelemetry(): Promise<void> {
   }
 }
 
-// Re-export public API from submodules
-export { getTracer, withSpan, withSpanSync } from "./tracer.js";
-export { logger } from "./logger.js";
 export { getExporter, listExporters, registerExporter } from "./exporters/index.js";
 export type { TelemetryExporter } from "./exporters/types.js";
+export { logger } from "./logger.js";
+// Re-export public API from submodules
+export { getTracer, withSpan, withSpanSync } from "./tracer.js";

@@ -1,4 +1,5 @@
 import "./anthropic";
 import "./openai";
-export { getProvider, registerProvider, listProviders } from "./registry";
+
+export { getProvider, listProviders, registerProvider } from "./registry";
 export type { AiProvider, ChatMessage } from "./types";

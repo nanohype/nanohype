@@ -12,5 +12,5 @@ import "./anthropic.js";
 import "./openai.js";
 
 // Re-export the public API
-export { registerProvider, getProvider, listProviders } from "./registry.js";
-export type { LlmProvider, Message, LlmResponse } from "./types.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
+export type { LlmProvider, LlmResponse, Message } from "./types.js";

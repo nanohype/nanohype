@@ -5,9 +5,9 @@
 // function — no module-level mutable state.
 //
 
-import type { LlmSpan, CostEntry } from "../types.js";
-import type { CostFilters, CostSummary } from "./types.js";
+import type { CostEntry, LlmSpan } from "../types.js";
 import { calculateCost } from "./pricing.js";
+import type { CostFilters, CostSummary } from "./types.js";
 
 /**
  * Create a cost calculator instance. Entries are stored in memory
@@ -54,7 +54,7 @@ export function createCostCalculator() {
     if (filters.tags) {
       const requiredTags = filters.tags;
       filtered = filtered.filter((e) =>
-        Object.entries(requiredTags).every(([k, v]) => e.tags[k] === v)
+        Object.entries(requiredTags).every(([k, v]) => e.tags[k] === v),
       );
     }
     if (filters.since) {

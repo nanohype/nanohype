@@ -1,17 +1,17 @@
-import type { KnowledgeProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Page,
   Block,
   BlockType,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { KnowledgeProvider } from "./types.js";
 
 // ── Confluence Provider ────────────────────────────────────────────
 //
@@ -259,9 +259,7 @@ function createConfluenceProvider(): KnowledgeProvider {
 
     async getPage(pageId: string): Promise<Page> {
       logger.debug("confluence getPage", { pageId });
-      const cp = await confluenceFetch<ConfluencePage>(
-        `/pages/${pageId}?body-format=storage`,
-      );
+      const cp = await confluenceFetch<ConfluencePage>(`/pages/${pageId}?body-format=storage`);
       return toPage(cp);
     },
 
@@ -380,9 +378,7 @@ function createConfluenceProvider(): KnowledgeProvider {
 
     async getBlocks(pageId: string): Promise<Block[]> {
       logger.debug("confluence getBlocks", { pageId });
-      const cp = await confluenceFetch<ConfluencePage>(
-        `/pages/${pageId}?body-format=storage`,
-      );
+      const cp = await confluenceFetch<ConfluencePage>(`/pages/${pageId}?body-format=storage`);
       return storageToBlocks(cp.body?.storage?.value ?? "");
     },
   };

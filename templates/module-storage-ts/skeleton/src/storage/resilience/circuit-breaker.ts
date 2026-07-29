@@ -19,7 +19,10 @@ export interface CircuitBreakerOptions {
 }
 
 export class CircuitBreakerOpenError extends Error {
-  constructor() { super("Circuit breaker is open"); this.name = "CircuitBreakerOpenError"; }
+  constructor() {
+    super("Circuit breaker is open");
+    this.name = "CircuitBreakerOpenError";
+  }
 }
 
 type State = "closed" | "open" | "half-open";
@@ -43,7 +46,9 @@ export function createCircuitBreaker(opts: CircuitBreakerOptions = {}) {
     return failureTimestamps.length;
   }
 
-  function getState(): State { return state; }
+  function getState(): State {
+    return state;
+  }
 
   async function execute<T>(fn: () => Promise<T>): Promise<T> {
     if (state === "open") {

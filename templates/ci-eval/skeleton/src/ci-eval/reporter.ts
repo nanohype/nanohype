@@ -10,10 +10,7 @@ import type { ComparisonResult, SuiteComparison, SuiteScore } from "./types.js";
 /**
  * Format a comparison result as a markdown report for a PR comment.
  */
-export function formatMarkdownReport(
-  comparison: ComparisonResult,
-  scores: SuiteScore[],
-): string {
+export function formatMarkdownReport(comparison: ComparisonResult, scores: SuiteScore[]): string {
   const lines: string[] = [];
 
   // Header
@@ -29,9 +26,7 @@ export function formatMarkdownReport(
   for (const suite of comparison.suites) {
     const statusIcon = suite.regressed ? "FAIL" : suite.isNew ? "NEW" : "PASS";
     const delta = formatDelta(suite);
-    const baseline = suite.isNew
-      ? "—"
-      : `${formatPercent(suite.baselineScore ?? 0)}`;
+    const baseline = suite.isNew ? "—" : `${formatPercent(suite.baselineScore ?? 0)}`;
 
     lines.push(
       `| ${suite.suite} | ${statusIcon} | ${formatPercent(suite.currentPassRate)} | ${formatPercent(suite.currentScore)} | ${delta} | ${baseline} |`,
@@ -41,9 +36,7 @@ export function formatMarkdownReport(
   lines.push("");
 
   // Threshold info
-  lines.push(
-    `**Threshold:** ${formatPercent(comparison.threshold)} max regression allowed`,
-  );
+  lines.push(`**Threshold:** ${formatPercent(comparison.threshold)} max regression allowed`);
   lines.push("");
 
   // Expandable details per suite
@@ -54,7 +47,9 @@ export function formatMarkdownReport(
     if (!suiteScores || suiteScores.cases.length === 0) continue;
 
     lines.push(`<details>`);
-    lines.push(`<summary><strong>${suite.suite}</strong> — ${suiteScores.passed}/${suiteScores.total} passed (${formatMs(suiteScores.durationMs)})</summary>`);
+    lines.push(
+      `<summary><strong>${suite.suite}</strong> — ${suiteScores.passed}/${suiteScores.total} passed (${formatMs(suiteScores.durationMs)})</summary>`,
+    );
     lines.push("");
     lines.push("| Case | Status | Score | Duration |");
     lines.push("|------|--------|-------|----------|");

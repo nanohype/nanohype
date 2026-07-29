@@ -6,9 +6,9 @@
  */
 
 import OpenAI from "openai";
-import type { LlmProvider, EmbeddingProvider } from "./types.js";
-import { registerLlmProvider, registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerEmbeddingProvider, registerLlmProvider } from "./registry.js";
+import type { EmbeddingProvider, LlmProvider } from "./types.js";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
@@ -42,7 +42,7 @@ class OpenAILlm implements LlmProvider {
         ],
         temperature,
         max_tokens: maxTokens,
-      })
+      }),
     );
 
     const answer = response.choices[0]?.message?.content ?? "";
@@ -68,9 +68,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
   constructor(model = "text-embedding-3-small", dims = 1536, batchSize = 128, apiKey?: string) {
     const key = apiKey || process.env.OPENAI_API_KEY;
     if (!key) {
-      throw new Error(
-        "OPENAI_API_KEY environment variable is required for OpenAI embeddings",
-      );
+      throw new Error("OPENAI_API_KEY environment variable is required for OpenAI embeddings");
     }
     this.client = new OpenAI({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
     this.model = model;
@@ -88,7 +86,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
         input: [text],
         model: this.model,
         dimensions: this.dims,
-      })
+      }),
     );
     return response.data[0].embedding;
   }
@@ -103,7 +101,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
           input: batch,
           model: this.model,
           dimensions: this.dims,
-        })
+        }),
       );
       const sorted = [...response.data].sort((a, b) => a.index - b.index);
       allEmbeddings.push(...sorted.map((item) => item.embedding));
@@ -117,10 +115,5 @@ registerLlmProvider("openai", (apiKey?: unknown) => new OpenAILlm(apiKey as stri
 registerEmbeddingProvider(
   "openai",
   (model?: unknown, dims?: unknown, batchSize?: unknown, apiKey?: unknown) =>
-    new OpenAIEmbedder(
-      model as string,
-      dims as number,
-      batchSize as number,
-      apiKey as string,
-    ),
+    new OpenAIEmbedder(model as string, dims as number, batchSize as number, apiKey as string),
 );

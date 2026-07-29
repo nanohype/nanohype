@@ -1,6 +1,6 @@
 import OpenAI from "openai";
-import type { AiProvider, ChatMessage } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AiProvider, ChatMessage } from "./types.js";
 
 class OpenAIProvider implements AiProvider {
   readonly defaultModel = "gpt-4o";

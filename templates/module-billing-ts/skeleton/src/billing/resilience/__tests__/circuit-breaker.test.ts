@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CircuitBreaker } from "../circuit-breaker.js";
 
 describe("circuit breaker", () => {
@@ -24,7 +24,10 @@ describe("circuit breaker", () => {
   });
 
   it("opens after reaching failure threshold", async () => {
-    const fail = () => breaker.execute(async () => { throw new Error("fail"); });
+    const fail = () =>
+      breaker.execute(async () => {
+        throw new Error("fail");
+      });
 
     await expect(fail()).rejects.toThrow("fail");
     await expect(fail()).rejects.toThrow("fail");
@@ -37,12 +40,16 @@ describe("circuit breaker", () => {
   it("rejects calls immediately when open", async () => {
     // Force open
     for (let i = 0; i < 3; i++) {
-      await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
+      await breaker
+        .execute(async () => {
+          throw new Error("fail");
+        })
+        .catch(() => {});
     }
 
-    await expect(
-      breaker.execute(async () => "should not run"),
-    ).rejects.toThrow("Circuit breaker is open");
+    await expect(breaker.execute(async () => "should not run")).rejects.toThrow(
+      "Circuit breaker is open",
+    );
   });
 
   it("transitions to half-open after reset timeout", async () => {
@@ -50,7 +57,11 @@ describe("circuit breaker", () => {
 
     // Force open
     for (let i = 0; i < 3; i++) {
-      await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
+      await breaker
+        .execute(async () => {
+          throw new Error("fail");
+        })
+        .catch(() => {});
     }
 
     expect(breaker.getState()).toBe("open");
@@ -71,13 +82,21 @@ describe("circuit breaker", () => {
 
     // Force open
     for (let i = 0; i < 3; i++) {
-      await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
+      await breaker
+        .execute(async () => {
+          throw new Error("fail");
+        })
+        .catch(() => {});
     }
 
     vi.advanceTimersByTime(1500);
 
     // Fail in half-open
-    await breaker.execute(async () => { throw new Error("still broken"); }).catch(() => {});
+    await breaker
+      .execute(async () => {
+        throw new Error("still broken");
+      })
+      .catch(() => {});
 
     expect(breaker.getState()).toBe("open");
 
@@ -87,7 +106,11 @@ describe("circuit breaker", () => {
   it("resets to closed state", async () => {
     // Force open
     for (let i = 0; i < 3; i++) {
-      await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
+      await breaker
+        .execute(async () => {
+          throw new Error("fail");
+        })
+        .catch(() => {});
     }
 
     breaker.reset();
@@ -98,8 +121,16 @@ describe("circuit breaker", () => {
 
   it("resets failure count on success", async () => {
     // Two failures (below threshold)
-    await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
-    await breaker.execute(async () => { throw new Error("fail"); }).catch(() => {});
+    await breaker
+      .execute(async () => {
+        throw new Error("fail");
+      })
+      .catch(() => {});
+    await breaker
+      .execute(async () => {
+        throw new Error("fail");
+      })
+      .catch(() => {});
 
     expect(breaker.getFailureCount()).toBe(2);
 

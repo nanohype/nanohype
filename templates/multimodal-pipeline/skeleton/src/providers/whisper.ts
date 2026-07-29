@@ -7,9 +7,9 @@
  * Registers itself as the "whisper" transcription provider on import.
  */
 
-import OpenAI, { toFile } from "openai";
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
+import OpenAI, { toFile } from "openai";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 
 /**
@@ -25,11 +25,7 @@ export interface TranscriptionResult {
  * Interface for audio transcription providers.
  */
 export interface TranscriptionProvider {
-  transcribe(
-    filePath: string,
-    mimeType: string,
-    model: string,
-  ): Promise<TranscriptionResult>;
+  transcribe(filePath: string, mimeType: string, model: string): Promise<TranscriptionResult>;
 }
 
 const transcriptionProviders = new Map<string, (apiKey?: string) => TranscriptionProvider>();
@@ -41,16 +37,11 @@ export function registerTranscriptionProvider(
   transcriptionProviders.set(name, factory);
 }
 
-export function getTranscriptionProvider(
-  name: string,
-  apiKey?: string,
-): TranscriptionProvider {
+export function getTranscriptionProvider(name: string, apiKey?: string): TranscriptionProvider {
   const factory = transcriptionProviders.get(name);
   if (!factory) {
     const available = [...transcriptionProviders.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown transcription provider "${name}". Registered: ${available}`,
-    );
+    throw new Error(`Unknown transcription provider "${name}". Registered: ${available}`);
   }
   return factory(apiKey);
 }

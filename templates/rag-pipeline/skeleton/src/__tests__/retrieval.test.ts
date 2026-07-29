@@ -5,14 +5,14 @@
  * and score thresholding without needing real infrastructure.
  */
 
-import { describe, it, expect } from "vitest";
-import { Retriever } from "../retrieval.js";
+import { describe, expect, it } from "vitest";
 import type {
   EmbeddingProvider,
-  VectorStoreProvider,
-  VectorDocument,
   SearchResult,
+  VectorDocument,
+  VectorStoreProvider,
 } from "../providers/types.js";
+import { Retriever } from "../retrieval.js";
 
 class MockEmbedder implements EmbeddingProvider {
   readonly dimensions = 4;
@@ -116,10 +116,7 @@ describe("Retriever", () => {
   });
 
   it("includes all results with zero threshold", async () => {
-    const store = new MockVectorStore([
-      makeResult("1", "a", 0.9),
-      makeResult("2", "b", 0.01),
-    ]);
+    const store = new MockVectorStore([makeResult("1", "a", 0.9), makeResult("2", "b", 0.01)]);
 
     const retriever = new Retriever(new MockEmbedder(), store, 10, 0.0);
     const results = await retriever.retrieve("test query");

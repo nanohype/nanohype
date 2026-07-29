@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  createCircuitBreaker,
-  CircuitBreakerOpenError,
-} from "../circuit-breaker.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CircuitBreakerOpenError, createCircuitBreaker } from "../circuit-breaker.js";
 
 describe("circuit breaker", () => {
   beforeEach(() => {

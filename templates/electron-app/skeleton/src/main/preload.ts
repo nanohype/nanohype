@@ -11,7 +11,7 @@ export interface ElectronAPI {
   sendMessage: (
     messages: Array<{ role: string; content: string }>,
     provider?: string,
-    model?: string
+    model?: string,
   ) => Promise<{ content: string; error?: string }>;
 }
 
@@ -19,6 +19,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   sendMessage: (
     messages: Array<{ role: string; content: string }>,
     provider?: string,
-    model?: string
+    model?: string,
   ) => ipcRenderer.invoke("ai:send-message", { messages, provider, model }),
 } satisfies ElectronAPI);

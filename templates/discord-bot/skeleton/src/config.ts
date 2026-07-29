@@ -8,21 +8,13 @@ import { z } from "zod";
 //
 
 const configSchema = z.object({
-  DISCORD_TOKEN: z
-    .string()
-    .min(1, "DISCORD_TOKEN is required"),
+  DISCORD_TOKEN: z.string().min(1, "DISCORD_TOKEN is required"),
 
-  DISCORD_CLIENT_ID: z
-    .string()
-    .min(1, "DISCORD_CLIENT_ID is required"),
+  DISCORD_CLIENT_ID: z.string().min(1, "DISCORD_CLIENT_ID is required"),
 
-  LLM_PROVIDER: z
-    .string()
-    .default("__LLM_PROVIDER__"),
+  LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
 
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 });
 
 export type Config = z.infer<typeof configSchema>;

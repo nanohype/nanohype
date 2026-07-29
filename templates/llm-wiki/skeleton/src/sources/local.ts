@@ -1,11 +1,11 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { createHash } from "crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { readdir } from "fs/promises";
 import { join, resolve } from "path";
-import { createHash } from "crypto";
 import { parse, stringify } from "yaml";
-import type { Source, SourceProvider } from "./types.js";
-import { registerSourceProvider } from "./registry.js";
 import { getConfig } from "../config.js";
+import { registerSourceProvider } from "./registry.js";
+import type { Source, SourceProvider } from "./types.js";
 
 function sourcesDir(tenantId: string): string {
   return join(getConfig().WIKI_DATA_DIR, tenantId, "sources");
@@ -83,7 +83,7 @@ class LocalSourceProvider implements SourceProvider {
         id: raw.id,
         tenantId: raw.tenantId,
         ref: raw.ref,
-        content: "",  // metadata-only listing; content is on disk at ref
+        content: "", // metadata-only listing; content is on disk at ref
         contentHash: raw.contentHash,
         ingestedAt: new Date(raw.ingestedAt),
         provider: raw.provider,

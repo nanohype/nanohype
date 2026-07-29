@@ -1,4 +1,4 @@
-import { metrics, type Meter, type Counter, type Histogram } from "@opentelemetry/api";
+import { type Counter, type Histogram, type Meter, metrics } from "@opentelemetry/api";
 
 /**
  * Metrics helpers for creating counters and histograms.

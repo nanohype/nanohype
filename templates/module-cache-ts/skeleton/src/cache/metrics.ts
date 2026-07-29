@@ -15,10 +15,7 @@ export const cacheGetTotal = meter.createCounter("cache_get_total", {
 });
 
 /** Cache operation duration in milliseconds, labeled by operation name. */
-export const cacheOperationDuration = meter.createHistogram(
-  "cache_operation_duration_ms",
-  {
-    description: "Cache operation latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const cacheOperationDuration = meter.createHistogram("cache_operation_duration_ms", {
+  description: "Cache operation latency in milliseconds",
+  unit: "ms",
+});

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Import signature providers to trigger self-registration
 import "../signatures/hmac-sha256.js";

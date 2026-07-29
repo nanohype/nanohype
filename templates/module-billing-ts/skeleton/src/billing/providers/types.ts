@@ -7,11 +7,11 @@
 
 import type {
   BillingConfig,
-  Customer,
-  Subscription,
-  Invoice,
-  ChargeResult,
   BillingWebhookEvent,
+  ChargeResult,
+  Customer,
+  Invoice,
+  Subscription,
 } from "../types.js";
 
 export interface PaymentProvider {

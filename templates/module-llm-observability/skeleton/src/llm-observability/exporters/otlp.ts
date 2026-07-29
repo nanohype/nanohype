@@ -1,7 +1,7 @@
-import { trace, SpanStatusCode } from "@opentelemetry/api";
-import type { LlmSpan, CostEntry } from "../types.js";
-import type { LlmExporter } from "./types.js";
+import { SpanStatusCode, trace } from "@opentelemetry/api";
+import type { CostEntry, LlmSpan } from "../types.js";
 import { registerExporter } from "./registry.js";
+import type { LlmExporter } from "./types.js";
 
 // ── OTLP Exporter ──────────────────────────────────────────────────
 //

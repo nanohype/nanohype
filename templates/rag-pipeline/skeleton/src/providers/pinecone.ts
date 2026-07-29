@@ -5,11 +5,11 @@
  */
 
 import { Pinecone } from "@pinecone-database/pinecone";
-import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.js";
 import type { VectorStoreConfig } from "../config.js";
-import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerVectorStoreProvider } from "./registry.js";
+import type { SearchResult, VectorDocument, VectorStoreProvider } from "./types.js";
 
 class PineconeVectorStore implements VectorStoreProvider {
   private readonly index: ReturnType<Pinecone["index"]>;
@@ -42,9 +42,7 @@ class PineconeVectorStore implements VectorStoreProvider {
     const batchSize = 100;
     for (let i = 0; i < vectors.length; i += batchSize) {
       const batch = vectors.slice(i, i + batchSize);
-      await this.cb.execute(() =>
-        this.index.namespace(this.namespace).upsert(batch)
-      );
+      await this.cb.execute(() => this.index.namespace(this.namespace).upsert(batch));
     }
   }
 
@@ -71,7 +69,7 @@ class PineconeVectorStore implements VectorStoreProvider {
     }
 
     const response = await this.cb.execute(() =>
-      this.index.namespace(this.namespace).query(queryParams)
+      this.index.namespace(this.namespace).query(queryParams),
     );
 
     return (response.matches ?? []).map((match) => {
@@ -89,9 +87,7 @@ class PineconeVectorStore implements VectorStoreProvider {
   }
 
   async delete(ids: string[]): Promise<void> {
-    await this.cb.execute(() =>
-      this.index.namespace(this.namespace).deleteMany(ids)
-    );
+    await this.cb.execute(() => this.index.namespace(this.namespace).deleteMany(ids));
   }
 }
 

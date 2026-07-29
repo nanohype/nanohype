@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { ToolRegistry, type Tool } from "../tools/registry.js";
+import { type Tool, ToolRegistry } from "../tools/registry.js";
 
 function makeTool(name: string, schema?: z.ZodObject<z.ZodRawShape>): Tool {
   return {
@@ -84,8 +84,6 @@ describe("ToolRegistry", () => {
 
   it("throws when registering a duplicate tool name", () => {
     registry.register(makeTool("dup"));
-    expect(() => registry.register(makeTool("dup"))).toThrow(
-      'Tool "dup" is already registered',
-    );
+    expect(() => registry.register(makeTool("dup"))).toThrow('Tool "dup" is already registered');
   });
 });

@@ -7,42 +7,42 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
+import type { SearchClientConfig } from "./config.js";
 import { SearchClientConfigSchema } from "./config.js";
+import { searchDurationMs, searchIndexTotal, searchRequestTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
-import { searchRequestTotal, searchDurationMs, searchIndexTotal } from "./metrics.js";
 import type { SearchProvider } from "./providers/types.js";
 import type {
-  SearchIndex,
+  SearchConfig,
   SearchDocument,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchConfig,
 } from "./types.js";
-import type { SearchClientConfig } from "./config.js";
 
+export type { SearchClientConfig } from "./config.js";
+export { SearchClientConfigSchema } from "./config.js";
+export type { RankableHit, RRFResult } from "./hybrid/combiner.js";
+export { reciprocalRankFusion } from "./hybrid/combiner.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { SearchProvider, SearchProviderFactory } from "./providers/types.js";
+export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
 export type {
-  SearchIndex,
-  IndexField,
-  SearchDocument,
-  SearchQuery,
-  SearchHit,
-  SearchResult,
+  AndFilter,
+  ComparisonFilter,
   Facet,
   FilterExpression,
-  ComparisonFilter,
-  AndFilter,
+  IndexField,
   OrFilter,
   SearchConfig,
+  SearchDocument,
+  SearchHit,
+  SearchIndex,
+  SearchQuery,
+  SearchResult,
 } from "./types.js";
-export { reciprocalRankFusion } from "./hybrid/combiner.js";
-export type { RankableHit, RRFResult } from "./hybrid/combiner.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
-export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
-export { SearchClientConfigSchema } from "./config.js";
-export type { SearchClientConfig } from "./config.js";
 
 // ── Search Client Facade ──────────────────────────────────────────
 

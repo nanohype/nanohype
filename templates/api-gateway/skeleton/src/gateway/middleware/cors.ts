@@ -16,8 +16,12 @@ export function createCorsMiddleware(
   rule: CorsRule,
 ): (c: Context, next: Next) => Promise<Response | void> {
   const allowOrigins = rule.origins;
-  const allowMethods = (rule.methods ?? ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]).join(", ");
-  const allowHeaders = (rule.allowHeaders ?? ["Content-Type", "Authorization", "X-API-Key"]).join(", ");
+  const allowMethods = (rule.methods ?? ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]).join(
+    ", ",
+  );
+  const allowHeaders = (rule.allowHeaders ?? ["Content-Type", "Authorization", "X-API-Key"]).join(
+    ", ",
+  );
   const exposeHeaders = rule.exposeHeaders?.join(", ") ?? "";
   const maxAge = String(rule.maxAge ?? 86400);
 

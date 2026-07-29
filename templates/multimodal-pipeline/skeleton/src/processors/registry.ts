@@ -6,7 +6,7 @@
  * lookup by modality or MIME type at runtime.
  */
 
-import type { Processor, Modality } from "./types.js";
+import type { Modality, Processor } from "./types.js";
 
 const processors = new Map<string, Processor>();
 const modalityMap = new Map<Modality, Processor>();

@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { pathMatches, methodMatches, computeForwardPath, matchRoute } from "../router/matcher.js";
+import { describe, expect, it } from "vitest";
+import { computeForwardPath, matchRoute, methodMatches, pathMatches } from "../router/matcher.js";
 import type { RouteRule } from "../types.js";
 
 // ── Matcher Tests ───────────────────────────────────────────────────

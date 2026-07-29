@@ -1,5 +1,5 @@
-import type { RateLimitStore, StoreConfig } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { RateLimitStore, StoreConfig } from "./types.js";
 
 // ── In-Memory Store ────────────────────────────────────────────────
 //

@@ -5,9 +5,9 @@
  */
 
 import { CohereClient } from "cohere-ai";
-import type { EmbeddingProvider } from "./types.js";
-import { registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerEmbeddingProvider } from "./registry.js";
+import type { EmbeddingProvider } from "./types.js";
 
 class CohereEmbedder implements EmbeddingProvider {
   private readonly client: CohereClient;
@@ -19,9 +19,7 @@ class CohereEmbedder implements EmbeddingProvider {
   constructor(model = "embed-english-v3.0", dims = 1024, batchSize = 96, apiKey?: string) {
     const key = apiKey || process.env.COHERE_API_KEY;
     if (!key) {
-      throw new Error(
-        "COHERE_API_KEY environment variable is required for Cohere embeddings",
-      );
+      throw new Error("COHERE_API_KEY environment variable is required for Cohere embeddings");
     }
     this.client = new CohereClient({ token: key });
     this.model = model;
@@ -39,7 +37,7 @@ class CohereEmbedder implements EmbeddingProvider {
         texts: [text],
         model: this.model,
         inputType: "search_document",
-      })
+      }),
     );
 
     const embeddings = response.embeddings;
@@ -59,7 +57,7 @@ class CohereEmbedder implements EmbeddingProvider {
           texts: batch,
           model: this.model,
           inputType: "search_document",
-        })
+        }),
       );
 
       const embeddings = response.embeddings;
@@ -75,10 +73,5 @@ class CohereEmbedder implements EmbeddingProvider {
 registerEmbeddingProvider(
   "cohere",
   (model?: unknown, dims?: unknown, batchSize?: unknown, apiKey?: unknown) =>
-    new CohereEmbedder(
-      model as string,
-      dims as number,
-      batchSize as number,
-      apiKey as string,
-    ),
+    new CohereEmbedder(model as string, dims as number, batchSize as number, apiKey as string),
 );

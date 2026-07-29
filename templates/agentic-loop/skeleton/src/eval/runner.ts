@@ -3,10 +3,10 @@ import { join, resolve } from "node:path";
 import { runAgent } from "../agent.js";
 import type { AssertionResult } from "./assertions.js";
 import {
+  completedWithinIterations,
   contains,
   matchesPattern,
   toolWasCalled,
-  completedWithinIterations,
 } from "./assertions.js";
 
 /**
@@ -151,13 +151,15 @@ async function main(): Promise<void> {
     (sum, r) => sum + r.assertions.filter((a) => a.pass).length,
     0,
   );
-  const failedFixtures = results.filter(
-    (r) => r.error || r.assertions.some((a) => !a.pass),
-  );
+  const failedFixtures = results.filter((r) => r.error || r.assertions.some((a) => !a.pass));
 
   console.log("\n--- Summary ---");
-  console.log(`Fixtures: ${results.length} total, ${results.length - failedFixtures.length} passed, ${failedFixtures.length} failed`);
-  console.log(`Assertions: ${totalAssertions} total, ${passedAssertions} passed, ${totalAssertions - passedAssertions} failed`);
+  console.log(
+    `Fixtures: ${results.length} total, ${results.length - failedFixtures.length} passed, ${failedFixtures.length} failed`,
+  );
+  console.log(
+    `Assertions: ${totalAssertions} total, ${passedAssertions} passed, ${totalAssertions - passedAssertions} failed`,
+  );
 
   if (failedFixtures.length > 0) {
     process.exit(1);

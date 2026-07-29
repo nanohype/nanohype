@@ -9,5 +9,5 @@ import "./email/index.js";
 import "./sms/index.js";
 import "./push/index.js";
 
-export { registerChannel, getChannel, listChannels } from "./registry.js";
+export { getChannel, listChannels, registerChannel } from "./registry.js";
 export type { ChannelProvider } from "./types.js";

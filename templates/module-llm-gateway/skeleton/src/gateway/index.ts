@@ -7,45 +7,45 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider } from "./providers/index.js";
-import { getStrategy } from "./routing/index.js";
-import { getCachingStrategy } from "./caching/index.js";
 import { computeCacheKey } from "./caching/hash.js";
+import { getCachingStrategy } from "./caching/index.js";
+import type { CostFilters, CostSummary } from "./cost/tracker.js";
 import { createCostTracker } from "./cost/tracker.js";
 import {
-  gatewayRequestTotal,
-  gatewayRequestDuration,
-  gatewayTokenUsage,
-  gatewayCostTotal,
-  gatewayCacheTotal,
   bedrockCacheTotal,
+  gatewayCacheTotal,
+  gatewayCostTotal,
+  gatewayRequestDuration,
+  gatewayRequestTotal,
+  gatewayTokenUsage,
 } from "./metrics.js";
 import { bedrockCacheKinds } from "./providers/bedrock-cache.js";
+import { getProvider } from "./providers/index.js";
 import type { GatewayProvider } from "./providers/types.js";
-import type { GatewayConfig, ChatMessage, ChatOptions, GatewayResponse } from "./types.js";
-import type { CostFilters, CostSummary } from "./cost/tracker.js";
+import { getStrategy } from "./routing/index.js";
+import type { ChatMessage, ChatOptions, GatewayConfig, GatewayResponse } from "./types.js";
 
-// Re-export everything consumers need
-export { registerProvider, getProvider, listProviders } from "./providers/index.js";
-export type { GatewayProvider, ProviderPricing } from "./providers/types.js";
-export { registerStrategy, getStrategy, listStrategies } from "./routing/index.js";
-export type { RoutingStrategy, RoutingContext } from "./routing/types.js";
 export {
-  registerCachingStrategy,
   getCachingStrategy,
   listCachingStrategies,
+  registerCachingStrategy,
 } from "./caching/index.js";
-export type { CachingStrategy, CacheContext, CachedResponse } from "./caching/types.js";
-export { createCostTracker } from "./cost/tracker.js";
-export type { CostEntry, CostFilters, CostSummary, CostTracker } from "./cost/tracker.js";
-export { detectAnomalies } from "./cost/anomaly.js";
+export type { CacheContext, CachedResponse, CachingStrategy } from "./caching/types.js";
 export type { AnomalyResult } from "./cost/anomaly.js";
-export { calculateCost, getModelPricing, DEFAULT_PRICING } from "./cost/pricing.js";
+export { detectAnomalies } from "./cost/anomaly.js";
+export { calculateCost, DEFAULT_PRICING, getModelPricing } from "./cost/pricing.js";
+export type { CostEntry, CostFilters, CostSummary, CostTracker } from "./cost/tracker.js";
+export { createCostTracker } from "./cost/tracker.js";
+// Re-export everything consumers need
+export { getProvider, listProviders, registerProvider } from "./providers/index.js";
+export type { GatewayProvider, ProviderPricing } from "./providers/types.js";
+export { getStrategy, listStrategies, registerStrategy } from "./routing/index.js";
+export type { RoutingContext, RoutingStrategy } from "./routing/types.js";
 export { countTokens } from "./tokens/counter.js";
 export type {
-  GatewayConfig,
   ChatMessage,
   ChatOptions,
+  GatewayConfig,
   GatewayResponse,
 } from "./types.js";
 

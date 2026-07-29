@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
+import * as vscode from "vscode";
 
 export class WebviewPanel {
   public static currentPanel: WebviewPanel | undefined;
@@ -27,9 +27,7 @@ export class WebviewPanel {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [
-          vscode.Uri.joinPath(extensionUri, "dist", "webview"),
-        ],
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, "dist", "webview")],
       },
     );
 
@@ -48,9 +46,7 @@ export class WebviewPanel {
       (message: { type: string; payload?: unknown }) => {
         switch (message.type) {
           case "info":
-            vscode.window.showInformationMessage(
-              String(message.payload ?? ""),
-            );
+            vscode.window.showInformationMessage(String(message.payload ?? ""));
             break;
           case "error":
             vscode.window.showErrorMessage(String(message.payload ?? ""));
@@ -75,13 +71,7 @@ export class WebviewPanel {
 
     const nonce = getNonce();
 
-    const htmlPath = path.join(
-      this.extensionUri.fsPath,
-      "src",
-      "webview",
-      "app",
-      "index.html",
-    );
+    const htmlPath = path.join(this.extensionUri.fsPath, "src", "webview", "app", "index.html");
     let html = fs.readFileSync(htmlPath, "utf-8");
 
     // Inject CSP, nonce, and script URI into the template
@@ -107,8 +97,7 @@ export class WebviewPanel {
 
 function getNonce(): string {
   let text = "";
-  const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }

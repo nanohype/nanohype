@@ -1,10 +1,10 @@
 import { createServer as createHttpServer } from "node:http";
 import { Hono } from "hono";
-import { tenantRoutes } from "./routes/tenants.js";
-import { sourceRoutes } from "./routes/sources.js";
-import { wikiRoutes } from "./routes/wiki.js";
-import { adminRoutes } from "./routes/admin.js";
 import { authMiddleware } from "./middleware/auth.js";
+import { adminRoutes } from "./routes/admin.js";
+import { sourceRoutes } from "./routes/sources.js";
+import { tenantRoutes } from "./routes/tenants.js";
+import { wikiRoutes } from "./routes/wiki.js";
 
 export function createServer(): Hono {
   const app = new Hono();
@@ -33,13 +33,14 @@ export function startServer(port: number): void {
       if (value) headers.set(key, Array.isArray(value) ? value.join(", ") : value);
     }
 
-    const body = req.method !== "GET" && req.method !== "HEAD"
-      ? await new Promise<Buffer>((resolve) => {
-          const chunks: Buffer[] = [];
-          req.on("data", (chunk: Buffer) => chunks.push(chunk));
-          req.on("end", () => resolve(Buffer.concat(chunks)));
-        })
-      : undefined;
+    const body =
+      req.method !== "GET" && req.method !== "HEAD"
+        ? await new Promise<Buffer>((resolve) => {
+            const chunks: Buffer[] = [];
+            req.on("data", (chunk: Buffer) => chunks.push(chunk));
+            req.on("end", () => resolve(Buffer.concat(chunks)));
+          })
+        : undefined;
 
     const request = new Request(url.toString(), {
       method: req.method,

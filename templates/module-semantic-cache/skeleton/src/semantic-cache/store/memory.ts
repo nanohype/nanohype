@@ -1,7 +1,7 @@
 import { cosineSimilarity } from "../similarity.js";
+import type { CacheHit, CacheVector } from "../types.js";
 import { registerVectorStore } from "./registry.js";
 import type { VectorCacheStore, VectorStoreConfig } from "./types.js";
-import type { CacheVector, CacheHit } from "../types.js";
 
 // ── In-Memory Vector Store ─────────────────────────────────────────
 //

@@ -4,9 +4,9 @@
 // expire (~30 minutes) and are refreshable. Refresh responses include
 // a fresh refresh_token that replaces the old one.
 
-import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { expiresAtFromExpiresIn, TokenResponseSchema } from "./shared.js";
+import type { OAuthProvider, TokenGrant } from "./types.js";
 
 function parse(raw: unknown, previous?: TokenGrant): TokenGrant {
   const r = TokenResponseSchema.parse(raw);

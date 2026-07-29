@@ -4,9 +4,9 @@
 // attempts to override system instructions, leak system prompts, or
 // manipulate the LLM's behavior through adversarial input.
 
-import type { Filter } from "./types.js";
 import type { Direction, FilterResult, Violation } from "../types.js";
 import { registerFilter } from "./registry.js";
+import type { Filter } from "./types.js";
 
 /**
  * Patterns that indicate a prompt injection attempt. Each entry has a
@@ -18,7 +18,8 @@ const INJECTION_PATTERNS: { pattern: RegExp; description: string }[] = [
     description: "Attempt to override previous instructions",
   },
   {
-    pattern: /disregard\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|prompts?|rules?)/i,
+    pattern:
+      /disregard\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|prompts?|rules?)/i,
     description: "Attempt to disregard previous instructions",
   },
   {

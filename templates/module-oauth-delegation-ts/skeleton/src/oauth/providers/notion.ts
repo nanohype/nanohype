@@ -7,9 +7,8 @@
 // attacks even when the redirect is on HTTPS.
 
 import { z } from "zod";
-
-import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { OAuthProvider, TokenGrant } from "./types.js";
 
 // Notion issues a single long-lived access token plus workspace metadata.
 // `.passthrough()` keeps `bot_id` / `workspace_*` / `owner` on `raw`.

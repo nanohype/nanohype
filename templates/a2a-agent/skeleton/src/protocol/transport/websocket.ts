@@ -1,8 +1,8 @@
-import type { TaskRequest, TaskResponse } from "../types.js";
-import type { A2ATransport } from "./types.js";
-import { registerTransport } from "./registry.js";
 import { logger } from "../../logger.js";
 import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
+import type { TaskRequest, TaskResponse } from "../types.js";
+import { registerTransport } from "./registry.js";
+import type { A2ATransport } from "./types.js";
 
 /**
  * WebSocket transport for A2A protocol.
@@ -20,35 +20,38 @@ class WebSocketTransport implements A2ATransport {
 
     logger.debug("WebSocket transport sending task", { url: wsUrl, skill: request.skill });
 
-    return this.cb.execute(() => new Promise<TaskResponse>((resolve, reject) => {
-      const ws = new WebSocket(wsUrl);
+    return this.cb.execute(
+      () =>
+        new Promise<TaskResponse>((resolve, reject) => {
+          const ws = new WebSocket(wsUrl);
 
-      const timeout = setTimeout(() => {
-        ws.close();
-        reject(new Error("WebSocket transport timed out after 30s"));
-      }, 30_000);
+          const timeout = setTimeout(() => {
+            ws.close();
+            reject(new Error("WebSocket transport timed out after 30s"));
+          }, 30_000);
 
-      ws.addEventListener("open", () => {
-        ws.send(JSON.stringify(request));
-      });
+          ws.addEventListener("open", () => {
+            ws.send(JSON.stringify(request));
+          });
 
-      ws.addEventListener("message", (event) => {
-        clearTimeout(timeout);
-        try {
-          const response = JSON.parse(String(event.data)) as TaskResponse;
-          resolve(response);
-        } catch (error) {
-          reject(new Error(`Failed to parse WebSocket response: ${error}`));
-        } finally {
-          ws.close();
-        }
-      });
+          ws.addEventListener("message", (event) => {
+            clearTimeout(timeout);
+            try {
+              const response = JSON.parse(String(event.data)) as TaskResponse;
+              resolve(response);
+            } catch (error) {
+              reject(new Error(`Failed to parse WebSocket response: ${error}`));
+            } finally {
+              ws.close();
+            }
+          });
 
-      ws.addEventListener("error", (event) => {
-        clearTimeout(timeout);
-        reject(new Error(`WebSocket transport error: ${event}`));
-      });
-    }));
+          ws.addEventListener("error", (event) => {
+            clearTimeout(timeout);
+            reject(new Error(`WebSocket transport error: ${event}`));
+          });
+        }),
+    );
   }
 }
 

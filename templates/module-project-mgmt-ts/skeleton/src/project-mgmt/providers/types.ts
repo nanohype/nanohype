@@ -10,14 +10,14 @@
 //
 
 import type {
-  Project,
-  Issue,
   Comment,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 
 /** Provider factory — returns a new ProjectProvider instance each time. */

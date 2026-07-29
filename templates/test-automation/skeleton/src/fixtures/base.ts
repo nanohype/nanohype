@@ -1,6 +1,6 @@
-import { test as base, type Page, type BrowserContext } from "@playwright/test";
+import { type BrowserContext, test as base, type Page } from "@playwright/test";
+import { type UserData, UserFactory } from "../factories/user.factory.js";
 import { LoginPage } from "../pages/login.page.js";
-import { UserFactory, type UserData } from "../factories/user.factory.js";
 
 /**
  * Custom test fixtures for __PROJECT_NAME__.
@@ -26,7 +26,7 @@ export const test = base.extend<TestFixtures>({
     await use(loginPage);
   },
 
-  testUser: async ({}, use) => {
+  testUser: async (_, use) => {
     const user = UserFactory.create();
     await use(user);
   },

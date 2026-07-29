@@ -11,5 +11,5 @@ import "./google-docs.js";
 import "./coda.js";
 import "./mock.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { KnowledgeProvider, KnowledgeProviderFactory } from "./types.js";

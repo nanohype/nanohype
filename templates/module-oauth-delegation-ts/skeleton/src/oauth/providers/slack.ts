@@ -7,10 +7,9 @@
 // override `parseTokenResponse` if you want the bot token.
 
 import { z } from "zod";
-
-import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { expiresAtFromExpiresIn } from "./shared.js";
+import type { OAuthProvider, TokenGrant } from "./types.js";
 
 // Slack's response is nested: user-scope tokens live under `authed_user`,
 // bot tokens at the top level. `.passthrough()` keeps `team` and other

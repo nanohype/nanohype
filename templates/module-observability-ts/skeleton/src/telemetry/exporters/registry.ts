@@ -12,10 +12,7 @@ const exporters = new Map<string, () => TelemetryExporter>();
  * Register an exporter factory under the given name.
  * Called at module load time by each exporter module.
  */
-export function registerExporter(
-  name: string,
-  factory: () => TelemetryExporter,
-): void {
+export function registerExporter(name: string, factory: () => TelemetryExporter): void {
   exporters.set(name, factory);
 }
 
@@ -27,9 +24,7 @@ export function getExporter(name: string): TelemetryExporter {
   const factory = exporters.get(name);
   if (!factory) {
     const available = [...exporters.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown telemetry exporter "${name}". Registered exporters: ${available}`,
-    );
+    throw new Error(`Unknown telemetry exporter "${name}". Registered exporters: ${available}`);
   }
   return factory();
 }

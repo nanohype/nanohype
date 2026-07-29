@@ -1,10 +1,10 @@
 import pg from "pg";
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
-import type { FilterExpression } from "../filters/types.js";
-import type { VectorStoreProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { compileFilter, type SqlFilterResult } from "../filters/compiler.js";
+import type { FilterExpression } from "../filters/types.js";
 import { withRetry } from "../helpers.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { VectorStoreProvider } from "./types.js";
 
 // -- pgvector Provider ---------------------------------------------------
 //
@@ -42,8 +42,7 @@ class PgVectorProvider implements VectorStoreProvider {
   private dimensions = 1536;
 
   async init(config: PgVectorConfig): Promise<void> {
-    const connectionString =
-      config.connectionString || process.env.PGVECTOR_CONNECTION_STRING;
+    const connectionString = config.connectionString || process.env.PGVECTOR_CONNECTION_STRING;
     if (!connectionString) {
       throw new Error(
         "pgvector provider requires connectionString config or PGVECTOR_CONNECTION_STRING env var",
@@ -93,14 +92,16 @@ class PgVectorProvider implements VectorStoreProvider {
           )
         `);
         // Create an index for faster cosine similarity search
-        await client.query(`
+        await client
+          .query(`
           CREATE INDEX IF NOT EXISTS ${this.tableName}_embedding_idx
           ON ${this.tableName}
           USING ivfflat (embedding vector_cosine_ops)
           WITH (lists = 100)
-        `).catch(() => {
-          // IVFFlat index requires at least some rows; skip if table is empty
-        });
+        `)
+          .catch(() => {
+            // IVFFlat index requires at least some rows; skip if table is empty
+          });
       } finally {
         client.release();
       }
@@ -176,19 +177,14 @@ class PgVectorProvider implements VectorStoreProvider {
     if (!this.pool) throw new Error("Provider not initialized");
 
     await withRetry(async () => {
-      await this.pool!.query(
-        `DELETE FROM ${this.tableName} WHERE id = ANY($1)`,
-        [ids],
-      );
+      await this.pool!.query(`DELETE FROM ${this.tableName} WHERE id = ANY($1)`, [ids]);
     });
   }
 
   async count(): Promise<number> {
     if (!this.pool) throw new Error("Provider not initialized");
 
-    const result = await this.pool.query(
-      `SELECT COUNT(*)::int AS count FROM ${this.tableName}`,
-    );
+    const result = await this.pool.query(`SELECT COUNT(*)::int AS count FROM ${this.tableName}`);
     return result.rows[0].count;
   }
 

@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider, ChatMessage } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ChatMessage, LlmProvider } from "./types.js";
 
 const client = new Anthropic();
 const cb = createCircuitBreaker();

@@ -10,7 +10,7 @@
  * embedding function (pre-computed embeddings only), upsert, similarity query
  * with the distance→score mapping, and delete.
  */
-import { describe, it, expect, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import "../chroma.js"; // self-registers the "chroma" provider
 import { getVectorStoreProvider } from "../registry.js";
 import type { VectorStoreProvider } from "../types.js";

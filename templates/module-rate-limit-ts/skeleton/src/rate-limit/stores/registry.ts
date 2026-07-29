@@ -20,9 +20,7 @@ export function getStore(name: string): RateLimitStore {
   const store = stores.get(name);
   if (!store) {
     const available = Array.from(stores.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Rate limit store "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Rate limit store "${name}" not found. Available: ${available}`);
   }
   return store;
 }

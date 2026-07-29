@@ -1,18 +1,18 @@
 import { VertexAI } from "@google-cloud/vertexai";
-import type { LlmProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
   ChatOptions,
   LlmResponse,
-  StreamResponse,
-  StreamChunk,
   Pricing,
+  StreamChunk,
+  StreamResponse,
 } from "../types.js";
-import { getPricing, estimateCost } from "../types.js";
+import { estimateCost, getPricing } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { countTokens } from "../tokens/counter.js";
-import { logger } from "../logger.js";
+import type { LlmProvider } from "./types.js";
 
 // ── Google Vertex AI Provider ──────────────────────────────────────
 //
@@ -71,9 +71,13 @@ function createVertexProvider(): LlmProvider {
         parts: [{ text: m.content }],
       }));
 
-      const systemInstruction = systemParts.length > 0
-        ? { role: "user" as const, parts: [{ text: systemParts.map((m) => m.content).join("\n\n") }] }
-        : undefined;
+      const systemInstruction =
+        systemParts.length > 0
+          ? {
+              role: "user" as const,
+              parts: [{ text: systemParts.map((m) => m.content).join("\n\n") }],
+            }
+          : undefined;
 
       const start = performance.now();
 
@@ -86,9 +90,7 @@ function createVertexProvider(): LlmProvider {
 
       const latencyMs = performance.now() - start;
       const result = response.response;
-      const text = result.candidates?.[0]?.content?.parts
-        ?.map((p) => p.text ?? "")
-        .join("") ?? "";
+      const text = result.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
 
       const usage = {
         inputTokens: result.usageMetadata?.promptTokenCount ?? 0,
@@ -135,9 +137,13 @@ function createVertexProvider(): LlmProvider {
           parts: [{ text: m.content }],
         }));
 
-        const systemInstruction = systemParts.length > 0
-          ? { role: "user" as const, parts: [{ text: systemParts.map((m) => m.content).join("\n\n") }] }
-          : undefined;
+        const systemInstruction =
+          systemParts.length > 0
+            ? {
+                role: "user" as const,
+                parts: [{ text: systemParts.map((m) => m.content).join("\n\n") }],
+              }
+            : undefined;
 
         const streamResult = await generativeModel.generateContentStream({
           contents,
@@ -145,9 +151,8 @@ function createVertexProvider(): LlmProvider {
         });
 
         for await (const chunk of streamResult.stream) {
-          const delta = chunk.candidates?.[0]?.content?.parts
-            ?.map((p) => p.text ?? "")
-            .join("") ?? "";
+          const delta =
+            chunk.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
           if (delta) {
             fullText += delta;
             yield { text: delta, done: false };

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { AiProvider } from "../lib/providers/types.js";
 
 /**
@@ -50,9 +50,7 @@ describe("provider registry", () => {
     registerProvider("anthropic", () => stubProvider());
     registerProvider("openai", () => stubProvider());
 
-    expect(() => getProvider("cohere")).toThrowError(
-      /Unknown AI provider: "cohere"/,
-    );
+    expect(() => getProvider("cohere")).toThrowError(/Unknown AI provider: "cohere"/);
     expect(() => getProvider("cohere")).toThrowError(/Available:/);
   });
 

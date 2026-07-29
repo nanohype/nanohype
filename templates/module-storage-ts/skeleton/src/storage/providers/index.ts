@@ -9,6 +9,6 @@ import "./local.js";
 import "./s3.js";
 import "./r2.js";
 
-export type { StorageProvider, ProviderConfig } from "./types.js";
-export { registerProvider, getProvider, listProviders } from "./registry.js";
 export { toBuffer, withRetry } from "./helpers.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
+export type { ProviderConfig, StorageProvider } from "./types.js";

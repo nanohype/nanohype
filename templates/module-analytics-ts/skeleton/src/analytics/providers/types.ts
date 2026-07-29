@@ -10,11 +10,11 @@
 //
 
 import type {
-  TrackEvent,
-  IdentifyPayload,
-  GroupPayload,
-  PagePayload,
   AnalyticsConfig,
+  GroupPayload,
+  IdentifyPayload,
+  PagePayload,
+  TrackEvent,
 } from "../types.js";
 
 /** Provider factory -- returns a new AnalyticsProvider instance each time. */

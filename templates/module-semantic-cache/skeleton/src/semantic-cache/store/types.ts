@@ -5,7 +5,7 @@
 // store module that calls registerVectorStore() at the module level.
 //
 
-import type { CacheVector, CacheHit } from "../types.js";
+import type { CacheHit, CacheVector } from "../types.js";
 
 export interface VectorStoreConfig {
   /** Backend-specific configuration options. */

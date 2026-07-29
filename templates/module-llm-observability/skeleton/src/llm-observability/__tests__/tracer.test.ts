@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createLlmTracer, TracedError } from "../tracer/index.js";
 import type { LlmResponse } from "../types.js";
 
@@ -103,7 +103,7 @@ describe("LLM tracer", () => {
     const tracer = createLlmTracer({ serviceName: "test-service" });
 
     const { span } = await tracer.trace(async () =>
-      makeResponse({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 })
+      makeResponse({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }),
     );
 
     expect(span.model).toBe("gpt-4o");

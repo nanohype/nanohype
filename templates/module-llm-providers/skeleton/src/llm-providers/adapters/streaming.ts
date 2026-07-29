@@ -12,9 +12,7 @@ import type { StreamChunk, StreamResponse } from "../types.js";
  * StreamChunk format. Useful when adapting third-party provider
  * streams that yield raw strings.
  */
-export async function* normalizeStream(
-  source: AsyncIterable<string>,
-): AsyncGenerator<StreamChunk> {
+export async function* normalizeStream(source: AsyncIterable<string>): AsyncGenerator<StreamChunk> {
   for await (const text of source) {
     yield { text, done: false };
   }

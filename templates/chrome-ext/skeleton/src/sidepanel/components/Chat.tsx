@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageBubble } from "./Message";
+import { useEffect, useRef, useState } from "react";
 import type { Message } from "@/lib/messaging";
+import { MessageBubble } from "./Message";
 
 interface ChatProps {
   messages: Message[];
@@ -12,6 +12,9 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Scrolling to the bottom when the list grows is the whole point of this
+  // effect. Dropping the dependency would satisfy the rule and break autoscroll.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `messages` is the trigger, not a value the body reads
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -54,8 +57,8 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             Send a message to get started.
           </div>
         )}
-        {messages.map((msg, i) => (
-          <MessageBubble key={`msg-${i}`} message={msg} />
+        {messages.map((msg) => (
+          <MessageBubble key={msg.id} message={msg} />
         ))}
         {isLoading && (
           <div
@@ -97,12 +100,8 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             fontSize: "13px",
             transition: "border-color 0.15s var(--ease-out)",
           }}
-          onFocus={(e) =>
-            (e.currentTarget.style.borderColor = "var(--accent)")
-          }
-          onBlur={(e) =>
-            (e.currentTarget.style.borderColor = "var(--input-border)")
-          }
+          onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "var(--input-border)")}
         />
         <button
           type="submit"
@@ -111,31 +110,22 @@ export function Chat({ messages, onSend, isLoading }: ChatProps) {
             padding: "8px 16px",
             borderRadius: "6px",
             border: "none",
-            background:
-              isLoading || !input.trim()
-                ? "var(--muted)"
-                : "var(--accent)",
-            color:
-              isLoading || !input.trim()
-                ? "var(--dim)"
-                : "var(--accent-foreground)",
+            background: isLoading || !input.trim() ? "var(--muted)" : "var(--accent)",
+            color: isLoading || !input.trim() ? "var(--dim)" : "var(--accent-foreground)",
             fontSize: "13px",
             cursor: isLoading || !input.trim() ? "default" : "pointer",
             fontWeight: 600,
-            transition:
-              "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
+            transition: "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
           }}
           onMouseEnter={(e) => {
-            if (!isLoading && input.trim())
-              e.currentTarget.style.filter = "brightness(1.15)";
+            if (!isLoading && input.trim()) e.currentTarget.style.filter = "brightness(1.15)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.filter = "brightness(1)";
             e.currentTarget.style.transform = "scale(1)";
           }}
           onMouseDown={(e) => {
-            if (!isLoading && input.trim())
-              e.currentTarget.style.transform = "scale(0.96)";
+            if (!isLoading && input.trim()) e.currentTarget.style.transform = "scale(0.96)";
           }}
           onMouseUp={(e) => {
             e.currentTarget.style.transform = "scale(1)";

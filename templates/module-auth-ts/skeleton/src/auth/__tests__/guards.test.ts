@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { requireAuth, requireRole } from "../guards.js";
-import { AUTH_USER_KEY, AUTH_RESULT_KEY } from "../middleware.js";
+import { AUTH_RESULT_KEY, AUTH_USER_KEY } from "../middleware.js";
 import type { AuthResult, AuthUser } from "../types.js";
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -8,10 +8,7 @@ import type { AuthResult, AuthUser } from "../types.js";
 // Build fake Express-style req/res/next triples so we can invoke guards
 // without a real HTTP server.
 
-function fakeExpressArgs(options: {
-  result?: AuthResult;
-  user?: AuthUser;
-}) {
+function fakeExpressArgs(options: { result?: AuthResult; user?: AuthUser }) {
   const req: Record<string | symbol, unknown> = {
     headers: { authorization: "Bearer test" },
   };
@@ -23,7 +20,7 @@ function fakeExpressArgs(options: {
   }
 
   let statusCode = 0;
-  let body: unknown = undefined;
+  let body: unknown;
   const res = {
     status(code: number) {
       statusCode = code;

@@ -5,8 +5,8 @@
 // module that calls registerAlgorithm() at the module level.
 //
 
-import type { RateLimitResult } from "../types.js";
 import type { RateLimitStore } from "../stores/types.js";
+import type { RateLimitResult } from "../types.js";
 
 /**
  * Contract that all rate limiting algorithms must implement. Each

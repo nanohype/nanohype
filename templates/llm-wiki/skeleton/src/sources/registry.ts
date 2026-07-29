@@ -12,9 +12,7 @@ export function getSourceProvider(name: string): SourceProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = [...providers.keys()].join(", ");
-    throw new Error(
-      `Source provider "${name}" not registered. Available: ${available || "none"}`,
-    );
+    throw new Error(`Source provider "${name}" not registered. Available: ${available || "none"}`);
   }
   return factory();
 }

@@ -1,15 +1,7 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerAlgorithm,
-  getAlgorithm,
-  listAlgorithms,
-} from "../algorithms/registry.js";
-import {
-  registerStore,
-  getStore,
-  listStores,
-} from "../stores/registry.js";
+import { describe, expect, it } from "vitest";
+import { getAlgorithm, listAlgorithms, registerAlgorithm } from "../algorithms/registry.js";
 import type { RateLimitAlgorithm } from "../algorithms/types.js";
+import { getStore, listStores, registerStore } from "../stores/registry.js";
 import type { RateLimitStore } from "../stores/types.js";
 
 /**
@@ -61,18 +53,14 @@ describe("algorithm registry", () => {
   });
 
   it("throws when retrieving an unregistered algorithm", () => {
-    expect(() => getAlgorithm("nonexistent-algorithm")).toThrow(
-      /not found/,
-    );
+    expect(() => getAlgorithm("nonexistent-algorithm")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate algorithm name", () => {
     const name = unique();
     registerAlgorithm(stubAlgorithm(name));
 
-    expect(() => registerAlgorithm(stubAlgorithm(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerAlgorithm(stubAlgorithm(name))).toThrow(/already registered/);
   });
 
   it("lists all registered algorithm names", () => {
@@ -101,18 +89,14 @@ describe("store registry", () => {
   });
 
   it("throws when retrieving an unregistered store", () => {
-    expect(() => getStore("nonexistent-store")).toThrow(
-      /not found/,
-    );
+    expect(() => getStore("nonexistent-store")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate store name", () => {
     const name = unique();
     registerStore(stubStore(name));
 
-    expect(() => registerStore(stubStore(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerStore(stubStore(name))).toThrow(/already registered/);
   });
 
   it("lists all registered store names", () => {

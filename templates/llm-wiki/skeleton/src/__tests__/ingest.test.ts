@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "fs";
-import { join } from "path";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
+import { join } from "path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { stringify } from "yaml";
-import type { StorageProvider } from "../storage/types.js";
-import type { Page, PageMeta } from "../wiki/types.js";
-import { serializePage } from "../wiki/page.js";
 import { resetConfig } from "../config.js";
+import type { StorageProvider } from "../storage/types.js";
+import { serializePage } from "../wiki/page.js";
+import type { Page, PageMeta } from "../wiki/types.js";
 
 const pages = new Map<string, string>();
 let llmResponse: string;
@@ -46,7 +46,8 @@ vi.mock("../sources/index.js", () => ({
       id: `src-${ref}`,
       tenantId: _tenantId,
       ref,
-      content: "Apollo 11 landed on the Moon on July 20, 1969. Neil Armstrong was the first person to walk on the lunar surface.",
+      content:
+        "Apollo 11 landed on the Moon on July 20, 1969. Neil Armstrong was the first person to walk on the lunar surface.",
       contentHash: "abc123",
       ingestedAt: new Date(),
       provider: "mock-source",
@@ -95,7 +96,11 @@ beforeEach(() => {
     name: "test-schema",
     description: "Test schema",
     pageTypes: [
-      { name: "entity", description: "An entity", requiredSections: ["Summary", "Details", "References"] },
+      {
+        name: "entity",
+        description: "An entity",
+        requiredSections: ["Summary", "Details", "References"],
+      },
       { name: "timeline", description: "A timeline", requiredSections: ["Overview", "Events"] },
     ],
     structure: { index: "index.md", orphanThresholdDays: 14, contradictionPolicy: "flag" },
@@ -111,14 +116,16 @@ beforeEach(() => {
         path: "apollo-11.md",
         title: "Apollo 11",
         type: "entity",
-        content: "## Summary\nApollo 11 was the first crewed mission to land on the Moon.\n\n## Details\nLanded July 20, 1969. Commander: [[neil-armstrong.md]].\n\n## References\nNASA archives.",
+        content:
+          "## Summary\nApollo 11 was the first crewed mission to land on the Moon.\n\n## Details\nLanded July 20, 1969. Commander: [[neil-armstrong.md]].\n\n## References\nNASA archives.",
         action: "create",
       },
       {
         path: "neil-armstrong.md",
         title: "Neil Armstrong",
         type: "entity",
-        content: "## Summary\nFirst person to walk on the Moon.\n\n## Details\nAstronaut on [[apollo-11.md]].\n\n## References\nBiography records.",
+        content:
+          "## Summary\nFirst person to walk on the Moon.\n\n## Details\nAstronaut on [[apollo-11.md]].\n\n## References\nBiography records.",
         action: "create",
       },
     ],
@@ -174,9 +181,7 @@ describe("ingest operation", () => {
           action: "create",
         },
       ],
-      contradictions: [
-        { pageA: "date.md", pageB: "existing.md", claim: "Conflicting dates" },
-      ],
+      contradictions: [{ pageA: "date.md", pageB: "existing.md", claim: "Conflicting dates" }],
     });
 
     const { ingest } = await import("../operations/ingest.js");
@@ -208,7 +213,8 @@ describe("ingest operation", () => {
           path: "apollo-11.md",
           title: "Apollo 11",
           type: "entity",
-          content: "## Summary\nUpdated content.\n\n## Details\nNew details.\n\n## References\nNew refs.",
+          content:
+            "## Summary\nUpdated content.\n\n## Details\nNew details.\n\n## References\nNew refs.",
           action: "update",
         },
       ],

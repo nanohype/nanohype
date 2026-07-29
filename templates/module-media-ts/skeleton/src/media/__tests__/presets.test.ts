@@ -1,14 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  thumbnail,
   avatar,
-  hero,
-  ogImage,
-  responsive,
-  RESPONSIVE_WIDTHS,
-  PRESETS,
   getPreset,
+  hero,
   listPresets,
+  ogImage,
+  PRESETS,
+  RESPONSIVE_WIDTHS,
+  responsive,
+  thumbnail,
 } from "../transforms/presets.js";
 
 // ── Preset Tests ─────────────────────────────────────────────────

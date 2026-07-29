@@ -1,7 +1,7 @@
 export interface Source {
-  id: string;           // content hash
+  id: string; // content hash
   tenantId: string;
-  ref: string;          // original reference (file path, URL, etc.)
+  ref: string; // original reference (file path, URL, etc.)
   content: string;
   contentHash: string;
   ingestedAt: Date;

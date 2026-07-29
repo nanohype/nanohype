@@ -1,10 +1,10 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
-import type { FilterExpression } from "../filters/types.js";
-import type { VectorStoreProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { compileFilter } from "../filters/compiler.js";
-import { withRetry, withTimeout, batchChunk } from "../helpers.js";
+import type { FilterExpression } from "../filters/types.js";
+import { batchChunk, withRetry, withTimeout } from "../helpers.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { VectorStoreProvider } from "./types.js";
 
 // -- Pinecone Provider ---------------------------------------------------
 //
@@ -41,16 +41,12 @@ class PineconeProvider implements VectorStoreProvider {
   async init(config: PineconeConfig): Promise<void> {
     const apiKey = (config.apiKey as string) || process.env.PINECONE_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "Pinecone provider requires apiKey config or PINECONE_API_KEY env var",
-      );
+      throw new Error("Pinecone provider requires apiKey config or PINECONE_API_KEY env var");
     }
 
     const indexName = (config.index as string) || process.env.PINECONE_INDEX;
     if (!indexName) {
-      throw new Error(
-        "Pinecone provider requires index config or PINECONE_INDEX env var",
-      );
+      throw new Error("Pinecone provider requires index config or PINECONE_INDEX env var");
     }
 
     this.namespace = (config.namespace as string) || process.env.PINECONE_NAMESPACE;

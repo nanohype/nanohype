@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-07-17T02:22:00.000Z",
+  "generated_at": "2026-07-29T19:23:39.000Z",
   "templates": [
     {
       "name": "a2a-agent",
@@ -1436,7 +1436,7 @@
     {
       "name": "monorepo",
       "displayName": "Turborepo Monorepo",
-      "description": "Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScript base config, ESLint setup, Turborepo pipeline definitions for build/test/lint/dev, and GitHub Actions CI. Optionally includes shared utility and UI library packages under packages/.",
+      "description": "Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScript base config, a Biome lint + format setup, Turborepo pipeline definitions for build/test/lint/dev, and GitHub Actions CI. Optionally includes shared utility and UI library packages under packages/.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [

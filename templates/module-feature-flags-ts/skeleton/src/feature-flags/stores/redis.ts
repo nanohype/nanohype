@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import type { Flag } from "../types.js";
-import type { FlagStore } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { FlagStore } from "./types.js";
 
 // ── Redis Flag Store ────────────────────────────────────────────────
 //
@@ -30,12 +30,9 @@ function createRedisStore(): FlagStore {
     name: "redis",
 
     async init(config: Record<string, unknown>): Promise<void> {
-      const url =
-        (config.url as string) ?? process.env.REDIS_URL ?? undefined;
-      const host =
-        (config.host as string) ?? process.env.REDIS_HOST ?? "127.0.0.1";
-      const port =
-        Number((config.port as number) ?? process.env.REDIS_PORT ?? 6379);
+      const url = (config.url as string) ?? process.env.REDIS_URL ?? undefined;
+      const host = (config.host as string) ?? process.env.REDIS_HOST ?? "127.0.0.1";
+      const port = Number((config.port as number) ?? process.env.REDIS_PORT ?? 6379);
       const password = (config.password as string) ?? undefined;
       keyPrefix = (config.keyPrefix as string) ?? "flags:";
 

@@ -9,51 +9,51 @@
 
 import { validateBootstrap } from "./bootstrap.js";
 import { validateConfig } from "./config.js";
-import { createUsageTracker } from "./metering/tracker.js";
-import { createUsageAggregator } from "./metering/aggregator.js";
-import { createInvoiceGenerator } from "./invoicing/generator.js";
 import { formatInvoice } from "./invoicing/formatter.js";
-import { createBillingWebhookRouter } from "./webhooks/handler.js";
-import { getProvider, listProviders } from "./providers/index.js";
-import { billingPaymentTotal } from "./metrics.js";
+import { createInvoiceGenerator } from "./invoicing/generator.js";
+import type { InvoiceFormat } from "./invoicing/types.js";
 import { logger } from "./logger.js";
+import { createUsageAggregator } from "./metering/aggregator.js";
+import { createUsageTracker } from "./metering/tracker.js";
+import { billingPaymentTotal } from "./metrics.js";
+import { getProvider, listProviders } from "./providers/index.js";
 import type {
   BillingConfig,
   BillingPeriod,
+  BillingWebhookEvent,
+  ChargeResult,
+  Invoice,
   UsageRecord,
   UsageSummary,
-  Invoice,
-  ChargeResult,
-  BillingWebhookEvent,
 } from "./types.js";
-import type { InvoiceFormat } from "./invoicing/types.js";
 import type { WebhookEventHandler } from "./webhooks/handler.js";
+import { createBillingWebhookRouter } from "./webhooks/handler.js";
 
+export { formatInvoice } from "./invoicing/formatter.js";
+export { createInvoiceGenerator } from "./invoicing/generator.js";
+export type { InvoiceFormat } from "./invoicing/types.js";
+export { createUsageAggregator } from "./metering/aggregator.js";
+export { createUsageTracker } from "./metering/tracker.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
-export { createUsageTracker } from "./metering/tracker.js";
-export { createUsageAggregator } from "./metering/aggregator.js";
-export { createInvoiceGenerator } from "./invoicing/generator.js";
-export { formatInvoice } from "./invoicing/formatter.js";
-export { createBillingWebhookRouter } from "./webhooks/handler.js";
-export { CircuitBreaker } from "./resilience/circuit-breaker.js";
 export type { PaymentProvider } from "./providers/types.js";
-export type { InvoiceFormat } from "./invoicing/types.js";
-export type { WebhookEventHandler } from "./webhooks/handler.js";
+export { CircuitBreaker } from "./resilience/circuit-breaker.js";
 export type {
-  UsageRecord,
-  Invoice,
-  Subscription,
-  Customer,
   BillingConfig,
-  LineItem,
   BillingPeriod,
+  BillingWebhookEvent,
+  ChargeResult,
+  Customer,
+  Invoice,
+  LineItem,
   PricingRule,
   PricingTier,
+  Subscription,
+  UsageRecord,
   UsageSummary,
-  ChargeResult,
-  BillingWebhookEvent,
 } from "./types.js";
+export type { WebhookEventHandler } from "./webhooks/handler.js";
+export { createBillingWebhookRouter } from "./webhooks/handler.js";
 
 // ── Billing Service Facade ─────────────────────────────────────────
 
@@ -108,9 +108,7 @@ export interface BillingService {
  *   const invoice = billing.generateInvoice("cus-1", period);
  *   const result = await billing.chargeInvoice(invoice);
  */
-export async function createBillingService(
-  config: BillingConfig = {},
-): Promise<BillingService> {
+export async function createBillingService(config: BillingConfig = {}): Promise<BillingService> {
   validateBootstrap();
   validateConfig(config);
 
@@ -135,10 +133,7 @@ export async function createBillingService(
   // Shared usage-summary computation — used by both the public
   // getUsageSummary method and generateInvoice. Lives in the closure
   // so callers don't depend on the returned object's `this` type.
-  function computeUsageSummary(
-    customerId: string,
-    period: BillingPeriod,
-  ): UsageSummary {
+  function computeUsageSummary(customerId: string, period: BillingPeriod): UsageSummary {
     const records = tracker.getRecords(customerId, period);
     return aggregator.aggregate(records, customerId, period);
   }

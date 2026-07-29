@@ -1,14 +1,8 @@
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import type {
-  ListOptions,
-  ListResult,
-  StorageObject,
-  UploadData,
-  UploadOptions,
-} from "./types.js";
-import type { ProviderConfig, StorageProvider } from "./providers/types.js";
 import { getProvider } from "./providers/registry.js";
+import type { ProviderConfig, StorageProvider } from "./providers/types.js";
+import type { ListOptions, ListResult, StorageObject, UploadData, UploadOptions } from "./types.js";
 
 // -- Storage Client ------------------------------------------------------
 //
@@ -34,11 +28,7 @@ export class StorageClient {
    * Upload data to the given key.
    * Accepts Buffer, Uint8Array, string, or a Node.js Readable stream.
    */
-  async upload(
-    key: string,
-    data: UploadData,
-    opts?: UploadOptions
-  ): Promise<void> {
+  async upload(key: string, data: UploadData, opts?: UploadOptions): Promise<void> {
     return this.provider.upload(key, data, opts);
   }
 
@@ -66,11 +56,13 @@ export class StorageClient {
 /** Zod schema for validating createStorageClient arguments. */
 const CreateStorageClientSchema = z.object({
   providerName: z.string().min(1, "providerName must be a non-empty string"),
-  config: z.object({
-    bucket: z.string().optional(),
-    region: z.string().optional(),
-    basePath: z.string().optional(),
-  }).passthrough(),
+  config: z
+    .object({
+      bucket: z.string().optional(),
+      region: z.string().optional(),
+      basePath: z.string().optional(),
+    })
+    .passthrough(),
 });
 
 /**
@@ -82,11 +74,11 @@ const CreateStorageClientSchema = z.object({
  */
 export async function createStorageClient(
   providerName: string,
-  config: ProviderConfig = {}
+  config: ProviderConfig = {},
 ): Promise<StorageClient> {
   const parsed = CreateStorageClientSchema.safeParse({ providerName, config });
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid storage config: ${issues}`);
   }
 

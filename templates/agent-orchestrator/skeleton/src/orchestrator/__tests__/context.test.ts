@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { createSharedContext } from "../context/shared.js";
+import { describe, expect, it } from "vitest";
 import { createHandoffProtocol } from "../context/handoff.js";
+import { createSharedContext } from "../context/shared.js";
 
 describe("shared context", () => {
   it("stores and retrieves global values", () => {

@@ -10,8 +10,8 @@ import "./openai.js";
 import "./mock.js";
 
 export {
-  registerEmbeddingProvider,
   getEmbeddingProvider,
   listEmbeddingProviders,
+  registerEmbeddingProvider,
 } from "./registry.js";
 export type { EmbeddingProvider } from "./types.js";

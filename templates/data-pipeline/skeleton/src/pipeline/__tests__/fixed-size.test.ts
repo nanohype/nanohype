@@ -5,7 +5,7 @@
  * sizes, and edge cases.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getStrategy } from "../transform/index.js";
 import type { Document } from "../types.js";
 

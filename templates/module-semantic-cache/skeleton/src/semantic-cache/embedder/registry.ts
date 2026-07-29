@@ -13,10 +13,7 @@ export type EmbeddingProviderFactory = () => EmbeddingProvider;
 
 const factories = new Map<string, EmbeddingProviderFactory>();
 
-export function registerEmbeddingProvider(
-  name: string,
-  factory: EmbeddingProviderFactory,
-): void {
+export function registerEmbeddingProvider(name: string, factory: EmbeddingProviderFactory): void {
   if (factories.has(name)) {
     throw new Error(`Embedding provider "${name}" is already registered`);
   }
@@ -27,9 +24,7 @@ export function getEmbeddingProvider(name: string): EmbeddingProvider {
   const factory = factories.get(name);
   if (!factory) {
     const available = Array.from(factories.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Embedding provider "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Embedding provider "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

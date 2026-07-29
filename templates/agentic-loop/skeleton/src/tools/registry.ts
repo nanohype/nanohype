@@ -68,9 +68,7 @@ export class ToolRegistry {
 
     const parsed = tool.inputSchema.safeParse(input);
     if (!parsed.success) {
-      const issues = parsed.error.issues
-        .map((i) => `${i.path.join(".")}: ${i.message}`)
-        .join("; ");
+      const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
       return `Error: invalid input for tool "${name}": ${issues}`;
     }
 

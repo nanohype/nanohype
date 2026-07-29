@@ -9,5 +9,5 @@ import "./planner.js";
 import "./researcher.js";
 import "./mock.js";
 
-export { registerAgent, getAgent, listAgents, getAllAgents } from "./registry.js";
+export { getAgent, getAllAgents, listAgents, registerAgent } from "./registry.js";
 export type { Agent, AgentExecutionContext } from "./types.js";

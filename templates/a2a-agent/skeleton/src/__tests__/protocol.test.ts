@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 /**
  * Protocol type and transport registry tests.
@@ -7,9 +7,9 @@ import { describe, it, expect } from "vitest";
  * server task handling logic.
  */
 
-import { getTransport, listTransports } from "../protocol/transport/index.js";
 import { handleTask } from "../protocol/server.js";
-import type { Task, TaskRequest, AgentCard } from "../protocol/types.js";
+import { getTransport, listTransports } from "../protocol/transport/index.js";
+import type { AgentCard, Task, TaskRequest } from "../protocol/types.js";
 
 describe("Transport Registry", () => {
   it("lists registered transports", () => {

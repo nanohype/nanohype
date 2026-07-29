@@ -12,9 +12,7 @@ export function getLlmProvider(name: string): LlmProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = [...providers.keys()].join(", ");
-    throw new Error(
-      `LLM provider "${name}" not registered. Available: ${available || "none"}`,
-    );
+    throw new Error(`LLM provider "${name}" not registered. Available: ${available || "none"}`);
   }
   return factory();
 }

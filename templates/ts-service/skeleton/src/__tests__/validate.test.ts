@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { json } from "./helpers.js";
 import { Hono } from "hono";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { validate } from "../middleware/validate.js";
+import { json } from "./helpers.js";
 
 // ── Schema ──────────────────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ describe("validate middleware", () => {
     const body = await json(res);
     expect(body).toHaveProperty("error", "Validation failed");
     expect(body.issues.some((i: { message: string }) => i.message === "Name is required")).toBe(
-      true
+      true,
     );
   });
 

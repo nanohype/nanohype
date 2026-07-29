@@ -6,12 +6,12 @@
  * and that per-document error handling works as expected.
  */
 
-import { describe, it, expect } from "vitest";
-import { runPipeline } from "../orchestrator.js";
-import type { IngestSource } from "../ingest/types.js";
-import type { ChunkStrategy } from "../transform/types.js";
+import { describe, expect, it } from "vitest";
 import type { EmbeddingProvider } from "../embed/types.js";
+import type { IngestSource } from "../ingest/types.js";
+import { runPipeline } from "../orchestrator.js";
 import type { OutputAdapter } from "../output/types.js";
+import type { ChunkStrategy } from "../transform/types.js";
 import type { Document, ProgressEvent } from "../types.js";
 
 function createMockSource(documents: Document[]): IngestSource {
@@ -31,13 +31,15 @@ function createMockStrategy(): ChunkStrategy {
       const estimatedTokens = Math.ceil(document.content.length / 4);
 
       if (estimatedTokens <= chunkSize) {
-        return [{
-          id: `${document.id}_0`,
-          content: document.content,
-          chunkIndex: 0,
-          chunkCount: 1,
-          metadata: { ...document.metadata },
-        }];
+        return [
+          {
+            id: `${document.id}_0`,
+            content: document.content,
+            chunkIndex: 0,
+            chunkCount: 1,
+            metadata: { ...document.metadata },
+          },
+        ];
       }
 
       // Split into 2 chunks for testing
@@ -172,13 +174,15 @@ describe("orchestrator", () => {
         if (document.id === "doc1") {
           throw new Error("Transform error for doc1");
         }
-        return [{
-          id: `${document.id}_0`,
-          content: document.content,
-          chunkIndex: 0,
-          chunkCount: 1,
-          metadata: { ...document.metadata },
-        }];
+        return [
+          {
+            id: `${document.id}_0`,
+            content: document.content,
+            chunkIndex: 0,
+            chunkCount: 1,
+            metadata: { ...document.metadata },
+          },
+        ];
       },
     };
 
@@ -262,13 +266,15 @@ describe("orchestrator", () => {
     const passthroughStrategy: ChunkStrategy = {
       name: "passthrough",
       chunk(document) {
-        return [{
-          id: `${document.id}_0`,
-          content: document.content,
-          chunkIndex: 0,
-          chunkCount: 1,
-          metadata: { ...document.metadata },
-        }];
+        return [
+          {
+            id: `${document.id}_0`,
+            content: document.content,
+            chunkIndex: 0,
+            chunkCount: 1,
+            metadata: { ...document.metadata },
+          },
+        ];
       },
     };
 
@@ -352,13 +358,15 @@ describe("orchestrator", () => {
         if (document.id === "broken") {
           throw new Error("Malformed document: missing required section");
         }
-        return [{
-          id: `${document.id}_0`,
-          content: document.content,
-          chunkIndex: 0,
-          chunkCount: 1,
-          metadata: { ...document.metadata },
-        }];
+        return [
+          {
+            id: `${document.id}_0`,
+            content: document.content,
+            chunkIndex: 0,
+            chunkCount: 1,
+            metadata: { ...document.metadata },
+          },
+        ];
       },
     };
 

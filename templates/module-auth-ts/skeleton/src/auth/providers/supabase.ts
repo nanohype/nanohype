@@ -9,8 +9,8 @@
 
 import { createClient } from "@supabase/supabase-js";
 import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 /**
  * Extract a Bearer token from the Authorization header.
@@ -36,8 +36,7 @@ const supabaseProvider: AuthProvider = {
     if (!supabaseUrl || !anonKey) {
       return {
         authenticated: false,
-        error:
-          "Supabase provider not configured: set SUPABASE_URL and SUPABASE_ANON_KEY",
+        error: "Supabase provider not configured: set SUPABASE_URL and SUPABASE_ANON_KEY",
       };
     }
 
@@ -76,8 +75,7 @@ const supabaseProvider: AuthProvider = {
         },
       };
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Supabase verification failed";
+      const message = err instanceof Error ? err.message : "Supabase verification failed";
       return { authenticated: false, error: message };
     }
   },

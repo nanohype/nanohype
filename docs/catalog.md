@@ -175,7 +175,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **k8s-deploy** — Reach for this when deploying to Kubernetes. Helm chart with proper security hardening (non-root, read-only FS, resource limits), HPA, rolling updates, ingress with TLS. Raw manifests as alternative.
 
-**monorepo** — Reach for this when a client engagement involves 3+ templates. Turborepo workspace with shared TypeScript config, ESLint, and Prettier. Everything else nests inside.
+**monorepo** — Reach for this when a client engagement involves 3+ templates. Turborepo workspace with shared TypeScript config and Biome for lint + format. Everything else nests inside.
 
 **infra-druid** — Reach for this when the client needs real-time analytics. Apache Druid OLAP cluster on Kubernetes with all six services (router, broker, coordinator, overlord, historical, task). Kubernetes-native discovery (no ZooKeeper), S3 deep storage, PostgreSQL metadata, optional mTLS and Prometheus monitoring.
 

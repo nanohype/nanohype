@@ -5,19 +5,19 @@
  * LLM, embedding, and vector store.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  registerLlmProvider,
-  getLlmProvider,
-  listLlmProviders,
-  registerEmbeddingProvider,
   getEmbeddingProvider,
-  listEmbeddingProviders,
-  registerVectorStoreProvider,
+  getLlmProvider,
   getVectorStoreProvider,
+  listEmbeddingProviders,
+  listLlmProviders,
   listVectorStoreProviders,
+  registerEmbeddingProvider,
+  registerLlmProvider,
+  registerVectorStoreProvider,
 } from "../providers/registry.js";
-import type { LlmProvider, EmbeddingProvider, VectorStoreProvider } from "../providers/types.js";
+import type { EmbeddingProvider, LlmProvider, VectorStoreProvider } from "../providers/types.js";
 
 const mockLlm: LlmProvider = {
   async generate() {
@@ -76,9 +76,7 @@ describe("Embedding Registry", () => {
   });
 
   it("throws on unknown provider", () => {
-    expect(() => getEmbeddingProvider("nonexistent-embed")).toThrow(
-      "Unknown embedding provider",
-    );
+    expect(() => getEmbeddingProvider("nonexistent-embed")).toThrow("Unknown embedding provider");
   });
 });
 
@@ -96,8 +94,6 @@ describe("Vector Store Registry", () => {
   });
 
   it("throws on unknown provider", () => {
-    expect(() => getVectorStoreProvider("nonexistent-vs")).toThrow(
-      "Unknown vector store provider",
-    );
+    expect(() => getVectorStoreProvider("nonexistent-vs")).toThrow("Unknown vector store provider");
   });
 });

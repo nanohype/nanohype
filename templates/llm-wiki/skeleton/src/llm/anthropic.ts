@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider, LlmMessage, LlmOptions } from "./types.js";
-import { registerLlmProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerLlmProvider } from "./registry.js";
+import type { LlmMessage, LlmOptions, LlmProvider } from "./types.js";
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 const DEFAULT_MAX_TOKENS = 4096;

@@ -12,8 +12,8 @@ import "./openai.js";
 import "./mock.js";
 
 // Re-export the registry API and shared types
-export { registerProvider, getProvider, listProviders } from "./registry.js";
-export type { LlmProvider, ChatMessage } from "./types.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
+export type { ChatMessage, LlmProvider } from "./types.js";
 
 /**
  * Default provider configured at scaffold time.

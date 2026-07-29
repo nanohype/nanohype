@@ -7,18 +7,18 @@
 //
 
 export { createStorageClient, StorageClient } from "./client.js";
-export type {
-  StorageProvider,
-  StorageObject,
-  UploadOptions,
-  UploadData,
-  ListOptions,
-  ListResult,
-} from "./types.js";
-export type { ProviderConfig } from "./providers/types.js";
+export { toBuffer, withRetry } from "./providers/helpers.js";
 export {
-  registerProvider,
   getProvider,
   listProviders,
+  registerProvider,
 } from "./providers/registry.js";
-export { toBuffer, withRetry } from "./providers/helpers.js";
+export type { ProviderConfig } from "./providers/types.js";
+export type {
+  ListOptions,
+  ListResult,
+  StorageObject,
+  StorageProvider,
+  UploadData,
+  UploadOptions,
+} from "./types.js";

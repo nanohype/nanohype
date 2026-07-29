@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import type { DatabaseDriver } from "./types.js";
 import { registerDriver } from "./registry.js";
+import type { DatabaseDriver } from "./types.js";
 
 // ── Turso / libSQL Driver ───────────────────────────────────────────
 //

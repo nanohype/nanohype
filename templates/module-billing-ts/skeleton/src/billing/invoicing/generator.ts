@@ -1,5 +1,5 @@
-import { billingInvoiceGenerated } from "../metrics.js";
 import { logger } from "../logger.js";
+import { billingInvoiceGenerated } from "../metrics.js";
 import type { BillingPeriod, Invoice, LineItem } from "../types.js";
 import type { InvoiceGenerator, InvoiceGeneratorConfig } from "./types.js";
 
@@ -17,18 +17,12 @@ import type { InvoiceGenerator, InvoiceGeneratorConfig } from "./types.js";
  *
  *   const invoice = generator.generate("cus-1", period, lineItems);
  */
-export function createInvoiceGenerator(
-  config: InvoiceGeneratorConfig = {},
-): InvoiceGenerator {
+export function createInvoiceGenerator(config: InvoiceGeneratorConfig = {}): InvoiceGenerator {
   const currency = config.currency ?? "usd";
   const idGen = config.idGenerator ?? (() => crypto.randomUUID());
 
   return {
-    generate(
-      customerId: string,
-      period: BillingPeriod,
-      lineItems: LineItem[],
-    ): Invoice {
+    generate(customerId: string, period: BillingPeriod, lineItems: LineItem[]): Invoice {
       const totalAmount = lineItems.reduce((sum, item) => sum + item.amount, 0);
 
       const invoice: Invoice = {

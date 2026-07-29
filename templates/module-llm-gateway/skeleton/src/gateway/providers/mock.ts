@@ -1,6 +1,6 @@
-import type { GatewayProvider, ProviderPricing } from "./types.js";
-import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
+import type { ChatMessage, ChatOptions, GatewayResponse } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { GatewayProvider, ProviderPricing } from "./types.js";
 
 // ── Mock Provider ───────────────────────────────────────────────────
 //

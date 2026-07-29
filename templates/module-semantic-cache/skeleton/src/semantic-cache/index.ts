@@ -5,37 +5,33 @@
 // createSemanticCache as the primary entry point.
 //
 
-import { z } from "zod";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { getEmbeddingProvider } from "./embedder/index.js";
-import { getVectorStore } from "./store/index.js";
-import {
-  cacheLookupTotal,
-  cacheOperationDuration,
-  embeddingDuration,
-} from "./metrics.js";
 import type { EmbeddingProvider } from "./embedder/types.js";
+import { cacheLookupTotal, cacheOperationDuration, embeddingDuration } from "./metrics.js";
+import { getVectorStore } from "./store/index.js";
 import type { VectorCacheStore } from "./store/types.js";
-import type { SemanticCacheConfig, CacheVector } from "./types.js";
+import type { CacheVector, SemanticCacheConfig } from "./types.js";
 
 // Re-export everything consumers need
 export {
-  registerEmbeddingProvider,
   getEmbeddingProvider,
   listEmbeddingProviders,
+  registerEmbeddingProvider,
 } from "./embedder/index.js";
+export type { EmbeddingProvider } from "./embedder/types.js";
+export type { GatewayCachingStrategy } from "./gateway-adapter.js";
+export { createSemanticCacheStrategy } from "./gateway-adapter.js";
+export { cosineSimilarity, normalize } from "./similarity.js";
 export {
-  registerVectorStore,
   getVectorStore,
   listVectorStores,
+  registerVectorStore,
 } from "./store/index.js";
-export { cosineSimilarity, normalize } from "./similarity.js";
-export { createSemanticCacheStrategy } from "./gateway-adapter.js";
-export type { GatewayCachingStrategy } from "./gateway-adapter.js";
-export type { EmbeddingProvider } from "./embedder/types.js";
 export type { VectorCacheStore, VectorStoreConfig } from "./store/types.js";
-export type { SemanticCacheConfig, CacheVector, CacheHit } from "./types.js";
+export type { CacheHit, CacheVector, SemanticCacheConfig } from "./types.js";
 
 // ── Default Constants ──────────────────────────────────────────────
 
@@ -73,12 +69,14 @@ export interface SemanticCache {
 }
 
 /** Zod schema for validating createSemanticCache arguments. */
-const CreateSemanticCacheSchema = z.object({
-  embeddingProvider: z.string().min(1).optional(),
-  vectorBackend: z.string().min(1).optional(),
-  similarityThreshold: z.number().min(0).max(1).optional(),
-  defaultTtlMs: z.number().positive().optional(),
-}).passthrough();
+const CreateSemanticCacheSchema = z
+  .object({
+    embeddingProvider: z.string().min(1).optional(),
+    vectorBackend: z.string().min(1).optional(),
+    similarityThreshold: z.number().min(0).max(1).optional(),
+    defaultTtlMs: z.number().positive().optional(),
+  })
+  .passthrough();
 
 /**
  * Create a configured semantic cache instance.

@@ -8,8 +8,8 @@
 
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
-import { ingestDirectory } from "./ingest.js";
 import { query } from "./generation.js";
+import { ingestDirectory } from "./ingest.js";
 import { logger } from "./logger.js";
 
 async function main(): Promise<void> {

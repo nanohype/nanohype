@@ -20,9 +20,7 @@ export function getDriver(name: string): DatabaseDriver {
   const driver = drivers.get(name);
   if (!driver) {
     const available = Array.from(drivers.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Database driver "${name}" not found. Available: ${available}`
-    );
+    throw new Error(`Database driver "${name}" not found. Available: ${available}`);
   }
   return driver;
 }

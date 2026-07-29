@@ -1,14 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "fs";
-import { join } from "path";
 import { tmpdir } from "os";
-import {
-  createTenant,
-  getTenant,
-  listTenants,
-  deleteTenant,
-} from "../tenant/registry.js";
+import { join } from "path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resetConfig } from "../config.js";
+import { createTenant, deleteTenant, getTenant, listTenants } from "../tenant/registry.js";
 
 let tempDir: string;
 

@@ -1,18 +1,18 @@
-import type { ProjectProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Project,
-  Issue,
   Comment,
-  Priority,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
+  Priority,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { ProjectProvider } from "./types.js";
 
 // ── Asana Provider ────────────────────────────────────────────────
 //
@@ -41,22 +41,32 @@ const ASANA_API = "https://app.asana.com/api/1.0";
 /** Map Asana priority custom field value to unified Priority. */
 function fromAsanaPriority(value: string | undefined): Priority {
   switch (value) {
-    case "P0": return "urgent";
-    case "P1": return "high";
-    case "P2": return "medium";
-    case "P3": return "low";
-    default: return "none";
+    case "P0":
+      return "urgent";
+    case "P1":
+      return "high";
+    case "P2":
+      return "medium";
+    case "P3":
+      return "low";
+    default:
+      return "none";
   }
 }
 
 /** Map unified Priority to Asana priority custom field display value. */
 function toAsanaPriorityValue(p: Priority): string | undefined {
   switch (p) {
-    case "urgent": return "P0";
-    case "high": return "P1";
-    case "medium": return "P2";
-    case "low": return "P3";
-    case "none": return undefined;
+    case "urgent":
+      return "P0";
+    case "high":
+      return "P1";
+    case "medium":
+      return "P2";
+    case "low":
+      return "P3";
+    case "none":
+      return undefined;
   }
 }
 
@@ -112,9 +122,7 @@ function createAsanaProvider(): ProjectProvider {
     customFields: Array<{ name: string; enum_value?: { name: string } | null }> | undefined,
   ): Priority {
     if (!customFields) return "none";
-    const priorityField = customFields.find(
-      (f) => f.name.toLowerCase() === "priority",
-    );
+    const priorityField = customFields.find((f) => f.name.toLowerCase() === "priority");
     return fromAsanaPriority(priorityField?.enum_value?.name);
   }
 

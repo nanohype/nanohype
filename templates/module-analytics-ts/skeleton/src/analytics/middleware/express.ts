@@ -44,20 +44,22 @@ export function createExpressAnalytics(
     res.on("finish", () => {
       const durationMs = Math.round(performance.now() - start);
 
-      provider.track({
-        event: eventName,
-        properties: {
-          method: req.method,
-          path: req.path,
-          statusCode: res.statusCode,
-          durationMs,
-          userAgent: Array.isArray(req.headers["user-agent"])
-            ? req.headers["user-agent"][0]
-            : req.headers["user-agent"],
-        },
-      }).catch(() => {
-        // Non-blocking -- analytics should never break request flow
-      });
+      provider
+        .track({
+          event: eventName,
+          properties: {
+            method: req.method,
+            path: req.path,
+            statusCode: res.statusCode,
+            durationMs,
+            userAgent: Array.isArray(req.headers["user-agent"])
+              ? req.headers["user-agent"][0]
+              : req.headers["user-agent"],
+          },
+        })
+        .catch(() => {
+          // Non-blocking -- analytics should never break request flow
+        });
     });
 
     next();

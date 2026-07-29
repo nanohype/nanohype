@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createSemanticCache } from "../index.js";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { SemanticCache } from "../index.js";
+import { createSemanticCache } from "../index.js";
 
 // Import mock embedder to trigger self-registration
 import "../embedder/mock.js";

@@ -10,8 +10,8 @@ import "./hmac-sha1.js";
 import "./mock.js";
 
 export {
-  registerSignatureProvider,
   getSignatureProvider,
   listSignatureProviders,
+  registerSignatureProvider,
 } from "./registry.js";
 export type { SignatureProvider } from "./types.js";

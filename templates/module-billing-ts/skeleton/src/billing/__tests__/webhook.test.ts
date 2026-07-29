@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Import mock provider to trigger self-registration
 import "../providers/mock.js";
-import { createBillingWebhookRouter } from "../webhooks/handler.js";
 import { getProvider } from "../providers/registry.js";
 import type { BillingWebhookEvent } from "../types.js";
+import { createBillingWebhookRouter } from "../webhooks/handler.js";
 
 describe("billing webhook handler", () => {
   beforeEach(async () => {
@@ -90,10 +90,7 @@ describe("billing webhook handler", () => {
       log.push("subscription.created");
     });
 
-    await router.handleBillingWebhook(
-      JSON.stringify({ type: "invoice.paid", data: {} }),
-      "sig",
-    );
+    await router.handleBillingWebhook(JSON.stringify({ type: "invoice.paid", data: {} }), "sig");
 
     await router.handleBillingWebhook(
       JSON.stringify({ type: "subscription.created", data: {} }),

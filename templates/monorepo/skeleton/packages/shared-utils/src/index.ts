@@ -5,10 +5,7 @@
 /**
  * Asserts a condition is truthy, throwing with the given message if not.
  */
-export function invariant(
-  condition: unknown,
-  message: string,
-): asserts condition {
+export function invariant(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(`Invariant violation: ${message}`);
   }
@@ -26,9 +23,9 @@ export function sleep(ms: number): Promise<void> {
  */
 export function randomId(length = 12): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from({ length }, () =>
-    chars.charAt(Math.floor(Math.random() * chars.length)),
-  ).join("");
+  return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join(
+    "",
+  );
 }
 
 /**

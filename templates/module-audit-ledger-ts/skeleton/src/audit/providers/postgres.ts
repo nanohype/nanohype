@@ -1,9 +1,9 @@
-import pg from "pg";
 import type { Pool } from "pg";
-import type { AuditAdapter } from "./types.js";
+import pg from "pg";
+import { eventIdOf } from "../event-id.js";
 import type { AuditConfig, AuditEvent, QueryOptions } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { eventIdOf } from "../event-id.js";
+import type { AuditAdapter } from "./types.js";
 
 // ── Postgres Adapter ────────────────────────────────────────────────
 //

@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerVectorStore,
-  getVectorStore,
-  listVectorStores,
-} from "../store/registry.js";
+import { describe, expect, it } from "vitest";
+import { getVectorStore, listVectorStores, registerVectorStore } from "../store/registry.js";
 import type { VectorCacheStore } from "../store/types.js";
 
 /**
@@ -48,18 +44,14 @@ describe("vector store registry", () => {
   });
 
   it("throws when retrieving an unregistered store", () => {
-    expect(() => getVectorStore("nonexistent-store")).toThrow(
-      /not found/,
-    );
+    expect(() => getVectorStore("nonexistent-store")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate store name", () => {
     const name = unique();
     registerVectorStore(name, () => stubStore(name));
 
-    expect(() => registerVectorStore(name, () => stubStore(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerVectorStore(name, () => stubStore(name))).toThrow(/already registered/);
   });
 
   it("lists all registered store names", () => {

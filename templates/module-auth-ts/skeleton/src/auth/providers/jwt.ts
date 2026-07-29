@@ -12,10 +12,10 @@
 // If both SECRET and JWKS_URL are set, JWKS takes precedence.
 
 import * as jose from "jose";
-import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import type { AuthResult } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 // Circuit breaker for JWKS remote key fetches
 const jwksCb = createCircuitBreaker();
@@ -66,12 +66,7 @@ export function clearJwksCache(): void {
 // Weak defaults that must never be used in production. In development
 // a warning is logged; in production the provider refuses to verify.
 
-const WEAK_SECRETS = new Set([
-  "change-me",
-  "change-me-in-production",
-  "secret",
-  "test",
-]);
+const WEAK_SECRETS = new Set(["change-me", "change-me-in-production", "secret", "test"]);
 
 function validateSecret(secret: string): { ok: boolean; warning?: string } {
   if (!WEAK_SECRETS.has(secret)) {
@@ -87,7 +82,7 @@ function validateSecret(secret: string): { ok: boolean; warning?: string } {
   }
 
   console.warn(
-    `[auth] WARNING: AUTH_JWT_SECRET is set to a weak default ("${secret}"). Do not use this in production.`
+    `[auth] WARNING: AUTH_JWT_SECRET is set to a weak default ("${secret}"). Do not use this in production.`,
   );
   return { ok: true };
 }
@@ -111,8 +106,7 @@ const jwtProvider: AuthProvider = {
     if (!jwksUrl && !secret) {
       return {
         authenticated: false,
-        error:
-          "JWT provider not configured: set AUTH_JWT_SECRET or AUTH_JWT_JWKS_URL",
+        error: "JWT provider not configured: set AUTH_JWT_SECRET or AUTH_JWT_JWKS_URL",
       };
     }
 
@@ -136,7 +130,7 @@ const jwtProvider: AuthProvider = {
           jose.jwtVerify(token, jwks, {
             issuer,
             audience,
-          })
+          }),
         );
         payload = result.payload;
       } else {
@@ -155,15 +149,12 @@ const jwtProvider: AuthProvider = {
           id: payload.sub ?? "unknown",
           email: (payload.email as string) ?? undefined,
           name: (payload.name as string) ?? undefined,
-          roles: Array.isArray(payload.roles)
-            ? (payload.roles as string[])
-            : [],
+          roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
           metadata: { claims: payload },
         },
       };
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Token verification failed";
+      const message = err instanceof Error ? err.message : "Token verification failed";
       return { authenticated: false, error: message };
     }
   },

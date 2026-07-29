@@ -41,7 +41,7 @@ npm start
 | `npm run build` | Production build (main + renderer) |
 | `npm start` | Launch Electron with built main process |
 | `npm test` | Run tests with Vitest |
-| `npm run lint` | Lint with ESLint |
+| `npm run lint` | Lint with Biome |
 
 ## Project Structure
 

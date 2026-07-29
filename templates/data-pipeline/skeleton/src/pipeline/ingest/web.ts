@@ -7,12 +7,11 @@
  */
 
 import { createHash } from "node:crypto";
-
-import type { Document } from "../types.js";
-import type { IngestSource } from "./types.js";
-import { registerSource } from "./registry.js";
-import { guardUrl } from "./url-guard.js";
 import { logger } from "../logger.js";
+import type { Document } from "../types.js";
+import { registerSource } from "./registry.js";
+import type { IngestSource } from "./types.js";
+import { guardUrl } from "./url-guard.js";
 
 function contentHash(text: string): string {
   return createHash("sha256").update(text, "utf-8").digest("hex").slice(0, 16);
@@ -46,15 +45,17 @@ class WebSource implements IngestSource {
         const trimmed = html.trim();
         if (!trimmed) return [];
 
-        return [{
-          id: contentHash(url),
-          content: trimmed,
-          metadata: {
-            source: url,
-            contentType,
-            type: "web",
+        return [
+          {
+            id: contentHash(url),
+            content: trimmed,
+            metadata: {
+              source: url,
+              contentType,
+              type: "web",
+            },
           },
-        }];
+        ];
       }
 
       // HTML: extract text using cheerio
@@ -65,9 +66,7 @@ class WebSource implements IngestSource {
       $("script, style, nav, header, footer, aside, iframe, noscript").remove();
 
       // Extract text from body
-      const text = $("body").text()
-        .replace(/\s+/g, " ")
-        .trim();
+      const text = $("body").text().replace(/\s+/g, " ").trim();
 
       if (!text) {
         logger.debug("No text content extracted from page", { url });
@@ -76,16 +75,18 @@ class WebSource implements IngestSource {
 
       const title = $("title").text().trim() || undefined;
 
-      return [{
-        id: contentHash(url),
-        content: text,
-        metadata: {
-          source: url,
-          title,
-          contentType: "text/html",
-          type: "web",
+      return [
+        {
+          id: contentHash(url),
+          content: text,
+          metadata: {
+            source: url,
+            title,
+            contentType: "text/html",
+            type: "web",
+          },
         },
-      }];
+      ];
     } catch (err) {
       logger.warn("Failed to fetch URL", { url, error: String(err) });
       return [];

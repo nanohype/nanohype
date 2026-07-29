@@ -8,8 +8,8 @@
 import "./memory.js";
 
 export {
-  registerVectorStore,
   getVectorStore,
   listVectorStores,
+  registerVectorStore,
 } from "./registry.js";
 export type { VectorCacheStore, VectorStoreConfig } from "./types.js";

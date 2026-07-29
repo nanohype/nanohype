@@ -17,19 +17,14 @@ import { askCommandDefinition } from "./ask.js";
 
 const config = loadConfig();
 
-const commands = [
-  askCommandDefinition.toJSON(),
-];
+const commands = [askCommandDefinition.toJSON()];
 
 const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);
 
 try {
   console.log(`Registering ${commands.length} application command(s)...`);
 
-  await rest.put(
-    Routes.applicationCommands(config.DISCORD_CLIENT_ID),
-    { body: commands },
-  );
+  await rest.put(Routes.applicationCommands(config.DISCORD_CLIENT_ID), { body: commands });
 
   console.log("Commands registered successfully.");
 } catch (error) {

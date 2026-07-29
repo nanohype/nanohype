@@ -12,7 +12,7 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 - Authentication with NextAuth.js (conditional)
 - Database with Drizzle ORM and Postgres (conditional)
 - Docker multi-stage build and Compose (conditional)
-- ESLint, Prettier, and Vitest (conditional)
+- Biome (lint + format) and Vitest (conditional)
 
 ## Variables
 
@@ -62,7 +62,7 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
   next.config.js
   tailwind.config.ts
   postcss.config.js
-  eslint.config.js
+  biome.json
   vitest.config.ts            # (optional)
   Dockerfile                  # (optional)
   docker-compose.yml          # (optional)

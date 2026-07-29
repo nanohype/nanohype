@@ -11,9 +11,9 @@
 
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { z } from "zod";
-import type { EmbeddingProvider } from "./types.js";
-import { registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerEmbeddingProvider } from "./registry.js";
+import type { EmbeddingProvider } from "./types.js";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
 const titanResponseSchema = z.object({ embedding: z.array(z.number()) });
@@ -49,9 +49,7 @@ class BedrockEmbedder implements EmbeddingProvider {
         { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
       ),
     );
-    const parsed = titanResponseSchema.parse(
-      JSON.parse(new TextDecoder().decode(response.body)),
-    );
+    const parsed = titanResponseSchema.parse(JSON.parse(new TextDecoder().decode(response.body)));
     return parsed.embedding;
   }
 
@@ -67,6 +65,5 @@ class BedrockEmbedder implements EmbeddingProvider {
 
 registerEmbeddingProvider(
   "bedrock",
-  (model?: unknown, dims?: unknown) =>
-    new BedrockEmbedder(model as string, dims as number),
+  (model?: unknown, dims?: unknown) => new BedrockEmbedder(model as string, dims as number),
 );

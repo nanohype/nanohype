@@ -1,7 +1,7 @@
-import type { JobDefinition } from "../types.js";
 import type { Logger } from "../logger.js";
-import type { QueueProvider, HandlerMap } from "./types.js";
-import { workerJobTotal, workerJobDuration } from "../metrics.js";
+import { workerJobDuration, workerJobTotal } from "../metrics.js";
+import type { JobDefinition } from "../types.js";
+import type { HandlerMap, QueueProvider } from "./types.js";
 
 // ── Queue Consumer ────────────────────────────────────────────────
 //
@@ -44,7 +44,7 @@ export function createQueueConsumer(
   provider: QueueProvider,
   handlers: HandlerMap,
   logger: Logger,
-  opts?: ConsumerOptions
+  opts?: ConsumerOptions,
 ): QueueConsumer {
   const pollInterval = opts?.pollInterval ?? CONSUMER_DEFAULTS.pollInterval;
   const concurrency = opts?.concurrency ?? CONSUMER_DEFAULTS.concurrency;
@@ -59,10 +59,7 @@ export function createQueueConsumer(
     if (!handler) {
       logger.error(`No handler registered for job "${job.name}"`, { jobId: job.id });
       workerJobTotal.add(1, { job_name: job.name, status: "unhandled" });
-      await provider.fail(
-        job.id,
-        new Error(`No handler registered for job "${job.name}"`)
-      );
+      await provider.fail(job.id, new Error(`No handler registered for job "${job.name}"`));
       return;
     }
 
@@ -114,9 +111,22 @@ export function createQueueConsumer(
         }
 
         activeJobs++;
-        processJob(job).finally(() => {
-          activeJobs--;
-        });
+        // Deliberately not awaited — dispatching without blocking is what makes
+        // `concurrency` mean anything, and awaiting here would serialise the
+        // worker to one job at a time. `processJob` reports handler failures
+        // itself, so a rejection escaping it is the queue backend failing while
+        // it does that. Logging it keeps a transient backend error from
+        // reaching `unhandledRejection` and taking the process down.
+        void processJob(job)
+          .catch((err) => {
+            logger.error(`Job dispatch failed: ${job.name}`, {
+              jobId: job.id,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          })
+          .finally(() => {
+            activeJobs--;
+          });
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         logger.error(`Poll error: ${error.message}`);
@@ -133,7 +143,17 @@ export function createQueueConsumer(
       pollInterval,
       concurrency,
     });
-    poll();
+    // The poll loop runs for the lifetime of the consumer, and `start` is
+    // synchronous, so nothing holds this promise. Per-iteration errors are
+    // caught inside the loop; a rejection escaping it means the loop itself
+    // died, which has to be visible — a queue consumer that silently stopped
+    // consuming looks identical to an idle queue.
+    void poll().catch((err) => {
+      running = false;
+      logger.error("Queue consumer poll loop stopped", {
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
   }
 
   async function stop(timeoutMs = 30_000): Promise<void> {

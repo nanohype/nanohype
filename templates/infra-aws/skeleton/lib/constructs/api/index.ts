@@ -1,7 +1,7 @@
-import { Construct } from "constructs";
+import type { Construct } from "constructs";
+import type { ComputeConstruct } from "../compute";
 import { ApiConstruct as EcsApi } from "./ecs";
 import { ApiConstruct as LambdaApi } from "./lambda";
-import type { ComputeConstruct } from "../compute";
 
 // Both API targets ship in the skeleton; the scaffolder selects one via
 // __COMPUTE_TARGET__ (resolves to "ecs" or "lambda"). The record is typed with a
@@ -23,5 +23,5 @@ export interface ApiConstructProps {
 export const ApiConstruct = apiTargets["__COMPUTE_TARGET__"] as new (
   scope: Construct,
   id: string,
-  props: ApiConstructProps
+  props: ApiConstructProps,
 ) => ApiConstruct;

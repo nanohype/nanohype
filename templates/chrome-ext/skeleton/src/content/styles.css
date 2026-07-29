@@ -1,21 +1,20 @@
 /* Content script overlay styles for __EXTENSION_NAME__ */
 
 .__PROJECT_NAME__-overlay {
-  --overlay-accent: #34D399;
-  --overlay-accent-fg: #022C22;
-  --overlay-bg: #0F1015;
-  --overlay-fg: #E8E9ED;
+  --overlay-accent: #34d399;
+  --overlay-accent-fg: #022c22;
+  --overlay-bg: #0f1015;
+  --overlay-fg: #e8e9ed;
   --overlay-muted: #161821;
-  --overlay-muted-fg: #787D8E;
-  --overlay-input: #13141A;
+  --overlay-muted-fg: #787d8e;
+  --overlay-input: #13141a;
   --overlay-border: rgba(148, 163, 224, 0.08);
-  --overlay-danger: #CF222E;
-  --overlay-dim: #4D5266;
+  --overlay-danger: #cf222e;
+  --overlay-dim: #4d5266;
   --overlay-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --overlay-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 13px;
   letter-spacing: -0.015em;
   line-height: 1.4;
@@ -32,7 +31,8 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  transition: filter 0.15s var(--overlay-ease-out),
+  transition:
+    filter 0.15s var(--overlay-ease-out),
     transform 0.1s var(--overlay-ease-spring);
 }
 

@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
+import { type AssertionResult, resolveAssertion } from "./assertions.js";
 import { EvalCase, EvalCaseSchema } from "./case.js";
-import { resolveAssertion, type AssertionResult } from "./assertions.js";
-import type { LlmProvider, ChatMessage } from "./providers/index.js";
+import type { ChatMessage, LlmProvider } from "./providers/index.js";
 
 /**
  * Schema for a YAML eval suite file.
@@ -94,9 +94,7 @@ export class EvalSuite {
     const runCase = async (evalCase: EvalCase): Promise<void> => {
       const caseStart = Date.now();
       try {
-        const messages: ChatMessage[] = [
-          { role: "user", content: evalCase.prompt },
-        ];
+        const messages: ChatMessage[] = [{ role: "user", content: evalCase.prompt }];
         const output = await provider.complete(messages);
 
         const assertionResults: AssertionResult[] = [];

@@ -9,5 +9,5 @@ import "./postgres.js";
 import "./sqlite.js";
 import "./turso.js";
 
+export { getDriver, listDrivers, registerDriver } from "./registry.js";
 export type { DatabaseDriver } from "./types.js";
-export { registerDriver, getDriver, listDrivers } from "./registry.js";

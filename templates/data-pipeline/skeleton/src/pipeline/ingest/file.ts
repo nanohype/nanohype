@@ -8,12 +8,11 @@
 
 import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
-import { extname, join, basename } from "node:path";
-
-import type { Document } from "../types.js";
-import type { IngestSource } from "./types.js";
-import { registerSource } from "./registry.js";
+import { basename, extname, join } from "node:path";
 import { logger } from "../logger.js";
+import type { Document } from "../types.js";
+import { registerSource } from "./registry.js";
+import type { IngestSource } from "./types.js";
 
 const TEXT_EXTENSIONS = new Set([".txt", ".md", ".markdown"]);
 const DATA_EXTENSIONS = new Set([".json", ".csv"]);

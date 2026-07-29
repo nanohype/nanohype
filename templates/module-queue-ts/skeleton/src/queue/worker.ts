@@ -1,6 +1,6 @@
-import type { Job, HandlerMap } from "./types.js";
+import { queueJobDuration, queueJobTotal } from "./metrics.js";
 import type { QueueProvider } from "./providers/types.js";
-import { queueJobTotal, queueJobDuration } from "./metrics.js";
+import type { HandlerMap, Job } from "./types.js";
 
 // ── Worker Runner ───────────────────────────────────────────────────
 //
@@ -37,7 +37,7 @@ const WORKER_DEFAULTS: Required<Omit<WorkerOptions, "signal">> = {
 export function createWorker(
   provider: QueueProvider,
   handlers: HandlerMap,
-  opts?: WorkerOptions
+  opts?: WorkerOptions,
 ): { stop: () => Promise<void> } {
   const pollInterval = opts?.pollInterval ?? WORKER_DEFAULTS.pollInterval;
   const concurrency = opts?.concurrency ?? WORKER_DEFAULTS.concurrency;
@@ -60,10 +60,7 @@ export function createWorker(
     if (!handler) {
       console.error(`[worker] No handler registered for job "${job.name}"`);
       queueJobTotal.add(1, { job_name: job.name, status: "unhandled" });
-      await provider.fail(
-        job.id,
-        new Error(`No handler registered for job "${job.name}"`)
-      );
+      await provider.fail(job.id, new Error(`No handler registered for job "${job.name}"`));
       return;
     }
 
@@ -78,9 +75,7 @@ export function createWorker(
       queueJobDuration.record(durationMs, { job_name: job.name });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.error(
-        `[worker] Job "${job.name}" (${job.id}) failed: ${error.message}`
-      );
+      console.error(`[worker] Job "${job.name}" (${job.id}) failed: ${error.message}`);
 
       const durationMs = performance.now() - start;
       queueJobTotal.add(1, { job_name: job.name, status: "error" });
@@ -108,9 +103,20 @@ export function createWorker(
         }
 
         activeJobs++;
-        processJob(job).finally(() => {
-          activeJobs--;
-        });
+        // Deliberately not awaited — dispatching without blocking is what makes
+        // `concurrency` mean anything, and awaiting here would serialise the
+        // worker to one job at a time. `processJob` reports handler failures
+        // itself, so a rejection escaping it is the queue backend failing while
+        // it does that. Logging it keeps a transient backend error from
+        // reaching `unhandledRejection` and taking the process down.
+        void processJob(job)
+          .catch((err) => {
+            const error = err instanceof Error ? err : new Error(String(err));
+            console.error(`[worker] Job dispatch failed for "${job.name}": ${error.message}`);
+          })
+          .finally(() => {
+            activeJobs--;
+          });
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         console.error(`[worker] Poll error: ${error.message}`);
@@ -119,8 +125,14 @@ export function createWorker(
     }
   }
 
-  // Start the poll loop
-  poll();
+  // Start the poll loop. Per-iteration errors are caught inside it; a rejection
+  // escaping means the loop itself died, which has to be visible — a worker that
+  // silently stopped consuming looks identical to an empty queue.
+  void poll().catch((err) => {
+    running = false;
+    const error = err instanceof Error ? err : new Error(String(err));
+    console.error(`[worker] poll loop stopped: ${error.message}`);
+  });
 
   return {
     async stop(): Promise<void> {

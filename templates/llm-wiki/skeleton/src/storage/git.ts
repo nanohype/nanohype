@@ -1,10 +1,10 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "fs";
 import { readdir } from "fs/promises";
 import { join, relative, resolve } from "path";
 import { simpleGit } from "simple-git";
-import type { StorageProvider, PageCommit } from "./types.js";
-import { registerStorageProvider } from "./registry.js";
 import { getConfig } from "../config.js";
+import { registerStorageProvider } from "./registry.js";
+import type { PageCommit, StorageProvider } from "./types.js";
 
 const TENANT_ID_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -65,12 +65,7 @@ class GitStorageProvider implements StorageProvider {
     return readFileSync(filePath, "utf-8");
   }
 
-  async writePage(
-    tenantId: string,
-    path: string,
-    content: string,
-    message: string,
-  ): Promise<void> {
+  async writePage(tenantId: string, path: string, content: string, message: string): Promise<void> {
     const dir = wikiDir(tenantId);
     await ensureGitRepo(dir);
 
@@ -87,11 +82,7 @@ class GitStorageProvider implements StorageProvider {
     await git.commit(message);
   }
 
-  async deletePage(
-    tenantId: string,
-    path: string,
-    message: string,
-  ): Promise<void> {
+  async deletePage(tenantId: string, path: string, message: string): Promise<void> {
     const dir = wikiDir(tenantId);
     const filePath = safePath(dir, path);
     if (!existsSync(filePath)) {
@@ -128,11 +119,7 @@ class GitStorageProvider implements StorageProvider {
     }
   }
 
-  async getHistory(
-    tenantId: string,
-    path: string,
-    limit?: number,
-  ): Promise<PageCommit[]> {
+  async getHistory(tenantId: string, path: string, limit?: number): Promise<PageCommit[]> {
     const dir = wikiDir(tenantId);
     await ensureGitRepo(dir);
 

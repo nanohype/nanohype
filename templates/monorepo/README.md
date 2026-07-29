@@ -1,12 +1,12 @@
 # monorepo
 
-Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScript base config, ESLint setup, Turborepo pipeline definitions for build/test/lint/dev, and GitHub Actions CI. Optionally includes shared utility and UI library packages under `packages/`.
+Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScript base config, a Biome lint + format setup, Turborepo pipeline definitions for build/test/lint/dev, and GitHub Actions CI. Optionally includes shared utility and UI library packages under `packages/`.
 
 ## What you get
 
 - A pnpm workspace with Turborepo ^2 orchestrating build, test, lint, and dev tasks
 - Shared TypeScript 5.8+ base configuration extended by all packages
-- Shared ESLint config with TypeScript and Prettier integration
+- One Biome config at the workspace root, covering lint and format for every package
 - GitHub Actions CI workflow with pnpm caching and Turborepo-aware build
 - `apps/` directory with a `.gitkeep` placeholder for application packages
 - Optional `packages/shared-utils/` with common utility functions
@@ -30,7 +30,7 @@ Scaffolds a Turborepo monorepo workspace using pnpm. Includes a shared TypeScrip
   pnpm-workspace.yaml            # Workspace packages definition
   turbo.json                     # Pipeline config (build, test, lint, dev)
   tsconfig.base.json             # Shared TypeScript config
-  .eslintrc.js                   # Shared ESLint config
+  biome.json                     # Lint + format for the whole workspace
   .gitignore
   apps/
     .gitkeep                     # Placeholder for app packages

@@ -1,12 +1,12 @@
 import "dotenv/config";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
+import { createQueueConsumer } from "./consumer/handler.js";
+import { sendNotification } from "./consumer/jobs/example.js";
+import type { HandlerMap } from "./consumer/types.js";
+import { createHealthServer } from "./health/server.js";
 import { createLogger } from "./logger.js";
 import type { WorkerConfig } from "./types.js";
-import type { HandlerMap } from "./consumer/types.js";
-import { createQueueConsumer } from "./consumer/handler.js";
-import { createHealthServer } from "./health/server.js";
-import { sendNotification } from "./consumer/jobs/example.js";
 
 // ── Bootstrap ───────────────────────────────────────────────────────
 //
@@ -60,19 +60,31 @@ consumer.start();
 let schedulerRunning = !config.cronEnabled;
 
 if (config.cronEnabled) {
-  import("./scheduler/cron.js").then(async ({ createCronScheduler }) => {
-    const { cleanupStaleData } = await import("./scheduler/jobs/example.js");
+  // Nothing holds this promise — module scope is not async. Without the
+  // rejection handler a failed dynamic import reaches `unhandledRejection`
+  // and takes the process down with an opaque stack. Logging it instead
+  // leaves `schedulerRunning` false, so readiness keeps reporting not-ready:
+  // cron was asked for and did not start, which is exactly what a probe
+  // should say.
+  void import("./scheduler/cron.js")
+    .then(async ({ createCronScheduler }) => {
+      const { cleanupStaleData } = await import("./scheduler/jobs/example.js");
 
-    const scheduler = createCronScheduler(logger.child("scheduler"));
-    scheduler.register(cleanupStaleData);
-    scheduler.start();
-    schedulerRunning = true;
+      const scheduler = createCronScheduler(logger.child("scheduler"));
+      scheduler.register(cleanupStaleData);
+      scheduler.start();
+      schedulerRunning = true;
 
-    // Attach scheduler to shutdown
-    shutdownHooks.push(async () => {
-      await scheduler.stop();
+      // Attach scheduler to shutdown
+      shutdownHooks.push(async () => {
+        await scheduler.stop();
+      });
+    })
+    .catch((err) => {
+      logger.error("Cron scheduler failed to start", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
-  });
 }
 
 // ── Health Server ───────────────────────────────────────────────────
@@ -83,7 +95,7 @@ const health = createHealthServer(
     consumerPolling: () => consumer.polling,
     schedulerRunning: () => schedulerRunning,
   },
-  logger.child("health")
+  logger.child("health"),
 );
 
 health.start();

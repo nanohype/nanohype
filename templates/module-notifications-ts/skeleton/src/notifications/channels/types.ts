@@ -5,7 +5,7 @@
 // that calls registerChannel() at the module level.
 //
 
-import type { Notification, NotificationResult, NotificationChannel } from "../types.js";
+import type { Notification, NotificationChannel, NotificationResult } from "../types.js";
 
 export interface ChannelProvider {
   /** Unique provider name (e.g. "resend", "sendgrid", "twilio"). */

@@ -14,13 +14,7 @@
 // the reason for the outcome (rule_match, default, disabled, etc.).
 //
 
-import type {
-  Flag,
-  TargetingContext,
-  EvaluationResult,
-  Rule,
-  RuleOperator,
-} from "./types.js";
+import type { EvaluationResult, Flag, Rule, RuleOperator, TargetingContext } from "./types.js";
 
 // ── FNV-1a Hash ─────────────────────────────────────────────────────
 //
@@ -49,11 +43,7 @@ function hashToBucket(flagKey: string, userId: string): number {
 
 // ── Property Comparison ─────────────────────────────────────────────
 
-function compareProperty(
-  actual: unknown,
-  operator: RuleOperator,
-  expected: unknown,
-): boolean {
+function compareProperty(actual: unknown, operator: RuleOperator, expected: unknown): boolean {
   switch (operator) {
     case "eq":
       return actual === expected;

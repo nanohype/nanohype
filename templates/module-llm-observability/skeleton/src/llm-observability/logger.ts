@@ -1,4 +1,4 @@
-import { trace, context } from "@opentelemetry/api";
+import { context, trace } from "@opentelemetry/api";
 
 /**
  * Structured logger integrated with OpenTelemetry context.

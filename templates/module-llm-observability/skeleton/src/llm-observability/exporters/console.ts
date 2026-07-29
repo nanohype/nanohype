@@ -1,6 +1,6 @@
-import type { LlmSpan, CostEntry } from "../types.js";
-import type { LlmExporter } from "./types.js";
+import type { CostEntry, LlmSpan } from "../types.js";
 import { registerExporter } from "./registry.js";
+import type { LlmExporter } from "./types.js";
 
 // ── Console Exporter ───────────────────────────────────────────────
 //
@@ -19,7 +19,7 @@ function createConsoleExporter(): LlmExporter {
         `[LLM] ${status} ${span.provider}/${span.model} ` +
           `${span.durationMs}ms ` +
           `in=${span.inputTokens} out=${span.outputTokens}${cost}` +
-          (span.error ? ` err="${span.error}"` : "")
+          (span.error ? ` err="${span.error}"` : ""),
       );
     },
 
@@ -27,7 +27,7 @@ function createConsoleExporter(): LlmExporter {
       console.log(
         `[LLM:COST] ${entry.provider}/${entry.model} ` +
           `$${entry.cost.toFixed(6)} ` +
-          `in=${entry.inputTokens} out=${entry.outputTokens}`
+          `in=${entry.inputTokens} out=${entry.outputTokens}`,
       );
     },
 

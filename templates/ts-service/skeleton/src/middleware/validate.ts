@@ -29,7 +29,7 @@ export function validate(schema: ZodSchema) {
     } catch {
       return c.json(
         { error: "Invalid JSON", issues: [{ message: "Request body must be valid JSON" }] },
-        400
+        400,
       );
     }
 

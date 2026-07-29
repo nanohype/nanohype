@@ -1,11 +1,11 @@
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider } from "./providers/index.js";
-import { handleTask, getAvailableSkills } from "./protocol/server.js";
-import { sendTask, fetchAgentCard } from "./protocol/client.js";
-import { listSkills, getSkill } from "./skills/index.js";
-import type { TaskRequest } from "./protocol/types.js";
-import type { Message } from "./providers/types.js";
 import { logger } from "./logger.js";
+import { fetchAgentCard, sendTask } from "./protocol/client.js";
+import { getAvailableSkills, handleTask } from "./protocol/server.js";
+import type { TaskRequest } from "./protocol/types.js";
+import { getProvider } from "./providers/index.js";
+import type { Message } from "./providers/types.js";
+import { getSkill, listSkills } from "./skills/index.js";
 
 // Ensure transports are registered
 import "./protocol/transport/index.js";

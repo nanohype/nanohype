@@ -11,15 +11,15 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       exclude: ["src/**/*.test.ts", "src/**/__tests__/**", "src/**/types.ts"],
-      // Below the floor published in nanohype/standards/testing-rubric.json
-      // (lines/functions/statements 75, branches 60). These are the measured
-      // values, now actually enforced: closing the gap needs tests for the
-      // directory walk and the render helpers, not a higher number here.
+      // A ratchet set a point under measured, and above the floor published in
+      // nanohype/standards/testing-rubric.json (lines/functions/statements 75,
+      // branches 60). Raise it as coverage grows; never lower it — a formatting
+      // pass that shifts statement counts should not be able to buy headroom.
       thresholds: {
-        lines: 71,
-        functions: 71,
-        statements: 71,
-        branches: 80,
+        lines: 99,
+        functions: 99,
+        statements: 99,
+        branches: 92,
       },
     },
   },

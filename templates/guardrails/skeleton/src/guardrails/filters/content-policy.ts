@@ -4,9 +4,9 @@
 // via a deny list of blocked keywords. Scans both input and output
 // for policy violations.
 
-import type { Filter } from "./types.js";
 import type { Direction, FilterResult, Violation } from "../types.js";
 import { registerFilter } from "./registry.js";
+import type { Filter } from "./types.js";
 
 /**
  * Default blocked keywords. Override by passing `blockedKeywords`

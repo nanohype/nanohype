@@ -51,8 +51,7 @@ Pluggable vector database abstraction for embedding storage and similarity searc
   package.json
   tsconfig.json
   vitest.config.ts
-  eslint.config.js
-  .prettierrc
+  biome.json
   .env.example
   .gitignore
   README.md

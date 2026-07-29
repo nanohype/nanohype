@@ -9,35 +9,23 @@ import { metrics } from "@opentelemetry/api";
 const meter = metrics.getMeter("__PROJECT_NAME__");
 
 /** Total documents processed, labeled by outcome status. */
-export const pipelineDocumentsProcessed = meter.createCounter(
-  "pipeline_documents_processed",
-  {
-    description: "Total number of documents processed by the pipeline",
-  },
-);
+export const pipelineDocumentsProcessed = meter.createCounter("pipeline_documents_processed", {
+  description: "Total number of documents processed by the pipeline",
+});
 
 /** Total chunks created across all documents. */
-export const pipelineChunksCreated = meter.createCounter(
-  "pipeline_chunks_created",
-  {
-    description: "Total number of chunks created by the transform stage",
-  },
-);
+export const pipelineChunksCreated = meter.createCounter("pipeline_chunks_created", {
+  description: "Total number of chunks created by the transform stage",
+});
 
 /** Full pipeline run duration in milliseconds. */
-export const pipelineDuration = meter.createHistogram(
-  "pipeline_duration_ms",
-  {
-    description: "Pipeline run duration in milliseconds",
-    unit: "ms",
-  },
-);
+export const pipelineDuration = meter.createHistogram("pipeline_duration_ms", {
+  description: "Pipeline run duration in milliseconds",
+  unit: "ms",
+});
 
 /** Terminal stage errors, labeled by stage (ingest/transform/embed/output) — the
  *  "errors" of RED. Incremented when a stage fails after retries are exhausted. */
-export const pipelineErrorsTotal = meter.createCounter(
-  "pipeline_errors_total",
-  {
-    description: "Total terminal stage errors, labeled by stage",
-  },
-);
+export const pipelineErrorsTotal = meter.createCounter("pipeline_errors_total", {
+  description: "Total terminal stage errors, labeled by stage",
+});

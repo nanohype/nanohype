@@ -7,8 +7,8 @@
 // are set on the response.
 //
 
-import type { RateLimitOptions, RateLimitResult } from "./types.js";
 import type { RateLimiter } from "./index.js";
+import type { RateLimitOptions, RateLimitResult } from "./types.js";
 
 /** Options for middleware factories. */
 export interface MiddlewareOptions extends RateLimitOptions {
@@ -140,12 +140,10 @@ export function expressMiddleware(
         setRateLimitHeaders(expressRes, result);
 
         if (!result.allowed) {
-          expressRes
-            .status(statusCode)
-            .json({
-              error: message,
-              retryAfter: Math.ceil((result.resetAt - Date.now()) / 1000),
-            });
+          expressRes.status(statusCode).json({
+            error: message,
+            retryAfter: Math.ceil((result.resetAt - Date.now()) / 1000),
+          });
           return;
         }
 

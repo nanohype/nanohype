@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { registerProvider, getProvider } from "../providers/registry.js";
-import type { LlmProvider, ChatMessage } from "../providers/types.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getProvider, registerProvider } from "../providers/registry.js";
+import type { ChatMessage, LlmProvider } from "../providers/types.js";
 
 /**
  * Tests for the command handling flow and provider integration.
@@ -37,9 +37,7 @@ describe("provider registry", () => {
     mockChat.mockResolvedValueOnce("TypeScript is a typed superset of JavaScript.");
 
     const provider = getProvider("mock-test");
-    const messages: ChatMessage[] = [
-      { role: "user", content: "What is TypeScript?" },
-    ];
+    const messages: ChatMessage[] = [{ role: "user", content: "What is TypeScript?" }];
 
     const response = await provider.chat("You are a helpful assistant.", messages);
 
@@ -76,9 +74,7 @@ describe("provider registry", () => {
     mockChat.mockRejectedValueOnce(new Error("API rate limit exceeded"));
 
     const provider = getProvider("mock-test");
-    const messages: ChatMessage[] = [
-      { role: "user", content: "Hello" },
-    ];
+    const messages: ChatMessage[] = [{ role: "user", content: "Hello" }];
 
     await expect(provider.chat("system", messages)).rejects.toThrow("API rate limit exceeded");
   });

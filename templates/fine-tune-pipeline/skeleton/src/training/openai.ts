@@ -1,19 +1,13 @@
-import OpenAI from "openai";
 import { createReadStream } from "node:fs";
-import type {
-  TrainingProvider,
-  TrainingJobConfig,
-  TrainingJobStatus,
-} from "./types.js";
-import { registerProvider } from "./registry.js";
+import OpenAI from "openai";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { TrainingJobConfig, TrainingJobStatus, TrainingProvider } from "./types.js";
 
 /**
  * Map OpenAI fine-tuning job status strings to our normalized status.
  */
-function normalizeStatus(
-  status: string,
-): TrainingJobStatus["status"] {
+function normalizeStatus(status: string): TrainingJobStatus["status"] {
   switch (status) {
     case "validating_files":
     case "queued":
@@ -82,8 +76,7 @@ export class OpenAITrainingProvider implements TrainingProvider {
         validation_file: validationFileId,
         model: config.baseModel,
         suffix: config.suffix,
-        hyperparameters:
-          Object.keys(hyperparameters).length > 0 ? hyperparameters : undefined,
+        hyperparameters: Object.keys(hyperparameters).length > 0 ? hyperparameters : undefined,
       }),
     );
 
@@ -91,23 +84,17 @@ export class OpenAITrainingProvider implements TrainingProvider {
   }
 
   async getJobStatus(jobId: string): Promise<TrainingJobStatus> {
-    const job = await this.cb.execute(() =>
-      this.client.fineTuning.jobs.retrieve(jobId),
-    );
+    const job = await this.cb.execute(() => this.client.fineTuning.jobs.retrieve(jobId));
     return this.mapJob(job);
   }
 
   async cancelJob(jobId: string): Promise<TrainingJobStatus> {
-    const job = await this.cb.execute(() =>
-      this.client.fineTuning.jobs.cancel(jobId),
-    );
+    const job = await this.cb.execute(() => this.client.fineTuning.jobs.cancel(jobId));
     return this.mapJob(job);
   }
 
   async listJobs(limit = 10): Promise<TrainingJobStatus[]> {
-    const jobs = await this.cb.execute(() =>
-      this.client.fineTuning.jobs.list({ limit }),
-    );
+    const jobs = await this.cb.execute(() => this.client.fineTuning.jobs.list({ limit }));
     const results: TrainingJobStatus[] = [];
     for await (const job of jobs) {
       results.push(this.mapJob(job));
@@ -130,22 +117,16 @@ export class OpenAITrainingProvider implements TrainingProvider {
   /**
    * Map an OpenAI fine-tuning job object to our normalized status type.
    */
-  private mapJob(
-    job: OpenAI.FineTuning.Jobs.FineTuningJob,
-  ): TrainingJobStatus {
+  private mapJob(job: OpenAI.FineTuning.Jobs.FineTuningJob): TrainingJobStatus {
     return {
       id: job.id,
       status: normalizeStatus(job.status),
       baseModel: job.model,
       fineTunedModel: job.fine_tuned_model ?? undefined,
-      trainedEpochs: job.trained_tokens
-        ? undefined
-        : undefined,
+      trainedEpochs: job.trained_tokens ? undefined : undefined,
       error: job.error?.message ?? undefined,
       createdAt: new Date(job.created_at * 1000).toISOString(),
-      finishedAt: job.finished_at
-        ? new Date(job.finished_at * 1000).toISOString()
-        : undefined,
+      finishedAt: job.finished_at ? new Date(job.finished_at * 1000).toISOString() : undefined,
     };
   }
 }

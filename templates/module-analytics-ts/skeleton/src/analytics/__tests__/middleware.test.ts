@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createHonoAnalytics } from "../middleware/hono.js";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createExpressAnalytics } from "../middleware/express.js";
+import { createHonoAnalytics } from "../middleware/hono.js";
 import type { AnalyticsProvider } from "../providers/types.js";
 import type { TrackEvent } from "../types.js";
 

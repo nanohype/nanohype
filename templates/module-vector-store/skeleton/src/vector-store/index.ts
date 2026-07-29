@@ -8,10 +8,10 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "./types.js";
 import type { FilterExpression } from "./filters/types.js";
-import type { VectorStoreProvider } from "./providers/types.js";
 import { getProvider } from "./providers/registry.js";
+import type { VectorStoreProvider } from "./providers/types.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "./types.js";
 
 // ── VectorStore Facade ────────────────────────────────────────────
 
@@ -100,13 +100,13 @@ export async function createVectorStore(
 
 // ── Re-exports ────────────────────────────────────────────────────
 
-export type { VectorDocument, SearchResult, VectorStoreConfig } from "./types.js";
-export type { VectorStoreProvider } from "./providers/types.js";
-export type { FilterExpression, ComparisonFilter, AndFilter, OrFilter } from "./filters/types.js";
-export { compileFilter } from "./filters/compiler.js";
 export type { FilterBackend } from "./filters/compiler.js";
-export { registerProvider, getProvider, listProviders } from "./providers/registry.js";
-export { withRetry, batchChunk } from "./helpers.js";
-export { cosineSimilarity, dotProduct, normalize, magnitude } from "./similarity.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
+export { compileFilter } from "./filters/compiler.js";
+export type { AndFilter, ComparisonFilter, FilterExpression, OrFilter } from "./filters/types.js";
+export { batchChunk, withRetry } from "./helpers.js";
+export { getProvider, listProviders, registerProvider } from "./providers/registry.js";
+export type { VectorStoreProvider } from "./providers/types.js";
 export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
+export { cosineSimilarity, dotProduct, magnitude, normalize } from "./similarity.js";
+export type { SearchResult, VectorDocument, VectorStoreConfig } from "./types.js";

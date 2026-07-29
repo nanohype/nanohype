@@ -13,9 +13,7 @@ const factories = new Map<string, VectorStoreProviderFactory>();
 
 export function registerProvider(name: string, factory: VectorStoreProviderFactory): void {
   if (factories.has(name)) {
-    throw new Error(
-      `Vector store provider "${name}" is already registered`,
-    );
+    throw new Error(`Vector store provider "${name}" is already registered`);
   }
   factories.set(name, factory);
 }
@@ -24,9 +22,7 @@ export function getProvider(name: string): VectorStoreProvider {
   const factory = factories.get(name);
   if (!factory) {
     const available = Array.from(factories.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Vector store provider "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Vector store provider "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

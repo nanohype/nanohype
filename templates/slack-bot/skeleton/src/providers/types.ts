@@ -19,8 +19,5 @@ export interface LlmProvider {
    * Send a conversation to the LLM and return its text response.
    * The system prompt sets the bot's personality and formatting rules.
    */
-  chat(
-    systemPrompt: string,
-    messages: ChatMessage[],
-  ): Promise<string>;
+  chat(systemPrompt: string, messages: ChatMessage[]): Promise<string>;
 }

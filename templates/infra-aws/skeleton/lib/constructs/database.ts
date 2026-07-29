@@ -33,7 +33,7 @@ export class DatabaseConstruct extends Construct {
       dbSecurityGroup.addIngressRule(
         props.computeSecurityGroup,
         ec2.Port.tcp(5432),
-        "Allow PostgreSQL access from compute layer"
+        "Allow PostgreSQL access from compute layer",
       );
     }
 
@@ -41,10 +41,7 @@ export class DatabaseConstruct extends Construct {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_16,
       }),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T4G,
-        ec2.InstanceSize.MICRO
-      ),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO),
       vpc: props.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,

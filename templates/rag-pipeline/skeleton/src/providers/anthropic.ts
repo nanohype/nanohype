@@ -5,9 +5,9 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider } from "./types.js";
-import { registerLlmProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerLlmProvider } from "./registry.js";
+import type { LlmProvider } from "./types.js";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
@@ -39,7 +39,7 @@ class AnthropicLlm implements LlmProvider {
         system: systemPrompt,
         messages: [{ role: "user", content: userMessage }],
         temperature,
-      })
+      }),
     );
 
     const textBlock = response.content.find((block) => block.type === "text");

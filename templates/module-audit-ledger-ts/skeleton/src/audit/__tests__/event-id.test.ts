@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { deriveEventId, eventIdOf } from "../event-id.js";
 import type { AuditEvent } from "../types.js";
 
@@ -16,7 +16,9 @@ describe("deriveEventId", () => {
   });
 
   it("changes when any identifying field changes", () => {
-    expect(deriveEventId(base)).not.toBe(deriveEventId({ ...base, timestamp: "2026-01-02T00:00:00.000Z" }));
+    expect(deriveEventId(base)).not.toBe(
+      deriveEventId({ ...base, timestamp: "2026-01-02T00:00:00.000Z" }),
+    );
     expect(deriveEventId(base)).not.toBe(deriveEventId({ ...base, details: { draftId: "d-2" } }));
     expect(deriveEventId(base)).not.toBe(deriveEventId({ ...base, actor: "u-2" }));
   });

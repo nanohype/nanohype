@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
 import type { MediaProvider } from "../providers/types.js";

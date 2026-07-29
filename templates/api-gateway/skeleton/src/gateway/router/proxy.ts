@@ -6,8 +6,8 @@
 // AbortController and propagates upstream errors as gateway errors.
 //
 
-import type { ProxyResponse, TransformRule } from "../types.js";
 import type { Logger } from "../logger.js";
+import type { ProxyResponse, TransformRule } from "../types.js";
 
 /** Headers that should not be forwarded between proxy hops. */
 const HOP_BY_HOP_HEADERS = new Set([
@@ -25,10 +25,7 @@ const HOP_BY_HOP_HEADERS = new Set([
  * Build the forwarded request headers. Copies incoming headers,
  * removes hop-by-hop headers, and applies request transforms.
  */
-function buildRequestHeaders(
-  incomingHeaders: Headers,
-  transform?: TransformRule,
-): Headers {
+function buildRequestHeaders(incomingHeaders: Headers, transform?: TransformRule): Headers {
   const headers = new Headers();
 
   incomingHeaders.forEach((value, key) => {

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { SignatureProvider } from "./types.js";
 import { registerSignatureProvider } from "./registry.js";
+import type { SignatureProvider } from "./types.js";
 
 // ── Mock Signature Provider ───────────────────────────────────────
 //

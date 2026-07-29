@@ -15,13 +15,10 @@ export const flagEvalTotal = meter.createCounter("flag_eval_total", {
 });
 
 /** Flag evaluation duration in milliseconds. */
-export const flagEvalDuration = meter.createHistogram(
-  "flag_eval_duration_ms",
-  {
-    description: "Flag evaluation latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const flagEvalDuration = meter.createHistogram("flag_eval_duration_ms", {
+  description: "Flag evaluation latency in milliseconds",
+  unit: "ms",
+});
 
 /** Variant tracking records emitted. */
 export const variantTrackTotal = meter.createCounter("variant_track_total", {

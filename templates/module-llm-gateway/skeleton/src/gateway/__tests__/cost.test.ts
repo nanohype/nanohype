@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { calculateCost, getModelPricing } from "../cost/pricing.js";
-import { createCostTracker } from "../cost/tracker.js";
+import { describe, expect, it } from "vitest";
 import { detectAnomalies } from "../cost/anomaly.js";
-import type { GatewayResponse } from "../types.js";
+import { calculateCost, getModelPricing } from "../cost/pricing.js";
 import type { CostEntry } from "../cost/tracker.js";
+import { createCostTracker } from "../cost/tracker.js";
+import type { GatewayResponse } from "../types.js";
 
 // ── Cost Tracking Tests ─────────────────────────────────────────────
 
@@ -28,11 +28,7 @@ describe("pricing", () => {
 });
 
 describe("cost tracker", () => {
-  function makeResponse(
-    provider: string,
-    model: string,
-    cost: number,
-  ): GatewayResponse {
+  function makeResponse(provider: string, model: string, cost: number): GatewayResponse {
     return {
       text: "test",
       model,

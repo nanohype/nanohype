@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getDb, disconnectDatabase } from "./client.js";
+import { disconnectDatabase, getDb } from "./client.js";
 
 // ── Migration Runner ────────────────────────────────────────────────
 //

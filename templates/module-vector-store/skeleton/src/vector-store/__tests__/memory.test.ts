@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // Import the memory provider module to trigger self-registration
 import "../providers/memory.js";
@@ -10,7 +10,11 @@ describe("memory vector store provider", () => {
   let provider: VectorStoreProvider;
 
   // Helpers for creating test documents with simple embeddings
-  function makeDoc(id: string, embedding: number[], metadata: Record<string, unknown> = {}): VectorDocument {
+  function makeDoc(
+    id: string,
+    embedding: number[],
+    metadata: Record<string, unknown> = {},
+  ): VectorDocument {
     return { id, content: `Content for ${id}`, embedding, metadata };
   }
 
@@ -31,9 +35,9 @@ describe("memory vector store provider", () => {
     const queryVec = [1, 0, 0];
 
     await provider.upsert([
-      makeDoc("close", [0.9, 0.1, 0]),    // most similar to [1,0,0]
-      makeDoc("medium", [0.5, 0.5, 0]),   // moderately similar
-      makeDoc("far", [0, 0, 1]),           // orthogonal
+      makeDoc("close", [0.9, 0.1, 0]), // most similar to [1,0,0]
+      makeDoc("medium", [0.5, 0.5, 0]), // moderately similar
+      makeDoc("far", [0, 0, 1]), // orthogonal
     ]);
 
     const results = await provider.query(queryVec, 3);
@@ -48,11 +52,7 @@ describe("memory vector store provider", () => {
   });
 
   it("respects topK limit", async () => {
-    await provider.upsert([
-      makeDoc("a", [1, 0]),
-      makeDoc("b", [0, 1]),
-      makeDoc("c", [0.5, 0.5]),
-    ]);
+    await provider.upsert([makeDoc("a", [1, 0]), makeDoc("b", [0, 1]), makeDoc("c", [0.5, 0.5])]);
 
     const results = await provider.query([1, 0], 2);
 
@@ -60,10 +60,7 @@ describe("memory vector store provider", () => {
   });
 
   it("delete removes documents from results", async () => {
-    await provider.upsert([
-      makeDoc("keep", [1, 0]),
-      makeDoc("remove", [0.9, 0.1]),
-    ]);
+    await provider.upsert([makeDoc("keep", [1, 0]), makeDoc("remove", [0.9, 0.1])]);
 
     await provider.delete(["remove"]);
 
@@ -157,10 +154,7 @@ describe("memory vector store provider", () => {
   it("count returns accurate document count", async () => {
     expect(await provider.count()).toBe(0);
 
-    await provider.upsert([
-      makeDoc("a", [1, 0]),
-      makeDoc("b", [0, 1]),
-    ]);
+    await provider.upsert([makeDoc("a", [1, 0]), makeDoc("b", [0, 1])]);
 
     expect(await provider.count()).toBe(2);
 

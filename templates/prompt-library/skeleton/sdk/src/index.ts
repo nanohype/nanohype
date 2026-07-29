@@ -1,11 +1,11 @@
-import { readFile, readdir, stat } from "fs/promises";
-import { join, resolve } from "path";
-import { parse as parseYaml } from "yaml";
 // ajv 8 ships one entrypoint per JSON Schema draft, and the bare "ajv" import
 // is draft-07. prompt.schema.json declares draft 2020-12, so the default
 // import cannot resolve its $schema and every validation throws before it
 // checks anything.
 import Ajv from "ajv/dist/2020.js";
+import { readdir, readFile, stat } from "fs/promises";
+import { join, resolve } from "path";
+import { parse as parseYaml } from "yaml";
 
 import type { Prompt, PromptMetadata, RenderedPrompt } from "./types.js";
 
@@ -83,16 +83,14 @@ export async function loadPrompts(directory: string, schemaPath?: string): Promi
  */
 export function renderPrompt(
   prompt: Prompt,
-  variables: Record<string, string> = {}
+  variables: Record<string, string> = {},
 ): RenderedPrompt {
   const vars = prompt.metadata.variables ?? [];
 
   // Validate that all required variables are present
   for (const v of vars) {
     if (v.required && !(v.name in variables) && v.default === undefined) {
-      throw new Error(
-        `Missing required variable "${v.name}" for prompt "${prompt.metadata.name}"`
-      );
+      throw new Error(`Missing required variable "${v.name}" for prompt "${prompt.metadata.name}"`);
     }
   }
 
@@ -122,7 +120,7 @@ export function renderPrompt(
 export async function getPromptByName(
   directory: string,
   name: string,
-  schemaPath?: string
+  schemaPath?: string,
 ): Promise<Prompt | undefined> {
   const prompts = await loadPrompts(directory, schemaPath);
   return prompts.find((p) => p.metadata.name === name);
@@ -132,10 +130,7 @@ export async function getPromptByName(
  * Validate prompt metadata against the JSON Schema.
  * Throws an error with details if validation fails.
  */
-export async function validatePrompt(
-  metadata: PromptMetadata,
-  schemaPath?: string
-): Promise<void> {
+export async function validatePrompt(metadata: PromptMetadata, schemaPath?: string): Promise<void> {
   const schema = await loadSchema(schemaPath);
   const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(schema);

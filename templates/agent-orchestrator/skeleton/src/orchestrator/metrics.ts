@@ -21,19 +21,13 @@ export const subtaskTotal = meter.createCounter("orchestrator_subtask_total", {
 });
 
 /** Agent execution duration in milliseconds, labeled by agent name. */
-export const agentDuration = meter.createHistogram(
-  "orchestrator_agent_duration_ms",
-  {
-    description: "Agent execution latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const agentDuration = meter.createHistogram("orchestrator_agent_duration_ms", {
+  description: "Agent execution latency in milliseconds",
+  unit: "ms",
+});
 
 /** Total orchestration duration in milliseconds. */
-export const orchestrationDuration = meter.createHistogram(
-  "orchestrator_duration_ms",
-  {
-    description: "Total orchestration latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const orchestrationDuration = meter.createHistogram("orchestrator_duration_ms", {
+  description: "Total orchestration latency in milliseconds",
+  unit: "ms",
+});

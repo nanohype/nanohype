@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import {
-  createCircuitBreaker,
-  CircuitBreakerOpenError,
-} from "../providers/circuit-breaker.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { CircuitBreakerOpenError, createCircuitBreaker } from "../providers/circuit-breaker.js";
 
 // ── Circuit Breaker Tests ───────────────────────────────────────────
 //

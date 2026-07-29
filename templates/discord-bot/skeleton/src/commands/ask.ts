@@ -1,11 +1,7 @@
-import {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
+import { type ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import type { Config } from "../config.js";
-import { getProvider } from "../providers/registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/registry.js";
 
 // ── /ask Command ─────────────────────────────────────────────────────
 //
@@ -18,10 +14,7 @@ export const askCommandDefinition = new SlashCommandBuilder()
   .setName("ask")
   .setDescription("Ask the AI a question")
   .addStringOption((option) =>
-    option
-      .setName("question")
-      .setDescription("Your question")
-      .setRequired(true)
+    option.setName("question").setDescription("Your question").setRequired(true),
   );
 
 export async function handleAskCommand(

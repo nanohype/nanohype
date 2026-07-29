@@ -2,9 +2,7 @@ import type { Command } from "commander";
 import { loadSchema } from "../../schema/parser.js";
 
 export function registerSchemaCommand(program: Command): void {
-  const schema = program
-    .command("schema")
-    .description("Wiki schema utilities");
+  const schema = program.command("schema").description("Wiki schema utilities");
 
   schema
     .command("validate <path>")
@@ -18,7 +16,9 @@ export function registerSchemaCommand(program: Command): void {
         console.log(`  Index:       ${result.structure.index}`);
         console.log(`  LLM:         ${result.llm.provider} / ${result.llm.model}`);
       } catch (err) {
-        console.error(`Schema validation failed: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(
+          `Schema validation failed: ${err instanceof Error ? err.message : String(err)}`,
+        );
         process.exitCode = 1;
       }
     });

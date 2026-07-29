@@ -1,9 +1,9 @@
-import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
+import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
 import { ConsoleMetricExporter } from "@opentelemetry/sdk-metrics";
 import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
-import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
-import type { TelemetryExporter } from "./types.js";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
 import { registerExporter } from "./registry.js";
+import type { TelemetryExporter } from "./types.js";
 
 /**
  * Console exporter — writes spans and metrics to stdout.

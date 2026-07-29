@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createVariantTracker } from "../tracker.js";
 
 describe("variant tracker", () => {
@@ -74,7 +74,7 @@ describe("variant tracker", () => {
     expect(tracker.pending()).toBe(0);
   });
 
-  it("records include timestamp and metadata", () => {
+  it("records include timestamp and metadata", async () => {
     const flushedRecords: Array<{
       flagKey: string;
       variant: string;
@@ -91,17 +91,13 @@ describe("variant tracker", () => {
 
     tracker.record("flag-a", "treatment", "user-1", { experimentId: "exp-1" });
 
-    tracker.flush();
+    // Awaited rather than raced against a timer — `flush` resolves once
+    // `onFlush` has run, so there is nothing to wait out.
+    await tracker.flush();
 
-    // Give the flush callback a tick
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        expect(flushedRecords).toHaveLength(1);
-        expect(flushedRecords[0].flagKey).toBe("flag-a");
-        expect(flushedRecords[0].metadata).toEqual({ experimentId: "exp-1" });
-        expect(flushedRecords[0].timestamp).toBeTruthy();
-        resolve();
-      }, 10);
-    });
+    expect(flushedRecords).toHaveLength(1);
+    expect(flushedRecords[0].flagKey).toBe("flag-a");
+    expect(flushedRecords[0].metadata).toEqual({ experimentId: "exp-1" });
+    expect(flushedRecords[0].timestamp).toBeTruthy();
   });
 });

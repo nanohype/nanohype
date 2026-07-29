@@ -6,13 +6,8 @@
  * the splitting process.
  */
 
-import { describe, it, expect } from "vitest";
-import {
-  FixedChunker,
-  RecursiveChunker,
-  SemanticChunker,
-  createChunker,
-} from "../chunking.js";
+import { describe, expect, it } from "vitest";
+import { createChunker, FixedChunker, RecursiveChunker, SemanticChunker } from "../chunking.js";
 
 const SAMPLE_TEXT = [
   "Retrieval-Augmented Generation (RAG) is an approach that combines ",

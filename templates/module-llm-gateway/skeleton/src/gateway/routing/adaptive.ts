@@ -1,6 +1,6 @@
 import type { GatewayProvider } from "../providers/types.js";
-import type { RoutingStrategy, RoutingContext } from "./types.js";
 import { registerStrategy } from "./registry.js";
+import type { RoutingContext, RoutingStrategy } from "./types.js";
 
 // ── Adaptive Routing Strategy ───────────────────────────────────────
 //
@@ -50,8 +50,7 @@ export function createAdaptiveStrategy(): RoutingStrategy {
     if (s.outcomes.length === 0) return 0;
     const successes = s.outcomes.filter((o) => o.success).length;
     const successRate = successes / s.outcomes.length;
-    const avgLatency =
-      s.outcomes.reduce((sum, o) => sum + o.latencyMs, 0) / s.outcomes.length;
+    const avgLatency = s.outcomes.reduce((sum, o) => sum + o.latencyMs, 0) / s.outcomes.length;
     // Normalize: success rate (0–1) weighted at 0.7, inverse latency weighted at 0.3
     // Latency normalization: 100ms = 1.0, 10000ms = 0.01
     const latencyScore = Math.min(1, 100 / (avgLatency || 1000));

@@ -1,4 +1,4 @@
-import type { SuiteResult, CaseResult } from "../suite.js";
+import type { CaseResult, SuiteResult } from "../suite.js";
 
 const GREEN = "\x1b[32m";
 const RED = "\x1b[31m";
@@ -36,9 +36,7 @@ export class ConsoleReporter {
     if (allPassed) {
       console.log(`${GREEN}${BOLD}All evaluations passed.${RESET}`);
     } else {
-      console.log(
-        `${RED}${BOLD}${totalCases - totalPassed} evaluation(s) failed.${RESET}`,
-      );
+      console.log(`${RED}${BOLD}${totalCases - totalPassed} evaluation(s) failed.${RESET}`);
     }
     console.log("");
   }

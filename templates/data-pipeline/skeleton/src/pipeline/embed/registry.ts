@@ -24,9 +24,7 @@ export function getEmbeddingProvider(name: string, ...args: unknown[]): Embeddin
   const factory = providers.get(name);
   if (!factory) {
     const available = Array.from(providers.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Embedding provider "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Embedding provider "${name}" not found. Available: ${available}`);
   }
   return factory(...args);
 }

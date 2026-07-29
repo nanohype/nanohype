@@ -1,8 +1,8 @@
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { parse, stringify } from "yaml";
-import type { Role, TenantConfig } from "./types.js";
 import { getConfig } from "../config.js";
+import type { Role, TenantConfig } from "./types.js";
 
 function loadTenantsData(): { tenants: TenantConfig[] } {
   const path = join(getConfig().WIKI_DATA_DIR, "tenants.yaml");
@@ -10,11 +10,7 @@ function loadTenantsData(): { tenants: TenantConfig[] } {
   return parse(readFileSync(path, "utf-8")) ?? { tenants: [] };
 }
 
-export function checkAccess(
-  tenantId: string,
-  userId: string,
-  requiredRole: Role,
-): boolean {
+export function checkAccess(tenantId: string, userId: string, requiredRole: Role): boolean {
   const data = loadTenantsData();
   const config = data.tenants.find((t) => t.id === tenantId);
   if (!config) return false;
@@ -26,11 +22,7 @@ export function checkAccess(
   return hierarchy[userRole] >= hierarchy[requiredRole];
 }
 
-export function assignRole(
-  tenantId: string,
-  userId: string,
-  role: Role,
-): void {
+export function assignRole(tenantId: string, userId: string, role: Role): void {
   const data = loadTenantsData();
   const tenant = data.tenants.find((t) => t.id === tenantId);
   if (!tenant) throw new Error(`Tenant "${tenantId}" not found`);

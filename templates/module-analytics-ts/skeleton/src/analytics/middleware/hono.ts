@@ -45,17 +45,19 @@ export function createHonoAnalytics(
 
     const durationMs = Math.round(performance.now() - start);
 
-    provider.track({
-      event: eventName,
-      properties: {
-        method: c.req.method,
-        path: c.req.path,
-        statusCode: c.res.status,
-        durationMs,
-        userAgent: c.req.header("user-agent"),
-      },
-    }).catch(() => {
-      // Non-blocking -- analytics should never break request flow
-    });
+    provider
+      .track({
+        event: eventName,
+        properties: {
+          method: c.req.method,
+          path: c.req.path,
+          statusCode: c.res.status,
+          durationMs,
+          userAgent: c.req.header("user-agent"),
+        },
+      })
+      .catch(() => {
+        // Non-blocking -- analytics should never break request flow
+      });
   };
 }

@@ -1,8 +1,8 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { parse, stringify } from "yaml";
-import type { Tenant, TenantConfig } from "./types.js";
 import { getConfig } from "../config.js";
+import type { Tenant, TenantConfig } from "./types.js";
 
 const TENANTS_FILE = "tenants.yaml";
 

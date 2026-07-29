@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
 import type { SearchProvider } from "../providers/types.js";
@@ -54,9 +54,7 @@ describe("mock search provider", () => {
         fields: [{ name: "id", type: "string", primary: true }],
       });
 
-      await provider.indexDocuments("to-delete", [
-        { id: "1", content: "test", metadata: {} },
-      ]);
+      await provider.indexDocuments("to-delete", [{ id: "1", content: "test", metadata: {} }]);
 
       await provider.deleteIndex("to-delete");
 
@@ -91,7 +89,10 @@ describe("mock search provider", () => {
     it("deletes documents by ID", async () => {
       await provider.createIndex({
         name: "del-test",
-        fields: [{ name: "id", type: "string", primary: true }, { name: "content", type: "string" }],
+        fields: [
+          { name: "id", type: "string", primary: true },
+          { name: "content", type: "string" },
+        ],
       });
 
       await provider.indexDocuments("del-test", [
@@ -119,9 +120,21 @@ describe("mock search provider", () => {
       });
 
       await provider.indexDocuments("search-test", [
-        { id: "1", content: "The quick brown fox jumps over the lazy dog", metadata: { category: "animals" } },
-        { id: "2", content: "A fast brown fox runs through the forest", metadata: { category: "animals" } },
-        { id: "3", content: "TypeScript improves developer productivity", metadata: { category: "tech" } },
+        {
+          id: "1",
+          content: "The quick brown fox jumps over the lazy dog",
+          metadata: { category: "animals" },
+        },
+        {
+          id: "2",
+          content: "A fast brown fox runs through the forest",
+          metadata: { category: "animals" },
+        },
+        {
+          id: "3",
+          content: "TypeScript improves developer productivity",
+          metadata: { category: "tech" },
+        },
         { id: "4", content: "The lazy cat sleeps all day", metadata: { category: "animals" } },
       ]);
     });
@@ -260,7 +273,11 @@ describe("mock search provider", () => {
 
       await provider.indexDocuments("filter-test", [
         { id: "1", content: "important task work", metadata: { category: "work", priority: 1 } },
-        { id: "2", content: "casual task personal", metadata: { category: "personal", priority: 3 } },
+        {
+          id: "2",
+          content: "casual task personal",
+          metadata: { category: "personal", priority: 3 },
+        },
         { id: "3", content: "urgent task work", metadata: { category: "work", priority: 5 } },
       ]);
     });

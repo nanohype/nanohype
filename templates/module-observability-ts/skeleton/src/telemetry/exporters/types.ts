@@ -1,5 +1,5 @@
-import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
 import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
+import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
 
 /**
  * Telemetry exporter interface.

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { interpolate, renderTemplate } from "../template.js";
 import type { NotificationTemplate } from "../types.js";
 
@@ -80,11 +80,7 @@ describe("template rendering", () => {
         body: "Alert: {{message}}",
       };
 
-      const notification = renderTemplate(
-        template,
-        { message: "Server is down" },
-        "+15551234567",
-      );
+      const notification = renderTemplate(template, { message: "Server is down" }, "+15551234567");
 
       expect(notification.channel).toBe("sms");
       expect(notification.to).toBe("+15551234567");

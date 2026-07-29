@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createSemanticCache } from "../index.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { GatewayCachingStrategy } from "../gateway-adapter.js";
 import { createSemanticCacheStrategy } from "../gateway-adapter.js";
 import type { SemanticCache } from "../index.js";
-import type { GatewayCachingStrategy } from "../gateway-adapter.js";
+import { createSemanticCache } from "../index.js";
 
 // Import mock embedder and memory store to trigger self-registration
 import "../embedder/mock.js";

@@ -3,9 +3,9 @@
 // Atlassian's OAuth 2.0 (3LO) endpoint. Requires `audience=api.atlassian.com`
 // on the auth URL; tokens are short-lived (typically ~1h) and refreshable.
 
-import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { expiresAtFromExpiresIn, TokenResponseSchema } from "./shared.js";
+import type { OAuthProvider, TokenGrant } from "./types.js";
 
 function parse(raw: unknown, previous?: TokenGrant): TokenGrant {
   const r = TokenResponseSchema.parse(raw);
@@ -32,11 +32,7 @@ export const atlassianProvider: OAuthProvider = {
     "&code_challenge={code_challenge}" +
     "&code_challenge_method={code_challenge_method}",
   tokenUrl: "https://auth.atlassian.com/oauth/token",
-  defaultScopes: [
-    "read:confluence-content.all",
-    "read:confluence-space.summary",
-    "offline_access",
-  ],
+  defaultScopes: ["read:confluence-content.all", "read:confluence-space.summary", "offline_access"],
   usePkce: true,
 
   parseTokenResponse(raw) {

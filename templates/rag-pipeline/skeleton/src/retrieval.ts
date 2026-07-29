@@ -7,9 +7,9 @@
  */
 
 import type { Config } from "./config.js";
-import type { EmbeddingProvider, VectorStoreProvider, SearchResult } from "./providers/types.js";
-import { getEmbeddingProvider, getVectorStoreProvider } from "./providers/index.js";
 import { logger } from "./logger.js";
+import { getEmbeddingProvider, getVectorStoreProvider } from "./providers/index.js";
+import type { EmbeddingProvider, SearchResult, VectorStoreProvider } from "./providers/types.js";
 
 export interface RetrievalResult {
   content: string;
@@ -128,10 +128,5 @@ export async function createRetriever(config: Config): Promise<Retriever> {
   );
   await store.init();
 
-  return new Retriever(
-    embedder,
-    store,
-    config.retrieval.topK,
-    config.retrieval.scoreThreshold,
-  );
+  return new Retriever(embedder, store, config.retrieval.topK, config.retrieval.scoreThreshold);
 }

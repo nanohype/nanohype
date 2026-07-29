@@ -7,7 +7,7 @@
  * distribution.
  */
 
-import type { TrainingExample, DatasetSplit } from "./types.js";
+import type { DatasetSplit, TrainingExample } from "./types.js";
 
 /**
  * Fisher-Yates shuffle — mutates the array in place.
@@ -40,10 +40,7 @@ export interface SplitOptions {
  * @throws if ratios do not sum to approximately 1.0
  * @throws if any ratio is negative
  */
-export function splitDataset(
-  examples: TrainingExample[],
-  options: SplitOptions,
-): DatasetSplit {
+export function splitDataset(examples: TrainingExample[], options: SplitOptions): DatasetSplit {
   const { trainRatio, valRatio, testRatio } = options;
 
   if (trainRatio < 0 || valRatio < 0 || testRatio < 0) {
@@ -54,7 +51,7 @@ export function splitDataset(
   if (Math.abs(total - 1.0) > 0.01) {
     throw new Error(
       `Split ratios must sum to 1.0, got ${total.toFixed(3)} ` +
-      `(train=${trainRatio}, val=${valRatio}, test=${testRatio})`,
+        `(train=${trainRatio}, val=${valRatio}, test=${testRatio})`,
     );
   }
 

@@ -12,10 +12,7 @@ const providers = new Map<string, () => LlmProvider>();
  * Register a provider factory under the given name.
  * Called at the bottom of each provider module.
  */
-export function registerProvider(
-  name: string,
-  factory: () => LlmProvider,
-): void {
+export function registerProvider(name: string, factory: () => LlmProvider): void {
   providers.set(name, factory);
 }
 
@@ -27,9 +24,7 @@ export function getProvider(name: string): LlmProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = listProviders().join(", ");
-    throw new Error(
-      `Unknown LLM provider: "${name}". Registered: ${available || "(none)"}`,
-    );
+    throw new Error(`Unknown LLM provider: "${name}". Registered: ${available || "(none)"}`);
   }
   return factory();
 }

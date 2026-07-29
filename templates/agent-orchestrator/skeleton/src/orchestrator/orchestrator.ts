@@ -13,26 +13,15 @@
 // per-agent results, handoff trail, and timing information.
 //
 
-import type {
-  Task,
-  SubTask,
-  AgentResult,
-  OrchestratorResult,
-  PlannerResult,
-} from "./types.js";
-import type { ValidatedConfig } from "./config.js";
-import { createSharedContext, type SharedContext } from "./context/shared.js";
-import { createHandoffProtocol, type HandoffProtocol } from "./context/handoff.js";
-import { createRouter, type Router } from "./routing/router.js";
 import { getAgent, getAllAgents } from "./agents/index.js";
 import { createPlannerAgent } from "./agents/planner.js";
+import type { ValidatedConfig } from "./config.js";
+import { createHandoffProtocol, type HandoffProtocol } from "./context/handoff.js";
+import { createSharedContext, type SharedContext } from "./context/shared.js";
 import { logger } from "./logger.js";
-import {
-  taskTotal,
-  subtaskTotal,
-  agentDuration,
-  orchestrationDuration,
-} from "./metrics.js";
+import { agentDuration, orchestrationDuration, subtaskTotal, taskTotal } from "./metrics.js";
+import { createRouter, type Router } from "./routing/router.js";
+import type { AgentResult, OrchestratorResult, PlannerResult, SubTask, Task } from "./types.js";
 
 // ── Topological Sort ────────────────────────────────────────────────
 
@@ -100,7 +89,9 @@ export function createOrchestratorInstance(config: ValidatedConfig): Orchestrato
       // Step 1: Plan — decompose the task into subtasks
       const planner = createPlannerAgent() as ReturnType<typeof createPlannerAgent> & {
         setProvider(name: string): void;
-        setCapabilities(caps: Array<{ name: string; description: string; keywords?: string[] }>): void;
+        setCapabilities(
+          caps: Array<{ name: string; description: string; keywords?: string[] }>,
+        ): void;
         plan(description: string): Promise<PlannerResult>;
       };
 

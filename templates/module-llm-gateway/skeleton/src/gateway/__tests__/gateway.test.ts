@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { GatewayProvider } from "../providers/types.js";
-import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
+import type { ChatMessage, ChatOptions, GatewayResponse } from "../types.js";
 
 // ── Gateway Integration Tests ───────────────────────────────────────
 //
@@ -90,14 +90,17 @@ describe("gateway integration", () => {
     const { registerProvider, listProviders } = await import("../providers/registry.js");
 
     if (!listProviders().includes("fail-first")) {
-      registerProvider("fail-first", (): GatewayProvider => ({
-        name: "fail-first",
-        pricing: { input: 1, output: 1 },
-        async chat(): Promise<GatewayResponse> {
-          throw new Error("provider down");
-        },
-        countTokens: (text: string) => Math.ceil(text.length / 4),
-      }));
+      registerProvider(
+        "fail-first",
+        (): GatewayProvider => ({
+          name: "fail-first",
+          pricing: { input: 1, output: 1 },
+          async chat(): Promise<GatewayResponse> {
+            throw new Error("provider down");
+          },
+          countTokens: (text: string) => Math.ceil(text.length / 4),
+        }),
+      );
     }
     if (!listProviders().includes("fallback-ok")) {
       registerProvider("fallback-ok", () => createTestProvider("fallback-ok"));
@@ -134,8 +137,10 @@ describe("gateway integration", () => {
       countTokens: (text: string) => Math.ceil(text.length / 4),
     });
 
-    if (!listProviders().includes("down-a")) registerProvider("down-a", () => downProvider("down-a"));
-    if (!listProviders().includes("down-b")) registerProvider("down-b", () => downProvider("down-b"));
+    if (!listProviders().includes("down-a"))
+      registerProvider("down-a", () => downProvider("down-a"));
+    if (!listProviders().includes("down-b"))
+      registerProvider("down-b", () => downProvider("down-b"));
 
     const { createGateway } = await import("../index.js");
 

@@ -1,5 +1,5 @@
-import { validateBootstrap } from "../bootstrap.js";
 import type { Metadata } from "next";
+import { validateBootstrap } from "../bootstrap.js";
 import "./globals.css";
 
 validateBootstrap();

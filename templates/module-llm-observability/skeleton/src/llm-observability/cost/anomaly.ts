@@ -30,7 +30,7 @@ export interface AnomalyResult {
 export function detectAnomalies(
   entries: CostEntry[],
   windowSize: number = 20,
-  threshold: number = 2.0
+  threshold: number = 2.0,
 ): AnomalyResult[] {
   const anomalies: AnomalyResult[] = [];
 

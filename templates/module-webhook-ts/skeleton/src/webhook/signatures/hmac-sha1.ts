@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { SignatureProvider } from "./types.js";
 import { registerSignatureProvider } from "./registry.js";
+import type { SignatureProvider } from "./types.js";
 
 // ── HMAC-SHA1 Signature Provider ───────────────────────────────────
 //

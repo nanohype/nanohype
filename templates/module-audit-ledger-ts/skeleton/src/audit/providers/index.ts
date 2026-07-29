@@ -9,6 +9,6 @@ import "./postgres.js";
 import "./dynamodb.js";
 import "./sqs.js";
 
-export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { AuditAdapterFactory } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { AuditAdapter } from "./types.js";

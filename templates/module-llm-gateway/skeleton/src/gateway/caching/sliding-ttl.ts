@@ -1,11 +1,11 @@
 import type { GatewayResponse } from "../types.js";
+import { registerCachingStrategy } from "./registry.js";
 import type {
-  CachingStrategy,
-  CachingStrategyOptions,
   CacheContext,
   CachedResponse,
+  CachingStrategy,
+  CachingStrategyOptions,
 } from "./types.js";
-import { registerCachingStrategy } from "./registry.js";
 
 // Re-export so existing imports from "./sliding-ttl.js" keep working
 export { computeCacheKey } from "./key.js";

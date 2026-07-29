@@ -1,7 +1,7 @@
 import memjs, { type Client } from "memjs";
 import type { CacheConfig } from "../types.js";
-import type { CacheProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { CacheProvider } from "./types.js";
 
 // ── Memcached Cache Provider ───────────────────────────────────────
 //
@@ -22,9 +22,7 @@ const memcachedProvider: CacheProvider = {
 
   async init(config: CacheConfig): Promise<void> {
     const servers =
-      (config.servers as string) ??
-      process.env.MEMCACHED_SERVERS ??
-      "127.0.0.1:11211";
+      (config.servers as string) ?? process.env.MEMCACHED_SERVERS ?? "127.0.0.1:11211";
     const username = (config.username as string) ?? undefined;
     const password = (config.password as string) ?? undefined;
 

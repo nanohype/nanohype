@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  registerSignatureProvider,
   getSignatureProvider,
   listSignatureProviders,
+  registerSignatureProvider,
 } from "../signatures/registry.js";
 import type { SignatureProvider } from "../signatures/types.js";
 
@@ -34,18 +34,14 @@ describe("signature provider registry", () => {
   });
 
   it("throws when retrieving an unregistered provider", () => {
-    expect(() => getSignatureProvider("nonexistent-provider")).toThrow(
-      /not found/,
-    );
+    expect(() => getSignatureProvider("nonexistent-provider")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate provider name", () => {
     const name = unique();
     registerSignatureProvider(stubProvider(name));
 
-    expect(() => registerSignatureProvider(stubProvider(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerSignatureProvider(stubProvider(name))).toThrow(/already registered/);
   });
 
   it("lists all registered provider names", () => {

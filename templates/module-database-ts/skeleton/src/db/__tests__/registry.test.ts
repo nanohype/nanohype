@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerDriver,
-  getDriver,
-  listDrivers,
-} from "../drivers/registry.js";
+import { describe, expect, it } from "vitest";
+import { getDriver, listDrivers, registerDriver } from "../drivers/registry.js";
 import type { DatabaseDriver } from "../drivers/types.js";
 
 /**
@@ -32,18 +28,14 @@ describe("database driver registry", () => {
   });
 
   it("throws when retrieving an unregistered driver", () => {
-    expect(() => getDriver("nonexistent-driver")).toThrow(
-      /not found/,
-    );
+    expect(() => getDriver("nonexistent-driver")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate driver name", () => {
     const name = unique();
     registerDriver(stubDriver(name));
 
-    expect(() => registerDriver(stubDriver(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerDriver(stubDriver(name))).toThrow(/already registered/);
   });
 
   it("lists all registered driver names", () => {

@@ -8,9 +8,9 @@
  * Registers itself as the "openai" embedding provider on import.
  */
 
-import type { EmbeddingProvider } from "./types.js";
-import { registerEmbeddingProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerEmbeddingProvider } from "./registry.js";
+import type { EmbeddingProvider } from "./types.js";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
 
@@ -27,9 +27,7 @@ class OpenAIEmbedder implements EmbeddingProvider {
   constructor(model = "text-embedding-3-small", dims = 1536, batchSize = 128, apiKey?: string) {
     const key = apiKey || process.env.OPENAI_API_KEY;
     if (!key) {
-      throw new Error(
-        "OPENAI_API_KEY environment variable is required for OpenAI embeddings",
-      );
+      throw new Error("OPENAI_API_KEY environment variable is required for OpenAI embeddings");
     }
     this.apiKey = key;
     this.model = model;
@@ -85,10 +83,5 @@ class OpenAIEmbedder implements EmbeddingProvider {
 registerEmbeddingProvider(
   "openai",
   (model?: unknown, dims?: unknown, batchSize?: unknown, apiKey?: unknown) =>
-    new OpenAIEmbedder(
-      model as string,
-      dims as number,
-      batchSize as number,
-      apiKey as string,
-    ),
+    new OpenAIEmbedder(model as string, dims as number, batchSize as number, apiKey as string),
 );

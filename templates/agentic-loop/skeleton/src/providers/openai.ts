@@ -1,16 +1,16 @@
 import OpenAI from "openai";
 import { z } from "zod";
-import type { Tool } from "../tools/registry.js";
-import type {
-  LlmProvider,
-  Message,
-  ContentBlock,
-  ToolCall,
-  LlmResponse,
-  StreamChat,
-} from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import type { Tool } from "../tools/registry.js";
+import { registerProvider } from "./registry.js";
+import type {
+  ContentBlock,
+  LlmProvider,
+  LlmResponse,
+  Message,
+  StreamChat,
+  ToolCall,
+} from "./types.js";
 
 const client = new OpenAI();
 const cb = createCircuitBreaker();
@@ -23,9 +23,7 @@ function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   return "string";
 }
 
-function formatTools(
-  tools: Tool[],
-): OpenAI.Chat.Completions.ChatCompletionTool[] {
+function formatTools(tools: Tool[]): OpenAI.Chat.Completions.ChatCompletionTool[] {
   return tools.map((tool) => ({
     type: "function" as const,
     function: {
@@ -64,7 +62,7 @@ class OpenAIProvider implements LlmProvider {
         max_tokens: 4096,
         messages: openaiMessages,
         tools: formatTools(tools),
-      })
+      }),
     );
 
     const choice = response.choices[0];
@@ -125,11 +123,7 @@ class OpenAIProvider implements LlmProvider {
     };
   }
 
-  streamChat(
-    systemPrompt: string,
-    messages: Message[],
-    tools: Tool[],
-  ): StreamChat {
+  streamChat(systemPrompt: string, messages: Message[], tools: Tool[]): StreamChat {
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
       ...(messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[]),
@@ -151,7 +145,7 @@ class OpenAIProvider implements LlmProvider {
         messages: openaiMessages,
         tools: formatTools(tools),
         stream: true,
-      })
+      }),
     );
 
     async function* chunks(): AsyncGenerator<string> {
@@ -164,10 +158,7 @@ class OpenAIProvider implements LlmProvider {
       }
 
       let contentText = "";
-      const toolCallAccumulators = new Map<
-        number,
-        { id: string; name: string; args: string }
-      >();
+      const toolCallAccumulators = new Map<number, { id: string; name: string; args: string }>();
       let finishReason = "stop";
 
       for await (const chunk of stream) {
@@ -211,11 +202,13 @@ class OpenAIProvider implements LlmProvider {
         contentBlocks.push({ type: "text", text: contentText });
       }
 
-      const toolCallMessages: { id: string; type: "function"; function: { name: string; arguments: string } }[] = [];
+      const toolCallMessages: {
+        id: string;
+        type: "function";
+        function: { name: string; arguments: string };
+      }[] = [];
 
-      for (const [, tc] of [...toolCallAccumulators.entries()].sort(
-        ([a], [b]) => a - b,
-      )) {
+      for (const [, tc] of [...toolCallAccumulators.entries()].sort(([a], [b]) => a - b)) {
         let parsed: Record<string, unknown>;
         try {
           parsed = JSON.parse(tc.args) as Record<string, unknown>;

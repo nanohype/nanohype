@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { proxyRequest } from "../router/proxy.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Logger } from "../logger.js";
+import { proxyRequest } from "../router/proxy.js";
 
 // ── Proxy Tests ─────────────────────────────────────────────────────
 //
@@ -42,12 +42,7 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    const result = await proxyRequest(
-      "http://users-service:3001",
-      "/api/users/1",
-      request,
-      logger,
-    );
+    const result = await proxyRequest("http://users-service:3001", "/api/users/1", request, logger);
 
     expect(result.status).toBe(200);
     expect(result.headers["content-type"]).toBe("application/json");
@@ -65,12 +60,7 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    await proxyRequest(
-      "http://users-service:3001",
-      "/api/users",
-      request,
-      logger,
-    );
+    await proxyRequest("http://users-service:3001", "/api/users", request, logger);
 
     expect(capturedUrl).toContain("page=2");
     expect(capturedUrl).toContain("limit=10");
@@ -88,13 +78,9 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    const result = await proxyRequest(
-      "http://slow-service:3001",
-      "/api/slow",
-      request,
-      logger,
-      { timeoutMs: 5 },
-    );
+    const result = await proxyRequest("http://slow-service:3001", "/api/slow", request, logger, {
+      timeoutMs: 5,
+    });
 
     expect(result.status).toBe(504);
   });
@@ -106,12 +92,7 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    const result = await proxyRequest(
-      "http://down-service:3001",
-      "/api/down",
-      request,
-      logger,
-    );
+    const result = await proxyRequest("http://down-service:3001", "/api/down", request, logger);
 
     expect(result.status).toBe(502);
   });
@@ -131,18 +112,12 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    const result = await proxyRequest(
-      "http://data-service:3001",
-      "/api/data",
-      request,
-      logger,
-      {
-        transform: {
-          removeResponseHeaders: ["x-internal-header"],
-          setResponseHeaders: { "x-gateway": "true" },
-        },
+    const result = await proxyRequest("http://data-service:3001", "/api/data", request, logger, {
+      transform: {
+        removeResponseHeaders: ["x-internal-header"],
+        setResponseHeaders: { "x-gateway": "true" },
       },
-    );
+    });
 
     expect(result.headers["x-internal-header"]).toBeUndefined();
     expect(result.headers["x-gateway"]).toBe("true");
@@ -154,7 +129,7 @@ describe("proxyRequest", () => {
         status: 200,
         headers: {
           "content-type": "text/plain",
-          "connection": "keep-alive",
+          connection: "keep-alive",
           "transfer-encoding": "chunked",
         },
       }),
@@ -164,12 +139,7 @@ describe("proxyRequest", () => {
       method: "GET",
     });
 
-    const result = await proxyRequest(
-      "http://test-service:3001",
-      "/api/test",
-      request,
-      logger,
-    );
+    const result = await proxyRequest("http://test-service:3001", "/api/test", request, logger);
 
     expect(result.headers["connection"]).toBeUndefined();
     expect(result.headers["transfer-encoding"]).toBeUndefined();

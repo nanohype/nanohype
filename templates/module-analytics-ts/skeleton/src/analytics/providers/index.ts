@@ -11,5 +11,5 @@ import "./mixpanel.js";
 import "./amplitude.js";
 import "./mock.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { AnalyticsProvider, AnalyticsProviderFactory } from "./types.js";

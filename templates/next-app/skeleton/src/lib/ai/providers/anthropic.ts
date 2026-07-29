@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiProvider, ChatMessage } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AiProvider, ChatMessage } from "./types.js";
 
 class AnthropicProvider implements AiProvider {
   readonly defaultModel = "claude-sonnet-4-20250514";
@@ -36,10 +36,7 @@ class AnthropicProvider implements AiProvider {
     });
 
     for await (const event of stream) {
-      if (
-        event.type === "content_block_delta" &&
-        event.delta.type === "text_delta"
-      ) {
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
         yield event.delta.text;
       }
     }

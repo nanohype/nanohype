@@ -12,5 +12,5 @@ import "./http.js";
 import "./websocket.js";
 
 // Re-export the public API
-export { registerTransport, getTransport, listTransports } from "./registry.js";
+export { getTransport, listTransports, registerTransport } from "./registry.js";
 export type { A2ATransport } from "./types.js";

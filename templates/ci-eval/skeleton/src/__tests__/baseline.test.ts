@@ -1,13 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { writeFile, unlink } from "node:fs/promises";
-import { join } from "node:path";
+import { unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import {
-  loadBaseline,
-  saveBaseline,
-  compareBaseline,
-} from "../ci-eval/baseline.js";
-import type { SuiteScore, BaselineEntry } from "../ci-eval/types.js";
+import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
+import { compareBaseline, loadBaseline, saveBaseline } from "../ci-eval/baseline.js";
+import type { BaselineEntry, SuiteScore } from "../ci-eval/types.js";
 
 function makeSuiteScore(overrides: Partial<SuiteScore> = {}): SuiteScore {
   return {

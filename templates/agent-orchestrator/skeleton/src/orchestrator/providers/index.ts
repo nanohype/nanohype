@@ -9,5 +9,5 @@ import "./anthropic.js";
 import "./openai.js";
 import "./mock.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { LlmProvider } from "./types.js";

@@ -107,6 +107,18 @@ jobs:
       - name: Verify documented commands exist
         run: npm run validate:doc-commands
 
+      # A skeleton is what a consumer's project starts as, and the root
+      # biome.json excludes templates/*/skeleton — it has to, since each
+      # skeleton is scaffolding output with its own root and config. These two
+      # steps are what read them: the first asserts every skeleton carries the
+      # shared Biome config, the second asserts its code passes it, running the
+      # same command from the same directory a consumer would.
+      - name: Verify skeletons ship the shared toolchain
+        run: npm run validate:skeleton-toolchain
+
+      - name: Lint every skeleton against its own config
+        run: npm run lint:skeletons
+
       - name: Verify vendored library copies are in sync
         run: npm run verify:library
 

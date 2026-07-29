@@ -6,22 +6,22 @@
  * chunk them, embed, store, retrieve, and generate an answer.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createChunker } from "../chunking.js";
-import { Retriever } from "../retrieval.js";
+import type { Config } from "../config.js";
 import { generate } from "../generation.js";
 import {
-  registerLlmProvider,
   registerEmbeddingProvider,
+  registerLlmProvider,
   registerVectorStoreProvider,
 } from "../providers/registry.js";
 import type {
   EmbeddingProvider,
-  VectorStoreProvider,
-  VectorDocument,
   SearchResult,
+  VectorDocument,
+  VectorStoreProvider,
 } from "../providers/types.js";
-import type { Config } from "../config.js";
+import { Retriever } from "../retrieval.js";
 
 // ── Mock Providers ────────────────────────────────────────────────
 
@@ -75,10 +75,7 @@ class TestVectorStore implements VectorStoreProvider {
     }
   }
 
-  async search(
-    queryEmbedding: number[],
-    topK: number,
-  ): Promise<SearchResult[]> {
+  async search(queryEmbedding: number[], topK: number): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
 
     for (const [id, doc] of this.documents) {
@@ -102,7 +99,9 @@ class TestVectorStore implements VectorStoreProvider {
 }
 
 function cosine(a: number[], b: number[]): number {
-  let dot = 0, magA = 0, magB = 0;
+  let dot = 0,
+    magA = 0,
+    magB = 0;
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
     dot += a[i] * b[i];
     magA += a[i] * a[i];
@@ -297,7 +296,10 @@ describe("RAG pipeline integration", () => {
     const techDoc = DOCUMENT_A;
 
     const docs: VectorDocument[] = [];
-    for (const [path, content] of [["cooking.md", cookingDoc], ["tech.md", techDoc]] as const) {
+    for (const [path, content] of [
+      ["cooking.md", cookingDoc],
+      ["tech.md", techDoc],
+    ] as const) {
       const chunks = chunker.chunk(content, { source: path });
       for (let i = 0; i < chunks.length; i++) {
         const emb = await embedder.embed(chunks[i].content);

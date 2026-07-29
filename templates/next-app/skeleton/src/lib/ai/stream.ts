@@ -1,5 +1,4 @@
-import type { AiProvider } from "./providers/types.js";
-import type { ChatMessage } from "./providers/types.js";
+import type { AiProvider, ChatMessage } from "./providers/types.js";
 
 /**
  * Creates a streaming HTTP response from an AI provider.
@@ -10,7 +9,7 @@ import type { ChatMessage } from "./providers/types.js";
 export function createStreamResponse(
   provider: AiProvider,
   messages: ChatMessage[],
-  model?: string
+  model?: string,
 ): Response {
   const encoder = new TextEncoder();
 

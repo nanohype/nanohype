@@ -1,6 +1,6 @@
-import { billingUsageRecorded } from "../metrics.js";
 import { logger } from "../logger.js";
-import type { UsageRecord, BillingPeriod } from "../types.js";
+import { billingUsageRecorded } from "../metrics.js";
+import type { BillingPeriod, UsageRecord } from "../types.js";
 import type { RecordOptions, UsageTracker, UsageTrackerConfig } from "./types.js";
 
 // ── Usage Tracker ──────────────────────────────────────────────────
@@ -67,15 +67,10 @@ export function createUsageTracker(config: UsageTrackerConfig = {}): UsageTracke
       });
     },
 
-    getRecordsByTags(
-      customerId: string,
-      tags: Record<string, string>,
-    ): UsageRecord[] {
+    getRecordsByTags(customerId: string, tags: Record<string, string>): UsageRecord[] {
       return records.filter((r) => {
         if (r.customerId !== customerId) return false;
-        return Object.entries(tags).every(
-          ([key, value]) => r.tags[key] === value,
-        );
+        return Object.entries(tags).every(([key, value]) => r.tags[key] === value);
       });
     },
 

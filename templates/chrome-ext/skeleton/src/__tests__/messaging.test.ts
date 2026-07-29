@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type {
-  Message,
   ChatRequest,
   ChatResponse,
-  SelectionPayload,
   ExtensionMessage,
+  Message,
+  SelectionPayload,
 } from "../lib/messaging.js";
 
 /**
@@ -18,11 +18,13 @@ import type {
 describe("message type definitions", () => {
   it("Message conforms to the expected shape", () => {
     const msg: Message = {
+      id: crypto.randomUUID(),
       role: "user",
       content: "hello",
       timestamp: Date.now(),
     };
 
+    expect(msg.id).not.toBe("");
     expect(msg.role).toBe("user");
     expect(msg.content).toBe("hello");
     expect(typeof msg.timestamp).toBe("number");
@@ -30,6 +32,7 @@ describe("message type definitions", () => {
 
   it("Message accepts assistant role", () => {
     const msg: Message = {
+      id: crypto.randomUUID(),
       role: "assistant",
       content: "hi there",
       timestamp: 1700000000000,

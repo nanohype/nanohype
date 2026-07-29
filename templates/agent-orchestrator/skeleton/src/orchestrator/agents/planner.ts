@@ -10,11 +10,11 @@
 //
 
 import { z } from "zod";
-import type { Agent, AgentExecutionContext } from "./types.js";
-import type { AgentCapability, SubTask, AgentResult, PlannerResult } from "../types.js";
-import { getProvider } from "../providers/index.js";
-import { registerAgent } from "./registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/index.js";
+import type { AgentCapability, AgentResult, PlannerResult, SubTask } from "../types.js";
+import { registerAgent } from "./registry.js";
+import type { Agent, AgentExecutionContext } from "./types.js";
 
 const SubTaskSchema = z.object({
   id: z.string(),
@@ -110,7 +110,9 @@ function createPlannerAgent(): Agent {
           error: err instanceof Error ? err.message : String(err),
           response,
         });
-        throw new Error(`Planner produced invalid plan: ${err instanceof Error ? err.message : String(err)}`);
+        throw new Error(
+          `Planner produced invalid plan: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
 
       logger.info("Planner decomposed task", {

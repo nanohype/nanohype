@@ -1,16 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider, Message, LlmResponse } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { LlmProvider, LlmResponse, Message } from "./types.js";
 
 const client = new Anthropic();
 const cb = createCircuitBreaker();
 
 class AnthropicProvider implements LlmProvider {
-  async sendMessage(
-    systemPrompt: string,
-    messages: Message[],
-  ): Promise<LlmResponse> {
+  async sendMessage(systemPrompt: string, messages: Message[]): Promise<LlmResponse> {
     const response = await cb.execute(() =>
       client.messages.create({
         model: "claude-sonnet-4-20250514",

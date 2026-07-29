@@ -6,7 +6,7 @@
  * numbers for easy debugging of malformed JSONL files.
  */
 
-import { trainingExampleSchema, type TrainingExample, type ValidationResult } from "./types.js";
+import { type TrainingExample, trainingExampleSchema, type ValidationResult } from "./types.js";
 
 /**
  * Validate a single training example against the schema.
@@ -19,9 +19,7 @@ export function validateExample(example: unknown, index: number): ValidationResu
     return { valid: true, index, errors: [] };
   }
 
-  const errors = result.error.issues.map(
-    (issue) => `${issue.path.join(".")}: ${issue.message}`,
-  );
+  const errors = result.error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`);
 
   return { valid: false, index, errors };
 }
@@ -74,9 +72,7 @@ export function validateJsonl(content: string): {
 } {
   const { parsed, errors: parseErrors } = parseJsonl(content);
   const results = validateDataset(parsed);
-  const valid = results
-    .filter((r) => r.valid)
-    .map((r) => parsed[r.index] as TrainingExample);
+  const valid = results.filter((r) => r.valid).map((r) => parsed[r.index] as TrainingExample);
 
   return { valid, results, parseErrors };
 }

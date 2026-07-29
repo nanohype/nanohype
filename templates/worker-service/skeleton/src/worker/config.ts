@@ -15,17 +15,11 @@ const configSchema = z.object({
     .transform(Number)
     .pipe(z.number().int().min(1).max(65535)),
 
-  LOG_LEVEL: z
-    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
 
   QUEUE_PROVIDER: z.string().default("__QUEUE_PROVIDER__"),
 
-  QUEUE_POLL_INTERVAL: z
-    .string()
-    .default("1000")
-    .transform(Number)
-    .pipe(z.number().int().min(100)),
+  QUEUE_POLL_INTERVAL: z.string().default("1000").transform(Number).pipe(z.number().int().min(100)),
 
   QUEUE_CONCURRENCY: z
     .string()
@@ -38,11 +32,7 @@ const configSchema = z.object({
     .default("true")
     .transform((v) => v === "true"),
 
-  SHUTDOWN_TIMEOUT: z
-    .string()
-    .default("30000")
-    .transform(Number)
-    .pipe(z.number().int().min(1000)),
+  SHUTDOWN_TIMEOUT: z.string().default("30000").transform(Number).pipe(z.number().int().min(1000)),
 });
 
 /**

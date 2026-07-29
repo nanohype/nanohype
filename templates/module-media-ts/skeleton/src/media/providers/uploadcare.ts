@@ -1,17 +1,17 @@
 import { createHmac } from "node:crypto";
-import type { MediaProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  MediaAsset,
-  UploadOptions,
-  TransformOptions,
   DeliveryUrl,
   ListOptions,
   ListResult,
+  MediaAsset,
   MediaConfig,
+  TransformOptions,
+  UploadOptions,
 } from "../types.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
 import { registerProvider } from "./registry.js";
+import type { MediaProvider } from "./types.js";
 
 // ── Uploadcare Provider ──────────────────────────────────────────
 //
@@ -62,7 +62,14 @@ function createUploadcareProvider(): MediaProvider {
     return config;
   }
 
-  function buildAuthHeader(method: string, contentType: string, contentMd5: string, uri: string, date: string, secretKey: string): string {
+  function buildAuthHeader(
+    method: string,
+    contentType: string,
+    contentMd5: string,
+    uri: string,
+    date: string,
+    secretKey: string,
+  ): string {
     const signString = [method, contentMd5, contentType, date, uri].join("\n");
     return createHmac("sha1", secretKey).update(signString).digest("hex");
   }
@@ -77,7 +84,7 @@ function createUploadcareProvider(): MediaProvider {
       if (!publicKey || !secretKey) {
         throw new Error(
           "Uploadcare requires publicKey and secretKey " +
-          "(via config or UPLOADCARE_PUBLIC_KEY, UPLOADCARE_SECRET_KEY env vars)",
+            "(via config or UPLOADCARE_PUBLIC_KEY, UPLOADCARE_SECRET_KEY env vars)",
         );
       }
 
@@ -152,7 +159,7 @@ function createUploadcareProvider(): MediaProvider {
       if (transforms) {
         const ops: string[] = [];
         if (transforms.width && transforms.height) {
-          const mode = transforms.fit ? FIT_MAP[transforms.fit] ?? "crop" : "crop";
+          const mode = transforms.fit ? (FIT_MAP[transforms.fit] ?? "crop") : "crop";
           if (mode === "crop") {
             ops.push(`-/scale_crop/${transforms.width}x${transforms.height}/center`);
           } else if (mode === "stretch") {
@@ -237,17 +244,19 @@ function createUploadcareProvider(): MediaProvider {
         return res.json() as Promise<UploadcareListResponse>;
       });
 
-      const resultAssets: MediaAsset[] = (response.results ?? []).map((r: Record<string, unknown>) => ({
-        id: r.uuid as string,
-        filename: r.original_filename as string,
-        contentType: r.mime_type as string,
-        size: r.size as number,
-        createdAt: r.datetime_uploaded ? new Date(r.datetime_uploaded as string) : undefined,
-      }));
+      const resultAssets: MediaAsset[] = (response.results ?? []).map(
+        (r: Record<string, unknown>) => ({
+          id: r.uuid as string,
+          filename: r.original_filename as string,
+          contentType: r.mime_type as string,
+          size: r.size as number,
+          createdAt: r.datetime_uploaded ? new Date(r.datetime_uploaded as string) : undefined,
+        }),
+      );
 
       return {
         assets: resultAssets,
-        nextCursor: response.next ? String((response.results?.length ?? 0)) : undefined,
+        nextCursor: response.next ? String(response.results?.length ?? 0) : undefined,
       };
     },
 

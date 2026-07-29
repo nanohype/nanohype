@@ -1,14 +1,14 @@
-import type { KnowledgeProvider } from "./types.js";
 import type {
-  Page,
   Block,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { KnowledgeProvider } from "./types.js";
 
 // ── Mock Provider ──────────────────────────────────────────────────
 //
@@ -84,8 +84,7 @@ function createMockProvider(): KnowledgeProvider {
           return false;
         }
         return (
-          page.title.toLowerCase().includes(query) ||
-          page.content.toLowerCase().includes(query)
+          page.title.toLowerCase().includes(query) || page.content.toLowerCase().includes(query)
         );
       });
 

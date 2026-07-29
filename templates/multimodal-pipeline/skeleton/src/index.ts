@@ -9,8 +9,8 @@ import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
-import { processFile } from "./pipeline.js";
 import { logger } from "./logger.js";
+import { processFile } from "./pipeline.js";
 
 async function main(): Promise<void> {
   validateBootstrap();

@@ -1,18 +1,18 @@
 import { z } from "zod";
-import type { LlmProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
   ChatOptions,
   LlmResponse,
-  StreamResponse,
-  StreamChunk,
   Pricing,
+  StreamChunk,
+  StreamResponse,
 } from "../types.js";
 import { estimateCost } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { countTokens } from "../tokens/counter.js";
-import { logger } from "../logger.js";
+import type { LlmProvider } from "./types.js";
 
 // ── Ollama Provider ────────────────────────────────────────────────
 //
@@ -29,9 +29,7 @@ const DEFAULT_MODEL = "llama3.2";
 // Ollama mirrors the OpenAI chat-completions shape; the parts we read are
 // optional because a degraded server can omit them.
 const completionSchema = z.object({
-  choices: z
-    .array(z.object({ message: z.object({ content: z.string() }).partial() }))
-    .optional(),
+  choices: z.array(z.object({ message: z.object({ content: z.string() }).partial() })).optional(),
   usage: z
     .object({
       prompt_tokens: z.number().optional(),
@@ -42,9 +40,7 @@ const completionSchema = z.object({
 });
 
 const streamChunkSchema = z.object({
-  choices: z
-    .array(z.object({ delta: z.object({ content: z.string() }).partial() }))
-    .optional(),
+  choices: z.array(z.object({ delta: z.object({ content: z.string() }).partial() })).optional(),
 });
 
 function getBaseUrl(): string {

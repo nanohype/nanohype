@@ -16,7 +16,9 @@ export default function ChatPage() {
           backdropFilter: "blur(20px) saturate(1.3)",
         }}
       >
-        <h1 className="text-foreground" style={{ fontSize: "1.0625rem", fontWeight: 600 }}>Chat</h1>
+        <h1 className="text-foreground" style={{ fontSize: "1.0625rem", fontWeight: 600 }}>
+          Chat
+        </h1>
       </header>
       <ChatWindow />
     </main>

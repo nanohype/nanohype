@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerChannel,
-  getChannel,
-  listChannels,
-} from "../channels/registry.js";
+import { describe, expect, it } from "vitest";
+import { getChannel, listChannels, registerChannel } from "../channels/registry.js";
 import type { ChannelProvider } from "../channels/types.js";
 import type { NotificationChannel } from "../types.js";
 
@@ -36,18 +32,14 @@ describe("channel provider registry", () => {
   });
 
   it("throws when retrieving an unregistered provider", () => {
-    expect(() => getChannel("email", "nonexistent-provider")).toThrow(
-      /not found/,
-    );
+    expect(() => getChannel("email", "nonexistent-provider")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate channel:provider key", () => {
     const name = unique();
     registerChannel(stubProvider(name, "email"));
 
-    expect(() => registerChannel(stubProvider(name, "email"))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerChannel(stubProvider(name, "email"))).toThrow(/already registered/);
   });
 
   it("allows same provider name on different channels", () => {

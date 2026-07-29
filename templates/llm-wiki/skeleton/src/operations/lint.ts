@@ -1,9 +1,9 @@
 import { getConfig } from "../config.js";
-import { getStorageProvider } from "../storage/index.js";
-import { parsePage } from "../wiki/page.js";
-import { buildLinkGraph, findOrphans, findBrokenLinks } from "../wiki/link-graph.js";
 import { loadSchema } from "../schema/parser.js";
+import { getStorageProvider } from "../storage/index.js";
 import { getTenant } from "../tenant/registry.js";
+import { buildLinkGraph, findBrokenLinks, findOrphans } from "../wiki/link-graph.js";
+import { parsePage } from "../wiki/page.js";
 import type { Page } from "../wiki/types.js";
 import type { LintIssue, LintResult } from "./types.js";
 
@@ -25,10 +25,7 @@ function checkStaleness(pages: Page[], thresholdDays: number): LintIssue[] {
   return issues;
 }
 
-function checkSchemaCompliance(
-  pages: Page[],
-  schema: ReturnType<typeof loadSchema>,
-): LintIssue[] {
+function checkSchemaCompliance(pages: Page[], schema: ReturnType<typeof loadSchema>): LintIssue[] {
   const issues: LintIssue[] = [];
   const typeMap = new Map(schema.pageTypes.map((pt) => [pt.name, pt]));
 
@@ -47,9 +44,7 @@ function checkSchemaCompliance(
       continue;
     }
 
-    const headings = new Set(
-      [...page.content.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1].trim()),
-    );
+    const headings = new Set([...page.content.matchAll(/^##\s+(.+)$/gm)].map((m) => m[1].trim()));
 
     for (const required of pageType.requiredSections) {
       if (!headings.has(required)) {

@@ -1,13 +1,9 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  PutCommand,
-  QueryCommand,
-} from "@aws-sdk/lib-dynamodb";
-import type { AuditAdapter } from "./types.js";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { eventIdOf } from "../event-id.js";
 import type { AuditConfig, AuditEvent, QueryOptions } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { eventIdOf } from "../event-id.js";
+import type { AuditAdapter } from "./types.js";
 
 // ── DynamoDB Adapter ────────────────────────────────────────────────
 //

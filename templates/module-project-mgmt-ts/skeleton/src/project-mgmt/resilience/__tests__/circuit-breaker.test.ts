@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  createCircuitBreaker,
-  CircuitBreakerOpenError,
-} from "../circuit-breaker.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CircuitBreakerOpenError, createCircuitBreaker } from "../circuit-breaker.js";
 
 // ── Circuit Breaker Tests ──────────────────────────────────────────
 
@@ -27,9 +24,11 @@ describe("createCircuitBreaker", () => {
     const cb = createCircuitBreaker({ failureThreshold: 3, windowMs: 10_000 });
 
     for (let i = 0; i < 3; i++) {
-      await expect(cb.execute(async () => {
-        throw new Error("fail");
-      })).rejects.toThrow("fail");
+      await expect(
+        cb.execute(async () => {
+          throw new Error("fail");
+        }),
+      ).rejects.toThrow("fail");
     }
 
     expect(cb.getState()).toBe("open");
@@ -38,9 +37,11 @@ describe("createCircuitBreaker", () => {
   it("throws CircuitBreakerOpenError when open", async () => {
     const cb = createCircuitBreaker({ failureThreshold: 1 });
 
-    await expect(cb.execute(async () => {
-      throw new Error("fail");
-    })).rejects.toThrow("fail");
+    await expect(
+      cb.execute(async () => {
+        throw new Error("fail");
+      }),
+    ).rejects.toThrow("fail");
 
     expect(cb.getState()).toBe("open");
     await expect(cb.execute(async () => "ok")).rejects.toThrow(CircuitBreakerOpenError);
@@ -53,9 +54,11 @@ describe("createCircuitBreaker", () => {
       resetTimeoutMs: 100,
     });
 
-    await expect(cb.execute(async () => {
-      throw new Error("fail");
-    })).rejects.toThrow("fail");
+    await expect(
+      cb.execute(async () => {
+        throw new Error("fail");
+      }),
+    ).rejects.toThrow("fail");
 
     expect(cb.getState()).toBe("open");
 
@@ -77,15 +80,19 @@ describe("createCircuitBreaker", () => {
       resetTimeoutMs: 100,
     });
 
-    await expect(cb.execute(async () => {
-      throw new Error("fail");
-    })).rejects.toThrow("fail");
+    await expect(
+      cb.execute(async () => {
+        throw new Error("fail");
+      }),
+    ).rejects.toThrow("fail");
 
     vi.advanceTimersByTime(150);
 
-    await expect(cb.execute(async () => {
-      throw new Error("still failing");
-    })).rejects.toThrow("still failing");
+    await expect(
+      cb.execute(async () => {
+        throw new Error("still failing");
+      }),
+    ).rejects.toThrow("still failing");
 
     expect(cb.getState()).toBe("open");
 
@@ -95,9 +102,11 @@ describe("createCircuitBreaker", () => {
   it("resets to closed state", async () => {
     const cb = createCircuitBreaker({ failureThreshold: 1 });
 
-    await expect(cb.execute(async () => {
-      throw new Error("fail");
-    })).rejects.toThrow("fail");
+    await expect(
+      cb.execute(async () => {
+        throw new Error("fail");
+      }),
+    ).rejects.toThrow("fail");
 
     expect(cb.getState()).toBe("open");
     cb.reset();

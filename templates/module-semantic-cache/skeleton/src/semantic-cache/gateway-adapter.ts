@@ -22,10 +22,34 @@ export interface GatewayCachingStrategy {
   get(
     key: string,
     context: { prompt: string; model: string; params: Record<string, unknown>; ttl?: number },
-  ): Promise<{ response: { text: string; model: string; provider: string; inputTokens: number; outputTokens: number; latencyMs: number; cached: boolean; cost: number }; cachedAt: string } | undefined>;
+  ): Promise<
+    | {
+        response: {
+          text: string;
+          model: string;
+          provider: string;
+          inputTokens: number;
+          outputTokens: number;
+          latencyMs: number;
+          cached: boolean;
+          cost: number;
+        };
+        cachedAt: string;
+      }
+    | undefined
+  >;
   set(
     key: string,
-    response: { text: string; model: string; provider: string; inputTokens: number; outputTokens: number; latencyMs: number; cached: boolean; cost: number },
+    response: {
+      text: string;
+      model: string;
+      provider: string;
+      inputTokens: number;
+      outputTokens: number;
+      latencyMs: number;
+      cached: boolean;
+      cost: number;
+    },
     context: { prompt: string; model: string; params: Record<string, unknown>; ttl?: number },
   ): Promise<void>;
   invalidate(key: string): Promise<void>;
@@ -71,7 +95,16 @@ export function createSemanticCacheStrategy(cache: SemanticCache): GatewayCachin
 
     async set(
       _key: string,
-      response: { text: string; model: string; provider: string; inputTokens: number; outputTokens: number; latencyMs: number; cached: boolean; cost: number },
+      response: {
+        text: string;
+        model: string;
+        provider: string;
+        inputTokens: number;
+        outputTokens: number;
+        latencyMs: number;
+        cached: boolean;
+        cost: number;
+      },
       context: { prompt: string; model: string; params: Record<string, unknown>; ttl?: number },
     ): Promise<void> {
       const ttlMs = context.ttl != null ? context.ttl : undefined;

@@ -1,18 +1,18 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
   ChatOptions,
   LlmResponse,
-  StreamResponse,
-  StreamChunk,
   Pricing,
+  StreamChunk,
+  StreamResponse,
 } from "../types.js";
-import { getPricing, estimateCost } from "../types.js";
+import { estimateCost, getPricing } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { countTokens } from "../tokens/counter.js";
-import { logger } from "../logger.js";
+import type { LlmProvider } from "./types.js";
 
 // ── Anthropic Provider ─────────────────────────────────────────────
 //
@@ -119,10 +119,7 @@ function createAnthropicProvider(): LlmProvider {
         });
 
         for await (const event of stream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
             const text = event.delta.text;
             fullText += text;
             yield { text, done: false };

@@ -1,6 +1,6 @@
-import type { Skill } from "./types.js";
-import { registerSkill } from "./registry.js";
 import { logger } from "../logger.js";
+import { registerSkill } from "./registry.js";
+import type { Skill } from "./types.js";
 
 /**
  * Example skill implementation.

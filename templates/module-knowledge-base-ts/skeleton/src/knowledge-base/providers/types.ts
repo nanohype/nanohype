@@ -9,13 +9,13 @@
 //
 
 import type {
-  Page,
   Block,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 
 /** Provider factory -- returns a new KnowledgeProvider instance each time. */

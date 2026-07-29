@@ -27,9 +27,7 @@ export function getChannel(channel: string, providerName: string): ChannelProvid
   const provider = channels.get(k);
   if (!provider) {
     const available = Array.from(channels.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Channel provider "${k}" not found. Available: ${available}`,
-    );
+    throw new Error(`Channel provider "${k}" not found. Available: ${available}`);
   }
   return provider;
 }

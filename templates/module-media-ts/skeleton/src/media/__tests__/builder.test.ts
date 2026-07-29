@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { TransformBuilder } from "../transforms/builder.js";
 
 // ── TransformBuilder Tests ──────────────────────────────────────
@@ -102,9 +102,7 @@ describe("TransformBuilder", () => {
   });
 
   it("accepts initial TransformOptions in constructor", () => {
-    const opts = new TransformBuilder({ width: 300, format: "png" })
-      .height(200)
-      .build();
+    const opts = new TransformBuilder({ width: 300, format: "png" }).height(200).build();
 
     expect(opts.width).toBe(300);
     expect(opts.height).toBe(200);

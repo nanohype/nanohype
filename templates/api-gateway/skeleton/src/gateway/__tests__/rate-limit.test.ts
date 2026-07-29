@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRouteLimiter } from "../middleware/rate-limit.js";
 
 // ── Rate Limit Tests ────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { appendFileSync } from "node:fs";
-import type { LlmSpan, CostEntry } from "../types.js";
-import type { LlmExporter } from "./types.js";
+import type { CostEntry, LlmSpan } from "../types.js";
 import { registerExporter } from "./registry.js";
+import type { LlmExporter } from "./types.js";
 
 // ── JSON File Exporter ─────────────────────────────────────────────
 //

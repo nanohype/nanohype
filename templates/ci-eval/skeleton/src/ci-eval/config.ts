@@ -34,8 +34,7 @@ export type Config = z.infer<typeof ConfigSchema>;
 export function loadConfig(overrides: Partial<Config> = {}): Config {
   const raw = {
     evalPath: overrides.evalPath ?? process.env.EVAL_PATH,
-    regressionThreshold:
-      overrides.regressionThreshold ?? process.env.REGRESSION_THRESHOLD,
+    regressionThreshold: overrides.regressionThreshold ?? process.env.REGRESSION_THRESHOLD,
     llmProvider: overrides.llmProvider ?? process.env.LLM_PROVIDER,
     baselinePath: overrides.baselinePath ?? process.env.BASELINE_PATH,
     concurrency: overrides.concurrency ?? process.env.EVAL_CONCURRENCY,

@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
-import type { Source, SourceProvider } from "./types.js";
 import { registerSourceProvider } from "./registry.js";
+import type { Source, SourceProvider } from "./types.js";
 
 class MockSourceProvider implements SourceProvider {
   readonly name = "mock";

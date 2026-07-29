@@ -20,9 +20,7 @@ export function getSource(name: string): IngestSource {
   const factory = sources.get(name);
   if (!factory) {
     const available = Array.from(sources.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Ingest source "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Ingest source "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

@@ -64,6 +64,12 @@ values — not stubs filled with TODOs. Concretely:
   interpolation for SQL), input validation at system boundaries, secrets from
   environment variables — never in code, error handling at tool/provider
   boundaries.
+- **The org toolchain, not a variant.** A JavaScript skeleton ships a
+  `biome.json` that is `library/config/biome.base.json` inlined — a scaffolded
+  project has no nanohype checkout to `extends` from — plus `@biomejs/biome` and
+  `lint` / `format` / `format:check` scripts that invoke it. Only `$schema`,
+  `files` and `css` may differ per template. `npm run lint` must pass on the
+  scaffolded project's first commit.
 
 ### 4. Validate locally
 
@@ -72,6 +78,8 @@ npm run validate:schema                  # JSON Schema, all templates
 ./scripts/validate.sh templates/<name>   # full validation, single template
 npm run validate:catalog                 # catalog-wide validation + summary
 npm run verify:catalog                   # catalog.json is regenerated, not hand-edited
+npm run validate:skeleton-toolchain      # every skeleton ships the shared Biome config
+npm run lint:skeletons                   # and its code passes it
 ```
 
 All of these run in CI as hard gates; run them before pushing. If your

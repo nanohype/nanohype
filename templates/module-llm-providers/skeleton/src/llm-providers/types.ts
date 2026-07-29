@@ -91,7 +91,7 @@ export const DEFAULT_PRICING: Record<string, Pricing> = {
   "gpt-4.1": { input: 2, output: 8 },
   "gpt-4.1-mini": { input: 0.4, output: 1.6 },
   "gpt-4.1-nano": { input: 0.1, output: 0.4 },
-  "o3": { input: 2, output: 8 },
+  o3: { input: 2, output: 8 },
   "o4-mini": { input: 1.1, output: 4.4 },
   "llama-3.3-70b-versatile": { input: 0.59, output: 0.79 },
   "gemini-2.0-flash": { input: 0.1, output: 0.4 },

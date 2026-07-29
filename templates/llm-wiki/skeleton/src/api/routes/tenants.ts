@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createTenant, listTenants, getTenant, deleteTenant } from "../../tenant/registry.js";
+import { createTenant, deleteTenant, getTenant, listTenants } from "../../tenant/registry.js";
 
 const TENANT_ID_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -43,10 +43,7 @@ tenantRoutes.post("/", async (c) => {
     });
     return c.json({ tenant }, 201);
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      409,
-    );
+    return c.json({ error: err instanceof Error ? err.message : String(err) }, 409);
   }
 });
 
@@ -71,9 +68,6 @@ tenantRoutes.delete("/:id", (c) => {
     deleteTenant(id);
     return c.json({ deleted: true });
   } catch (err) {
-    return c.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      404,
-    );
+    return c.json({ error: err instanceof Error ? err.message : String(err) }, 404);
   }
 });

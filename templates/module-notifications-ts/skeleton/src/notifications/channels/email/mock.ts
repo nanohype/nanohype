@@ -1,6 +1,6 @@
 import type { Notification, NotificationResult } from "../../types.js";
-import type { ChannelProvider } from "../types.js";
 import { registerChannel } from "../registry.js";
+import type { ChannelProvider } from "../types.js";
 
 // ── Mock Email Provider ───────────────────────────────────────────
 //

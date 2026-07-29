@@ -40,10 +40,7 @@ async function build() {
       await Promise.all([extCtx.watch(), webCtx.watch()]);
       console.log("[esbuild] watching for changes...");
     } else {
-      await Promise.all([
-        esbuild.build(extensionConfig),
-        esbuild.build(webviewConfig),
-      ]);
+      await Promise.all([esbuild.build(extensionConfig), esbuild.build(webviewConfig)]);
       console.log("[esbuild] build complete");
     }
   } catch (err) {
@@ -52,4 +49,6 @@ async function build() {
   }
 }
 
-build();
+// `build` handles its own failures and exits non-zero, so nothing is left to
+// await here — `void` says that on purpose rather than by omission.
+void build();

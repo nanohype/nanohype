@@ -8,9 +8,9 @@
 
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
-import type { Processor, ProcessedInput } from "./types.js";
-import { registerProcessor } from "./registry.js";
 import { loadConfig } from "../config.js";
+import { registerProcessor } from "./registry.js";
+import type { ProcessedInput, Processor } from "./types.js";
 
 const SUPPORTED_MIME_TYPES = [
   "image/jpeg",

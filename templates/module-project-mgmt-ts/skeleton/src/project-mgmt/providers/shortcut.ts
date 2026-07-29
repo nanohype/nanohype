@@ -1,18 +1,18 @@
-import type { ProjectProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Project,
-  Issue,
   Comment,
-  Priority,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
+  Priority,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { ProjectProvider } from "./types.js";
 
 // ── Shortcut Provider ─────────────────────────────────────────────
 //
@@ -42,22 +42,32 @@ const SHORTCUT_API = "https://api.app.shortcut.com/api/v3";
 /** Map Shortcut priority to unified Priority. */
 function fromShortcutPriority(value: string | undefined): Priority {
   switch (value) {
-    case "p1": return "urgent";
-    case "p2": return "high";
-    case "p3": return "medium";
-    case "p4": return "low";
-    default: return "none";
+    case "p1":
+      return "urgent";
+    case "p2":
+      return "high";
+    case "p3":
+      return "medium";
+    case "p4":
+      return "low";
+    default:
+      return "none";
   }
 }
 
 /** Map unified Priority to Shortcut priority value. */
 function toShortcutPriority(p: Priority): string | undefined {
   switch (p) {
-    case "urgent": return "p1";
-    case "high": return "p2";
-    case "medium": return "p3";
-    case "low": return "p4";
-    case "none": return undefined;
+    case "urgent":
+      return "p1";
+    case "high":
+      return "p2";
+    case "medium":
+      return "p3";
+    case "low":
+      return "p4";
+    case "none":
+      return undefined;
   }
 }
 
@@ -298,14 +308,13 @@ function createShortcutProvider(): ProjectProvider {
 
       // Resolve status to workflow state ID
       if (input.status !== undefined) {
-        const workflows = await api<
-          Array<{ states: Array<{ id: number; name: string }> }>
-        >("GET", "/workflows");
+        const workflows = await api<Array<{ states: Array<{ id: number; name: string }> }>>(
+          "GET",
+          "/workflows",
+        );
 
         for (const wf of workflows) {
-          const state = wf.states.find(
-            (s) => s.name.toLowerCase() === input.status!.toLowerCase(),
-          );
+          const state = wf.states.find((s) => s.name.toLowerCase() === input.status!.toLowerCase());
           if (state) {
             storyData.workflow_state_id = state.id;
             break;
@@ -340,7 +349,10 @@ function createShortcutProvider(): ProjectProvider {
         }>;
         next: string | null;
         total: number;
-      }>("GET", `/projects/${projectId}/stories?page_size=${limit}${nextToken ? `&next=${nextToken}` : ""}`);
+      }>(
+        "GET",
+        `/projects/${projectId}/stories?page_size=${limit}${nextToken ? `&next=${nextToken}` : ""}`,
+      );
 
       // Resolve state names for all issues
       const items: Issue[] = [];

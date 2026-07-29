@@ -8,13 +8,13 @@
 //
 
 import type { Agent } from "../agents/types.js";
+import { logger } from "../logger.js";
 import type { SubTask } from "../types.js";
 import {
   createCapabilityMatchStrategy,
   createKeywordMatchStrategy,
   type RoutingStrategy,
 } from "./strategies.js";
-import { logger } from "../logger.js";
 
 export interface RouterConfig {
   /** Additional routing strategies to try (in order). */
@@ -78,8 +78,8 @@ export function createRouter(config: RouterConfig = {}): Router {
 
       throw new Error(
         `No suitable agent found for subtask "${subtask.id}" ` +
-        `(assigned: "${subtask.assignedAgent}", ` +
-        `required capability: "${subtask.requiredCapability ?? "none"}")`,
+          `(assigned: "${subtask.assignedAgent}", ` +
+          `required capability: "${subtask.requiredCapability ?? "none"}")`,
       );
     },
   };

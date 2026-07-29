@@ -9,12 +9,11 @@
 import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { extname, join } from "node:path";
-
-import type { Config } from "./config.js";
 import { createChunker } from "./chunking.js";
+import type { Config } from "./config.js";
+import { logger } from "./logger.js";
 import { getEmbeddingProvider, getVectorStoreProvider } from "./providers/index.js";
 import type { VectorDocument } from "./providers/types.js";
-import { logger } from "./logger.js";
 
 const SUPPORTED_EXTENSIONS = new Set([".txt", ".md", ".markdown"]);
 

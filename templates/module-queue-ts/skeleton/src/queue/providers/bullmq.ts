@@ -1,7 +1,7 @@
-import { Queue, Worker, type ConnectionOptions, type Job as BullJob } from "bullmq";
+import { type Job as BullJob, type ConnectionOptions, Queue, Worker } from "bullmq";
 import type { Job, JobOptions, QueueConfig } from "../types.js";
-import type { QueueProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { QueueProvider } from "./types.js";
 
 // ── BullMQ Provider ─────────────────────────────────────────────────
 //
@@ -36,8 +36,7 @@ const bullmqProvider: QueueProvider = {
       host: process.env.REDIS_HOST ?? "127.0.0.1",
       port: Number(process.env.REDIS_PORT ?? 6379),
     };
-    queueName =
-      (config.queueName as string) ?? process.env.QUEUE_NAME ?? "__PROJECT_NAME__";
+    queueName = (config.queueName as string) ?? process.env.QUEUE_NAME ?? "__PROJECT_NAME__";
 
     queue = new Queue(queueName, { connection });
 
@@ -85,17 +84,13 @@ const bullmqProvider: QueueProvider = {
           }, 50);
         });
       },
-      { connection, concurrency: 64 }
+      { connection, concurrency: 64 },
     );
 
     console.log(`[queue] BullMQ connected to queue "${queueName}"`);
   },
 
-  async enqueue(
-    jobName: string,
-    data: unknown,
-    opts?: JobOptions
-  ): Promise<string> {
+  async enqueue(jobName: string, data: unknown, opts?: JobOptions): Promise<string> {
     if (!queue) throw new Error("BullMQ provider not initialized");
 
     const bullJob = await queue.add(jobName, data, {

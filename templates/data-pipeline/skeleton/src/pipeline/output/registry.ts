@@ -20,9 +20,7 @@ export function getAdapter(name: string): OutputAdapter {
   const factory = adapters.get(name);
   if (!factory) {
     const available = Array.from(adapters.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Output adapter "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Output adapter "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

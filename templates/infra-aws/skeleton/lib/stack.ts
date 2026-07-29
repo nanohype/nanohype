@@ -1,16 +1,16 @@
 import * as cdk from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { Construct } from "constructs";
-import { ComputeConstruct } from "./constructs/compute";
+import type * as ec2 from "aws-cdk-lib/aws-ec2";
+import type { Construct } from "constructs";
 import { ApiConstruct } from "./constructs/api";
-// #if IncludeVpc || IncludeRds
-import { VpcConstruct } from "./constructs/vpc";
+import { ComputeConstruct } from "./constructs/compute";
 // #endif
 // #if IncludeRds
 import { DatabaseConstruct } from "./constructs/database";
 // #endif
 // #if IncludeMonitoring
 import { MonitoringConstruct } from "./constructs/monitoring";
+// #if IncludeVpc || IncludeRds
+import { VpcConstruct } from "./constructs/vpc";
 // #endif
 
 export interface ServiceStackProps extends cdk.StackProps {

@@ -43,8 +43,7 @@ Input/output safety filters for AI systems.
     logger.ts               # Structured JSON logger
   package.json
   tsconfig.json
-  eslint.config.js
-  .prettierrc
+  biome.json
   vitest.config.ts
 ```
 

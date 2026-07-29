@@ -1,17 +1,17 @@
-import type { KnowledgeProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Page,
   Block,
   BlockType,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { KnowledgeProvider } from "./types.js";
 
 // ── Notion Provider ────────────────────────────────────────────────
 //
@@ -231,9 +231,7 @@ function createNotionProvider(): KnowledgeProvider {
 
     do {
       const params = cursor ? `?start_cursor=${cursor}` : "";
-      const response = await notionFetch<BlockListResponse>(
-        `/blocks/${blockId}/children${params}`,
-      );
+      const response = await notionFetch<BlockListResponse>(`/blocks/${blockId}/children${params}`);
 
       for (const notionBlock of response.results) {
         const block = notionBlockToBlock(notionBlock);
@@ -298,18 +296,19 @@ function createNotionProvider(): KnowledgeProvider {
       logger.debug("notion createPage", { title: data.title });
 
       // Convert markdown content to Notion paragraph blocks
-      const children = data.content.split("\n").filter(Boolean).map((line) => ({
-        object: "block",
-        type: "paragraph",
-        paragraph: {
-          rich_text: [{ type: "text", text: { content: line } }],
-        },
-      }));
+      const children = data.content
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => ({
+          object: "block",
+          type: "paragraph",
+          paragraph: {
+            rich_text: [{ type: "text", text: { content: line } }],
+          },
+        }));
 
       const body: Record<string, unknown> = {
-        parent: data.parentId
-          ? { page_id: data.parentId }
-          : { page_id: data.parentId ?? "" },
+        parent: data.parentId ? { page_id: data.parentId } : { page_id: data.parentId ?? "" },
         properties: {
           title: {
             title: [{ type: "text", text: { content: data.title } }],
@@ -355,13 +354,16 @@ function createNotionProvider(): KnowledgeProvider {
         }
 
         // Append new content blocks
-        const children = data.content.split("\n").filter(Boolean).map((line) => ({
-          object: "block",
-          type: "paragraph",
-          paragraph: {
-            rich_text: [{ type: "text", text: { content: line } }],
-          },
-        }));
+        const children = data.content
+          .split("\n")
+          .filter(Boolean)
+          .map((line) => ({
+            object: "block",
+            type: "paragraph",
+            paragraph: {
+              rich_text: [{ type: "text", text: { content: line } }],
+            },
+          }));
 
         await notionFetch<unknown>(`/blocks/${pageId}/children`, {
           method: "PATCH",
@@ -421,10 +423,10 @@ function createNotionProvider(): KnowledgeProvider {
           next_cursor: string | null;
         }
 
-        const response = await notionFetch<QueryResponse>(
-          `/databases/${options.parentId}/query`,
-          { method: "POST", body: JSON.stringify(body) },
-        );
+        const response = await notionFetch<QueryResponse>(`/databases/${options.parentId}/query`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
 
         const items = await Promise.all(response.results.map(pageToPage));
 

@@ -9,10 +9,10 @@ import {
   generateNonce,
   readStateCookie,
   readStatePayloadUnverified,
-  signState,
   STATE_COOKIE_NAME,
-  verifyState,
   type StatePayload,
+  signState,
+  verifyState,
 } from "../state.js";
 
 const SECRET = "test-signing-secret-very-long-and-random";

@@ -5,7 +5,7 @@
 // that calls registerProvider() at the module level.
 //
 
-import type { ChatMessage, GatewayResponse, ChatOptions } from "../types.js";
+import type { ChatMessage, ChatOptions, GatewayResponse } from "../types.js";
 
 /** Pricing per 1M tokens in USD. */
 export interface ProviderPricing {

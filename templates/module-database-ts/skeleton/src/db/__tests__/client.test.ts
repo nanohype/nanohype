@@ -1,10 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  createDatabase,
-  getDb,
-  disconnectDatabase,
-} from "../client.js";
-import { registerDriver, getDriver } from "../drivers/registry.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createDatabase, disconnectDatabase, getDb } from "../client.js";
+import { getDriver, registerDriver } from "../drivers/registry.js";
 import type { DatabaseDriver } from "../drivers/types.js";
 
 /**

@@ -12,12 +12,8 @@
  * Registers itself as the "mock" vector store provider on import.
  */
 
-import type {
-  VectorStoreProvider,
-  VectorDocument,
-  SearchResult,
-} from "./types.js";
 import { registerVectorStoreProvider } from "./registry.js";
+import type { SearchResult, VectorDocument, VectorStoreProvider } from "./types.js";
 
 class MockVectorStore implements VectorStoreProvider {
   private readonly documents = new Map<string, VectorDocument>();

@@ -9,8 +9,8 @@ import type {
   UploadData,
   UploadOptions,
 } from "../types.js";
-import type { ProviderConfig, StorageProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { ProviderConfig, StorageProvider } from "./types.js";
 
 // -- Local Filesystem Provider -------------------------------------------
 //
@@ -35,11 +35,7 @@ class LocalStorageProvider implements StorageProvider {
     await fs.mkdir(this.basePath, { recursive: true });
   }
 
-  async upload(
-    key: string,
-    data: UploadData,
-    _opts?: UploadOptions
-  ): Promise<void> {
+  async upload(key: string, data: UploadData, _opts?: UploadOptions): Promise<void> {
     const filePath = this.resolve(key);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
 
@@ -91,8 +87,7 @@ class LocalStorageProvider implements StorageProvider {
     const maxKeys = opts?.maxKeys ?? normalized.length;
     const page = normalized.slice(startIndex, startIndex + maxKeys);
     const nextIndex = startIndex + maxKeys;
-    const nextCursor =
-      nextIndex < normalized.length ? String(nextIndex) : undefined;
+    const nextCursor = nextIndex < normalized.length ? String(nextIndex) : undefined;
 
     return { objects: page, nextCursor };
   }

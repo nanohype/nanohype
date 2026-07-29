@@ -12,9 +12,9 @@
 //   const documents = await source.load("knowledge-base://notion");
 //
 
+import { logger } from "../logger.js";
 import { getProvider } from "../providers/index.js";
 import type { ListOptions } from "../types.js";
-import { logger } from "../logger.js";
 
 /** Document type compatible with data-pipeline IngestSource. */
 export interface Document {

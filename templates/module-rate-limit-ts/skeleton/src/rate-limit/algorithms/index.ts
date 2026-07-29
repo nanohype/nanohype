@@ -9,5 +9,5 @@ import "./token-bucket.js";
 import "./sliding-window.js";
 import "./fixed-window.js";
 
-export { registerAlgorithm, getAlgorithm, listAlgorithms } from "./registry.js";
+export { getAlgorithm, listAlgorithms, registerAlgorithm } from "./registry.js";
 export type { RateLimitAlgorithm } from "./types.js";

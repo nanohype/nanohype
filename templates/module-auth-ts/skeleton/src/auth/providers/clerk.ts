@@ -8,10 +8,10 @@
 //   CLERK_SECRET_KEY — Clerk secret key from the dashboard
 
 import { createClerkClient, verifyToken } from "@clerk/backend";
-import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import type { AuthResult } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 // Circuit breaker for Clerk API calls (user lookup, token verification)
 const clerkCb = createCircuitBreaker();
@@ -105,9 +105,7 @@ const clerkProvider: AuthProvider = {
       // Authenticate the request using Clerk's backend verification.
       // The token is extracted from the Authorization header.
       const token = authHeader.replace(/^Bearer\s+/i, "");
-      const verifiedToken = await clerkCb.execute(() =>
-        verifyToken(token, { secretKey })
-      );
+      const verifiedToken = await clerkCb.execute(() => verifyToken(token, { secretKey }));
 
       // Resolve user details — check cache first to avoid redundant API calls
       const userId = verifiedToken.sub;
@@ -116,9 +114,7 @@ const clerkProvider: AuthProvider = {
       if (!userData) {
         // Wrap the Clerk user lookup in the circuit breaker so that
         // repeated Clerk API failures trip the breaker and fast-fail.
-        const user = await clerkCb.execute(() =>
-          clerk.users.getUser(userId)
-        );
+        const user = await clerkCb.execute(() => clerk.users.getUser(userId));
         userData = {
           id: user.id,
           email: user.emailAddresses[0]?.emailAddress,
@@ -142,8 +138,7 @@ const clerkProvider: AuthProvider = {
         },
       };
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Clerk verification failed";
+      const message = err instanceof Error ? err.message : "Clerk verification failed";
       return { authenticated: false, error: message };
     }
   },

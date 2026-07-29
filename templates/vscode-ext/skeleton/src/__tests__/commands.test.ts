@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Tests command handler logic. The actual `registerExampleCommand` function
@@ -63,9 +63,7 @@ describe("example command", () => {
     const handler = mockRegisterCommand.mock.calls[0][1] as () => Promise<void>;
     await handler();
 
-    expect(mockShowInformationMessage).toHaveBeenCalledWith(
-      "__EXTENSION_NAME__: hello world",
-    );
+    expect(mockShowInformationMessage).toHaveBeenCalledWith("__EXTENSION_NAME__: hello world");
   });
 
   it("shows fallback message when input is empty", async () => {

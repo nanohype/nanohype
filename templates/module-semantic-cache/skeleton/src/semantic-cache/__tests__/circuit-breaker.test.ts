@@ -1,8 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  createCircuitBreaker,
-  CircuitBreakerOpenError,
-} from "../circuit-breaker.js";
+import { describe, expect, it, vi } from "vitest";
+import { CircuitBreakerOpenError, createCircuitBreaker } from "../circuit-breaker.js";
 
 /** A function that always rejects, for driving the breaker open. */
 const fail = () => Promise.reject(new Error("boom"));

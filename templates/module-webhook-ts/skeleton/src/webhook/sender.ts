@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { getSignatureProvider } from "./signatures/index.js";
-import type { SenderConfig, DeliveryResult, DeliveryOptions, WebhookEvent } from "./types.js";
+import type { DeliveryOptions, DeliveryResult, SenderConfig, WebhookEvent } from "./types.js";
 
 // ── Webhook Sender ─────────────────────────────────────────────────
 //
@@ -50,19 +50,21 @@ const SENDER_DEFAULTS = {
  *   });
  */
 /** Zod schema for validating createWebhookSender config. */
-const SenderConfigSchema = z.object({
-  secret: z.string().min(1, "secret must be a non-empty string"),
-  signatureMethod: z.string().optional(),
-  signatureHeader: z.string().optional(),
-  maxRetries: z.number().optional(),
-  baseDelay: z.number().optional(),
-  timeoutMs: z.number().optional(),
-}).passthrough();
+const SenderConfigSchema = z
+  .object({
+    secret: z.string().min(1, "secret must be a non-empty string"),
+    signatureMethod: z.string().optional(),
+    signatureHeader: z.string().optional(),
+    maxRetries: z.number().optional(),
+    baseDelay: z.number().optional(),
+    timeoutMs: z.number().optional(),
+  })
+  .passthrough();
 
 export function createWebhookSender(config: SenderConfig): WebhookSender {
   const parsed = SenderConfigSchema.safeParse(config);
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid webhook sender config: ${issues}`);
   }
 
@@ -101,7 +103,7 @@ export function createWebhookSender(config: SenderConfig): WebhookSender {
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         // Exponential backoff with jitter on retries
         if (attempt > 0) {
-          const delay = baseDelay * Math.pow(2, attempt - 1);
+          const delay = baseDelay * 2 ** (attempt - 1);
           const jitter = Math.random() * delay * 0.5;
           await sleep(delay + jitter);
         }

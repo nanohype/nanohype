@@ -1,7 +1,7 @@
-import type { CronJobDefinition } from "../types.js";
 import type { Logger } from "../logger.js";
-import type { CronField, ParsedCron, ScheduledEntry } from "./types.js";
 import { workerCronTotal } from "../metrics.js";
+import type { CronJobDefinition } from "../types.js";
+import type { CronField, ParsedCron, ScheduledEntry } from "./types.js";
 
 // ── Cron Scheduler ────────────────────────────────────────────────
 //
@@ -64,7 +64,7 @@ export function parseCronExpression(expression: string): ParsedCron {
 
   if (fields.length !== 5) {
     throw new Error(
-      `Invalid cron expression: expected 5 fields, got ${fields.length} ("${expression}")`
+      `Invalid cron expression: expected 5 fields, got ${fields.length} ("${expression}")`,
     );
   }
 
@@ -100,7 +100,7 @@ function minuteEpoch(date: Date): number {
     date.getMonth(),
     date.getDate(),
     date.getHours(),
-    date.getMinutes()
+    date.getMinutes(),
   ).getTime();
 }
 

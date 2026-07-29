@@ -1,6 +1,6 @@
 import type { Flag } from "../types.js";
-import type { FlagStore } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { FlagStore } from "./types.js";
 
 // ── Mock Flag Store ─────────────────────────────────────────────────
 //
@@ -24,9 +24,7 @@ function seedFlags(): Flag[] {
         { name: "control", value: false },
         { name: "treatment", value: true },
       ],
-      rules: [
-        { type: "percentage", percentage: 50, variant: "treatment" },
-      ],
+      rules: [{ type: "percentage", percentage: 50, variant: "treatment" }],
       defaultVariant: "control",
       createdAt: now,
       updatedAt: now,
@@ -41,9 +39,7 @@ function seedFlags(): Flag[] {
         { name: "off", value: false },
         { name: "on", value: true },
       ],
-      rules: [
-        { type: "allowlist", userIds: ["user-1", "user-2", "user-3"], variant: "on" },
-      ],
+      rules: [{ type: "allowlist", userIds: ["user-1", "user-2", "user-3"], variant: "on" }],
       defaultVariant: "off",
       createdAt: now,
       updatedAt: now,

@@ -1,7 +1,7 @@
-import { Client, EmbedBuilder, ChannelType } from "discord.js";
+import { ChannelType, type Client, EmbedBuilder } from "discord.js";
 import type { Config } from "../config.js";
-import { getProvider } from "../providers/registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/registry.js";
 
 // ── Thread Context ───────────────────────────────────────────────────
 //
@@ -98,7 +98,9 @@ export function registerMessageCreateHandler(client: Client, config: Config): vo
         channel: channelId,
       });
 
-      await message.reply("Sorry, I encountered an error processing your message. Please try again.");
+      await message.reply(
+        "Sorry, I encountered an error processing your message. Please try again.",
+      );
     }
   });
 }

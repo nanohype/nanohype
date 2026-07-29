@@ -6,12 +6,7 @@
 // state cookie, distinguishes state/provider errors) so it keeps its
 // own custom mapping.
 
-import {
-  OAuthError,
-  UnauthenticatedError,
-  UnknownProviderError,
-  errorMessage,
-} from "../errors.js";
+import { errorMessage, OAuthError, UnauthenticatedError, UnknownProviderError } from "../errors.js";
 import { logger } from "../logger.js";
 
 export function mapHandlerError(err: unknown, context: string): Response {

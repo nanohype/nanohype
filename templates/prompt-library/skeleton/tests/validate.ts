@@ -1,7 +1,7 @@
-import { readFile, readdir } from "fs/promises";
+import Ajv from "ajv";
+import { readdir, readFile } from "fs/promises";
 import { join, resolve } from "path";
 import { parse as parseYaml } from "yaml";
-import Ajv from "ajv";
 
 const PROMPTS_DIR = resolve(import.meta.dirname, "../prompts");
 const SCHEMA_PATH = resolve(import.meta.dirname, "../schema/prompt.schema.json");
@@ -44,7 +44,7 @@ async function findYamlFiles(dir: string): Promise<string[]> {
  * Check that no required variable has a circular default reference.
  */
 function checkCircularDefaults(
-  variables: Array<{ name: string; default?: string }> | undefined
+  variables: Array<{ name: string; default?: string }> | undefined,
 ): string[] {
   if (!variables) return [];
   const errors: string[] = [];
@@ -65,9 +65,7 @@ function checkCircularDefaults(
 
     while (current && defaults.has(current)) {
       if (visited.has(current)) {
-        errors.push(
-          `Circular default reference detected: ${[...visited, current].join(" -> ")}`
-        );
+        errors.push(`Circular default reference detected: ${[...visited, current].join(" -> ")}`);
         break;
       }
       visited.add(current);
@@ -125,7 +123,7 @@ async function main(): Promise<void> {
 
       // Check for circular defaults
       const circularErrors = checkCircularDefaults(
-        metadata.variables as Array<{ name: string; default?: string }> | undefined
+        metadata.variables as Array<{ name: string; default?: string }> | undefined,
       );
       if (circularErrors.length > 0) {
         result.passed = false;
@@ -159,4 +157,10 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+// Nothing holds this promise at module scope. Without the handler an unreadable
+// prompt directory would reject into `unhandledRejection` and print a raw stack
+// instead of the one-line failure this validator exists to produce.
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+});

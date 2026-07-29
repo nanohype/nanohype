@@ -13,12 +13,12 @@
 //
 
 import { readFile, writeFile } from "node:fs/promises";
+import { compareBaseline, loadBaseline, saveBaseline } from "./baseline.js";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
 import { createLogger } from "./logger.js";
-import { createEvalRunner } from "./runner.js";
-import { loadBaseline, saveBaseline, compareBaseline } from "./baseline.js";
 import { formatMarkdownReport } from "./reporter.js";
+import { createEvalRunner } from "./runner.js";
 import type { SuiteScore } from "./types.js";
 
 validateBootstrap();
@@ -47,11 +47,7 @@ async function main(): Promise<void> {
 
       // Compare against baseline
       const baseline = await loadBaseline(config.baselinePath);
-      const comparison = compareBaseline(
-        scores,
-        baseline,
-        config.regressionThreshold,
-      );
+      const comparison = compareBaseline(scores, baseline, config.regressionThreshold);
 
       if (hasFlag("--json")) {
         process.stdout.write(JSON.stringify(scores, null, 2) + "\n");
@@ -62,9 +58,7 @@ async function main(): Promise<void> {
 
       if (comparison.hasRegression) {
         logger.error("Regression detected", {
-          regressed: comparison.suites
-            .filter((s) => s.regressed)
-            .map((s) => s.suite),
+          regressed: comparison.suites.filter((s) => s.regressed).map((s) => s.suite),
         });
         process.exit(1);
       }
@@ -74,18 +68,16 @@ async function main(): Promise<void> {
     case "compare": {
       const resultsPath = getFlag("--results");
       if (!resultsPath) {
-        console.error("Usage: compare --results <path> [--format json|markdown] [--fail-on-regression]");
+        console.error(
+          "Usage: compare --results <path> [--format json|markdown] [--fail-on-regression]",
+        );
         process.exit(1);
       }
 
       const raw = await readFile(resultsPath, "utf-8");
       const scores: SuiteScore[] = JSON.parse(raw);
       const baseline = await loadBaseline(config.baselinePath);
-      const comparison = compareBaseline(
-        scores,
-        baseline,
-        config.regressionThreshold,
-      );
+      const comparison = compareBaseline(scores, baseline, config.regressionThreshold);
 
       const format = getFlag("--format") ?? "json";
 
@@ -129,10 +121,10 @@ async function main(): Promise<void> {
     default:
       console.error(
         "Usage: npx tsx src/ci-eval/index.ts <command>\n\n" +
-        "Commands:\n" +
-        "  run                Run eval suites and compare against baseline\n" +
-        "  compare            Compare results file against baseline\n" +
-        "  update-baseline    Save current results as new baseline\n",
+          "Commands:\n" +
+          "  run                Run eval suites and compare against baseline\n" +
+          "  compare            Compare results file against baseline\n" +
+          "  update-baseline    Save current results as new baseline\n",
       );
       process.exit(1);
   }

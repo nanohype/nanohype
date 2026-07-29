@@ -1,15 +1,15 @@
-import type { AnalyticsProvider } from "./types.js";
-import type {
-  TrackEvent,
-  IdentifyPayload,
-  GroupPayload,
-  PagePayload,
-  AnalyticsConfig,
-} from "../types.js";
-import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { createEventBuffer } from "../buffer/event-buffer.js";
 import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import type {
+  AnalyticsConfig,
+  GroupPayload,
+  IdentifyPayload,
+  PagePayload,
+  TrackEvent,
+} from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { AnalyticsProvider } from "./types.js";
 
 // ── Segment Provider ──────────────────────────────────────────────
 //

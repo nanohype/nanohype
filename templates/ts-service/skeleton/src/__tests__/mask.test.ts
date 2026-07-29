@@ -1,17 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { maskSensitive, maskHeaders } from "../middleware/mask.js";
+import { describe, expect, it } from "vitest";
+import { maskHeaders, maskSensitive } from "../middleware/mask.js";
 
 describe("maskSensitive", () => {
   it("masks bearer tokens but keeps the scheme", () => {
-    expect(maskSensitive("Authorization: Bearer abc.def.ghi")).toBe(
-      "Authorization: Bearer ***",
-    );
+    expect(maskSensitive("Authorization: Bearer abc.def.ghi")).toBe("Authorization: Bearer ***");
   });
 
   it("masks passwords embedded in connection URLs", () => {
-    expect(maskSensitive("postgres://user:s3cret@db:5432/app")).toBe(
-      "postgres://***@db:5432/app",
-    );
+    expect(maskSensitive("postgres://user:s3cret@db:5432/app")).toBe("postgres://***@db:5432/app");
   });
 
   it("masks API-key-shaped substrings", () => {
@@ -43,9 +39,7 @@ describe("maskHeaders", () => {
   });
 
   it("preserves the Bearer scheme hint on sensitive non-auth headers", () => {
-    expect(maskHeaders({ "x-proxy-token": "Bearer abc" })["x-proxy-token"]).toBe(
-      "Bearer ***",
-    );
+    expect(maskHeaders({ "x-proxy-token": "Bearer abc" })["x-proxy-token"]).toBe("Bearer ***");
   });
 
   it("passes non-sensitive headers through unchanged", () => {

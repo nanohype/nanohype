@@ -32,9 +32,7 @@ export function getStore(name: string): FlagStore {
   const factory = factories.get(name);
   if (!factory) {
     const available = Array.from(factories.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Flag store "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Flag store "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

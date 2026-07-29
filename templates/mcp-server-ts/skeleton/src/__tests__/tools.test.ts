@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { beforeEach, describe, expect, it } from "vitest";
 import { registerExampleTool } from "../tools/example.js";
 
 describe("greet tool", () => {

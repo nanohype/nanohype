@@ -5,8 +5,8 @@
 // calls registerProvider() at the module level.
 //
 
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
 import type { FilterExpression } from "../filters/types.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
 
 export interface VectorStoreProvider {
   /** Unique provider name (e.g. "memory", "pgvector", "qdrant", "pinecone"). */
