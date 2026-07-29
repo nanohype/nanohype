@@ -8,7 +8,11 @@ version = "0.1.0"
 description = "__DESCRIPTION__"
 requires-python = ">=3.10"
 dependencies = [
-    "mcp>=1.27.0",
+    # Upper-bounded deliberately: mcp 2.0 removed mcp.server.fastmcp, which
+    # this skeleton is built on, so an unbounded floor resolves to a release
+    # the code cannot import. Within one major of current stable, so no @pin
+    # annotation is owed under standards/version-currency.json.
+    "mcp>=1.29.0,<2.0.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.8.0",
     "fastapi>=0.115.0",
@@ -18,10 +22,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.3.0",
-    "pytest-asyncio>=0.26.0",
-    "ruff>=0.11.0",
-    "black>=25.1.0",
+    "pytest>=9.1.0",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "mypy>=2.3.0",
+    "ruff>=0.16.0",
 ]
 
 [project.scripts]
@@ -34,10 +39,44 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 
-[tool.black]
-line-length = 100
-target-version = ["py310"]
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# The coverage floor published in nanohype/standards/testing-rubric.json,
+# encoded here rather than as a CI flag so a regression fails the build for
+# whoever caused it. Raise it as the suite grows, never lower it.
+addopts = "--cov=src --cov-report=term-missing --cov-fail-under=75"
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    # Process entrypoint and transport wiring: argument parsing and a
+    # server.run() call, exercised by running the server rather than by a
+    # unit test. Same categories the TypeScript sibling excludes.
+    "src/main.py",
+    "src/logger.py",
+    "src/transports/*",
+    "src/__init__.py",
+    "src/*/__init__.py",
+]
+
+[tool.mypy]
+# language-toolchain.json names `mypy src` as the Python typecheck step.
+python_version = "3.10"
+strict = true
+warn_unreachable = true
+files = ["src"]
+
+[[tool.mypy.overrides]]
+# The MCP SDK ships types, but its FastMCP decorators are untyped enough that
+# strict mode cannot follow a decorated tool's signature.
+module = "mcp.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# main.py imports src.transports.__TRANSPORT__ — a placeholder the scaffolder
+# replaces with the chosen transport module. Unrendered, there is nothing at
+# that path to resolve; after rendering there is, and this override no longer
+# matches anything.
+module = "src.transports.__TRANSPORT__"
+ignore_missing_imports = true

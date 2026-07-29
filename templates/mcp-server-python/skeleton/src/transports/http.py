@@ -29,8 +29,11 @@ def start(server: FastMCP, config: Config | None = None) -> None:
         host=config.host,
         port=config.port,
     )
+    # FastMCP.run takes only the transport and an optional mount path — host
+    # and port live on the server's settings, and passing them here raises
+    # TypeError the moment the transport starts.
+    server.settings.host = config.host
+    server.settings.port = config.port
     server.run(
         transport="streamable-http",
-        host=config.host,
-        port=config.port,
     )

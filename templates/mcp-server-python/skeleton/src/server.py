@@ -31,10 +31,10 @@ def create_server(config: Config) -> FastMCP:
     Returns:
         A fully configured FastMCP server instance.
     """
-    server = FastMCP(
-        name=config.server_name,
-        version=config.server_version,
-    )
+    # FastMCP takes no version argument — the MCP handshake advertises the
+    # protocol version, not the server's. The server's own version is surfaced
+    # through the server-info resource, which is where a client looks for it.
+    server = FastMCP(name=config.server_name)
 
     logger.info("server.create", name=config.server_name)
 

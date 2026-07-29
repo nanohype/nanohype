@@ -8,3 +8,9 @@ dist/
 .mypy_cache/
 *.pyc
 *.pyo
+
+# Coverage data written by pytest-cov
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
