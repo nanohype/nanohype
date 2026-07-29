@@ -14,13 +14,17 @@ on:
       - 'composites/**'
       - 'scripts/template-doctor/**'
       - '.github/workflows/template-doctor.yml'
+      # The standards group compares skeleton configs against these files, so
+      # raising a published floor has to run the check that enforces it —
+      # otherwise the bar moves and the catalog silently stops meeting it.
+      - 'standards/**'
   # Manual trigger for on-demand runs (e.g., before cutting a release).
   workflow_dispatch:
     inputs:
       only:
-        description: 'Limit to specific check groups (comma-separated: ts,go,java,python,cross)'
+        description: 'Limit to specific check groups (comma-separated: ts,go,java,python,cross,standards)'
         required: false
-        default: 'ts,go,java,python,cross'
+        default: 'ts,go,java,python,cross,standards'
 
 jobs:
   # Supply-chain gate. osv-scanner checks the committed lockfiles against the
@@ -80,7 +84,7 @@ jobs:
       - name: Run doctor
         id: doctor
         env:
-          ONLY: ${{ github.event.inputs.only || 'ts,go,java,python,cross' }}
+          ONLY: ${{ github.event.inputs.only || 'ts,go,java,python,cross,standards' }}
           # Gate pull requests on hard errors; cron / manual runs stay report-only.
           FAIL_ON: ${{ github.event_name == 'pull_request' && 'error' || '' }}
         run: |

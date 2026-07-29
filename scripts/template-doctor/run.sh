@@ -4,7 +4,7 @@
 #
 # Usage:
 #   run.sh [--only <list>] [--skip <list>] [--format text|markdown] [--fail-on <sev>]
-#   --only    comma-separated subset of {ts,go,java,python,cross} (default: all)
+#   --only    comma-separated subset of {ts,go,java,python,cross,standards} (default: all)
 #   --skip    comma-separated subset to skip (runs after --only)
 #   --format  report format; default text. markdown is stdout-safe for PR comments.
 #   --fail-on exit non-zero on a finding at/above {error|warn|info}; default off (report-only)
@@ -22,7 +22,7 @@ CHECKS_DIR="${SCRIPT_DIR}/checks"
 # shellcheck source=lib/report.sh
 . "${SCRIPT_DIR}/lib/report.sh"
 
-ONLY="ts,go,java,python,cross"
+ONLY="ts,go,java,python,cross,standards"
 SKIP=""
 FORMAT="text"
 FAIL_ON=""
@@ -60,11 +60,13 @@ run_group() {
     java)   check_java ;;
     python) check_python ;;
     cross)  check_cross ;;
+    standards) check_standards ;;
   esac
 }
 
 log_step "template-doctor running (only=${ONLY}, skip=${SKIP:-none})"
 run_group cross
+run_group standards
 run_group ts
 run_group go
 run_group java
