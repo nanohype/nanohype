@@ -30,13 +30,14 @@ on:
     tags:
       - 'sdk-v*'
       - 'mcp-v*'
+      - 'tokens-v*'
   workflow_dispatch:
     inputs:
       package:
         description: Which package to publish
         required: true
         type: choice
-        options: [sdk, mcp]
+        options: [sdk, mcp, tokens]
 
 permissions:
   contents: read
@@ -54,9 +55,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
-      # sdk-v* → sdk (@nanohype/sdk); mcp-v* → mcp-server (@nanohype/mcp).
-      # The directory and the package name differ, so both are resolved here
-      # rather than assumed downstream.
+      # sdk-v* → sdk (@nanohype/sdk); mcp-v* → mcp-server (@nanohype/mcp);
+      # tokens-v* → tokens (@nanohype/tokens). The tag key, the directory and
+      # the package name all differ, so the mapping is resolved here rather
+      # than assumed downstream.
       - name: Resolve the target
         id: target
         run: |
@@ -71,12 +73,21 @@ jobs:
           case "$key" in
             sdk) dir=sdk ;;
             mcp) dir=mcp-server ;;
-            *) echo "::error::unrecognised release key '$key' (expected sdk or mcp)"; exit 1 ;;
+            tokens) dir=tokens ;;
+            *) echo "::error::unrecognised release key '$key' (expected sdk, mcp or tokens)"; exit 1 ;;
           esac
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "tag_version=$tag_version" >> "$GITHUB_OUTPUT"
 
       - name: Install
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      # Each package carries its own lockfile and its own devDependencies. The
+      # root install above covers the repo-level validators; without this one a
+      # package's own toolchain resolves only if the root happens to hoist a
+      # compatible copy, which is luck rather than a guarantee.
+      - name: Install the package
+        working-directory: ${{ steps.target.outputs.dir }}
         run: npm ci --prefer-offline --no-audit --no-fund
 
       # A tag that disagrees with package.json publishes a version nobody asked
