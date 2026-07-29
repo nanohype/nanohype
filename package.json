@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "private": true,
-  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
+  "description": "Template catalog for AI-focused projects \u2014 MCP servers, agentic loops, RAG pipelines, and more",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "validate:catalog": "./scripts/validate-catalog.sh",
     "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
     "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
+    "validate:doc-commands": "node scripts/check-doc-commands.mjs",
     "generate:catalog": "node scripts/generate-catalog.mjs",
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
     "sync:library": "node scripts/sync-library.mjs",
