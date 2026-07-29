@@ -104,6 +104,9 @@ jobs:
       - name: Verify catalog is regenerated (no drift)
         run: npm run verify:catalog
 
+      - name: Verify documented commands exist
+        run: npm run validate:doc-commands
+
       - name: Verify vendored library copies are in sync
         run: npm run verify:library
 

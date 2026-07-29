@@ -169,7 +169,8 @@ the same PR.
 ## Docs and formatting
 
 ```bash
-npm run format:check   # prettier, org identity
+npm run lint           # biome check — lint + format, read-only
+npm run format         # biome check --write — apply the fixes
 npm run lint:docs      # markdownlint over the docs surface
 ```
 
