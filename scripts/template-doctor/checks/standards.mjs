@@ -71,12 +71,6 @@ const BELOW_FLOOR = {
     statements: 52,
     why: "the per-modality processors and the pipeline stage runner are untested",
   },
-  "prompt-library": {
-    lines: 71,
-    functions: 71,
-    statements: 71,
-    why: "the recursive directory walk and the render helpers have no cases",
-  },
 };
 
 /** Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way. */
