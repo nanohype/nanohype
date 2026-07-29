@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { NanohypeError } from "../src/errors.js";
@@ -122,6 +123,31 @@ describe("loadStandards (bundle)", () => {
     expect(bundle["testing-rubric"].kind).toBe("nanohype/standards/testing-rubric");
     expect(bundle["observability-slo"].kind).toBe("nanohype/standards/observability-slo");
     expect(bundle["seo-baseline"].kind).toBe("nanohype/standards/seo-baseline");
+  });
+});
+
+describe("STANDARD_NAMES", () => {
+  // STANDARD_NAMES is a hand-maintained list of the files sitting on disk
+  // beside it, and a hand-maintained list of anything drifts from the thing it
+  // describes. The drift is silent in the direction that matters: add a
+  // standard without adding its name and loadStandards returns a bundle missing
+  // a field every consumer believes is there, with no error anywhere.
+  //
+  // So the list is compared to the directory rather than trusted. Counting is
+  // cheap; remembering is not.
+  it("names exactly the files in standards/", () => {
+    const onDisk = readdirSync(resolve(CATALOG_ROOT, "standards"))
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.replace(/\.json$/, ""))
+      .sort();
+
+    expect([...STANDARD_NAMES].sort()).toEqual(onDisk);
+  });
+
+  it("finds a non-trivial number of them", () => {
+    // A standards directory that failed to read would make the comparison above
+    // pass against an empty list on both sides.
+    expect(STANDARD_NAMES.length).toBeGreaterThan(5);
   });
 });
 

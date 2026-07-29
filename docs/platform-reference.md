@@ -136,7 +136,7 @@ For agents running remotely without a checkout, use `GitHubSource` instead
 (`new GitHubSource({ repo: "nanohype/nanohype" })`) — same `CatalogSource`
 API, fetches manifests from the GitHub API.
 
-`loadStandards()` returns a typed bundle covering all ten standards files.
+`loadStandards()` returns a typed bundle covering every standards file.
 `loadContract(source, repo)` fetches the corresponding `AGENTS.md` so your
 agent can present the deploy contract for any specific repo. See
 [`docs/spec/consumer-guide.md`](spec/consumer-guide.md) for the full rendering
@@ -210,7 +210,7 @@ Every public artifact carries a `version` field (positive integer = major versio
 Current versions:
 
 - `catalog.json`: v1
-- `standards/*.json`: v1 each (all ten)
+- `standards/*.json`: v1 each
 - `@nanohype/sdk`: see [`sdk/package.json`](../sdk/package.json)
 - `@nanohype/mcp`: see [`mcp-server/package.json`](../mcp-server/package.json)
 
