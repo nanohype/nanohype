@@ -1,4 +1,4 @@
-import { createHash, createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
@@ -16,7 +16,7 @@ import type { MediaProvider } from "./types.js";
 // ── Cloudinary Provider ──────────────────────────────────────────
 //
 // Uses the Cloudinary Upload API for uploads and URL-based transforms
-// for delivery. Authentication uses API key + secret with SHA-1
+// for delivery. Authentication uses API key + secret with SHA-256
 // signature generation. Supports eager transforms, format conversion,
 // and quality auto.
 //
@@ -63,12 +63,17 @@ function createCloudinaryProvider(): MediaProvider {
     return config;
   }
 
+  // Cloudinary's signature is `hash(sorted_params + api_secret)` — the secret is
+  // appended, not keyed, so HMAC is not an option here; the wire format is
+  // theirs. The digest is, though: Cloudinary validates SHA-1 and SHA-256
+  // interchangeably by default, so this signs with SHA-256 and leaves SHA-1's
+  // collision weakness out of a scaffold people copy.
   function generateSignature(params: Record<string, string>, apiSecret: string): string {
     const sorted = Object.keys(params)
       .sort()
       .map((k) => `${k}=${params[k]}`)
       .join("&");
-    return createHash("sha1")
+    return createHash("sha256")
       .update(sorted + apiSecret)
       .digest("hex");
   }
