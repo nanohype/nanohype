@@ -8,6 +8,9 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    // node types are for __tests__ only (the parity test reads tokens.css off
+    // disk). tsconfig.build.json clears them: the published output is data and
+    // types, with nothing from node in it.
     "types": ["node"],
     "noEmit": true
   },

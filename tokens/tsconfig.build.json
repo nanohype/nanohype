@@ -5,7 +5,11 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    // Nothing under src/ touches node. Inheriting `types: ["node"]` made the
+    // build fail on a machine that had not installed dev dependencies — which
+    // is exactly the state `npm publish` runs prepublishOnly in.
+    "types": []
   },
   "include": ["src"],
   "exclude": ["dist", "__tests__"]
