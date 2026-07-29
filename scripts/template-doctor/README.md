@@ -1,13 +1,16 @@
 # Template doctor
 
-Report-only catalog health tool. Runs per-ecosystem checks across every
-template under `templates/` and produces a grouped report of findings
-(outdated dependencies, broken builds, stale references, dead
-placeholders).
+Catalog health tool. Runs per-ecosystem checks across every template under
+`templates/` and produces a grouped report of findings (outdated
+dependencies, broken builds, stale references, dead placeholders, skeleton
+configs that fall below a published standard).
 
-The doctor never fails CI on findings. It exists to give maintainers
-visibility into catalog drift so it can be batch-fixed intentionally
-rather than surfacing as one-off bug reports.
+Two modes, and the difference matters. Scheduled and manual runs are
+report-only: they exist to give maintainers visibility into catalog drift
+so it can be batch-fixed intentionally rather than arriving as one-off bug
+reports. **Pull requests run with `--fail-on error`**, so a hard finding
+blocks the merge — drift that a maintainer would fix on their own schedule
+is one thing, and landing new drift is another.
 
 ## Quick start
 
@@ -21,6 +24,7 @@ make -C scripts/template-doctor go
 make -C scripts/template-doctor java
 make -C scripts/template-doctor python
 make -C scripts/template-doctor cross
+make -C scripts/template-doctor standards
 
 # Markdown report (stdout-safe for PR comments)
 make -C scripts/template-doctor markdown > report.md
@@ -34,6 +38,35 @@ make -C scripts/template-doctor markdown > report.md
 - `template.yaml` `composition.pairsWith` / `nestsInside` entries exist
 - Composites' `- template: X` entries reference a real template
 - Placeholders declared in `template.yaml` appear somewhere in `skeleton/`
+
+### Standards conformance (`standards.sh` + `standards.mjs`)
+
+Compares every skeleton's test configuration against the floor published in
+`standards/testing-rubric.json` and the toolchain named in
+`standards/language-toolchain.json`. The floor is read from the standard, never
+copied here — a second copy is a second thing to drift.
+
+- **TypeScript** — a coverage block exists; `coverage.enabled` is true, so
+  `vitest run` actually collects and the thresholds bind; all four metrics are
+  set; each is at or above the published floor.
+- **Python** — pytest runs with `--cov-fail-under` at or above the floor; mypy
+  is configured; black is not, since the standard's lint step is `ruff check .
+  && ruff format --check .` and two formatters over the same files disagree
+  eventually.
+- **Go** — the Makefile defines `COVERAGE_MIN`, so `make test` enforces
+  something.
+
+A skeleton whose suite does not yet reach the floor is pinned at what it
+measures and **declared** in `BELOW_FLOOR` / `GO_BELOW_FLOOR` with the reason.
+The check runs both directions: an undeclared shortfall is an error, and so is a
+declaration that no longer matches its config — a skeleton since raised leaves a
+stale apology behind, and one whose number drifted leaves a record describing a
+config that no longer exists.
+
+The reason this group exists at all: every TypeScript skeleton in this catalog
+once declared thresholds that `vitest run` never evaluated. A threshold that is
+present and a threshold that binds look identical in review, so the only way to
+tell them apart is a check that knows the difference.
 
 ### TypeScript (`ts.sh`)
 

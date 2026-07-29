@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 DOCTOR := ./run.sh
 
-.PHONY: help doctor ts go java python cross markdown
+.PHONY: help doctor ts go java python cross standards markdown
 
 help:
 	@echo "Targets:"
@@ -11,6 +11,7 @@ help:
 	@echo "  java      Run Java checks only"
 	@echo "  python    Run Python checks only"
 	@echo "  cross     Run cross-cutting checks only"
+	@echo "  standards Run skeleton-config-vs-standards checks only"
 	@echo "  markdown  Emit the report as markdown on stdout"
 	@echo ""
 	@echo "Flags via env:"
@@ -36,6 +37,9 @@ python:
 
 cross:
 	$(DOCTOR) --only cross
+
+standards:
+	$(DOCTOR) --only standards
 
 markdown:
 	$(DOCTOR) --format markdown

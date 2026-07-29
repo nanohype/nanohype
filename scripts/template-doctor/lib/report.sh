@@ -40,7 +40,7 @@ render_report() {
 
   # Group by ecosystem, then category.
   local ecosystem
-  for ecosystem in ts go java python cross; do
+  for ecosystem in ts go java python cross standards; do
     local count
     count=$(awk -F'\t' -v eco="$ecosystem" '$2==eco' "$REPORT_FILE" | wc -l | tr -d ' ')
     [ "$count" -eq 0 ] && continue
@@ -109,7 +109,7 @@ render_markdown_report() {
     "$total" "$errors" "$warns" "$infos"
 
   local ecosystem
-  for ecosystem in ts go java python cross; do
+  for ecosystem in ts go java python cross standards; do
     local count
     count=$(awk -F'\t' -v eco="$ecosystem" '$2==eco' "$REPORT_FILE" | wc -l | tr -d ' ')
     [ "$count" -eq 0 ] && continue
