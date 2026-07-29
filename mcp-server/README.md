@@ -9,7 +9,7 @@ Use it when you're building an AI client (Bedrock agent, Claude Desktop assistan
 | URI                           | What it returns                                                                                                                                         | MIME               |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
 | `nanohype://catalog`          | Full `catalog.json` (templates + composites with metadata)                                                                                              | `application/json` |
-| `nanohype://standards`        | All ten standards files bundled                                                                                                                         | `application/json` |
+| `nanohype://standards`        | Every standards file, bundled                                                                                                                           | `application/json` |
 | `nanohype://standards/{name}` | One standards file. `name` ∈ `language-toolchain` / `version-currency` / `platform-tenant-contract` / `llm-policy` / `quality-rubric-dimensions` / `testing-rubric` / `resource-tagging` / `resource-naming` / `observability-slo` / `seo-baseline` | `application/json` |
 | `nanohype://contracts/{repo}` | One repo's `AGENTS.md`. `repo` ∈ `nanohype` / `landing-zone` / `eks-gitops` / `eks-agent-platform` / `kx` / `cloudgov` / `fab` / `portal` / `eks-fleet` | `text/markdown`    |
 | `nanohype://template/{name}`  | One template's full manifest (variables, conditionals, hooks, composition)                                                                              | `application/json` |
@@ -22,7 +22,7 @@ Use it when you're building an AI client (Bedrock agent, Claude Desktop assistan
 | `search_templates` | `query` (required), `category?`, `persona?`, `kind?` | Filter the catalog. Substring match on name + displayName + description + tags |
 | `get_template`     | `name`                                               | Full template manifest                                                         |
 | `get_composite`    | `name`                                               | Full composite manifest                                                        |
-| `list_standards`   | —                                                    | Names of the ten published standards                                           |
+| `list_standards`   | —                                                    | Names of the published standards                                              |
 | `get_standard`     | `name`                                               | One standards file's JSON                                                      |
 | `get_contract`     | `repo`                                               | One repo's `AGENTS.md` content as markdown                                     |
 
