@@ -21,7 +21,7 @@
     "dotenv": "^16.4.0",
     "mime-types": "^2.1.35",
     "openai": "^4.85.0",
-    "sharp": "^0.33.0",
+    "sharp": "^0.35.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {
