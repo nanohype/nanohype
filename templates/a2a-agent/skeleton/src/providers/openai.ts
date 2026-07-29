@@ -1,16 +1,13 @@
 import OpenAI from "openai";
-import type { LlmProvider, Message, LlmResponse } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { LlmProvider, LlmResponse, Message } from "./types.js";
 
 const client = new OpenAI();
 const cb = createCircuitBreaker();
 
 class OpenAIProvider implements LlmProvider {
-  async sendMessage(
-    systemPrompt: string,
-    messages: Message[],
-  ): Promise<LlmResponse> {
+  async sendMessage(systemPrompt: string, messages: Message[]): Promise<LlmResponse> {
     const openaiMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
       ...messages.map((m) => ({

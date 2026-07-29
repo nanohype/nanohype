@@ -1,9 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import {
-  registerProvider,
-  getProvider,
-  listProviders,
-} from "../providers/registry.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { getProvider, listProviders, registerProvider } from "../providers/registry.js";
 import type { AuthProvider } from "../providers/types.js";
 
 /**

@@ -16,7 +16,7 @@ export interface NotificationPayload {
 }
 
 export const sendNotification: JobHandler<NotificationPayload> = async (
-  job: JobDefinition<NotificationPayload>
+  job: JobDefinition<NotificationPayload>,
 ): Promise<void> => {
   const { recipient, subject, channel } = job.data;
 

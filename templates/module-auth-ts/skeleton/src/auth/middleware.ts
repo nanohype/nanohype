@@ -4,9 +4,9 @@
 // Express. The middleware verifies the request using the specified auth
 // provider and attaches the authenticated user to the request context.
 
-import type { AuthConfig, AuthResult, AuthUser } from "./types.js";
 import { getProvider, listProviders } from "./providers/registry.js";
 import type { AuthRequest } from "./providers/types.js";
+import type { AuthConfig, AuthResult, AuthUser } from "./types.js";
 
 // Ensure all built-in providers are registered
 import "./providers/index.js";
@@ -56,9 +56,7 @@ export function getAuthResult(request: unknown): AuthResult | undefined {
  * The middleware detects the calling convention by argument count and
  * the shape of the first argument.
  */
-export type MiddlewareHandler = (
-  ...args: unknown[]
-) => unknown | Promise<unknown>;
+export type MiddlewareHandler = (...args: unknown[]) => unknown | Promise<unknown>;
 
 /**
  * Create an auth middleware function for the given provider.
@@ -113,7 +111,7 @@ export function createAuthMiddleware(config: AuthConfig): MiddlewareHandler {
 
     throw new Error(
       "Auth middleware could not detect framework. " +
-      "Ensure it is used as Hono or Express middleware."
+        "Ensure it is used as Hono or Express middleware.",
     );
   };
 }
@@ -174,8 +172,7 @@ async function handleExpress(
   // Build an AuthRequest from Express's request
   const authRequest: AuthRequest = {
     headers: {
-      get: (name: string) =>
-        (req.headers[name.toLowerCase()] as string) ?? null,
+      get: (name: string) => (req.headers[name.toLowerCase()] as string) ?? null,
     },
   };
 

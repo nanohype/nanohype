@@ -12,14 +12,10 @@ import type { Tool } from "./registry.js";
  */
 
 const inputSchema = z.object({
-  expression: z
-    .string()
-    .describe("A mathematical expression to evaluate, e.g. '2 + 3 * 4'"),
+  expression: z.string().describe("A mathematical expression to evaluate, e.g. '2 + 3 * 4'"),
 });
 
-async function execute(
-  input: z.infer<typeof inputSchema>,
-): Promise<string> {
+async function execute(input: z.infer<typeof inputSchema>): Promise<string> {
   const { expression } = input;
 
   const result = evaluateArithmetic(expression);
@@ -140,9 +136,7 @@ class ArithmeticParser {
   expectEnd(): void {
     this.skipWhitespace();
     if (this.pos !== this.input.length) {
-      throw new Error(
-        `Unexpected character '${this.input[this.pos]}' at position ${this.pos}`,
-      );
+      throw new Error(`Unexpected character '${this.input[this.pos]}' at position ${this.pos}`);
     }
   }
 

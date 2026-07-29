@@ -5,11 +5,11 @@
  */
 
 import pg from "pg";
-import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.js";
 import type { VectorStoreConfig } from "../config.js";
-import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerVectorStoreProvider } from "./registry.js";
+import type { SearchResult, VectorDocument, VectorStoreProvider } from "./types.js";
 
 class PgVectorStore implements VectorStoreProvider {
   private readonly pool: pg.Pool;
@@ -62,7 +62,7 @@ class PgVectorStore implements VectorStoreProvider {
                metadata = EXCLUDED.metadata,
                embedding = EXCLUDED.embedding`,
             [doc.id, doc.content, JSON.stringify(doc.metadata), `[${doc.embedding.join(",")}]`],
-          )
+          ),
         );
       }
     } finally {
@@ -101,9 +101,7 @@ class PgVectorStore implements VectorStoreProvider {
 
     query += ` ORDER BY embedding <=> $1::vector LIMIT $${params.length}`;
 
-    const result = await this.cb.execute(() =>
-      this.pool.query(query, params)
-    );
+    const result = await this.cb.execute(() => this.pool.query(query, params));
 
     return result.rows.map((row) => ({
       id: row.id as string,
@@ -115,10 +113,7 @@ class PgVectorStore implements VectorStoreProvider {
 
   async delete(ids: string[]): Promise<void> {
     await this.cb.execute(() =>
-      this.pool.query(
-        `DELETE FROM ${this.escapeId(this.table)} WHERE id = ANY($1)`,
-        [ids],
-      )
+      this.pool.query(`DELETE FROM ${this.escapeId(this.table)} WHERE id = ANY($1)`, [ids]),
     );
   }
 

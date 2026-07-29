@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerExporter,
-  getExporter,
-  listExporters,
-} from "../exporters/registry.js";
+import { describe, expect, it } from "vitest";
+import { getExporter, listExporters, registerExporter } from "../exporters/registry.js";
 import type { TelemetryExporter } from "../exporters/types.js";
 
 /**
@@ -36,9 +32,7 @@ describe("telemetry exporter registry", () => {
   });
 
   it("throws when retrieving an unregistered exporter", () => {
-    expect(() => getExporter("nonexistent-exporter")).toThrow(
-      /Unknown telemetry exporter/,
-    );
+    expect(() => getExporter("nonexistent-exporter")).toThrow(/Unknown telemetry exporter/);
   });
 
   it("lists all registered exporter names", () => {

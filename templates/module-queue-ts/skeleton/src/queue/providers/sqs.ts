@@ -1,14 +1,14 @@
 import {
-  SQSClient,
-  SendMessageCommand,
-  ReceiveMessageCommand,
-  DeleteMessageCommand,
   ChangeMessageVisibilityCommand,
+  DeleteMessageCommand,
   type Message,
+  ReceiveMessageCommand,
+  SendMessageCommand,
+  SQSClient,
 } from "@aws-sdk/client-sqs";
 import type { Job, JobOptions, QueueConfig } from "../types.js";
-import type { QueueProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { QueueProvider } from "./types.js";
 
 // ── AWS SQS Provider ────────────────────────────────────────────────
 //
@@ -34,28 +34,20 @@ const sqsProvider: QueueProvider = {
   name: "sqs",
 
   async init(config: QueueConfig): Promise<void> {
-    const region =
-      (config.region as string) ?? process.env.AWS_REGION ?? "us-east-1";
-    queueUrl =
-      (config.queueUrl as string) ?? process.env.SQS_QUEUE_URL ?? "";
+    const region = (config.region as string) ?? process.env.AWS_REGION ?? "us-east-1";
+    queueUrl = (config.queueUrl as string) ?? process.env.SQS_QUEUE_URL ?? "";
     waitTimeSeconds = (config.waitTimeSeconds as number) ?? 20;
     visibilityTimeout = (config.visibilityTimeout as number) ?? 30;
 
     if (!queueUrl) {
-      throw new Error(
-        "SQS provider requires a queueUrl in config or SQS_QUEUE_URL env var"
-      );
+      throw new Error("SQS provider requires a queueUrl in config or SQS_QUEUE_URL env var");
     }
 
     client = new SQSClient({ region });
     console.log(`[queue] SQS provider initialized for ${queueUrl}`);
   },
 
-  async enqueue(
-    jobName: string,
-    data: unknown,
-    opts?: JobOptions
-  ): Promise<string> {
+  async enqueue(jobName: string, data: unknown, opts?: JobOptions): Promise<string> {
     if (!client) throw new Error("SQS provider not initialized");
 
     const id = opts?.id ?? crypto.randomUUID();
@@ -76,7 +68,7 @@ const sqsProvider: QueueProvider = {
         DelaySeconds: opts?.delay ? Math.min(Math.floor(opts.delay / 1000), 900) : 0,
         MessageGroupId: jobName,
         MessageDeduplicationId: id,
-      })
+      }),
     );
 
     return id;
@@ -92,7 +84,7 @@ const sqsProvider: QueueProvider = {
         WaitTimeSeconds: waitTimeSeconds,
         VisibilityTimeout: visibilityTimeout,
         MessageAttributeNames: ["All"],
-      })
+      }),
     );
 
     const messages: Message[] = response.Messages ?? [];
@@ -133,7 +125,7 @@ const sqsProvider: QueueProvider = {
       new DeleteMessageCommand({
         QueueUrl: queueUrl,
         ReceiptHandle: receiptHandle,
-      })
+      }),
     );
 
     receiptHandles.delete(jobId);
@@ -151,7 +143,7 @@ const sqsProvider: QueueProvider = {
         QueueUrl: queueUrl,
         ReceiptHandle: receiptHandle,
         VisibilityTimeout: 0,
-      })
+      }),
     );
 
     receiptHandles.delete(jobId);

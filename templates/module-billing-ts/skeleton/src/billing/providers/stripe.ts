@@ -1,15 +1,15 @@
-import type { PaymentProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { CircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
   BillingConfig,
-  Customer,
-  Subscription,
-  Invoice,
-  ChargeResult,
   BillingWebhookEvent,
+  ChargeResult,
+  Customer,
+  Invoice,
+  Subscription,
 } from "../types.js";
-import { CircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
 import { registerProvider } from "./registry.js";
+import type { PaymentProvider } from "./types.js";
 
 // ── Stripe Payment Provider ────────────────────────────────────────
 //
@@ -46,8 +46,7 @@ function createStripeProvider(): PaymentProvider {
     name: "stripe",
 
     async init(config: BillingConfig): Promise<void> {
-      const secretKey =
-        config.stripe?.secretKey ?? process.env.STRIPE_SECRET_KEY;
+      const secretKey = config.stripe?.secretKey ?? process.env.STRIPE_SECRET_KEY;
 
       if (!secretKey) {
         throw new Error(
@@ -55,8 +54,7 @@ function createStripeProvider(): PaymentProvider {
         );
       }
 
-      webhookSecret =
-        config.stripe?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null;
+      webhookSecret = config.stripe?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null;
 
       // Lazy load the Stripe SDK
       const { default: Stripe } = await import("stripe");
@@ -89,10 +87,7 @@ function createStripeProvider(): PaymentProvider {
       };
     },
 
-    async createSubscription(
-      customerId: string,
-      planId: string,
-    ): Promise<Subscription> {
+    async createSubscription(customerId: string, planId: string): Promise<Subscription> {
       if (!client) throw new Error("Stripe provider not initialized");
 
       const stripeSub = await withBreaker(() =>
@@ -157,10 +152,7 @@ function createStripeProvider(): PaymentProvider {
       }
     },
 
-    async handleWebhook(
-      payload: string,
-      signature: string,
-    ): Promise<BillingWebhookEvent> {
+    async handleWebhook(payload: string, signature: string): Promise<BillingWebhookEvent> {
       if (!client) throw new Error("Stripe provider not initialized");
 
       if (!webhookSecret) {
@@ -215,9 +207,7 @@ function createStripeProvider(): PaymentProvider {
   };
 }
 
-function mapStripeSubStatus(
-  status: string,
-): Subscription["status"] {
+function mapStripeSubStatus(status: string): Subscription["status"] {
   const mapping: Record<string, Subscription["status"]> = {
     active: "active",
     canceled: "canceled",
@@ -228,9 +218,7 @@ function mapStripeSubStatus(
   return mapping[status] ?? "active";
 }
 
-function mapStripeInvoiceStatus(
-  status: string | null,
-): Invoice["status"] {
+function mapStripeInvoiceStatus(status: string | null): Invoice["status"] {
   const mapping: Record<string, Invoice["status"]> = {
     draft: "draft",
     open: "open",

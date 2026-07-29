@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createGateway } from "../index.js";
 import type { GatewayConfig } from "../types.js";
 
@@ -48,7 +48,7 @@ describe("createGateway", () => {
     const { app, shutdown } = createGateway(createTestConfig());
 
     const response = await app.request("/health");
-    const body = await response.json() as Record<string, unknown>;
+    const body = (await response.json()) as Record<string, unknown>;
 
     expect(response.status).toBe(200);
     expect(body.status).toBe("ok");
@@ -62,7 +62,7 @@ describe("createGateway", () => {
     const response = await app.request("/api/billing/123");
     expect(response.status).toBe(404);
 
-    const body = await response.json() as Record<string, unknown>;
+    const body = (await response.json()) as Record<string, unknown>;
     expect(body.error).toBe("Not Found");
     shutdown();
   });

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { getConfig } from "../../config.js";
+import { query } from "../../operations/query.js";
 import { getStorageProvider } from "../../storage/index.js";
 import { parsePage } from "../../wiki/page.js";
-import { query } from "../../operations/query.js";
 
 export const wikiRoutes = new Hono();
 

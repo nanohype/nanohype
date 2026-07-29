@@ -6,43 +6,38 @@
 //
 
 import { validateBootstrap } from "./bootstrap.js";
+import type { ProviderConfig } from "./config.js";
 import { ProviderConfigSchema } from "./config.js";
-import { getProvider, listProviders } from "./providers/index.js";
 import {
-  llmProviderRequestTotal,
   llmProviderDurationMs,
+  llmProviderRequestTotal,
   llmProviderTokenUsage,
 } from "./metrics.js";
+import { getProvider, listProviders } from "./providers/index.js";
 import type { LlmProvider } from "./providers/types.js";
-import type {
-  ChatMessage,
-  ChatOptions,
-  LlmResponse,
-  StreamResponse,
-} from "./types.js";
-import type { ProviderConfig } from "./config.js";
+import type { ChatMessage, ChatOptions, LlmResponse, StreamResponse } from "./types.js";
 
+export type { GatewayProviderShape } from "./adapters/gateway.js";
+export { createGatewayAdapter } from "./adapters/gateway.js";
+export { collectStream, fromStringStream, normalizeStream } from "./adapters/streaming.js";
+export type { ProviderConfig } from "./config.js";
+export { ProviderConfigSchema } from "./config.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { LlmProvider, LlmProviderFactory } from "./providers/types.js";
+export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
+export { countTokens } from "./tokens/counter.js";
 export type {
   ChatMessage,
   ChatOptions,
   LlmResponse,
-  StreamResponse,
-  StreamChunk,
   Pricing,
+  StreamChunk,
+  StreamResponse,
   TokenUsage,
 } from "./types.js";
-export { DEFAULT_PRICING, getPricing, estimateCost } from "./types.js";
-export { countTokens } from "./tokens/counter.js";
-export { createGatewayAdapter } from "./adapters/gateway.js";
-export type { GatewayProviderShape } from "./adapters/gateway.js";
-export { normalizeStream, collectStream, fromStringStream } from "./adapters/streaming.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
-export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
-export { ProviderConfigSchema } from "./config.js";
-export type { ProviderConfig } from "./config.js";
+export { DEFAULT_PRICING, estimateCost, getPricing } from "./types.js";
 
 // ── Provider Registry Facade ───────────────────────────────────────
 
@@ -54,10 +49,7 @@ export interface ProviderRegistry {
   chat(messages: ChatMessage[], opts?: ChatOptions & { provider?: string }): Promise<LlmResponse>;
 
   /** Stream a chat request using the default or specified provider. */
-  streamChat(
-    messages: ChatMessage[],
-    opts?: ChatOptions & { provider?: string },
-  ): StreamResponse;
+  streamChat(messages: ChatMessage[], opts?: ChatOptions & { provider?: string }): StreamResponse;
 
   /** List all registered provider names. */
   list(): string[];
@@ -78,14 +70,10 @@ export interface ProviderRegistry {
  * const response = await registry.chat([{ role: "user", content: "Hello" }]);
  * ```
  */
-export function createProviderRegistry(
-  rawConfig: Partial<ProviderConfig> = {},
-): ProviderRegistry {
+export function createProviderRegistry(rawConfig: Partial<ProviderConfig> = {}): ProviderRegistry {
   const parsed = ProviderConfigSchema.safeParse(rawConfig);
   if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map((i) => `${i.path.join(".")}: ${i.message}`)
-      .join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid provider config: ${issues}`);
   }
 

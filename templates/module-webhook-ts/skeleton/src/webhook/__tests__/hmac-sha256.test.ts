@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 // Import the provider module to trigger self-registration
 import "../signatures/hmac-sha256.js";

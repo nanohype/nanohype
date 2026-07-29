@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import { validateBootstrap } from "../src/bootstrap.js";
 import { resolve } from "node:path";
+import { validateBootstrap } from "../src/bootstrap.js";
 import { runEvals } from "../src/runner.js";
 
 /**
@@ -51,7 +51,9 @@ function parseArgs(argv: string[]): {
         args.output = argv[++i];
         break;
       case "--help":
-        console.log("Usage: run-evals [--suites <glob>] [--reporter console|json] [--provider <name>] [--concurrency <n>] [--output <path>]");
+        console.log(
+          "Usage: run-evals [--suites <glob>] [--reporter console|json] [--provider <name>] [--concurrency <n>] [--output <path>]",
+        );
         process.exit(0);
     }
   }
@@ -73,9 +75,7 @@ async function main(): Promise<void> {
   });
 
   // Exit with non-zero status if any evaluations failed
-  const allPassed = results.every((suite) =>
-    suite.cases.every((c) => c.pass),
-  );
+  const allPassed = results.every((suite) => suite.cases.every((c) => c.pass));
 
   if (!allPassed) {
     process.exit(1);

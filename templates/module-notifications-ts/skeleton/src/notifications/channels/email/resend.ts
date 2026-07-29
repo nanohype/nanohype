@@ -1,7 +1,7 @@
-import type { Notification, NotificationResult } from "../../types.js";
-import type { ChannelProvider } from "../types.js";
-import { registerChannel } from "../registry.js";
 import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
+import type { Notification, NotificationResult } from "../../types.js";
+import { registerChannel } from "../registry.js";
+import type { ChannelProvider } from "../types.js";
 
 // ── Resend Email Provider ───────────────────────────────────────────
 //
@@ -34,7 +34,7 @@ const resendProvider: ChannelProvider = {
           to: notification.to,
           subject: notification.subject ?? "",
           text: notification.body,
-        })
+        }),
       );
 
       if (result.error) {

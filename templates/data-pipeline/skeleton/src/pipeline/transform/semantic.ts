@@ -13,9 +13,9 @@
  * Registers itself as the "semantic" chunk strategy on import.
  */
 
-import type { Document, Chunk } from "../types.js";
-import type { ChunkStrategy, ChunkOptions } from "./types.js";
+import type { Chunk, Document } from "../types.js";
 import { registerStrategy } from "./registry.js";
+import type { ChunkOptions, ChunkStrategy } from "./types.js";
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
@@ -71,13 +71,15 @@ class SemanticStrategy implements ChunkStrategy {
     if (!text) return [];
 
     if (estimateTokens(text) <= chunkSize) {
-      return [{
-        id: `${document.id}_0`,
-        content: text,
-        chunkIndex: 0,
-        chunkCount: 1,
-        metadata: { ...document.metadata },
-      }];
+      return [
+        {
+          id: `${document.id}_0`,
+          content: text,
+          chunkIndex: 0,
+          chunkCount: 1,
+          metadata: { ...document.metadata },
+        },
+      ];
     }
 
     const sentences = splitSentences(text);
@@ -97,9 +99,8 @@ class SemanticStrategy implements ChunkStrategy {
     const sizedChunks = this.enforceSize(rawChunks, chunkSize);
 
     // Apply overlap
-    const withOverlap = overlap > 0 && sizedChunks.length > 1
-      ? this.applyOverlap(sizedChunks, overlap)
-      : sizedChunks;
+    const withOverlap =
+      overlap > 0 && sizedChunks.length > 1 ? this.applyOverlap(sizedChunks, overlap) : sizedChunks;
 
     return withOverlap.map((content, i) => ({
       id: `${document.id}_${i}`,

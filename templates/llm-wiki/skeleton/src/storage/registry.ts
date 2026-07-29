@@ -12,9 +12,7 @@ export function getStorageProvider(name: string): StorageProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = [...providers.keys()].join(", ");
-    throw new Error(
-      `Storage provider "${name}" not registered. Available: ${available || "none"}`,
-    );
+    throw new Error(`Storage provider "${name}" not registered. Available: ${available || "none"}`);
   }
   return factory();
 }

@@ -102,9 +102,8 @@ export class RecursiveChunker implements ChunkingStrategy {
 
     const rawChunks = this.recursiveSplit(text, 0);
 
-    const withOverlap = this.overlap > 0 && rawChunks.length > 1
-      ? this.applyOverlap(rawChunks)
-      : rawChunks;
+    const withOverlap =
+      this.overlap > 0 && rawChunks.length > 1 ? this.applyOverlap(rawChunks) : rawChunks;
 
     return withOverlap.map((content, i) => ({
       content,
@@ -114,9 +113,7 @@ export class RecursiveChunker implements ChunkingStrategy {
 
   private recursiveSplit(text: string, sepIndex: number): string[] {
     if (sepIndex >= RecursiveChunker.SEPARATORS.length) {
-      return new FixedChunker(this.chunkSize, this.overlap)
-        .chunk(text)
-        .map((c) => c.content);
+      return new FixedChunker(this.chunkSize, this.overlap).chunk(text).map((c) => c.content);
     }
 
     const separator = RecursiveChunker.SEPARATORS[sepIndex];
@@ -212,9 +209,8 @@ export class SemanticChunker implements ChunkingStrategy {
     const sizedChunks = this.enforceSize(rawChunks);
 
     // Apply overlap between consecutive chunks
-    const withOverlap = this.overlap > 0 && sizedChunks.length > 1
-      ? this.applyOverlap(sizedChunks)
-      : sizedChunks;
+    const withOverlap =
+      this.overlap > 0 && sizedChunks.length > 1 ? this.applyOverlap(sizedChunks) : sizedChunks;
 
     return withOverlap.map((content, i) => ({
       content,

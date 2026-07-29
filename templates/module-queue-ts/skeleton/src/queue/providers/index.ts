@@ -9,5 +9,5 @@ import "./memory.js";
 import "./bullmq.js";
 import "./sqs.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { QueueProvider } from "./types.js";

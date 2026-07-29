@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider, ChatMessage } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ChatMessage, LlmProvider } from "./types.js";
 
 /**
  * Anthropic LLM provider. Sends chat messages to Claude and returns
@@ -27,7 +27,10 @@ export class AnthropicProvider implements LlmProvider {
         model: this.model,
         max_tokens: 4096,
         ...(systemMsg ? { system: systemMsg.content } : {}),
-        messages: nonSystem.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+        messages: nonSystem.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
       }),
     );
 

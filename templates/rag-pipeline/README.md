@@ -52,7 +52,7 @@ Scaffolds a Retrieval-Augmented Generation (RAG) pipeline in TypeScript. All com
       registry.test.ts             # Provider registry tests (conditional)
   package.json
   tsconfig.json
-  eslint.config.js
+  biome.json
   vitest.config.ts
   .env.example
   README.md

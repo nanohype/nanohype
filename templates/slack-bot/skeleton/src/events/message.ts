@@ -1,7 +1,7 @@
 import type { App } from "@slack/bolt";
 import type { Config } from "../config.js";
-import { getProvider } from "../providers/registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/registry.js";
 
 // ── Thread Context ───────────────────────────────────────────────────
 //

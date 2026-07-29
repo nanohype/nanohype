@@ -1,13 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { Agent } from "../agents/types.js";
 import { createRouter } from "../routing/router.js";
 import {
   createCapabilityMatchStrategy,
   createKeywordMatchStrategy,
 } from "../routing/strategies.js";
-import type { Agent } from "../agents/types.js";
 import type { SubTask } from "../types.js";
 
-function makeAgent(name: string, capabilities: Array<{ name: string; keywords?: string[] }>): Agent {
+function makeAgent(
+  name: string,
+  capabilities: Array<{ name: string; keywords?: string[] }>,
+): Agent {
   return {
     name,
     capabilities: capabilities.map((c) => ({
@@ -39,9 +42,7 @@ describe("routing", () => {
     makeAgent("coder", [
       { name: "code-generation", keywords: ["code", "implement", "build", "program"] },
     ]),
-    makeAgent("writer", [
-      { name: "writing", keywords: ["write", "document", "summarize"] },
-    ]),
+    makeAgent("writer", [{ name: "writing", keywords: ["write", "document", "summarize"] }]),
   ];
 
   describe("router", () => {

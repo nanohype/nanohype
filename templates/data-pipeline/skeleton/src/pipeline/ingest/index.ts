@@ -5,13 +5,12 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { IngestSource } from "./types.js";
-
 export {
-  registerSource,
   getSource,
   listSources,
+  registerSource,
 } from "./registry.js";
+export type { IngestSource } from "./types.js";
 
 // Import source modules to trigger registration
 import "./file.js";

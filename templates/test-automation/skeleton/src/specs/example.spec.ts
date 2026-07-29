@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures/base.js";
+import { expect, test } from "../fixtures/base.js";
 
 /**
  * Example test suite for __PROJECT_NAME__.

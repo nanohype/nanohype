@@ -7,10 +7,10 @@
  */
 
 import OpenAI from "openai";
-import type { MultimodalLlmProvider, AnalysisResult } from "./types.js";
 import type { ProcessedInput } from "../processors/types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
 
 class OpenAIVisionProvider implements MultimodalLlmProvider {
   private readonly client: OpenAI;

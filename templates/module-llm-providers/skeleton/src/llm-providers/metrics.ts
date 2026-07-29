@@ -10,26 +10,17 @@ import { metrics } from "@opentelemetry/api";
 const meter = metrics.getMeter(process.env.npm_package_name ?? "__PROJECT_NAME__");
 
 /** Total LLM provider requests, labeled by provider and model. */
-export const llmProviderRequestTotal = meter.createCounter(
-  "llm_provider_request_total",
-  {
-    description: "Total LLM provider requests by provider and model",
-  },
-);
+export const llmProviderRequestTotal = meter.createCounter("llm_provider_request_total", {
+  description: "Total LLM provider requests by provider and model",
+});
 
 /** LLM provider request duration in milliseconds, labeled by provider. */
-export const llmProviderDurationMs = meter.createHistogram(
-  "llm_provider_duration_ms",
-  {
-    description: "LLM provider request latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const llmProviderDurationMs = meter.createHistogram("llm_provider_duration_ms", {
+  description: "LLM provider request latency in milliseconds",
+  unit: "ms",
+});
 
 /** Token usage per request, labeled by provider, model, and direction (input/output). */
-export const llmProviderTokenUsage = meter.createCounter(
-  "llm_provider_token_usage",
-  {
-    description: "Token usage by provider, model, and direction",
-  },
-);
+export const llmProviderTokenUsage = meter.createCounter("llm_provider_token_usage", {
+  description: "Token usage by provider, model, and direction",
+});

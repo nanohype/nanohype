@@ -29,8 +29,8 @@ npm run query -- "What is retrieval-augmented generation?"
 | `npm run ingest` | Load, chunk, embed, and store documents |
 | `npm run query` | Retrieve context and generate an answer |
 | `npm run build` | Compile TypeScript to `dist/` |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format with Prettier |
+| `npm run lint` | Lint with Biome |
+| `npm run format` | Format with Biome |
 | `npm run test` | Run tests |
 
 ## Architecture

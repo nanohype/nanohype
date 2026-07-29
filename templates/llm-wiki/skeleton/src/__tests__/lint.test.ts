@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "fs";
-import { join } from "path";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
+import { join } from "path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { stringify } from "yaml";
-import type { StorageProvider } from "../storage/types.js";
-import type { PageMeta } from "../wiki/types.js";
-import { serializePage } from "../wiki/page.js";
 import { resetConfig } from "../config.js";
+import type { StorageProvider } from "../storage/types.js";
+import { serializePage } from "../wiki/page.js";
+import type { PageMeta } from "../wiki/types.js";
 
 const pages = new Map<string, string>();
 
@@ -97,8 +97,16 @@ beforeEach(() => {
     name: "test-schema",
     description: "Test",
     pageTypes: [
-      { name: "entity", description: "Entity", requiredSections: ["Summary", "Details", "References"] },
-      { name: "concept", description: "Concept", requiredSections: ["Definition", "Context", "Related Concepts"] },
+      {
+        name: "entity",
+        description: "Entity",
+        requiredSections: ["Summary", "Details", "References"],
+      },
+      {
+        name: "concept",
+        description: "Concept",
+        requiredSections: ["Definition", "Context", "Related Concepts"],
+      },
     ],
     structure: { index: "index.md", orphanThresholdDays: 14, contradictionPolicy: "flag" },
     llm: { provider: "mock-llm", model: "test", temperature: 0.2, maxPagesPerIngest: 10 },
@@ -180,12 +188,7 @@ describe("lint operation", () => {
   });
 
   it("detects missing required sections", async () => {
-    seedPage(
-      "incomplete.md",
-      "Incomplete",
-      "entity",
-      "## Summary\nHas summary only.",
-    );
+    seedPage("incomplete.md", "Incomplete", "entity", "## Summary\nHas summary only.");
 
     const { lint } = await import("../operations/lint.js");
     const result = await lint("test-tenant");

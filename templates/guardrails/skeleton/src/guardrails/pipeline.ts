@@ -4,9 +4,9 @@
 // sequence. Collects all violations and optionally short-circuits on
 // the first blocking violation.
 
-import type { Direction, FilterResult, GuardrailConfig, Violation } from "./types.js";
-import { getFilter, listFilters } from "./filters/registry.js";
 import { logger } from "../logger.js";
+import { getFilter, listFilters } from "./filters/registry.js";
+import type { Direction, FilterResult, GuardrailConfig, Violation } from "./types.js";
 
 /**
  * Create a filter pipeline from the given configuration. Returns a

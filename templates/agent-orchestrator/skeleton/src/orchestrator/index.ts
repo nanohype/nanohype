@@ -5,41 +5,41 @@
 // as the primary entry point.
 //
 
+import type { Agent, AgentExecutionContext } from "./agents/types.js";
 import { validateBootstrap } from "./bootstrap.js";
 import { OrchestratorConfigSchema } from "./config.js";
 import { createOrchestratorInstance } from "./orchestrator.js";
+import type { LlmProvider } from "./providers/types.js";
 import type {
-  Task,
-  SubTask,
   AgentCapability,
   AgentResult,
-  PlannerResult,
   OrchestratorConfig,
   OrchestratorResult,
+  PlannerResult,
+  SubTask,
+  Task,
 } from "./types.js";
-import type { Agent, AgentExecutionContext } from "./agents/types.js";
-import type { LlmProvider } from "./providers/types.js";
 
 // Re-export everything consumers need
-export { registerAgent, getAgent, listAgents, getAllAgents } from "./agents/index.js";
-export { registerProvider, getProvider, listProviders } from "./providers/index.js";
-export { createSharedContext } from "./context/shared.js";
+export { getAgent, getAllAgents, listAgents, registerAgent } from "./agents/index.js";
+export type { Agent, AgentExecutionContext } from "./agents/types.js";
+export type { HandoffProtocol, HandoffRecord } from "./context/handoff.js";
 export { createHandoffProtocol } from "./context/handoff.js";
+export type { ScopedContext, SharedContext } from "./context/shared.js";
+export { createSharedContext } from "./context/shared.js";
+export { getProvider, listProviders, registerProvider } from "./providers/index.js";
+export type { LlmProvider } from "./providers/types.js";
+export type { Router } from "./routing/router.js";
 export { createRouter } from "./routing/router.js";
 export type {
-  Task,
-  SubTask,
   AgentCapability,
   AgentResult,
-  PlannerResult,
   OrchestratorConfig,
   OrchestratorResult,
+  PlannerResult,
+  SubTask,
+  Task,
 } from "./types.js";
-export type { Agent, AgentExecutionContext } from "./agents/types.js";
-export type { LlmProvider } from "./providers/types.js";
-export type { SharedContext, ScopedContext } from "./context/shared.js";
-export type { HandoffProtocol, HandoffRecord } from "./context/handoff.js";
-export type { Router } from "./routing/router.js";
 
 // ── Orchestrator Facade ─────────────────────────────────────────────
 
@@ -64,9 +64,7 @@ export interface Orchestrator {
  *     description: "Research and analyze the AI agent landscape",
  *   });
  */
-export function createOrchestrator(
-  config: OrchestratorConfig = {},
-): Orchestrator {
+export function createOrchestrator(config: OrchestratorConfig = {}): Orchestrator {
   const parsed = OrchestratorConfigSchema.safeParse(config);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");

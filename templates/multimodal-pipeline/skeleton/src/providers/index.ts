@@ -5,22 +5,19 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { MultimodalLlmProvider, AnalysisResult } from "./types.js";
-
 export {
-  registerProvider,
   getProvider,
   listProviders,
+  registerProvider,
 } from "./registry.js";
-
-export {
-  registerTranscriptionProvider,
-  getTranscriptionProvider,
-} from "./whisper.js";
-
+export type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
 export type {
   TranscriptionProvider,
   TranscriptionResult,
+} from "./whisper.js";
+export {
+  getTranscriptionProvider,
+  registerTranscriptionProvider,
 } from "./whisper.js";
 
 // Import provider modules to trigger registration

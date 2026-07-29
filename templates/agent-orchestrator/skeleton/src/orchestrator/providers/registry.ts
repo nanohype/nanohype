@@ -30,9 +30,7 @@ export function getProvider(name: string): LlmProvider {
   const factory = factories.get(name);
   if (!factory) {
     const available = Array.from(factories.keys()).join(", ") || "(none)";
-    throw new Error(
-      `LLM provider "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`LLM provider "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

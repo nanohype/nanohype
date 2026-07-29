@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
-import type { RateLimitStore, StoreConfig } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { RateLimitStore, StoreConfig } from "./types.js";
 
 // ── Redis Store ────────────────────────────────────────────────────
 //
@@ -27,8 +27,7 @@ const redisStore: RateLimitStore = {
   name: "redis",
 
   async init(config: StoreConfig): Promise<void> {
-    const url =
-      (config.url as string) ?? process.env.REDIS_URL ?? undefined;
+    const url = (config.url as string) ?? process.env.REDIS_URL ?? undefined;
 
     if (url) {
       client = new Redis(url);

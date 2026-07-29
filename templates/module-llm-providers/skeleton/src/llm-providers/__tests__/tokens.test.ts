@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { countTokens } from "../tokens/counter.js";
 
 // ── Token Counter Tests ────────────────────────────────────────────

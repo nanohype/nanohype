@@ -1,16 +1,16 @@
-import type { KnowledgeProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Page,
   Block,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { KnowledgeProvider } from "./types.js";
 
 // ── Coda Provider ──────────────────────────────────────────────────
 //
@@ -93,9 +93,7 @@ function createCodaProvider(): KnowledgeProvider {
     const lines: string[] = [];
 
     try {
-      const sections = await codaFetch<SectionsResponse>(
-        `/docs/${docId}/pages/${pageId}/content`,
-      );
+      const sections = await codaFetch<SectionsResponse>(`/docs/${docId}/pages/${pageId}/content`);
 
       if (sections.items) {
         for (const section of sections.items) {
@@ -240,7 +238,7 @@ function createCodaProvider(): KnowledgeProvider {
 
       // Re-fetch
       const updated = await codaFetch<CodaPage>(`/docs/${docId}/pages/${subPageId}`);
-      const content = data.content ?? await fetchPageContent(docId, subPageId);
+      const content = data.content ?? (await fetchPageContent(docId, subPageId));
       return codaPageToPage(updated, content);
     },
 

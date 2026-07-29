@@ -8,51 +8,51 @@
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { MediaClientConfigSchema } from "./config.js";
+import { mediaDurationMs, mediaTransformTotal, mediaUploadTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
-import { mediaUploadTotal, mediaTransformTotal, mediaDurationMs } from "./metrics.js";
 import type { MediaProvider } from "./providers/types.js";
 import type {
-  MediaAsset,
-  UploadOptions,
-  TransformOptions,
   DeliveryUrl,
   ListOptions,
   ListResult,
+  MediaAsset,
   MediaConfig,
+  TransformOptions,
+  UploadOptions,
 } from "./types.js";
 
+export type { MediaClientConfig } from "./config.js";
+export { MediaClientConfigSchema } from "./config.js";
+export { getResponsiveSrcSet } from "./providers/imgix.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { MediaProvider, MediaProviderFactory } from "./providers/types.js";
-export type {
-  MediaAsset,
-  UploadOptions,
-  TransformOptions,
-  TransformPreset,
-  DeliveryUrl,
-  ListOptions,
-  ListResult,
-  MediaConfig,
-  FitMode,
-  MediaFormat,
-} from "./types.js";
+export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
 export { TransformBuilder } from "./transforms/builder.js";
 export {
-  thumbnail,
   avatar,
-  hero,
-  ogImage,
-  responsive,
-  RESPONSIVE_WIDTHS,
-  PRESETS,
   getPreset,
+  hero,
   listPresets,
+  ogImage,
+  PRESETS,
+  RESPONSIVE_WIDTHS,
+  responsive,
+  thumbnail,
 } from "./transforms/presets.js";
-export { getResponsiveSrcSet } from "./providers/imgix.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
-export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
-export { MediaClientConfigSchema } from "./config.js";
-export type { MediaClientConfig } from "./config.js";
+export type {
+  DeliveryUrl,
+  FitMode,
+  ListOptions,
+  ListResult,
+  MediaAsset,
+  MediaConfig,
+  MediaFormat,
+  TransformOptions,
+  TransformPreset,
+  UploadOptions,
+} from "./types.js";
 
 // ── Media Client Facade ──────────────────────────────────────────
 

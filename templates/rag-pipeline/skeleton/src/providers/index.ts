@@ -5,25 +5,24 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type {
-  LlmProvider,
-  EmbeddingProvider,
-  VectorStoreProvider,
-  VectorDocument,
-  SearchResult,
-} from "./types.js";
-
 export {
-  registerLlmProvider,
-  getLlmProvider,
-  listLlmProviders,
-  registerEmbeddingProvider,
   getEmbeddingProvider,
-  listEmbeddingProviders,
-  registerVectorStoreProvider,
+  getLlmProvider,
   getVectorStoreProvider,
+  listEmbeddingProviders,
+  listLlmProviders,
   listVectorStoreProviders,
+  registerEmbeddingProvider,
+  registerLlmProvider,
+  registerVectorStoreProvider,
 } from "./registry.js";
+export type {
+  EmbeddingProvider,
+  LlmProvider,
+  SearchResult,
+  VectorDocument,
+  VectorStoreProvider,
+} from "./types.js";
 
 // Import provider modules to trigger registration. Bedrock is the org-default
 // for both LLM and embeddings; the others are alternates.

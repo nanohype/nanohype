@@ -1,22 +1,22 @@
-import { createHash, createHmac } from "node:crypto";
-import type { MediaProvider } from "./types.js";
+import { createHash } from "node:crypto";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  MediaAsset,
-  UploadOptions,
-  TransformOptions,
   DeliveryUrl,
   ListOptions,
   ListResult,
+  MediaAsset,
   MediaConfig,
+  TransformOptions,
+  UploadOptions,
 } from "../types.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
 import { registerProvider } from "./registry.js";
+import type { MediaProvider } from "./types.js";
 
 // ── Cloudinary Provider ──────────────────────────────────────────
 //
 // Uses the Cloudinary Upload API for uploads and URL-based transforms
-// for delivery. Authentication uses API key + secret with SHA-1
+// for delivery. Authentication uses API key + secret with SHA-256
 // signature generation. Supports eager transforms, format conversion,
 // and quality auto.
 //
@@ -63,12 +63,19 @@ function createCloudinaryProvider(): MediaProvider {
     return config;
   }
 
+  // Cloudinary's signature is `hash(sorted_params + api_secret)` — the secret is
+  // appended, not keyed, so HMAC is not an option here; the wire format is
+  // theirs. The digest is, though: Cloudinary validates SHA-1 and SHA-256
+  // interchangeably by default, so this signs with SHA-256 and leaves SHA-1's
+  // collision weakness out of a scaffold people copy.
   function generateSignature(params: Record<string, string>, apiSecret: string): string {
     const sorted = Object.keys(params)
       .sort()
       .map((k) => `${k}=${params[k]}`)
       .join("&");
-    return createHash("sha1").update(sorted + apiSecret).digest("hex");
+    return createHash("sha256")
+      .update(sorted + apiSecret)
+      .digest("hex");
   }
 
   function buildTransformString(transforms: TransformOptions): string {
@@ -93,7 +100,7 @@ function createCloudinaryProvider(): MediaProvider {
       if (!cloudName || !apiKey || !apiSecret) {
         throw new Error(
           "Cloudinary requires cloudName, apiKey, and apiSecret " +
-          "(via config or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars)",
+            "(via config or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET env vars)",
         );
       }
 
@@ -126,7 +133,11 @@ function createCloudinaryProvider(): MediaProvider {
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
 
       const response = await breaker.execute(async (): Promise<CloudinaryUploadResponse> => {
-        const res = await fetch(url, { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) });
+        const res = await fetch(url, {
+          method: "POST",
+          body: formData,
+          signal: AbortSignal.timeout(30_000),
+        });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`Cloudinary upload failed (${res.status}): ${text}`);
@@ -150,7 +161,8 @@ function createCloudinaryProvider(): MediaProvider {
       const { cloudName } = requireConfig();
       const transformStr = transforms ? buildTransformString(transforms) : "";
       const transformPath = transformStr ? `${transformStr}/` : "";
-      const format = transforms?.format && transforms.format !== "auto" ? `.${transforms.format}` : "";
+      const format =
+        transforms?.format && transforms.format !== "auto" ? `.${transforms.format}` : "";
       const url = `https://res.cloudinary.com/${cloudName}/image/upload/${transformPath}${assetId}${format}`;
 
       return {
@@ -176,7 +188,11 @@ function createCloudinaryProvider(): MediaProvider {
       const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`;
 
       await breaker.execute(async () => {
-        const res = await fetch(url, { method: "POST", body: formData, signal: AbortSignal.timeout(30_000) });
+        const res = await fetch(url, {
+          method: "POST",
+          body: formData,
+          signal: AbortSignal.timeout(30_000),
+        });
         if (!res.ok) {
           const text = await res.text();
           throw new Error(`Cloudinary delete failed (${res.status}): ${text}`);

@@ -2,7 +2,7 @@ const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 } as const;
 
 function shouldLog(level: keyof typeof LEVELS): boolean {
-  return LEVELS[level] >= LEVELS[LOG_LEVEL as keyof typeof LEVELS ?? "info"];
+  return LEVELS[level] >= LEVELS[(LOG_LEVEL as keyof typeof LEVELS) ?? "info"];
 }
 
 export function log(level: keyof typeof LEVELS, message: string, data?: Record<string, unknown>) {

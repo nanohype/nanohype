@@ -8,7 +8,7 @@
 // inside each factory closure, and circuit breakers are per-instance.
 //
 
-import type { ChatMessage, ChatOptions, LlmResponse, StreamResponse, Pricing } from "../types.js";
+import type { ChatMessage, ChatOptions, LlmResponse, Pricing, StreamResponse } from "../types.js";
 
 /** Provider factory — returns a new LlmProvider instance each time. */
 export type LlmProviderFactory = () => LlmProvider;

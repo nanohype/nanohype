@@ -32,10 +32,7 @@ const ASSERTION_REGISTRY = new Map<string, AssertionEvaluator>();
 /**
  * Register an assertion evaluator under the given type name.
  */
-export function registerAssertion(
-  type: string,
-  evaluator: AssertionEvaluator,
-): void {
+export function registerAssertion(type: string, evaluator: AssertionEvaluator): void {
   ASSERTION_REGISTRY.set(type, evaluator);
 }
 
@@ -43,11 +40,7 @@ export function registerAssertion(
  * Evaluate an assertion by type name, value, and LLM output.
  * Returns a failing result for unknown assertion types.
  */
-export function evaluateAssertion(
-  type: string,
-  value: unknown,
-  output: string,
-): AssertionResult {
+export function evaluateAssertion(type: string, value: unknown, output: string): AssertionResult {
   const evaluator = ASSERTION_REGISTRY.get(type);
   if (!evaluator) {
     return { type, pass: false, message: `Unknown assertion type: ${type}` };
@@ -63,9 +56,7 @@ registerAssertion("contains", (value, output) => {
   return {
     type: "contains",
     pass,
-    message: pass
-      ? `Output contains "${target}"`
-      : `Output does not contain "${target}"`,
+    message: pass ? `Output contains "${target}"` : `Output does not contain "${target}"`,
   };
 });
 

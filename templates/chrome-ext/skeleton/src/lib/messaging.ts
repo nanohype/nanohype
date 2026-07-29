@@ -5,6 +5,9 @@
 
 /** A single chat message in the conversation */
 export interface Message {
+  /** Stable identity for list rendering. A timestamp is not enough — a reply
+   *  can land in the same millisecond as the message that prompted it. */
+  id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: number;
@@ -38,9 +41,7 @@ export type ExtensionMessage =
 /**
  * Type-safe wrapper to send a chat message from sidepanel to background.
  */
-export function sendChatMessage(
-  request: ChatRequest,
-): Promise<ChatResponse> {
+export function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
   return chrome.runtime.sendMessage({
     type: "chat",
     payload: request,
@@ -50,10 +51,7 @@ export function sendChatMessage(
 /**
  * Type-safe wrapper to send a text selection from content script to background.
  */
-export function sendSelectionMessage(
-  text: string,
-  url?: string,
-): Promise<ChatResponse> {
+export function sendSelectionMessage(text: string, url?: string): Promise<ChatResponse> {
   return chrome.runtime.sendMessage({
     type: "selection",
     payload: { text, url },

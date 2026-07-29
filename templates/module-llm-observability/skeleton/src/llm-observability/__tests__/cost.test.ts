@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { calculateCost, getModelPricing } from "../cost/pricing.js";
-import { createCostCalculator } from "../cost/calculator.js";
+import { describe, expect, it } from "vitest";
 import { detectAnomalies } from "../cost/anomaly.js";
-import type { LlmSpan, CostEntry } from "../types.js";
+import { createCostCalculator } from "../cost/calculator.js";
+import { calculateCost, getModelPricing } from "../cost/pricing.js";
+import type { CostEntry, LlmSpan } from "../types.js";
 
 // ── Cost Tracking Tests ────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ describe("cost calculator", () => {
 
     calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 100, outputTokens: 50 }));
     calculator.record(
-      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 })
+      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }),
     );
 
     const summary = calculator.query();
@@ -96,10 +96,10 @@ describe("cost calculator", () => {
     const calculator = createCostCalculator();
 
     calculator.record(
-      makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 })
+      makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 }),
     );
     calculator.record(
-      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 })
+      makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 }),
     );
 
     const summary = calculator.query();

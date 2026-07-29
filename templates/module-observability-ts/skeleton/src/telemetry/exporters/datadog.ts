@@ -1,9 +1,9 @@
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
-import type { TelemetryExporter } from "./types.js";
+import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
 import { registerExporter } from "./registry.js";
+import type { TelemetryExporter } from "./types.js";
 
 /**
  * Datadog exporter — sends spans and metrics to the Datadog Agent's
@@ -20,8 +20,7 @@ class DatadogTelemetryExporter implements TelemetryExporter {
   private readonly endpoint: string;
 
   constructor() {
-    this.endpoint =
-      process.env["DD_OTLP_ENDPOINT"] ?? "http://localhost:4318";
+    this.endpoint = process.env["DD_OTLP_ENDPOINT"] ?? "http://localhost:4318";
   }
 
   createSpanExporter(): SpanExporter {

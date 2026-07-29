@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 /**
  * Register the "server-info" example resource with the MCP server.
@@ -30,8 +30,7 @@ export function registerExampleResource(server: McpServer): void {
 
     // Metadata — describes what this resource provides.
     {
-      description:
-        "Basic information about this MCP server, including its name and capabilities.",
+      description: "Basic information about this MCP server, including its name and capabilities.",
       mimeType: "application/json",
     },
 

@@ -50,9 +50,7 @@ class BedrockEmbedder implements EmbeddingProvider {
         { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
       ),
     );
-    const parsed = titanResponseSchema.parse(
-      JSON.parse(new TextDecoder().decode(response.body)),
-    );
+    const parsed = titanResponseSchema.parse(JSON.parse(new TextDecoder().decode(response.body)));
     return parsed.embedding;
   }
 

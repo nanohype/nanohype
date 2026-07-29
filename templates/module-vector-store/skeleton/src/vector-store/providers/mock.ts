@@ -1,7 +1,7 @@
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
 import type { FilterExpression } from "../filters/types.js";
-import type { VectorStoreProvider } from "./types.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { VectorStoreProvider } from "./types.js";
 
 // -- Mock Provider -------------------------------------------------------
 //

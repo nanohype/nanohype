@@ -1,4 +1,4 @@
-import { z, type ZodTypeAny, type ZodObject, type ZodRawShape } from "zod";
+import { type ZodObject, type ZodRawShape, type ZodTypeAny, z } from "zod";
 
 // ── OpenAPI 3.1 Spec Generator ──────────────────────────────────────
 //

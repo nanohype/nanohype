@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi, type Mock } from "vitest";
-import { registerProvider, getProvider } from "../providers/registry.js";
-import type { LlmProvider, ChatMessage } from "../providers/types.js";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { getProvider, registerProvider } from "../providers/registry.js";
+import type { ChatMessage, LlmProvider } from "../providers/types.js";
 
 /**
  * Tests for the message handling flow and provider integration.
@@ -37,9 +37,7 @@ describe("provider registry", () => {
     mockChat.mockResolvedValueOnce("Hello! I can help with that.");
 
     const provider = getProvider("mock-test");
-    const messages: ChatMessage[] = [
-      { role: "user", content: "Can you help me?" },
-    ];
+    const messages: ChatMessage[] = [{ role: "user", content: "Can you help me?" }];
 
     const response = await provider.chat("You are a helpful assistant.", messages);
 

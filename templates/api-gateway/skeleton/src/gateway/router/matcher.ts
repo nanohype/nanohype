@@ -19,12 +19,10 @@ import type { MatchResult } from "./types.js";
 export function pathMatches(pattern: string, requestPath: string): boolean {
   // Strip trailing slash only when the path is longer than root — otherwise
   // "/" collapses to "" and fails to match a root request.
-  const normalizedPattern = pattern.endsWith("/") && pattern.length > 1
-    ? pattern.slice(0, -1)
-    : pattern;
-  const normalizedPath = requestPath.endsWith("/") && requestPath.length > 1
-    ? requestPath.slice(0, -1)
-    : requestPath;
+  const normalizedPattern =
+    pattern.endsWith("/") && pattern.length > 1 ? pattern.slice(0, -1) : pattern;
+  const normalizedPath =
+    requestPath.endsWith("/") && requestPath.length > 1 ? requestPath.slice(0, -1) : requestPath;
 
   if (normalizedPattern.endsWith("/*")) {
     const prefix = normalizedPattern.slice(0, -2);
@@ -50,9 +48,7 @@ export function methodMatches(rule: RouteRule, method: string): boolean {
 export function computeForwardPath(rule: RouteRule, requestPath: string): string {
   if (!rule.stripPrefix) return requestPath;
 
-  const pattern = rule.path.endsWith("/*")
-    ? rule.path.slice(0, -2)
-    : rule.path;
+  const pattern = rule.path.endsWith("/*") ? rule.path.slice(0, -2) : rule.path;
 
   if (requestPath.startsWith(pattern)) {
     const stripped = requestPath.slice(pattern.length);
@@ -79,11 +75,7 @@ function resolveUpstreamUrl(rule: RouteRule): string {
  * Find the first route rule matching the given path and method.
  * Returns null if no rule matches.
  */
-export function matchRoute(
-  rules: RouteRule[],
-  path: string,
-  method: string,
-): MatchResult | null {
+export function matchRoute(rules: RouteRule[], path: string, method: string): MatchResult | null {
   for (const rule of rules) {
     if (pathMatches(rule.path, path) && methodMatches(rule, method)) {
       return {

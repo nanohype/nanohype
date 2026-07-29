@@ -7,13 +7,13 @@
  * to a fine-tuning API.
  */
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { validateJsonl } from "./validate.js";
-import { splitDataset } from "./split.js";
-import type { TrainingExample, PrepareStats } from "./types.js";
 import type { DatasetConfig } from "../config.js";
 import { logger } from "../logger.js";
+import { splitDataset } from "./split.js";
+import type { PrepareStats, TrainingExample } from "./types.js";
+import { validateJsonl } from "./validate.js";
 
 /**
  * Convert an array of training examples to JSONL format.

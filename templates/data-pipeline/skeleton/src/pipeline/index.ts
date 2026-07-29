@@ -10,12 +10,12 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
+import { getEmbeddingProvider } from "./embed/index.js";
+import { getSource } from "./ingest/index.js";
 import { logger } from "./logger.js";
 import { runPipeline } from "./orchestrator.js";
-import { getSource } from "./ingest/index.js";
-import { getStrategy } from "./transform/index.js";
-import { getEmbeddingProvider } from "./embed/index.js";
 import { getAdapter } from "./output/index.js";
+import { getStrategy } from "./transform/index.js";
 import type { PipelineConfig, PipelineResult, ProgressEvent } from "./types.js";
 
 // ── Config Schema ──────────────────────────────────────────────────
@@ -59,9 +59,7 @@ export function createPipeline(
 ): Pipeline {
   return {
     async run(sourcePath?: string): Promise<PipelineResult> {
-      const effectiveConfig = sourcePath
-        ? { ...config, sourcePath }
-        : config;
+      const effectiveConfig = sourcePath ? { ...config, sourcePath } : config;
 
       const source = getSource(effectiveConfig.sourceType);
       const strategy = getStrategy(effectiveConfig.chunkStrategy);
@@ -174,10 +172,18 @@ main().catch((err) => {
   process.exit(1);
 });
 
-// Re-export public API
-export type { PipelineConfig, PipelineResult, ProgressEvent, Document, Chunk, EmbeddedChunk, PipelineError } from "./types.js";
-export { runPipeline } from "./orchestrator.js";
-export type { IngestSource } from "./ingest/types.js";
-export type { ChunkStrategy, ChunkOptions } from "./transform/types.js";
 export type { EmbeddingProvider } from "./embed/types.js";
+export type { IngestSource } from "./ingest/types.js";
+export { runPipeline } from "./orchestrator.js";
 export type { OutputAdapter, OutputAdapterConfig } from "./output/types.js";
+export type { ChunkOptions, ChunkStrategy } from "./transform/types.js";
+// Re-export public API
+export type {
+  Chunk,
+  Document,
+  EmbeddedChunk,
+  PipelineConfig,
+  PipelineError,
+  PipelineResult,
+  ProgressEvent,
+} from "./types.js";

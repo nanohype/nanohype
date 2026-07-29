@@ -8,5 +8,5 @@
 import "./memory.js";
 import "./redis.js";
 
-export { registerStore, getStore, listStores } from "./registry.js";
+export { getStore, listStores, registerStore } from "./registry.js";
 export type { RateLimitStore, StoreConfig } from "./types.js";

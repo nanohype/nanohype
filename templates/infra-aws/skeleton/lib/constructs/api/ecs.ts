@@ -21,9 +21,7 @@ export class ApiConstruct extends Construct {
   constructor(scope: Construct, id: string, props: ApiConstructProps) {
     super(scope, id);
 
-    const vpc =
-      props.vpc ??
-      ec2.Vpc.fromLookup(this, "DefaultVpc", { isDefault: true });
+    const vpc = props.vpc ?? ec2.Vpc.fromLookup(this, "DefaultVpc", { isDefault: true });
 
     this.loadBalancer = new elbv2.ApplicationLoadBalancer(this, "Alb", {
       vpc,

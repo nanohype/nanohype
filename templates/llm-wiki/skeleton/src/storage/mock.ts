@@ -1,5 +1,5 @@
-import type { StorageProvider, PageCommit } from "./types.js";
 import { registerStorageProvider } from "./registry.js";
+import type { PageCommit, StorageProvider } from "./types.js";
 
 class MockStorageProvider implements StorageProvider {
   readonly name = "mock";
@@ -22,11 +22,7 @@ class MockStorageProvider implements StorageProvider {
     this.pages.set(this.key(tenantId, path), content);
   }
 
-  async deletePage(
-    tenantId: string,
-    path: string,
-    _message: string,
-  ): Promise<void> {
+  async deletePage(tenantId: string, path: string, _message: string): Promise<void> {
     const k = this.key(tenantId, path);
     if (!this.pages.has(k)) {
       throw new Error(`Page not found: ${path}`);
@@ -65,11 +61,7 @@ class MockStorageProvider implements StorageProvider {
     return results;
   }
 
-  async getHistory(
-    _tenantId: string,
-    _path: string,
-    _limit?: number,
-  ): Promise<PageCommit[]> {
+  async getHistory(_tenantId: string, _path: string, _limit?: number): Promise<PageCommit[]> {
     return [];
   }
 }

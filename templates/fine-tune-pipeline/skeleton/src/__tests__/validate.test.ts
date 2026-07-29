@@ -5,8 +5,13 @@
  * examples, rejects malformed ones, and handles JSONL parsing edge cases.
  */
 
-import { describe, it, expect } from "vitest";
-import { validateExample, validateDataset, parseJsonl, validateJsonl } from "../dataset/validate.js";
+import { describe, expect, it } from "vitest";
+import {
+  parseJsonl,
+  validateDataset,
+  validateExample,
+  validateJsonl,
+} from "../dataset/validate.js";
 
 describe("validateExample", () => {
   it("accepts a valid training example", () => {

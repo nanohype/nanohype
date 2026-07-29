@@ -1,10 +1,10 @@
 import "dotenv/config";
+import { App } from "@slack/bolt";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
-import { logger } from "./logger.js";
-import { App } from "@slack/bolt";
-import { registerMessageHandler } from "./events/message.js";
 import { registerAppMentionHandler } from "./events/app-mention.js";
+import { registerMessageHandler } from "./events/message.js";
+import { logger } from "./logger.js";
 
 // ── Bootstrap ────────────────────────────────────────────────────────
 //

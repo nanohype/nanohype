@@ -6,7 +6,7 @@
 // matches subtask requirements to agent capabilities.
 //
 
-import type { AgentCapability, SubTask, AgentResult } from "../types.js";
+import type { AgentCapability, AgentResult, SubTask } from "../types.js";
 
 /** Execution context passed to agents during subtask execution. */
 export interface AgentExecutionContext {

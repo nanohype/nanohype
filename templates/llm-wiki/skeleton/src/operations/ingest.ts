@@ -1,13 +1,13 @@
 import { getConfig } from "../config.js";
-import { getStorageProvider } from "../storage/index.js";
-import { getSourceProvider } from "../sources/index.js";
 import { getLlmProvider } from "../llm/index.js";
-import { parsePage, serializePage, createPage } from "../wiki/page.js";
-import { buildIndex } from "../wiki/index-manager.js";
 import { loadSchema } from "../schema/parser.js";
+import { getSourceProvider } from "../sources/index.js";
+import { getStorageProvider } from "../storage/index.js";
 import { getTenant } from "../tenant/registry.js";
-import { acquireWriteLock } from "./queue.js";
+import { buildIndex } from "../wiki/index-manager.js";
+import { createPage, parsePage, serializePage } from "../wiki/page.js";
 import type { Page, PageMeta } from "../wiki/types.js";
+import { acquireWriteLock } from "./queue.js";
 import type { IngestResult } from "./types.js";
 
 interface LlmIngestPage {
@@ -23,10 +23,7 @@ interface LlmIngestResponse {
   contradictions: { pageA: string; pageB: string; claim: string }[];
 }
 
-function buildSystemPrompt(
-  schema: ReturnType<typeof loadSchema>,
-  existingContext: string,
-): string {
+function buildSystemPrompt(schema: ReturnType<typeof loadSchema>, existingContext: string): string {
   const pageTypeDescriptions = schema.pageTypes
     .map((pt) => {
       const sections = pt.requiredSections.map((s) => `  - ${s}`).join("\n");
@@ -80,9 +77,7 @@ Respond with valid JSON only. No markdown fences, no commentary.
 function buildExistingContext(pages: Page[]): string {
   if (pages.length === 0) return "";
 
-  return pages
-    .map((p) => `- ${p.path} [${p.meta.type}] "${p.meta.title}"`)
-    .join("\n");
+  return pages.map((p) => `- ${p.path} [${p.meta.type}] "${p.meta.title}"`).join("\n");
 }
 
 function parseIngestResponse(raw: string): LlmIngestResponse {
@@ -185,9 +180,10 @@ export async function ingest(tenantId: string, ref: string): Promise<IngestResul
 
       const page = createPage(entry.path, meta, entry.content);
       const serialized = serializePage(page);
-      const commitMsg = entry.action === "create"
-        ? `Add ${entry.path} from ${ref}`
-        : `Update ${entry.path} from ${ref}`;
+      const commitMsg =
+        entry.action === "create"
+          ? `Add ${entry.path} from ${ref}`
+          : `Update ${entry.path} from ${ref}`;
 
       await storage.writePage(tenantId, entry.path, serialized, commitMsg);
 
@@ -215,7 +211,12 @@ export async function ingest(tenantId: string, ref: string): Promise<IngestResul
     }
 
     const indexContent = buildIndex(allPages);
-    await storage.writePage(tenantId, "index.md", indexContent, `Rebuild index after ingest of ${ref}`);
+    await storage.writePage(
+      tenantId,
+      "index.md",
+      indexContent,
+      `Rebuild index after ingest of ${ref}`,
+    );
   } finally {
     release();
   }

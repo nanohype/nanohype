@@ -9,10 +9,10 @@ import "./hash.js";
 import "./sliding-ttl.js";
 import "./none.js";
 
+export type { CachingStrategyFactory } from "./registry.js";
 export {
-  registerCachingStrategy,
   getCachingStrategy,
   listCachingStrategies,
+  registerCachingStrategy,
 } from "./registry.js";
-export type { CachingStrategyFactory } from "./registry.js";
-export type { CachingStrategy, CacheContext, CachedResponse } from "./types.js";
+export type { CacheContext, CachedResponse, CachingStrategy } from "./types.js";

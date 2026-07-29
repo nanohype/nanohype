@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { cosineSimilarity, normalize } from "../similarity.js";
 
 describe("cosineSimilarity", () => {
@@ -34,9 +34,7 @@ describe("cosineSimilarity", () => {
   });
 
   it("throws on mismatched vector lengths", () => {
-    expect(() => cosineSimilarity([1, 2], [1, 2, 3])).toThrow(
-      /length mismatch/,
-    );
+    expect(() => cosineSimilarity([1, 2], [1, 2, 3])).toThrow(/length mismatch/);
   });
 
   it("returns 0 when either vector has zero magnitude", () => {

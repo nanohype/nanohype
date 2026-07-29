@@ -13,10 +13,7 @@ function log(level: keyof typeof LEVELS, message: string, data?: Record<string, 
     message,
     ...data,
   };
-  const output =
-    level === "error" ? console.error :
-    level === "warn" ? console.warn :
-    console.log;
+  const output = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
   output(entry);
 }
 

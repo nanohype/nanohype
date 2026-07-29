@@ -32,6 +32,8 @@
     "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
     "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
     "validate:doc-commands": "node scripts/check-doc-commands.mjs",
+    "validate:skeleton-toolchain": "node scripts/check-skeleton-toolchain.mjs",
+    "lint:skeletons": "node scripts/lint-skeletons.mjs",
     "generate:catalog": "node scripts/generate-catalog.mjs",
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
     "sync:library": "node scripts/sync-library.mjs",
@@ -41,7 +43,7 @@
     "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.plans/**'"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.3",
+    "@biomejs/biome": "2.5.6",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "js-yaml": "^5.2.1",

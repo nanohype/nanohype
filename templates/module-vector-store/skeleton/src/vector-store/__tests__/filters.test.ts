@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { compileFilter, type SqlFilterResult } from "../filters/compiler.js";
 import type { FilterExpression } from "../filters/types.js";
 
@@ -7,37 +7,55 @@ describe("filter compiler", () => {
 
   describe("sql backend", () => {
     it("compiles eq filter with parameterized output", () => {
-      const result = compileFilter({ field: "status", op: "eq", value: "active" }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "status", op: "eq", value: "active" },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("metadata->>'status' = $1");
       expect(result.params).toEqual(["active"]);
     });
 
     it("compiles ne filter with parameterized output", () => {
-      const result = compileFilter({ field: "status", op: "ne", value: "deleted" }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "status", op: "ne", value: "deleted" },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("metadata->>'status' != $1");
       expect(result.params).toEqual(["deleted"]);
     });
 
     it("compiles gt filter with numeric cast", () => {
-      const result = compileFilter({ field: "score", op: "gt", value: 0.5 }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "score", op: "gt", value: 0.5 },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("(metadata->>'score')::numeric > $1");
       expect(result.params).toEqual([0.5]);
     });
 
     it("compiles lt filter with numeric cast", () => {
-      const result = compileFilter({ field: "count", op: "lt", value: 100 }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "count", op: "lt", value: 100 },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("(metadata->>'count')::numeric < $1");
       expect(result.params).toEqual([100]);
     });
 
     it("compiles gte filter", () => {
-      const result = compileFilter({ field: "priority", op: "gte", value: 3 }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "priority", op: "gte", value: 3 },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("(metadata->>'priority')::numeric >= $1");
       expect(result.params).toEqual([3]);
     });
 
     it("compiles lte filter", () => {
-      const result = compileFilter({ field: "priority", op: "lte", value: 5 }, "sql") as SqlFilterResult;
+      const result = compileFilter(
+        { field: "priority", op: "lte", value: 5 },
+        "sql",
+      ) as SqlFilterResult;
       expect(result.sql).toBe("(metadata->>'priority')::numeric <= $1");
       expect(result.params).toEqual([5]);
     });
@@ -59,9 +77,7 @@ describe("filter compiler", () => {
         ],
       };
       const result = compileFilter(filter, "sql") as SqlFilterResult;
-      expect(result.sql).toBe(
-        "(metadata->>'status' = $1 AND (metadata->>'score')::numeric > $2)",
-      );
+      expect(result.sql).toBe("(metadata->>'status' = $1 AND (metadata->>'score')::numeric > $2)");
       expect(result.params).toEqual(["active", 0.5]);
     });
 
@@ -73,9 +89,7 @@ describe("filter compiler", () => {
         ],
       };
       const result = compileFilter(filter, "sql") as SqlFilterResult;
-      expect(result.sql).toBe(
-        "(metadata->>'source' = $1 OR metadata->>'source' = $2)",
-      );
+      expect(result.sql).toBe("(metadata->>'source' = $1 OR metadata->>'source' = $2)");
       expect(result.params).toEqual(["docs", "wiki"]);
     });
 
@@ -112,10 +126,7 @@ describe("filter compiler", () => {
     });
 
     it("compiles in filter as match any", () => {
-      const result = compileFilter(
-        { field: "tag", op: "in", value: ["a", "b"] },
-        "qdrant",
-      );
+      const result = compileFilter({ field: "tag", op: "in", value: ["a", "b"] }, "qdrant");
       expect(result).toEqual({ key: "tag", match: { any: ["a", "b"] } });
     });
 
@@ -186,10 +197,7 @@ describe("filter compiler", () => {
     });
 
     it("compiles in filter", () => {
-      const result = compileFilter(
-        { field: "tag", op: "in", value: ["a", "b"] },
-        "pinecone",
-      );
+      const result = compileFilter({ field: "tag", op: "in", value: ["a", "b"] }, "pinecone");
       expect(result).toEqual({ tag: { $in: ["a", "b"] } });
     });
 
@@ -202,10 +210,7 @@ describe("filter compiler", () => {
       };
       const result = compileFilter(filter, "pinecone");
       expect(result).toEqual({
-        $and: [
-          { status: { $eq: "active" } },
-          { score: { $gt: 0.5 } },
-        ],
+        $and: [{ status: { $eq: "active" } }, { score: { $gt: 0.5 } }],
       });
     });
 
@@ -218,10 +223,7 @@ describe("filter compiler", () => {
       };
       const result = compileFilter(filter, "pinecone");
       expect(result).toEqual({
-        $or: [
-          { source: { $eq: "docs" } },
-          { source: { $eq: "wiki" } },
-        ],
+        $or: [{ source: { $eq: "docs" } }, { source: { $eq: "wiki" } }],
       });
     });
   });
@@ -232,10 +234,9 @@ describe("filter compiler", () => {
     const metadata = { status: "active", score: 0.8, tag: "typescript", count: 42 };
 
     it("eq matches equal values", () => {
-      const predicate = compileFilter(
-        { field: "status", op: "eq", value: "active" },
-        "memory",
-      ) as (m: Record<string, unknown>) => boolean;
+      const predicate = compileFilter({ field: "status", op: "eq", value: "active" }, "memory") as (
+        m: Record<string, unknown>,
+      ) => boolean;
       expect(predicate(metadata)).toBe(true);
       expect(predicate({ status: "inactive" })).toBe(false);
     });
@@ -250,19 +251,17 @@ describe("filter compiler", () => {
     });
 
     it("gt compares numerically", () => {
-      const predicate = compileFilter(
-        { field: "score", op: "gt", value: 0.5 },
-        "memory",
-      ) as (m: Record<string, unknown>) => boolean;
+      const predicate = compileFilter({ field: "score", op: "gt", value: 0.5 }, "memory") as (
+        m: Record<string, unknown>,
+      ) => boolean;
       expect(predicate(metadata)).toBe(true);
       expect(predicate({ score: 0.3 })).toBe(false);
     });
 
     it("lt compares numerically", () => {
-      const predicate = compileFilter(
-        { field: "count", op: "lt", value: 100 },
-        "memory",
-      ) as (m: Record<string, unknown>) => boolean;
+      const predicate = compileFilter({ field: "count", op: "lt", value: 100 }, "memory") as (
+        m: Record<string, unknown>,
+      ) => boolean;
       expect(predicate(metadata)).toBe(true);
       expect(predicate({ count: 200 })).toBe(false);
     });
@@ -277,10 +276,9 @@ describe("filter compiler", () => {
     });
 
     it("returns false for missing fields", () => {
-      const predicate = compileFilter(
-        { field: "nonexistent", op: "eq", value: "x" },
-        "memory",
-      ) as (m: Record<string, unknown>) => boolean;
+      const predicate = compileFilter({ field: "nonexistent", op: "eq", value: "x" }, "memory") as (
+        m: Record<string, unknown>,
+      ) => boolean;
       expect(predicate(metadata)).toBe(false);
     });
 

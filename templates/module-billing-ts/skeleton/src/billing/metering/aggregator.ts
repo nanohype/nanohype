@@ -1,10 +1,10 @@
 import type {
-  UsageRecord,
   BillingPeriod,
-  UsageSummary,
   LineItem,
   PricingRule,
   PricingTier,
+  UsageRecord,
+  UsageSummary,
 } from "../types.js";
 import type { UsageAggregator, UsageAggregatorConfig } from "./types.js";
 
@@ -89,11 +89,7 @@ export function createUsageAggregator(config: UsageAggregatorConfig = {}): Usage
   }
 
   return {
-    aggregate(
-      records: UsageRecord[],
-      customerId: string,
-      period: BillingPeriod,
-    ): UsageSummary {
+    aggregate(records: UsageRecord[], customerId: string, period: BillingPeriod): UsageSummary {
       // Group quantities by metric
       const totalByMetric: Record<string, number> = {};
 

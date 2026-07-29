@@ -10,5 +10,5 @@ import "./uploadcare.js";
 import "./imgix.js";
 import "./mock.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { MediaProvider, MediaProviderFactory } from "./types.js";

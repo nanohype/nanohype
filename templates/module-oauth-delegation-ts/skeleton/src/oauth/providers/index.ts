@@ -10,12 +10,12 @@ import "./atlassian.js";
 import "./slack.js";
 import "./hubspot.js";
 
-export { notionProvider } from "./notion.js";
-export { googleProvider } from "./google.js";
 export { atlassianProvider } from "./atlassian.js";
-export { slackProvider } from "./slack.js";
+export { googleProvider } from "./google.js";
 export { hubspotProvider } from "./hubspot.js";
-
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { notionProvider } from "./notion.js";
 export type { OAuthProviderFactory } from "./registry.js";
+
+export { getProvider, listProviders, registerProvider } from "./registry.js";
+export { slackProvider } from "./slack.js";
 export type { OAuthProvider, TokenGrant } from "./types.js";

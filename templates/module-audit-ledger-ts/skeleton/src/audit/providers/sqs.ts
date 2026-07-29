@@ -1,8 +1,8 @@
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import type { AuditAdapter } from "./types.js";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import { eventIdOf } from "../event-id.js";
 import type { AuditConfig, AuditEvent, QueryOptions } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { eventIdOf } from "../event-id.js";
+import type { AuditAdapter } from "./types.js";
 
 // ── SQS Adapter ─────────────────────────────────────────────────────
 //

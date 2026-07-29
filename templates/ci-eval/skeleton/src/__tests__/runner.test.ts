@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { writeFile, mkdir, rm } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { createEvalRunner } from "../ci-eval/runner.js";
-import { createLogger } from "../ci-eval/logger.js";
+import { join } from "node:path";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { Config } from "../ci-eval/config.js";
+import { createLogger } from "../ci-eval/logger.js";
+import { createEvalRunner } from "../ci-eval/runner.js";
 
 // The runner calls real LLM providers, so these tests focus on
 // suite discovery and structural behavior rather than LLM output.
@@ -48,15 +48,9 @@ describe("createEvalRunner", () => {
   it("discovers YAML suite files in the eval path", async () => {
     const suite = {
       name: "discovery-test",
-      cases: [
-        { name: "test-case", input: "hello", assertions: [] },
-      ],
+      cases: [{ name: "test-case", input: "hello", assertions: [] }],
     };
-    await writeFile(
-      join(testDir, "test-suite.yaml"),
-      JSON.stringify(suite),
-      "utf-8",
-    );
+    await writeFile(join(testDir, "test-suite.yaml"), JSON.stringify(suite), "utf-8");
 
     const config = makeConfig(testDir);
     const runner = createEvalRunner(config, logger);
@@ -79,16 +73,8 @@ describe("createEvalRunner", () => {
       name: "yml-suite",
       cases: [{ name: "c2", input: "hey", assertions: [] }],
     };
-    await writeFile(
-      join(testDir, "suite1.yaml"),
-      JSON.stringify(suite1),
-      "utf-8",
-    );
-    await writeFile(
-      join(testDir, "suite2.yml"),
-      JSON.stringify(suite2),
-      "utf-8",
-    );
+    await writeFile(join(testDir, "suite1.yaml"), JSON.stringify(suite1), "utf-8");
+    await writeFile(join(testDir, "suite2.yml"), JSON.stringify(suite2), "utf-8");
 
     const config = makeConfig(testDir);
     const runner = createEvalRunner(config, logger);

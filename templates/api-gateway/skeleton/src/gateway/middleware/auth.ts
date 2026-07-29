@@ -7,10 +7,10 @@
 // JWS validation with optional JWKS support.
 //
 
-import * as jose from "jose";
 import type { Context, Next } from "hono";
-import type { AuthMode, GatewayConfig } from "../types.js";
+import * as jose from "jose";
 import type { Logger } from "../logger.js";
+import type { AuthMode, GatewayConfig } from "../types.js";
 
 /** Lazily initialized JWKS remote key set. */
 let jwksKeySet: jose.JWTVerifyGetKey | null = null;
@@ -30,10 +30,7 @@ function getJwksKeySet(jwksUrl: string): jose.JWTVerifyGetKey {
  * Verify a JWT token using either a symmetric secret or a JWKS endpoint.
  * Returns the payload on success, null on failure.
  */
-async function verifyJwt(
-  token: string,
-  config: GatewayConfig,
-): Promise<jose.JWTPayload | null> {
+async function verifyJwt(token: string, config: GatewayConfig): Promise<jose.JWTPayload | null> {
   try {
     if (config.jwksUrl) {
       const keySet = getJwksKeySet(config.jwksUrl);

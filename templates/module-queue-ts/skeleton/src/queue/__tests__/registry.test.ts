@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerProvider,
-  getProvider,
-  listProviders,
-} from "../providers/registry.js";
+import { describe, expect, it } from "vitest";
+import { getProvider, listProviders, registerProvider } from "../providers/registry.js";
 import type { QueueProvider } from "../providers/types.js";
 
 /**
@@ -38,18 +34,14 @@ describe("queue provider registry", () => {
   });
 
   it("throws when retrieving an unregistered provider", () => {
-    expect(() => getProvider("nonexistent-provider")).toThrow(
-      /not found/,
-    );
+    expect(() => getProvider("nonexistent-provider")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate provider name", () => {
     const name = unique();
     registerProvider(name, () => stubProvider(name));
 
-    expect(() => registerProvider(name, () => stubProvider(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerProvider(name, () => stubProvider(name))).toThrow(/already registered/);
   });
 
   it("lists all registered provider names", () => {

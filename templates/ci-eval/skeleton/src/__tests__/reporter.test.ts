@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { formatMarkdownReport } from "../ci-eval/reporter.js";
 import type { ComparisonResult, SuiteScore } from "../ci-eval/types.js";
 

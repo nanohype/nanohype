@@ -11,6 +11,6 @@ import "./qdrant.js";
 import "./pinecone.js";
 import "./mock.js";
 
+export { batchChunk, withRetry } from "../helpers.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { VectorStoreProvider } from "./types.js";
-export { registerProvider, getProvider, listProviders } from "./registry.js";
-export { withRetry, batchChunk } from "../helpers.js";

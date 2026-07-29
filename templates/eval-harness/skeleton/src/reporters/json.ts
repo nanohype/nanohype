@@ -30,10 +30,7 @@ export class JsonReporter {
 
   report(results: SuiteResult[]): void {
     const totalCases = results.reduce((sum, s) => sum + s.cases.length, 0);
-    const totalPassed = results.reduce(
-      (sum, s) => sum + s.cases.filter((c) => c.pass).length,
-      0,
-    );
+    const totalPassed = results.reduce((sum, s) => sum + s.cases.filter((c) => c.pass).length, 0);
     const totalScore = results.reduce(
       (sum, s) => sum + s.cases.reduce((cs, c) => cs + c.score, 0),
       0,

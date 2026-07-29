@@ -1,6 +1,6 @@
 import type { Job, JobOptions, QueueConfig } from "../types.js";
-import type { QueueProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { QueueProvider } from "./types.js";
 
 // ── In-Memory Queue Provider ────────────────────────────────────────
 //
@@ -31,11 +31,7 @@ const memoryProvider: QueueProvider = {
     // No setup needed for in-memory provider
   },
 
-  async enqueue(
-    jobName: string,
-    data: unknown,
-    opts?: JobOptions
-  ): Promise<string> {
+  async enqueue(jobName: string, data: unknown, opts?: JobOptions): Promise<string> {
     const id = opts?.id ?? `mem-${++idCounter}`;
     const delay = opts?.delay ?? 0;
     const priority = opts?.priority ?? 0;
@@ -70,11 +66,7 @@ const memoryProvider: QueueProvider = {
     const now = Date.now();
 
     const index = jobs.findIndex(
-      (entry) =>
-        !entry.dequeued &&
-        !entry.acknowledged &&
-        !entry.failed &&
-        entry.eligibleAt <= now
+      (entry) => !entry.dequeued && !entry.acknowledged && !entry.failed && entry.eligibleAt <= now,
     );
 
     if (index === -1) return null;

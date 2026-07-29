@@ -1,12 +1,12 @@
-import type { AnalyticsProvider } from "./types.js";
 import type {
-  TrackEvent,
-  IdentifyPayload,
-  GroupPayload,
-  PagePayload,
   AnalyticsConfig,
+  GroupPayload,
+  IdentifyPayload,
+  PagePayload,
+  TrackEvent,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { AnalyticsProvider } from "./types.js";
 
 // ── Mock Provider ─────────────────────────────────────────────────
 //

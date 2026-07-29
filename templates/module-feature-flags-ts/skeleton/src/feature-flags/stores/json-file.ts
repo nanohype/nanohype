@@ -1,7 +1,7 @@
-import { readFile, writeFile, access } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import type { Flag } from "../types.js";
-import type { FlagStore } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { FlagStore } from "./types.js";
 
 // ── JSON File Flag Store ────────────────────────────────────────────
 //
@@ -40,10 +40,7 @@ function createJsonFileStore(): FlagStore {
     name: "json-file",
 
     async init(config: Record<string, unknown>): Promise<void> {
-      filePath =
-        (config.filePath as string) ??
-        process.env.FLAGS_FILE_PATH ??
-        "./flags.json";
+      filePath = (config.filePath as string) ?? process.env.FLAGS_FILE_PATH ?? "./flags.json";
       await load();
       console.log(`[flags] JSON file store loaded from ${filePath}`);
     },

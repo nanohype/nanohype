@@ -4,13 +4,13 @@
  * Registers itself as the "chroma" vector store provider on import.
  */
 
-import { ChromaClient } from "chromadb";
 import type { Collection, Metadata, Where } from "chromadb";
-import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.js";
+import { ChromaClient } from "chromadb";
 import type { VectorStoreConfig } from "../config.js";
-import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerVectorStoreProvider } from "./registry.js";
+import type { SearchResult, VectorDocument, VectorStoreProvider } from "./types.js";
 
 // The JS Chroma client (v3) is an HTTP client — it talks to a running Chroma
 // server, not an in-process store (the embedded/persistent mode is Python-only).
@@ -41,7 +41,7 @@ class ChromaVectorStore implements VectorStoreProvider {
         // We always supply pre-computed embeddings, so no embedding function is
         // needed; null skips loading the default (which isn't bundled in v3).
         embeddingFunction: null,
-      })
+      }),
     );
     logger.info("ChromaDB initialized", { collection: this.collectionName });
   }
@@ -56,7 +56,7 @@ class ChromaVectorStore implements VectorStoreProvider {
         embeddings: documents.map((d) => d.embedding),
         documents: documents.map((d) => d.content),
         metadatas: documents.map((d) => d.metadata as Metadata),
-      })
+      }),
     );
   }
 
@@ -73,7 +73,7 @@ class ChromaVectorStore implements VectorStoreProvider {
         queryEmbeddings: [queryEmbedding],
         nResults: topK,
         where: filter as Where | undefined,
-      })
+      }),
     );
 
     const searchResults: SearchResult[] = [];

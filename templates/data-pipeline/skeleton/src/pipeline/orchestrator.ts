@@ -10,26 +10,26 @@
  * callbacks fire at each stage transition and per-document boundary.
  */
 
-import type {
-  PipelineConfig,
-  Document,
-  Chunk,
-  EmbeddedChunk,
-  PipelineResult,
-  PipelineError,
-  ProgressEvent,
-} from "./types.js";
-import type { IngestSource } from "./ingest/types.js";
-import type { ChunkStrategy } from "./transform/types.js";
 import type { EmbeddingProvider } from "./embed/types.js";
-import type { OutputAdapter } from "./output/types.js";
+import type { IngestSource } from "./ingest/types.js";
 import { logger } from "./logger.js";
 import {
-  pipelineDocumentsProcessed,
   pipelineChunksCreated,
+  pipelineDocumentsProcessed,
   pipelineDuration,
   pipelineErrorsTotal,
 } from "./metrics.js";
+import type { OutputAdapter } from "./output/types.js";
+import type { ChunkStrategy } from "./transform/types.js";
+import type {
+  Chunk,
+  Document,
+  EmbeddedChunk,
+  PipelineConfig,
+  PipelineError,
+  PipelineResult,
+  ProgressEvent,
+} from "./types.js";
 
 export interface OrchestratorOptions {
   /** Ingest source for loading documents. */

@@ -1,9 +1,9 @@
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
-import type { FilterExpression } from "../filters/types.js";
-import type { VectorStoreProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
-import { cosineSimilarity } from "../similarity.js";
 import { compileFilter } from "../filters/compiler.js";
+import type { FilterExpression } from "../filters/types.js";
+import { cosineSimilarity } from "../similarity.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { VectorStoreProvider } from "./types.js";
 
 // -- In-Memory Vector Store Provider -------------------------------------
 //

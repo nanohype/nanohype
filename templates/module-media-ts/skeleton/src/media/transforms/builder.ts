@@ -13,7 +13,7 @@
 //     .build();
 //
 
-import type { TransformOptions, FitMode, MediaFormat } from "../types.js";
+import type { FitMode, MediaFormat, TransformOptions } from "../types.js";
 
 export class TransformBuilder {
   private readonly opts: TransformOptions;

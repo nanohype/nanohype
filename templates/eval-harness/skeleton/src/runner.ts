@@ -1,9 +1,9 @@
 import { glob } from "node:fs/promises";
 import { resolve } from "node:path";
-import { EvalSuite, type SuiteResult } from "./suite.js";
-import { getProvider, DEFAULT_PROVIDER, type LlmProvider } from "./providers/index.js";
+import { DEFAULT_PROVIDER, getProvider, type LlmProvider } from "./providers/index.js";
 import { ConsoleReporter } from "./reporters/console.js";
 import { JsonReporter } from "./reporters/json.js";
+import { EvalSuite, type SuiteResult } from "./suite.js";
 
 /**
  * Configuration for the eval runner.
@@ -27,12 +27,7 @@ export interface RunnerConfig {
  * reporter for output.
  */
 export async function runEvals(config: RunnerConfig): Promise<SuiteResult[]> {
-  const {
-    suiteGlob,
-    reporter: reporterType,
-    provider: providerOverride,
-    concurrency = 5,
-  } = config;
+  const { suiteGlob, reporter: reporterType, provider: providerOverride, concurrency = 5 } = config;
 
   // Discover suite files
   const suitePaths: string[] = [];

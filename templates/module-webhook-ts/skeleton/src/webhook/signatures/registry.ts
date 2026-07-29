@@ -21,9 +21,7 @@ export function getSignatureProvider(name: string): SignatureProvider {
   const provider = providers.get(name);
   if (!provider) {
     const available = Array.from(providers.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Signature provider "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Signature provider "${name}" not found. Available: ${available}`);
   }
   return provider;
 }

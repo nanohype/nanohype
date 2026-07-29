@@ -8,9 +8,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint src/",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
@@ -30,7 +30,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
+    "@biomejs/biome": "^2.5.6",
     "@tailwindcss/postcss": "^4.1.0",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.13.2",
@@ -38,13 +38,9 @@
     "@types/react-dom": "^19.1.0",
     "@vitest/coverage-v8": "^3.1.0",
     "drizzle-kit": "^0.30.0",
-    "eslint": "^9.20.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
     "jsdom": "^29.1.1",
-    "prettier": "^3.5.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
     "vitest": "^3.1.0"
   },
   "engines": {

@@ -1,8 +1,8 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getProvider } from "@/lib/ai/providers";
+import type { ChatMessage } from "@/lib/ai/providers/types";
 import { createStreamResponse } from "@/lib/ai/stream";
 import { logger } from "@/logger";
-import type { ChatMessage } from "@/lib/ai/providers/types";
 
 export async function POST(request: NextRequest) {
   try {

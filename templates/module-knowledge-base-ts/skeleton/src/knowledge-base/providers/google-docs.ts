@@ -1,17 +1,17 @@
-import type { KnowledgeProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Page,
   Block,
   BlockType,
+  ListOptions,
+  Page,
   PageCreate,
   PageUpdate,
-  SearchOptions,
-  ListOptions,
   PaginatedResult,
+  SearchOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { KnowledgeProvider } from "./types.js";
 
 // ── Google Docs Provider ───────────────────────────────────────────
 //
@@ -79,15 +79,18 @@ interface GoogleDoc {
   title: string;
   body?: { content?: GoogleStructuralElement[] };
   revisionId?: string;
-  inlineObjects?: Record<string, {
-    inlineObjectProperties?: {
-      embeddedObject?: {
-        imageProperties?: { contentUri?: string };
-        title?: string;
-        description?: string;
+  inlineObjects?: Record<
+    string,
+    {
+      inlineObjectProperties?: {
+        embeddedObject?: {
+          imageProperties?: { contentUri?: string };
+          title?: string;
+          description?: string;
+        };
       };
-    };
-  }>;
+    }
+  >;
 }
 
 function paragraphToMarkdown(
@@ -104,7 +107,10 @@ function paragraphToMarkdown(
       part = part.replace(/\n$/, "");
 
       const ts = element.textRun.textStyle;
-      if (ts?.weightedFontFamily?.fontFamily === "Courier New" || ts?.link === undefined && part.length > 0) {
+      if (
+        ts?.weightedFontFamily?.fontFamily === "Courier New" ||
+        (ts?.link === undefined && part.length > 0)
+      ) {
         // Apply inline formatting
         if (ts?.bold) part = `**${part}**`;
         if (ts?.italic) part = `*${part}*`;
@@ -201,8 +207,10 @@ function docToBlocks(doc: GoogleDoc): Block[] {
         HEADING_3: "heading_3",
       };
 
-      const content = paragraphToMarkdown(element.paragraph, doc.inlineObjects)
-        .replace(/^#{1,6}\s*/, ""); // Strip heading prefix for block content
+      const content = paragraphToMarkdown(element.paragraph, doc.inlineObjects).replace(
+        /^#{1,6}\s*/,
+        "",
+      ); // Strip heading prefix for block content
 
       if (typeMap[style]) {
         blocks.push({ type: typeMap[style], content });
@@ -399,9 +407,7 @@ function createGoogleDocsProvider(): KnowledgeProvider {
         fields: "files(id,name,modifiedTime),nextPageToken",
       });
 
-      const response = await googleFetch<DriveListResponse>(
-        `${DRIVE_API}/files?${params}`,
-      );
+      const response = await googleFetch<DriveListResponse>(`${DRIVE_API}/files?${params}`);
 
       const items: Page[] = [];
       for (const file of response.files) {
@@ -439,9 +445,7 @@ function createGoogleDocsProvider(): KnowledgeProvider {
         nextPageToken?: string;
       }
 
-      const response = await googleFetch<DriveListResponse>(
-        `${DRIVE_API}/files?${params}`,
-      );
+      const response = await googleFetch<DriveListResponse>(`${DRIVE_API}/files?${params}`);
 
       const items: Page[] = [];
       for (const file of response.files) {

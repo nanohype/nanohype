@@ -1,3 +1,4 @@
+import type { Readable } from "node:stream";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -6,8 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl as awsGetSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Readable } from "node:stream";
-
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
   ListOptions,
   ListResult,
@@ -15,10 +15,9 @@ import type {
   UploadData,
   UploadOptions,
 } from "../types.js";
-import type { ProviderConfig, StorageProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { toBuffer, withRetry } from "./helpers.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ProviderConfig, StorageProvider } from "./types.js";
 
 // -- AWS S3 Provider -----------------------------------------------------
 //
@@ -52,17 +51,11 @@ class S3StorageProvider implements StorageProvider {
     this.client = new S3Client({
       region: config.region ?? "us-east-1",
       ...(config.endpoint ? { endpoint: config.endpoint } : {}),
-      ...(config.forcePathStyle
-        ? { forcePathStyle: config.forcePathStyle }
-        : {}),
+      ...(config.forcePathStyle ? { forcePathStyle: config.forcePathStyle } : {}),
     });
   }
 
-  async upload(
-    key: string,
-    data: UploadData,
-    opts?: UploadOptions
-  ): Promise<void> {
+  async upload(key: string, data: UploadData, opts?: UploadOptions): Promise<void> {
     const body = await toBuffer(data);
 
     await this.cb.execute(() =>
@@ -74,9 +67,9 @@ class S3StorageProvider implements StorageProvider {
             Body: body,
             ContentType: opts?.contentType,
             Metadata: opts?.metadata,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -87,9 +80,9 @@ class S3StorageProvider implements StorageProvider {
           new GetObjectCommand({
             Bucket: this.bucket,
             Key: key,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 
     if (!response.Body) {
@@ -112,9 +105,9 @@ class S3StorageProvider implements StorageProvider {
           new DeleteObjectCommand({
             Bucket: this.bucket,
             Key: key,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
   }
 
@@ -127,9 +120,9 @@ class S3StorageProvider implements StorageProvider {
             Prefix: prefix ?? undefined,
             MaxKeys: opts?.maxKeys,
             ContinuationToken: opts?.cursor,
-          })
-        )
-      )
+          }),
+        ),
+      ),
     );
 
     const objects: StorageObject[] = (response.Contents ?? []).map((item) => ({
@@ -155,7 +148,6 @@ class S3StorageProvider implements StorageProvider {
       expiresIn: expiresIn ?? 3600,
     });
   }
-
 }
 
 // Self-register

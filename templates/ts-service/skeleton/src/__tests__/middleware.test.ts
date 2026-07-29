@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { json } from "./helpers.js";
 import { Hono } from "hono";
+import { describe, expect, it } from "vitest";
 import { errorHandler } from "../middleware/error-handler.js";
+import { json } from "./helpers.js";
 
 describe("errorHandler", () => {
   it("returns JSON error response with 500 status for unhandled errors", async () => {

@@ -1,6 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { readFile } from "fs/promises";
-import { loadPrompt, renderPrompt, validatePrompt } from "../index.js";
+import { readdir, readFile } from "fs/promises";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  getPromptByName,
+  loadPrompt,
+  loadPrompts,
+  renderPrompt,
+  validatePrompt,
+} from "../index.js";
 import type { Prompt, PromptMetadata } from "../types.js";
 
 vi.mock("fs/promises", async () => {
@@ -76,6 +82,71 @@ describe("loadPrompt", () => {
     expect(prompt.metadata.variables).toHaveLength(2);
     expect(prompt.template).toBe("Write a {{tone}} article about {{topic}}.");
   });
+
+  it("rejects a file with no frontmatter rather than treating it as an empty prompt", async () => {
+    vi.mocked(readFile).mockImplementation((async (path: unknown) =>
+      String(path).endsWith(".json") ? schemaContent : "Write a {{tone}} article.") as never);
+
+    await expect(loadPrompt("/prompts/bare.yaml")).rejects.toThrow(/missing YAML frontmatter/);
+  });
+});
+
+/** `loadPrompt` reads the prompt and its JSON Schema through the same mock. */
+const mockPromptAndSchema = () =>
+  vi
+    .mocked(readFile)
+    .mockImplementation((async (path: unknown) =>
+      String(path).endsWith(".json") ? schemaContent : samplePrompt) as never);
+
+/** A `readdir` result shaped like the Dirent fields the loader actually reads. */
+const entry = (name: string, kind: "file" | "dir") =>
+  ({
+    name,
+    isDirectory: () => kind === "dir",
+    isFile: () => kind === "file",
+  }) as never;
+
+describe("loadPrompts", () => {
+  it("walks nested directories and ignores files that are not YAML", async () => {
+    vi.mocked(readdir).mockImplementation((async (dir: string) =>
+      String(dir).endsWith("/nested")
+        ? [entry("deep.yml", "file")]
+        : [
+            entry("top.yaml", "file"),
+            entry("README.md", "file"),
+            entry("nested", "dir"),
+          ]) as never);
+    mockPromptAndSchema();
+
+    const prompts = await loadPrompts("/prompts");
+
+    // Two YAML files across two levels; the .md is not a prompt.
+    expect(prompts).toHaveLength(2);
+    expect(vi.mocked(readdir)).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns nothing for a directory with no prompts", async () => {
+    vi.mocked(readdir).mockResolvedValue([entry("notes.txt", "file")] as never);
+
+    await expect(loadPrompts("/prompts")).resolves.toEqual([]);
+  });
+});
+
+describe("getPromptByName", () => {
+  beforeEach(() => {
+    vi.mocked(readdir).mockResolvedValue([entry("test.yaml", "file")] as never);
+    mockPromptAndSchema();
+  });
+
+  it("finds a prompt by its frontmatter name", async () => {
+    const found = await getPromptByName("/prompts", "test-prompt");
+
+    expect(found?.metadata.name).toBe("test-prompt");
+  });
+
+  it("resolves undefined when no prompt carries that name", async () => {
+    await expect(getPromptByName("/prompts", "absent")).resolves.toBeUndefined();
+  });
 });
 
 describe("renderPrompt", () => {
@@ -121,8 +192,8 @@ describe("validatePrompt", () => {
     mockReadFile.mockResolvedValue(schemaContent as any);
 
     const metadata = { name: "no-version" } as PromptMetadata;
-    await expect(
-      validatePrompt(metadata, "/schema/prompt.schema.json")
-    ).rejects.toThrow("Prompt validation failed");
+    await expect(validatePrompt(metadata, "/schema/prompt.schema.json")).rejects.toThrow(
+      "Prompt validation failed",
+    );
   });
 });

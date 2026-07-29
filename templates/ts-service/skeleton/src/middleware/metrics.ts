@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import { httpRequestTotal, httpRequestDuration, httpErrorsTotal } from "../metrics.js";
+import { httpErrorsTotal, httpRequestDuration, httpRequestTotal } from "../metrics.js";
 
 // ── Metrics Middleware ─────────────────────────────────────────────
 //

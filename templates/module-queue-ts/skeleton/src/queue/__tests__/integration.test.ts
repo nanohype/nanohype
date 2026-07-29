@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 // Import the memory provider so it self-registers
 import "../providers/memory.js";
@@ -39,11 +39,7 @@ describe("queue integration — memory provider", () => {
   });
 
   it("enqueue → dequeue → fail → job is re-enqueued for retry", async () => {
-    const jobId = await queue.enqueue(
-      "flaky-task",
-      { attempt: true },
-      { maxRetries: 3 }
-    );
+    const jobId = await queue.enqueue("flaky-task", { attempt: true }, { maxRetries: 3 });
 
     // First dequeue
     const first = await queue.provider.dequeue();
@@ -62,11 +58,7 @@ describe("queue integration — memory provider", () => {
   });
 
   it("throws with available providers listed for invalid provider name", async () => {
-    await expect(createQueue("nonexistent-provider")).rejects.toThrow(
-      /not found/
-    );
-    await expect(createQueue("nonexistent-provider")).rejects.toThrow(
-      /Available/
-    );
+    await expect(createQueue("nonexistent-provider")).rejects.toThrow(/not found/);
+    await expect(createQueue("nonexistent-provider")).rejects.toThrow(/Available/);
   });
 });

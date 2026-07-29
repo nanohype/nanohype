@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createQueueConsumer } from "../consumer/handler.js";
-import type { QueueProvider, HandlerMap } from "../consumer/types.js";
-import type { JobDefinition } from "../types.js";
+import type { HandlerMap, QueueProvider } from "../consumer/types.js";
 import { createLogger } from "../logger.js";
+import type { JobDefinition } from "../types.js";
 
 // ── Test Helpers ──────────────────────────────────────────────────
 

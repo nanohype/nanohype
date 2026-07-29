@@ -14,12 +14,7 @@ export default defineConfig({
         lines: 75,
       },
       include: ["src/**/*.ts"],
-      exclude: [
-        "dist/**",
-        "**/__tests__/**",
-        "**/*.config.ts",
-        "src/oauth/index.ts",
-      ],
+      exclude: ["dist/**", "**/__tests__/**", "**/*.config.ts", "src/oauth/index.ts"],
     },
   },
 });

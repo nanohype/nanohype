@@ -2,9 +2,9 @@ import "./anthropic.js";
 import "./mock.js";
 
 export {
-  registerLlmProvider,
   getLlmProvider,
   listLlmProviders,
+  registerLlmProvider,
 } from "./registry.js";
 
-export type { LlmProvider, LlmMessage, LlmOptions } from "./types.js";
+export type { LlmMessage, LlmOptions, LlmProvider } from "./types.js";

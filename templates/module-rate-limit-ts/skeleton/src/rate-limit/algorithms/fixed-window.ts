@@ -1,7 +1,7 @@
-import type { RateLimitResult } from "../types.js";
 import type { RateLimitStore } from "../stores/types.js";
-import type { RateLimitAlgorithm } from "./types.js";
+import type { RateLimitResult } from "../types.js";
 import { registerAlgorithm } from "./registry.js";
+import type { RateLimitAlgorithm } from "./types.js";
 
 // ── Fixed Window Counter Algorithm ─────────────────────────────────
 //

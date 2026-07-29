@@ -4,9 +4,9 @@
 // whitespace-split token estimate. The limit is configurable via
 // GuardrailConfig.maxTokens.
 
-import type { Filter } from "./types.js";
 import type { Direction, FilterResult, Violation } from "../types.js";
 import { registerFilter } from "./registry.js";
+import type { Filter } from "./types.js";
 
 /**
  * Default maximum token count. Override by passing `maxTokens`

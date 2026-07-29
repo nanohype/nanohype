@@ -17,9 +17,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import sharp from "sharp";
-import type { Processor, ProcessedInput } from "./types.js";
-import { registerProcessor } from "./registry.js";
 import { loadConfig } from "../config.js";
+import { registerProcessor } from "./registry.js";
+import type { ProcessedInput, Processor } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -46,17 +46,19 @@ class VideoProcessor implements Processor {
 
     try {
       await execFileAsync("ffmpeg", [
-        "-i", filePath,
-        "-vf", `fps=1/${interval},scale=${maxDim}:${maxDim}:force_original_aspect_ratio=decrease`,
-        "-frames:v", String(maxFrames),
-        "-q:v", "2",
+        "-i",
+        filePath,
+        "-vf",
+        `fps=1/${interval},scale=${maxDim}:${maxDim}:force_original_aspect_ratio=decrease`,
+        "-frames:v",
+        String(maxFrames),
+        "-q:v",
+        "2",
         join(tmpDir, "frame-%04d.jpg"),
       ]);
 
       // Read extracted frames
-      const frameFiles = (await readdir(tmpDir))
-        .filter((f) => f.startsWith("frame-"))
-        .sort();
+      const frameFiles = (await readdir(tmpDir)).filter((f) => f.startsWith("frame-")).sort();
 
       const frames: string[] = [];
 

@@ -5,7 +5,7 @@
 // convenience.
 //
 
-export { type DatabaseDriver } from "./drivers/types.js";
+export type { DatabaseDriver } from "./drivers/types.js";
 
 /**
  * Configuration passed to createDatabase() to establish a connection.

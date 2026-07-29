@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
-import type { AnalyticsProvider } from "../providers/types.js";
 import type { MockEvent } from "../providers/mock.js";
+import type { AnalyticsProvider } from "../providers/types.js";
 
 // ── Mock Provider Tests ──────────────────────────────────────────
 //

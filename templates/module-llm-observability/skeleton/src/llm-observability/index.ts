@@ -8,21 +8,23 @@
 //
 
 import { validateBootstrap } from "./bootstrap.js";
+import { getExporter } from "./exporters/index.js";
+import type { LlmExporter } from "./exporters/types.js";
 import { logger } from "./logger.js";
 import { createLlmMetrics } from "./metrics.js";
-import { createLlmTracer, TracedError } from "./tracer/index.js";
 import { createQualityMonitor } from "./quality/monitor.js";
-import { getExporter } from "./exporters/index.js";
-import { ObserverConfigSchema } from "./types.js";
-import type { ObserverConfig, LlmResponse, LlmSpan } from "./types.js";
-import type { LlmExporter } from "./exporters/types.js";
 import type { QualityStats, QualityWindow } from "./quality/types.js";
+import { createLlmTracer, TracedError } from "./tracer/index.js";
+import type { LlmResponse, LlmSpan, ObserverConfig } from "./types.js";
+import { ObserverConfigSchema } from "./types.js";
 
 // Conditional cost imports — tree-shaken when cost/ directory is excluded
 let createCostCalculator:
-  (() => ReturnType<typeof import("./cost/calculator.js").createCostCalculator>) | undefined;
+  | (() => ReturnType<typeof import("./cost/calculator.js").createCostCalculator>)
+  | undefined;
 let calculateCostFn:
-  ((model: string, inputTokens: number, outputTokens: number) => number) | undefined;
+  | ((model: string, inputTokens: number, outputTokens: number) => number)
+  | undefined;
 
 try {
   const costModule = await import("./cost/calculator.js");
@@ -42,7 +44,7 @@ export interface LlmObserver {
   getQualityStats(window?: QualityWindow): QualityStats;
   /** Get cost entries (empty if cost tracking is disabled). */
   getCosts(
-    filters?: import("./cost/types.js").CostFilters
+    filters?: import("./cost/types.js").CostFilters,
   ): import("./cost/types.js").CostSummary | null;
   /** Flush exporters and shut down. */
   close(): Promise<void>;
@@ -94,7 +96,7 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
 
   async function traceFn(
     fn: () => Promise<LlmResponse>,
-    tags: Record<string, string> = {}
+    tags: Record<string, string> = {},
   ): Promise<LlmResponse> {
     let response: LlmResponse;
     let span: LlmSpan;
@@ -142,7 +144,7 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
   }
 
   function getCosts(
-    filters?: import("./cost/types.js").CostFilters
+    filters?: import("./cost/types.js").CostFilters,
   ): import("./cost/types.js").CostSummary | null {
     if (!costCalculator) return null;
     return costCalculator.query(filters);
@@ -157,20 +159,20 @@ export function createLlmObserver(config: ObserverConfig): LlmObserver {
   return { trace: traceFn, recordQuality, getQualityStats, getCosts, close };
 }
 
-// Re-export public API from submodules
-export { createLlmTracer } from "./tracer/index.js";
-export { createQualityMonitor } from "./quality/monitor.js";
 export { getExporter, listExporters, registerExporter } from "./exporters/index.js";
+export type { LlmExporter } from "./exporters/types.js";
 export { logger } from "./logger.js";
 export { createLlmMetrics } from "./metrics.js";
-export type { LlmExporter } from "./exporters/types.js";
+export { createQualityMonitor } from "./quality/monitor.js";
+export type { QualityStats, QualityWindow } from "./quality/types.js";
+// Re-export public API from submodules
+export { createLlmTracer } from "./tracer/index.js";
+export type { SpanContext, TracerOptions } from "./tracer/types.js";
 export type {
-  ObserverConfig,
-  LlmSpan,
-  LlmResponse,
-  LlmEvent,
   CostEntry,
+  LlmEvent,
+  LlmResponse,
+  LlmSpan,
+  ObserverConfig,
   QualityScore,
 } from "./types.js";
-export type { TracerOptions, SpanContext } from "./tracer/types.js";
-export type { QualityStats, QualityWindow } from "./quality/types.js";

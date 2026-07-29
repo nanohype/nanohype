@@ -10,5 +10,5 @@ import "./redis.js";
 import "./json-file.js";
 import "./mock.js";
 
-export { registerStore, getStore, listStores } from "./registry.js";
+export { getStore, listStores, registerStore } from "./registry.js";
 export type { FlagStore } from "./types.js";

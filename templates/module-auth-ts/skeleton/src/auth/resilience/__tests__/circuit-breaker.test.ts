@@ -1,8 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  createCircuitBreaker,
-  CircuitBreakerOpenError,
-} from "../circuit-breaker.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CircuitBreakerOpenError, createCircuitBreaker } from "../circuit-breaker.js";
 
 describe("circuit breaker", () => {
   beforeEach(() => {
@@ -95,7 +92,9 @@ describe("circuit breaker", () => {
     vi.advanceTimersByTime(60);
 
     // Fail again during half-open — should re-open
-    await expect(cb.execute(() => Promise.reject(new Error("fail again")))).rejects.toThrow("fail again");
+    await expect(cb.execute(() => Promise.reject(new Error("fail again")))).rejects.toThrow(
+      "fail again",
+    );
     expect(cb.getState()).toBe("open");
 
     vi.useRealTimers();

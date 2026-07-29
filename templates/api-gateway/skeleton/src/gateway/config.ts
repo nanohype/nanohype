@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { z } from "zod";
 import type { GatewayConfig, RouteRule } from "./types.js";
 
 // ── Gateway Configuration ───────────────────────────────────────────
@@ -50,15 +50,9 @@ const routeSchema = z.object({
 });
 
 const envSchema = z.object({
-  PORT: z
-    .string()
-    .default("8080")
-    .transform(Number)
-    .pipe(z.number().int().min(1).max(65535)),
+  PORT: z.string().default("8080").transform(Number).pipe(z.number().int().min(1).max(65535)),
 
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
   JWT_SECRET: z.string().optional(),
 

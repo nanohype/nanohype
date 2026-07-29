@@ -1,10 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  cosineSimilarity,
-  dotProduct,
-  normalize,
-  magnitude,
-} from "../similarity.js";
+import { describe, expect, it } from "vitest";
+import { cosineSimilarity, dotProduct, magnitude, normalize } from "../similarity.js";
 
 describe("similarity functions", () => {
   describe("magnitude", () => {

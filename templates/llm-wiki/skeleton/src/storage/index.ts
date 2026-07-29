@@ -2,9 +2,9 @@ import "./git.js";
 import "./mock.js";
 
 export {
-  registerStorageProvider,
   getStorageProvider,
   listStorageProviders,
+  registerStorageProvider,
 } from "./registry.js";
 
-export type { StorageProvider, PageCommit } from "./types.js";
+export type { PageCommit, StorageProvider } from "./types.js";

@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 // Import stores and algorithms to trigger self-registration
 import "../stores/memory.js";
 import "../algorithms/token-bucket.js";
 import { getAlgorithm } from "../algorithms/registry.js";
-import { getStore } from "../stores/registry.js";
 import type { RateLimitAlgorithm } from "../algorithms/types.js";
+import { getStore } from "../stores/registry.js";
 import type { RateLimitStore } from "../stores/types.js";
 
 describe("token bucket algorithm", () => {

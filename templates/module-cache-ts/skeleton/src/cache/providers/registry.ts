@@ -22,9 +22,7 @@ export function getProvider(name: string): CacheProvider {
   const factory = factories.get(name);
   if (!factory) {
     const available = Array.from(factories.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Cache provider "${name}" not found. Available: ${available}`
-    );
+    throw new Error(`Cache provider "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

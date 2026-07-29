@@ -35,10 +35,7 @@ export function matchesPattern(response: string, pattern: RegExp): AssertionResu
  * Assert that a specific tool was called during the agent run.
  * Checks the tool call log (an array of tool names that were invoked).
  */
-export function toolWasCalled(
-  toolCallLog: string[],
-  toolName: string,
-): AssertionResult {
+export function toolWasCalled(toolCallLog: string[], toolName: string): AssertionResult {
   const pass = toolCallLog.includes(toolName);
   return {
     pass,
@@ -51,10 +48,7 @@ export function toolWasCalled(
 /**
  * Assert that a specific tool was NOT called during the agent run.
  */
-export function toolWasNotCalled(
-  toolCallLog: string[],
-  toolName: string,
-): AssertionResult {
+export function toolWasNotCalled(toolCallLog: string[], toolName: string): AssertionResult {
   const pass = !toolCallLog.includes(toolName);
   return {
     pass,
@@ -76,9 +70,7 @@ export function satisfies(
   const pass = predicate(response);
   return {
     pass,
-    message: pass
-      ? `Satisfies: ${description}`
-      : `Failed: ${description}`,
+    message: pass ? `Satisfies: ${description}` : `Failed: ${description}`,
   };
 }
 

@@ -1,19 +1,19 @@
 :root {
-  --background: #08090D;
-  --foreground: #E8E9ED;
-  --card: #0F1015;
+  --background: #08090d;
+  --foreground: #e8e9ed;
+  --card: #0f1015;
   --border: rgba(148, 163, 224, 0.08);
-  --input: #13141A;
-  --input-border: rgba(148, 163, 224, 0.10);
+  --input: #13141a;
+  --input-border: rgba(148, 163, 224, 0.1);
   --hover: rgba(148, 163, 224, 0.05);
   --muted: #161821;
-  --muted-foreground: #787D8E;
-  --dim: #4D5266;
-  --accent: #34D399;
-  --accent-foreground: #022C22;
-  --success: #2DA44E;
-  --warning: #D4A72C;
-  --danger: #CF222E;
+  --muted-foreground: #787d8e;
+  --dim: #4d5266;
+  --accent: #34d399;
+  --accent-foreground: #022c22;
+  --success: #2da44e;
+  --warning: #d4a72c;
+  --danger: #cf222e;
   --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --shadow-surface: 0 1px 2px rgba(0, 0, 0, 0.25);
@@ -27,8 +27,7 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 15px;
   letter-spacing: -0.015em;
   line-height: 1.5;
@@ -56,7 +55,9 @@ body {
   border-radius: 2px;
 }
 
-*:focus { outline: none; }
+*:focus {
+  outline: none;
+}
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -64,7 +65,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

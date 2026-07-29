@@ -1,15 +1,15 @@
-import type { SearchProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  SearchIndex,
+  FilterExpression,
+  SearchConfig,
   SearchDocument,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchConfig,
-  FilterExpression,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { SearchProvider } from "./types.js";
 
 // ── Typesense Provider ────────────────────────────────────────────
 //
@@ -26,11 +26,7 @@ function createTypesenseProvider(): SearchProvider {
   const cb = createCircuitBreaker();
   const indexSchemas = new Map<string, SearchIndex>();
 
-  async function request(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<unknown> {
+  async function request(method: string, path: string, body?: unknown): Promise<unknown> {
     const url = `${baseUrl}${path}`;
     const response = await cb.execute(() =>
       fetch(url, {
@@ -54,10 +50,14 @@ function createTypesenseProvider(): SearchProvider {
 
   function fieldTypeToTypesense(type: string): string {
     switch (type) {
-      case "number": return "float";
-      case "boolean": return "bool";
-      case "string[]": return "string[]";
-      default: return "string";
+      case "number":
+        return "float";
+      case "boolean":
+        return "bool";
+      case "string[]":
+        return "string[]";
+      default:
+        return "string";
     }
   }
 
@@ -66,7 +66,10 @@ function createTypesenseProvider(): SearchProvider {
       return expr.and.map(compileFilter).join(" && ");
     }
     if ("or" in expr) {
-      return expr.or.map(compileFilter).map((s) => `(${s})`).join(" || ");
+      return expr.or
+        .map(compileFilter)
+        .map((s) => `(${s})`)
+        .join(" || ");
     }
     const { field, operator, value } = expr;
     if (operator === "in" && Array.isArray(value)) {
@@ -80,7 +83,11 @@ function createTypesenseProvider(): SearchProvider {
     name: "typesense",
 
     async init(config: SearchConfig): Promise<void> {
-      baseUrl = ((config.url as string) ?? process.env.TYPESENSE_URL ?? "http://localhost:8108").replace(/\/$/, "");
+      baseUrl = (
+        (config.url as string) ??
+        process.env.TYPESENSE_URL ??
+        "http://localhost:8108"
+      ).replace(/\/$/, "");
       apiKey = (config.apiKey as string) ?? process.env.TYPESENSE_API_KEY ?? "";
       if (!apiKey) {
         throw new Error("Typesense requires apiKey (config or TYPESENSE_API_KEY env var)");
@@ -106,9 +113,9 @@ function createTypesenseProvider(): SearchProvider {
 
     async indexDocuments(indexName: string, documents: SearchDocument[]): Promise<void> {
       // Typesense import uses JSONL format
-      const lines = documents.map((doc) =>
-        JSON.stringify({ id: doc.id, content: doc.content, ...doc.metadata }),
-      ).join("\n");
+      const lines = documents
+        .map((doc) => JSON.stringify({ id: doc.id, content: doc.content, ...doc.metadata }))
+        .join("\n");
 
       const url = `${baseUrl}/collections/${indexName}/documents/import?action=upsert`;
       const response = await cb.execute(() =>
@@ -153,10 +160,10 @@ function createTypesenseProvider(): SearchProvider {
         params.set("highlight_fields", query.highlightFields.join(","));
       }
 
-      const result = await request(
+      const result = (await request(
         "GET",
         `/collections/${indexName}/documents/search?${params.toString()}`,
-      ) as Record<string, unknown>;
+      )) as Record<string, unknown>;
 
       const processingTimeMs = performance.now() - start;
       const rawHits = (result.hits as Array<Record<string, unknown>>) ?? [];
@@ -177,7 +184,7 @@ function createTypesenseProvider(): SearchProvider {
         return {
           id: (doc.id as string) ?? "",
           content: (doc.content as string) ?? "",
-          score: (hit.text_match_info as Record<string, unknown>)?.score as number ?? 0,
+          score: ((hit.text_match_info as Record<string, unknown>)?.score as number) ?? 0,
           highlights: Object.keys(highlights).length > 0 ? highlights : undefined,
           metadata: Object.fromEntries(
             Object.entries(doc).filter(([k]) => !["id", "content"].includes(k)),

@@ -5,13 +5,12 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { OutputAdapter, OutputAdapterConfig } from "./types.js";
-
 export {
-  registerAdapter,
   getAdapter,
   listAdapters,
+  registerAdapter,
 } from "./registry.js";
+export type { OutputAdapter, OutputAdapterConfig } from "./types.js";
 
 // Import adapter modules to trigger registration
 import "./json-file.js";

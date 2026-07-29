@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
+import { describe, expect, it } from "vitest";
 
 // Shape of the /health and /readyz JSON responses. res.json() returns
 // unknown, so the tests parse into this typed boundary instead of any.
@@ -32,7 +32,7 @@ function createTestApp(consumerPolling: boolean, schedulerRunning: boolean) {
           consumer: consumerPolling ? "polling" : "stopped",
           scheduler: schedulerRunning ? "running" : "stopped",
         },
-        503
+        503,
       );
     }
 

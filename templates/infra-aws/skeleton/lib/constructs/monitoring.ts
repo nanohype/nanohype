@@ -1,12 +1,12 @@
 import * as cdk from "aws-cdk-lib";
 import * as cloudwatch from "aws-cdk-lib/aws-cloudwatch";
 import * as cloudwatchActions from "aws-cdk-lib/aws-cloudwatch-actions";
-import * as ecs from "aws-cdk-lib/aws-ecs";
-import * as lambda from "aws-cdk-lib/aws-lambda";
+import type * as ecs from "aws-cdk-lib/aws-ecs";
+import type * as lambda from "aws-cdk-lib/aws-lambda";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
-import type { ComputeConstruct } from "./compute";
 import type { ApiConstruct } from "./api";
+import type { ComputeConstruct } from "./compute";
 
 export interface MonitoringConstructProps {
   readonly compute: ComputeConstruct;
@@ -26,11 +26,7 @@ export class MonitoringConstruct extends Construct {
   public readonly dashboard: cloudwatch.Dashboard;
   public readonly alarmTopic: sns.Topic;
 
-  constructor(
-    scope: Construct,
-    id: string,
-    props: MonitoringConstructProps
-  ) {
+  constructor(scope: Construct, id: string, props: MonitoringConstructProps) {
     super(scope, id);
 
     this.alarmTopic = new sns.Topic(this, "AlarmTopic", {
@@ -75,7 +71,7 @@ export class MonitoringConstruct extends Construct {
         left: [duration],
         right: [throttles],
         width: 12,
-      })
+      }),
     );
 
     // Error rate alarm — triggers when errors exceed 1% of invocations
@@ -92,13 +88,10 @@ export class MonitoringConstruct extends Construct {
       }),
       threshold: 1,
       evaluationPeriods: 3,
-      comparisonOperator:
-        cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
-    errorRateAlarm.addAlarmAction(
-      new cloudwatchActions.SnsAction(this.alarmTopic)
-    );
+    errorRateAlarm.addAlarmAction(new cloudwatchActions.SnsAction(this.alarmTopic));
 
     // P99 latency alarm
     const latencyAlarm = new cloudwatch.Alarm(this, "P99LatencyAlarm", {
@@ -110,13 +103,10 @@ export class MonitoringConstruct extends Construct {
       }),
       threshold: 5000,
       evaluationPeriods: 3,
-      comparisonOperator:
-        cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
-    latencyAlarm.addAlarmAction(
-      new cloudwatchActions.SnsAction(this.alarmTopic)
-    );
+    latencyAlarm.addAlarmAction(new cloudwatchActions.SnsAction(this.alarmTopic));
   }
 
   private addEcsMonitoring(service: ecs.FargateService): void {
@@ -137,7 +127,7 @@ export class MonitoringConstruct extends Construct {
         title: "ECS Memory Utilization",
         left: [memoryUtilization],
         width: 12,
-      })
+      }),
     );
 
     // CPU alarm
@@ -147,13 +137,10 @@ export class MonitoringConstruct extends Construct {
       metric: cpuUtilization,
       threshold: 80,
       evaluationPeriods: 3,
-      comparisonOperator:
-        cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
-    cpuAlarm.addAlarmAction(
-      new cloudwatchActions.SnsAction(this.alarmTopic)
-    );
+    cpuAlarm.addAlarmAction(new cloudwatchActions.SnsAction(this.alarmTopic));
 
     // Memory alarm
     const memoryAlarm = new cloudwatch.Alarm(this, "MemoryAlarm", {
@@ -162,18 +149,13 @@ export class MonitoringConstruct extends Construct {
       metric: memoryUtilization,
       threshold: 80,
       evaluationPeriods: 3,
-      comparisonOperator:
-        cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
-    memoryAlarm.addAlarmAction(
-      new cloudwatchActions.SnsAction(this.alarmTopic)
-    );
+    memoryAlarm.addAlarmAction(new cloudwatchActions.SnsAction(this.alarmTopic));
   }
 
-  private addApiGatewayMonitoring(
-    api: cdk.aws_apigateway.RestApi
-  ): void {
+  private addApiGatewayMonitoring(api: cdk.aws_apigateway.RestApi): void {
     const count5xx = api.metricServerError({
       period: cdk.Duration.minutes(5),
     });
@@ -183,7 +165,7 @@ export class MonitoringConstruct extends Construct {
         title: "API Gateway 5xx Errors",
         left: [count5xx],
         width: 12,
-      })
+      }),
     );
 
     // 5xx alarm
@@ -193,12 +175,9 @@ export class MonitoringConstruct extends Construct {
       metric: count5xx,
       threshold: 10,
       evaluationPeriods: 2,
-      comparisonOperator:
-        cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
     });
-    serverErrorAlarm.addAlarmAction(
-      new cloudwatchActions.SnsAction(this.alarmTopic)
-    );
+    serverErrorAlarm.addAlarmAction(new cloudwatchActions.SnsAction(this.alarmTopic));
   }
 }

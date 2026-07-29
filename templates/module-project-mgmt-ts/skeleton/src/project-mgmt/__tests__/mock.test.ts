@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
 
@@ -144,9 +144,9 @@ describe("mock provider", () => {
 
     it("throws when updating a non-existent issue", async () => {
       const provider = getMock();
-      await expect(
-        provider.updateIssue("nonexistent", { title: "nope" }),
-      ).rejects.toThrow(/not found/);
+      await expect(provider.updateIssue("nonexistent", { title: "nope" })).rejects.toThrow(
+        /not found/,
+      );
     });
 
     it("lists issues filtered by project", async () => {
@@ -207,9 +207,7 @@ describe("mock provider", () => {
 
     it("throws when commenting on a non-existent issue", async () => {
       const provider = getMock();
-      await expect(
-        provider.addComment("nonexistent", "nope"),
-      ).rejects.toThrow(/not found/);
+      await expect(provider.addComment("nonexistent", "nope")).rejects.toThrow(/not found/);
     });
   });
 

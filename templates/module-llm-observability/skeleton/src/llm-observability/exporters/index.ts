@@ -14,5 +14,5 @@ import "./json-file.js";
 import "./mock.js";
 
 // Re-export the public API
-export { registerExporter, getExporter, listExporters } from "./registry.js";
+export { getExporter, listExporters, registerExporter } from "./registry.js";
 export type { LlmExporter } from "./types.js";

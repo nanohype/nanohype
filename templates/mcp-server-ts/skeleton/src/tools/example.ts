@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { logger } from "../logger.js";
 
@@ -26,10 +26,7 @@ export function registerExampleTool(server: McpServer): void {
     // Input schema — Zod validates parameters before the handler runs.
     // The SDK converts this to JSON Schema for the MCP protocol.
     {
-      name: z
-        .string()
-        .min(1)
-        .describe("The name of the person to greet"),
+      name: z.string().min(1).describe("The name of the person to greet"),
       enthusiasm: z
         .enum(["low", "medium", "high"])
         .default("medium")
@@ -66,10 +63,7 @@ export function registerExampleTool(server: McpServer): void {
 }
 
 /** Format a greeting with the appropriate level of enthusiasm. */
-function formatGreeting(
-  name: string,
-  enthusiasm: "low" | "medium" | "high",
-): string {
+function formatGreeting(name: string, enthusiasm: "low" | "medium" | "high"): string {
   switch (enthusiasm) {
     case "low":
       return `Hello, ${name}.`;

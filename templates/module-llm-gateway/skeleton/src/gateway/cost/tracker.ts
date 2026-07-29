@@ -69,10 +69,7 @@ export function createCostTracker() {
   /**
    * Record a cost entry for a completed request.
    */
-  function record(
-    response: GatewayResponse,
-    tags: Record<string, string> = {},
-  ): CostEntry {
+  function record(response: GatewayResponse, tags: Record<string, string> = {}): CostEntry {
     const entry: CostEntry = {
       timestamp: new Date().toISOString(),
       provider: response.provider,

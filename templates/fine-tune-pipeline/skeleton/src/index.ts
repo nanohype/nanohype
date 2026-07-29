@@ -9,12 +9,12 @@
  *   eval                  Compare base model vs fine-tuned model outputs
  */
 
+import { join } from "node:path";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
 import { prepareDataset } from "./dataset/prepare.js";
-import { getProvider, DEFAULT_PROVIDER } from "./training/index.js";
 import { logger } from "./logger.js";
-import { join } from "node:path";
+import { DEFAULT_PROVIDER, getProvider } from "./training/index.js";
 
 async function main(): Promise<void> {
   validateBootstrap();

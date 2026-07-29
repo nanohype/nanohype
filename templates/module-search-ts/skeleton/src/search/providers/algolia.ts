@@ -1,15 +1,15 @@
-import type { SearchProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  SearchIndex,
+  FilterExpression,
+  SearchConfig,
   SearchDocument,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchConfig,
-  FilterExpression,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { SearchProvider } from "./types.js";
 
 // ── Algolia Provider ──────────────────────────────────────────────
 //
@@ -30,11 +30,7 @@ function createAlgoliaProvider(): SearchProvider {
     return `https://${appId}-dsn.algolia.net/1`;
   }
 
-  async function request(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<unknown> {
+  async function request(method: string, path: string, body?: unknown): Promise<unknown> {
     const url = `${baseUrl()}${path}`;
     const response = await cb.execute(() =>
       fetch(url, {
@@ -59,10 +55,16 @@ function createAlgoliaProvider(): SearchProvider {
 
   function compileFilter(expr: FilterExpression): string {
     if ("and" in expr) {
-      return expr.and.map(compileFilter).map((s) => `(${s})`).join(" AND ");
+      return expr.and
+        .map(compileFilter)
+        .map((s) => `(${s})`)
+        .join(" AND ");
     }
     if ("or" in expr) {
-      return expr.or.map(compileFilter).map((s) => `(${s})`).join(" OR ");
+      return expr.or
+        .map(compileFilter)
+        .map((s) => `(${s})`)
+        .join(" OR ");
     }
     const { field, operator, value } = expr;
     if (operator === "in" && Array.isArray(value)) {
@@ -84,7 +86,9 @@ function createAlgoliaProvider(): SearchProvider {
       appId = (config.appId as string) ?? process.env.ALGOLIA_APP_ID ?? "";
       apiKey = (config.apiKey as string) ?? process.env.ALGOLIA_API_KEY ?? "";
       if (!appId || !apiKey) {
-        throw new Error("Algolia requires appId and apiKey (config or ALGOLIA_APP_ID/ALGOLIA_API_KEY env vars)");
+        throw new Error(
+          "Algolia requires appId and apiKey (config or ALGOLIA_APP_ID/ALGOLIA_API_KEY env vars)",
+        );
       }
       logger.info("algolia provider initialized", { appId });
     },
@@ -144,7 +148,10 @@ function createAlgoliaProvider(): SearchProvider {
         params.attributesToHighlight = query.highlightFields;
       }
 
-      const result = await request("POST", `/indexes/${indexName}/query`, params) as Record<string, unknown>;
+      const result = (await request("POST", `/indexes/${indexName}/query`, params)) as Record<
+        string,
+        unknown
+      >;
       const processingTimeMs = performance.now() - start;
 
       const hits = ((result.hits as Record<string, unknown>[]) ?? []).map((hit, i) => ({
@@ -197,9 +204,7 @@ function createAlgoliaProvider(): SearchProvider {
   };
 }
 
-function extractHighlights(
-  highlightResult: Record<string, unknown>,
-): Record<string, string[]> {
+function extractHighlights(highlightResult: Record<string, unknown>): Record<string, string[]> {
   const highlights: Record<string, string[]> = {};
   for (const [key, val] of Object.entries(highlightResult)) {
     if (val && typeof val === "object" && "value" in (val as Record<string, unknown>)) {

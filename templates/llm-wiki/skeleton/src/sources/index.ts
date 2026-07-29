@@ -2,9 +2,9 @@ import "./local.js";
 import "./mock.js";
 
 export {
-  registerSourceProvider,
   getSourceProvider,
   listSourceProviders,
+  registerSourceProvider,
 } from "./registry.js";
 
-export type { SourceProvider, Source } from "./types.js";
+export type { Source, SourceProvider } from "./types.js";

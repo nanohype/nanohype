@@ -1,10 +1,10 @@
 import { getConfig } from "../config.js";
-import { getStorageProvider } from "../storage/index.js";
 import { getLlmProvider } from "../llm/index.js";
-import { parsePage, serializePage, createPage } from "../wiki/page.js";
+import { getStorageProvider } from "../storage/index.js";
+import { createPage, parsePage, serializePage } from "../wiki/page.js";
 import { searchPages } from "../wiki/search.js";
-import { acquireWriteLock } from "./queue.js";
 import type { Page, PageMeta } from "../wiki/types.js";
+import { acquireWriteLock } from "./queue.js";
 import type { QueryResult } from "./types.js";
 
 interface LlmQueryResponse {

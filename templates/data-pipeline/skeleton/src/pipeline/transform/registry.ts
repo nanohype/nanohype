@@ -20,9 +20,7 @@ export function getStrategy(name: string): ChunkStrategy {
   const factory = strategies.get(name);
   if (!factory) {
     const available = Array.from(strategies.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Chunk strategy "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Chunk strategy "${name}" not found. Available: ${available}`);
   }
   return factory();
 }

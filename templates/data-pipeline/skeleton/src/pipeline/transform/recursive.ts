@@ -9,9 +9,9 @@
  * Registers itself as the "recursive" chunk strategy on import.
  */
 
-import type { Document, Chunk } from "../types.js";
-import type { ChunkStrategy, ChunkOptions } from "./types.js";
+import type { Chunk, Document } from "../types.js";
 import { registerStrategy } from "./registry.js";
+import type { ChunkOptions, ChunkStrategy } from "./types.js";
 
 const SEPARATORS = ["\n\n", "\n", ". ", " "];
 
@@ -35,20 +35,21 @@ class RecursiveStrategy implements ChunkStrategy {
     if (!text) return [];
 
     if (estimateTokens(text) <= chunkSize) {
-      return [{
-        id: `${document.id}_0`,
-        content: text,
-        chunkIndex: 0,
-        chunkCount: 1,
-        metadata: { ...document.metadata },
-      }];
+      return [
+        {
+          id: `${document.id}_0`,
+          content: text,
+          chunkIndex: 0,
+          chunkCount: 1,
+          metadata: { ...document.metadata },
+        },
+      ];
     }
 
     const rawChunks = this.recursiveSplit(text, 0, chunkSize);
 
-    const withOverlap = overlap > 0 && rawChunks.length > 1
-      ? this.applyOverlap(rawChunks, overlap)
-      : rawChunks;
+    const withOverlap =
+      overlap > 0 && rawChunks.length > 1 ? this.applyOverlap(rawChunks, overlap) : rawChunks;
 
     return withOverlap.map((content, i) => ({
       id: `${document.id}_${i}`,

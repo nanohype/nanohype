@@ -35,7 +35,7 @@ export function resolveJobOptions(opts?: JobOptions): Required<JobOptions> {
 export function buildJob<T = unknown>(
   name: string,
   data: T,
-  opts?: JobOptions
+  opts?: JobOptions,
 ): Omit<Job<T>, "id"> & { id: string } {
   const resolved = resolveJobOptions(opts);
 
@@ -60,13 +60,9 @@ export function buildJob<T = unknown>(
  */
 export function defineJob<T = unknown>(jobName: string) {
   return async function enqueue(
-    queueEnqueue: (
-      name: string,
-      data: unknown,
-      opts?: JobOptions
-    ) => Promise<string>,
+    queueEnqueue: (name: string, data: unknown, opts?: JobOptions) => Promise<string>,
     data: T,
-    opts?: JobOptions
+    opts?: JobOptions,
   ): Promise<string> {
     return queueEnqueue(jobName, data, opts);
   };

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createOAuthRouter } from "../router.js";
-import { STATE_COOKIE_NAME, signState, type StatePayload } from "../state.js";
+import { STATE_COOKIE_NAME, type StatePayload, signState } from "../state.js";
 import { InMemoryTokenStorage } from "../storage/memory.js";
 import type { OAuthProvider, OAuthRouterConfig, RevocationEmitter } from "../types.js";
 
@@ -161,21 +161,18 @@ describe("createOAuthRouter", () => {
 
   describe("callback", () => {
     it("exchanges code, stores tokens, redirects to returnTo", async () => {
-      const fetchImpl = vi.fn<typeof fetch>(
-        async () => tokenResponse({ access_token: "A", refresh_token: "R", expires_in: 3600 }),
+      const fetchImpl = vi.fn<typeof fetch>(async () =>
+        tokenResponse({ access_token: "A", refresh_token: "R", expires_in: 3600 }),
       );
       const router = createOAuthRouter(makeConfig(storage), { fetchImpl, now: () => 1_000 });
 
       const signed = signedStateFor({ nonce: "abc" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(302);
       expect(res.headers.get("location")).toBe("/done");
@@ -186,7 +183,7 @@ describe("createOAuthRouter", () => {
 
       expect(fetchImpl).toHaveBeenCalledTimes(1);
       const [, init] = fetchImpl.mock.calls[0];
-      const body = (init?.body as URLSearchParams).toString();
+      const body = (init?.body as URLSearchParams | undefined)?.toString();
       expect(body).toContain("code=XYZ");
       expect(body).toContain("code_verifier=");
     });
@@ -195,15 +192,12 @@ describe("createOAuthRouter", () => {
       const router = createOAuthRouter(makeConfig(storage), { now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc" }, 1_000);
       const tampered = `${signed}XX`;
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${tampered}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${tampered}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(400);
     });
@@ -211,15 +205,12 @@ describe("createOAuthRouter", () => {
     it("rejects an expired state cookie with 400", async () => {
       const router = createOAuthRouter(makeConfig(storage), { now: () => 10_000 });
       const signed = signedStateFor({ nonce: "abc" }, 1_000); // ~9000s old
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(400);
       expect(await res.text()).toBe("state_expired");
@@ -228,15 +219,12 @@ describe("createOAuthRouter", () => {
     it("rejects when the caller's userId does not match state.userId", async () => {
       const router = createOAuthRouter(makeConfig(storage), { now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc", userId: "u1" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u2", // different from u1
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u2", // different from u1
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(400);
       expect(await res.text()).toBe("user_mismatch");
@@ -245,15 +233,12 @@ describe("createOAuthRouter", () => {
     it("rejects when the nonce in query does not match state", async () => {
       const router = createOAuthRouter(makeConfig(storage), { now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=different",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=different", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(400);
     });
@@ -264,18 +249,15 @@ describe("createOAuthRouter", () => {
       );
       const router = createOAuthRouter(makeConfig(storage), { fetchImpl, now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc", codeVerifier: "my-verifier-value" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       await router.handlers.callback(req);
       const [, init] = fetchImpl.mock.calls[0];
-      const body = (init?.body as URLSearchParams).toString();
+      const body = (init?.body as URLSearchParams | undefined)?.toString();
       expect(body).toContain("code_verifier=my-verifier-value");
     });
 
@@ -285,15 +267,12 @@ describe("createOAuthRouter", () => {
       );
       const router = createOAuthRouter(makeConfig(storage), { fetchImpl, now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       await router.handlers.callback(req);
       const [, init] = fetchImpl.mock.calls[0];
       expect(init?.signal).toBeInstanceOf(AbortSignal);
@@ -303,15 +282,12 @@ describe("createOAuthRouter", () => {
       const fetchImpl = vi.fn(async () => new Response("bad", { status: 400 }));
       const router = createOAuthRouter(makeConfig(storage), { fetchImpl, now: () => 1_000 });
       const signed = signedStateFor({ nonce: "abc" }, 1_000);
-      const req = new Request(
-        "https://app.example/oauth/test/callback?code=XYZ&state=abc",
-        {
-          headers: {
-            "x-user-id": "u1",
-            cookie: `${STATE_COOKIE_NAME}=${signed}`,
-          },
+      const req = new Request("https://app.example/oauth/test/callback?code=XYZ&state=abc", {
+        headers: {
+          "x-user-id": "u1",
+          cookie: `${STATE_COOKIE_NAME}=${signed}`,
         },
-      );
+      });
       const res = await router.handlers.callback(req);
       expect(res.status).toBe(502);
     });
@@ -319,8 +295,8 @@ describe("createOAuthRouter", () => {
 
   describe("getValidToken", () => {
     it("triggers refresh when stored token is expiring", async () => {
-      const fetchImpl = vi.fn(
-        async () => tokenResponse({ access_token: "refreshed", expires_in: 3600 }),
+      const fetchImpl = vi.fn(async () =>
+        tokenResponse({ access_token: "refreshed", expires_in: 3600 }),
       );
       const router = createOAuthRouter(makeConfig(storage, { revocationEmitter: emitter }), {
         fetchImpl,
@@ -378,10 +354,9 @@ describe("createOAuthRouter", () => {
 
     it("revoke handler calls provider revoke URL and deletes", async () => {
       const fetchImpl = vi.fn(async () => new Response(null, { status: 200 }));
-      const router = createOAuthRouter(
-        makeConfig(storage, { revocationEmitter: emitter }),
-        { fetchImpl },
-      );
+      const router = createOAuthRouter(makeConfig(storage, { revocationEmitter: emitter }), {
+        fetchImpl,
+      });
       await storage.put("u1", "test", { accessToken: "A" });
       const req = new Request("https://app.example/oauth/test/revoke", {
         method: "POST",

@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { getSignatureProvider } from "./signatures/index.js";
 import type {
+  EventHandler,
+  HandleResult,
+  HandlerMap,
   ReceiverConfig,
   WebhookEvent,
-  EventHandler,
-  HandlerMap,
-  HandleResult,
 } from "./types.js";
 
 // ── Webhook Receiver ───────────────────────────────────────────────
@@ -51,17 +51,19 @@ const RECEIVER_DEFAULTS = {
  *   const result = await receiver.handleRequest(body, headers);
  */
 /** Zod schema for validating createWebhookReceiver config. */
-const ReceiverConfigSchema = z.object({
-  secret: z.string().min(1, "secret must be a non-empty string"),
-  signatureMethod: z.string().optional(),
-  signatureHeader: z.string().optional(),
-  eventHeader: z.string().optional(),
-}).passthrough();
+const ReceiverConfigSchema = z
+  .object({
+    secret: z.string().min(1, "secret must be a non-empty string"),
+    signatureMethod: z.string().optional(),
+    signatureHeader: z.string().optional(),
+    eventHeader: z.string().optional(),
+  })
+  .passthrough();
 
 export function createWebhookReceiver(config: ReceiverConfig): WebhookReceiver {
   const parsed = ReceiverConfigSchema.safeParse(config);
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid webhook receiver config: ${issues}`);
   }
 

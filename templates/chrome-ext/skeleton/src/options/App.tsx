@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { getSettings, saveSettings } from "@/lib/storage";
+import { useEffect, useState } from "react";
 import type { LlmProvider, Settings } from "@/lib/storage";
+import { getSettings, saveSettings } from "@/lib/storage";
 
 const MODELS: Record<LlmProvider, string[]> = {
   anthropic: ["claude-sonnet-4-20250514", "claude-haiku-4-20250414"],
@@ -16,7 +16,15 @@ export function App() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    getSettings().then(setSettings);
+    getSettings()
+      .then(setSettings)
+      .catch((err) => {
+        // Nothing holds this promise, and the options page is the only place a
+        // user can repair their settings — so a storage read that fails keeps
+        // the defaults on screen and says why, rather than rejecting into
+        // nowhere and leaving a page that never populates.
+        console.error("Could not load settings", err);
+      });
   }, []);
 
   const handleSave = async () => {
@@ -84,14 +92,8 @@ export function App() {
         <input
           type="password"
           value={settings.apiKey}
-          onChange={(e) =>
-            setSettings((prev) => ({ ...prev, apiKey: e.target.value }))
-          }
-          placeholder={
-            settings.provider === "anthropic"
-              ? "sk-ant-..."
-              : "sk-..."
-          }
+          onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
+          placeholder={settings.provider === "anthropic" ? "sk-ant-..." : "sk-..."}
           style={fieldStyle}
         />
       </label>
@@ -100,9 +102,7 @@ export function App() {
         Model
         <select
           value={settings.model}
-          onChange={(e) =>
-            setSettings((prev) => ({ ...prev, model: e.target.value }))
-          }
+          onChange={(e) => setSettings((prev) => ({ ...prev, model: e.target.value }))}
           style={fieldStyle}
         >
           {MODELS[settings.provider].map((model) => (
@@ -114,6 +114,7 @@ export function App() {
       </label>
 
       <button
+        type="button"
         onClick={handleSave}
         style={{
           padding: "8px 24px",
@@ -124,22 +125,15 @@ export function App() {
           fontSize: "13px",
           fontWeight: 600,
           cursor: "pointer",
-          transition:
-            "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
+          transition: "filter 0.15s var(--ease-out), transform 0.1s var(--ease-spring)",
         }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.filter = "brightness(1.15)")
-        }
+        onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.15)")}
         onMouseLeave={(e) => {
           e.currentTarget.style.filter = "brightness(1)";
           e.currentTarget.style.transform = "scale(1)";
         }}
-        onMouseDown={(e) =>
-          (e.currentTarget.style.transform = "scale(0.96)")
-        }
-        onMouseUp={(e) =>
-          (e.currentTarget.style.transform = "scale(1)")
-        }
+        onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.96)")}
+        onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
       >
         {saved ? "Saved!" : "Save Settings"}
       </button>

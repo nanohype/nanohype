@@ -7,8 +7,8 @@
 // to admin tokens) is the consumer's responsibility.
 
 import { UnauthenticatedError, UnknownProviderError } from "../errors.js";
-import type { OAuthRouterConfig, RequestHandler } from "../types.js";
 import type { TokenRefresher } from "../refresh.js";
+import type { OAuthRouterConfig, RequestHandler } from "../types.js";
 import { mapHandlerError } from "./errorMapping.js";
 import { extractProvider } from "./shared.js";
 
@@ -31,10 +31,10 @@ export function createRefreshHandler(
           headers: { "content-type": "application/json" },
         });
       }
-      return new Response(
-        JSON.stringify({ ok: true, expiresAt: grant.expiresAt ?? null }),
-        { status: 200, headers: { "content-type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ ok: true, expiresAt: grant.expiresAt ?? null }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
     } catch (err) {
       return mapHandlerError(err, "refresh");
     }

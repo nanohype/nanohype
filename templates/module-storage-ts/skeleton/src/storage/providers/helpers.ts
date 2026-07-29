@@ -30,9 +30,7 @@ export async function toBuffer(
 ): Promise<Buffer> {
   if (Buffer.isBuffer(data)) {
     if (data.length > maxBytes) {
-      throw new Error(
-        `Buffer size ${data.length} bytes exceeds limit of ${maxBytes} bytes`,
-      );
+      throw new Error(`Buffer size ${data.length} bytes exceeds limit of ${maxBytes} bytes`);
     }
     return data;
   }
@@ -40,9 +38,7 @@ export async function toBuffer(
   if (typeof data === "string") {
     const buf = Buffer.from(data, "utf-8");
     if (buf.length > maxBytes) {
-      throw new Error(
-        `String size ${buf.length} bytes exceeds limit of ${maxBytes} bytes`,
-      );
+      throw new Error(`String size ${buf.length} bytes exceeds limit of ${maxBytes} bytes`);
     }
     return buf;
   }
@@ -110,10 +106,7 @@ function isRetryable(err: unknown): boolean {
   const meta = (err as Record<string, unknown>).$metadata;
   if (meta && typeof meta === "object") {
     const httpStatus = (meta as Record<string, unknown>).httpStatusCode;
-    if (
-      typeof httpStatus === "number" &&
-      (httpStatus === 429 || httpStatus >= 500)
-    ) {
+    if (typeof httpStatus === "number" && (httpStatus === 429 || httpStatus >= 500)) {
       return true;
     }
   }

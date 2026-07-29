@@ -1,7 +1,7 @@
-import type { RateLimitResult } from "../types.js";
 import type { RateLimitStore } from "../stores/types.js";
-import type { RateLimitAlgorithm } from "./types.js";
+import type { RateLimitResult } from "../types.js";
 import { registerAlgorithm } from "./registry.js";
+import type { RateLimitAlgorithm } from "./types.js";
 
 // ── Token Bucket Algorithm ─────────────────────────────────────────
 //
@@ -101,10 +101,7 @@ const tokenBucket: RateLimitAlgorithm = {
   },
 
   async reset(key: string, store: RateLimitStore): Promise<void> {
-    await Promise.all([
-      store.delete(tokensKey(key)),
-      store.delete(tsKey(key)),
-    ]);
+    await Promise.all([store.delete(tokensKey(key)), store.delete(tsKey(key))]);
   },
 };
 

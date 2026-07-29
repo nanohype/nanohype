@@ -1,5 +1,5 @@
-import { getProvider } from "../providers/registry.js";
 import { logger } from "../logger.js";
+import { getProvider } from "../providers/registry.js";
 import type { BillingWebhookEvent } from "../types.js";
 
 // ── Billing Webhook Handler ────────────────────────────────────────

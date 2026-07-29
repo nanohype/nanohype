@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { createCircuitBreaker } from "../circuit-breaker.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Logger } from "../../logger.js";
+import { createCircuitBreaker } from "../circuit-breaker.js";
 
 // ── Circuit Breaker Tests ───────────────────────────────────────────
 //

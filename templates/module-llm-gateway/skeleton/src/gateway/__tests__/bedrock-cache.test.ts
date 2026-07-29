@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { readBedrockCacheTokens, bedrockCacheKinds } from "../providers/bedrock-cache.js";
+import { describe, expect, it } from "vitest";
+import { bedrockCacheKinds, readBedrockCacheTokens } from "../providers/bedrock-cache.js";
 
 describe("readBedrockCacheTokens", () => {
   it("reads cache tokens off a Converse usage block", () => {

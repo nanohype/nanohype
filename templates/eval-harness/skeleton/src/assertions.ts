@@ -31,9 +31,7 @@ export function contains(substring: string): SyncAssertionFn {
     return {
       pass,
       score: pass ? 1 : 0,
-      message: pass
-        ? `Output contains "${substring}"`
-        : `Output does not contain "${substring}"`,
+      message: pass ? `Output contains "${substring}"` : `Output does not contain "${substring}"`,
     };
   };
 }
@@ -166,9 +164,7 @@ export function satisfies(
     return {
       pass,
       score: pass ? 1 : 0,
-      message: pass
-        ? `Output satisfies ${label}`
-        : `Output does not satisfy ${label}`,
+      message: pass ? `Output satisfies ${label}` : `Output does not satisfy ${label}`,
     };
   };
 }
@@ -291,7 +287,9 @@ export const ASSERTION_REGISTRY: Record<string, (value: unknown) => AssertionFn>
 export function resolveAssertion(type: string, value: unknown): AssertionFn {
   const factory = ASSERTION_REGISTRY[type];
   if (!factory) {
-    throw new Error(`Unknown assertion type: "${type}". Available: ${Object.keys(ASSERTION_REGISTRY).join(", ")}`);
+    throw new Error(
+      `Unknown assertion type: "${type}". Available: ${Object.keys(ASSERTION_REGISTRY).join(", ")}`,
+    );
   }
   return factory(value);
 }

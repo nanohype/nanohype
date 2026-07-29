@@ -1,16 +1,16 @@
-import type { ProjectProvider } from "./types.js";
 import type {
-  Project,
-  Issue,
   Comment,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
   Priority,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import type { ProjectProvider } from "./types.js";
 
 // ── Mock Provider ──────────────────────────────────────────────────
 //
@@ -54,9 +54,7 @@ function createMockProvider(): ProjectProvider {
     async listProjects(opts?: ListOptions): Promise<PaginatedResult<Project>> {
       const limit = opts?.limit ?? 50;
       const all = Array.from(projects.values());
-      const cursorIndex = opts?.cursor
-        ? all.findIndex((p) => p.id === opts.cursor) + 1
-        : 0;
+      const cursorIndex = opts?.cursor ? all.findIndex((p) => p.id === opts.cursor) + 1 : 0;
       const slice = all.slice(cursorIndex, cursorIndex + limit);
       const hasMore = cursorIndex + limit < all.length;
 
@@ -117,9 +115,7 @@ function createMockProvider(): ProjectProvider {
     async listIssues(projectId: string, opts?: ListOptions): Promise<PaginatedResult<Issue>> {
       const limit = opts?.limit ?? 50;
       const all = Array.from(issues.values()).filter((i) => i.projectId === projectId);
-      const cursorIndex = opts?.cursor
-        ? all.findIndex((i) => i.id === opts.cursor) + 1
-        : 0;
+      const cursorIndex = opts?.cursor ? all.findIndex((i) => i.id === opts.cursor) + 1 : 0;
       const slice = all.slice(cursorIndex, cursorIndex + limit);
       const hasMore = cursorIndex + limit < all.length;
 

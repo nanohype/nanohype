@@ -44,10 +44,7 @@ export default defineConfig({
       output: {
         entryFileNames: (chunkInfo) => {
           // Background and content scripts must be single files (IIFE-like)
-          if (
-            chunkInfo.name === "background" ||
-            chunkInfo.name === "content"
-          ) {
+          if (chunkInfo.name === "background" || chunkInfo.name === "content") {
             return "[name].js";
           }
           return "assets/[name]-[hash].js";

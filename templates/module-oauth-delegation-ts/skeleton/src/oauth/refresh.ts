@@ -117,7 +117,10 @@ export class TokenRefresher {
     try {
       response = await this.fetch(adapter.tokenUrl, {
         method: "POST",
-        headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          accept: "application/json",
+        },
         body,
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });

@@ -54,10 +54,9 @@ Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, 
       image.test.ts                # Image processor tests (conditional)
   package.json
   tsconfig.json
-  eslint.config.js
+  biome.json
   vitest.config.ts
   .env.example
-  .prettierrc
   .gitignore
   README.md
 ```

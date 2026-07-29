@@ -26,11 +26,7 @@ export interface Logger {
 export function createLogger(level: LogLevel = "info"): Logger {
   const threshold = LEVEL_ORDER[level];
 
-  function write(
-    lvl: LogLevel,
-    msg: string,
-    data?: Record<string, unknown>,
-  ): void {
+  function write(lvl: LogLevel, msg: string, data?: Record<string, unknown>): void {
     if (LEVEL_ORDER[lvl] < threshold) return;
     const entry = {
       level: lvl,

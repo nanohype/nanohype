@@ -15,13 +15,10 @@ export const llmRequestTotal = meter.createCounter("llm_request_total", {
 });
 
 /** LLM request duration in milliseconds, labeled by provider. */
-export const llmRequestDuration = meter.createHistogram(
-  "llm_request_duration_ms",
-  {
-    description: "LLM API request latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const llmRequestDuration = meter.createHistogram("llm_request_duration_ms", {
+  description: "LLM API request latency in milliseconds",
+  unit: "ms",
+});
 
 /** Token usage counter, labeled by provider and direction (input/output). */
 export const llmTokenUsage = meter.createCounter("llm_token_usage", {

@@ -1,10 +1,8 @@
 import type { Command } from "commander";
-import { createTenant, listTenants, deleteTenant } from "../../tenant/registry.js";
+import { createTenant, deleteTenant, listTenants } from "../../tenant/registry.js";
 
 export function registerTenantCommands(program: Command): void {
-  const tenant = program
-    .command("tenant")
-    .description("Manage wiki tenants");
+  const tenant = program.command("tenant").description("Manage wiki tenants");
 
   tenant
     .command("create <id>")

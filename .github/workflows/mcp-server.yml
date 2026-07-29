@@ -47,14 +47,8 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: |
-            package-lock.json
             sdk/package-lock.json
             mcp-server/package-lock.json
-
-      # The lint config re-exports library/config/eslint.base.mjs, whose
-      # imports (@eslint/js, typescript-eslint) resolve from the repo root.
-      - name: Install root tooling dependencies
-        run: npm ci
 
       # The MCP server depends on @nanohype/sdk via file:../sdk, so the sibling
       # package must be installed and built before the MCP package resolves it.

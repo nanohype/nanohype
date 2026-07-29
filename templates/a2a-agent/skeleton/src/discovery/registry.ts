@@ -1,6 +1,6 @@
-import type { AgentCard } from "../protocol/types.js";
-import { fetchAgentCard } from "../protocol/client.js";
 import { logger } from "../logger.js";
+import { fetchAgentCard } from "../protocol/client.js";
+import type { AgentCard } from "../protocol/types.js";
 
 /**
  * Agent directory — discovers and caches remote agent cards.

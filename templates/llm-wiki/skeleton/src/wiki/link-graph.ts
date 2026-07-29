@@ -4,9 +4,8 @@ const WIKI_LINK_RE = /\[\[([^\]]+)]]/g;
 
 export function extractLinks(content: string): string[] {
   const links: string[] = [];
-  let match: RegExpExecArray | null;
 
-  while ((match = WIKI_LINK_RE.exec(content)) !== null) {
+  for (const match of content.matchAll(WIKI_LINK_RE)) {
     links.push(match[1]);
   }
 
@@ -31,10 +30,7 @@ export function buildLinkGraph(pages: Page[]): Map<string, Set<string>> {
   return graph;
 }
 
-export function findOrphans(
-  graph: Map<string, Set<string>>,
-  allPaths: string[],
-): string[] {
+export function findOrphans(graph: Map<string, Set<string>>, allPaths: string[]): string[] {
   // A page is orphaned if no non-index page links to it
   const inbound = new Set<string>();
   for (const [source, targets] of graph) {
@@ -44,12 +40,7 @@ export function findOrphans(
     }
   }
 
-  return allPaths.filter(
-    (path) =>
-      path !== "index.md" &&
-      path !== "index" &&
-      !inbound.has(path),
-  );
+  return allPaths.filter((path) => path !== "index.md" && path !== "index" && !inbound.has(path));
 }
 
 export function findBrokenLinks(

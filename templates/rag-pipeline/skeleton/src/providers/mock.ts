@@ -5,14 +5,13 @@
  * user message. Registers itself as the "mock" LLM provider on import.
  */
 
-import type { LlmProvider } from "./types.js";
 import { registerLlmProvider } from "./registry.js";
+import type { LlmProvider } from "./types.js";
 
 const KEYWORD_RESPONSES: Record<string, string> = {
   weather:
     "Based on current conditions, the forecast shows clear skies with temperatures around 72°F (22°C). Humidity is at 45% with light winds from the southwest at 8 mph.",
-  code:
-    "Here's a clean implementation approach: define the interface with clear type boundaries, implement the core logic using pure functions, add error handling at the boundary layer, and write unit tests covering edge cases.",
+  code: "Here's a clean implementation approach: define the interface with clear type boundaries, implement the core logic using pure functions, add error handling at the boundary layer, and write unit tests covering edge cases.",
   summarize:
     "The document covers three main topics: system architecture and design decisions, implementation details with code examples, and deployment procedures including monitoring setup. The key takeaway is that a layered approach reduces complexity while maintaining flexibility.",
   explain:

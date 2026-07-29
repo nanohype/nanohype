@@ -5,7 +5,7 @@
  * and edge cases for the recursive text splitter.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getStrategy } from "../transform/index.js";
 import type { Document } from "../types.js";
 

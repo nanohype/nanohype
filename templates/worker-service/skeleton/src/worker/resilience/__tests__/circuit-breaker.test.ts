@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createCircuitBreaker } from "../circuit-breaker.js";
 
 describe("CircuitBreaker", () => {
@@ -39,14 +39,12 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     expect(cb.state).toBe("open");
 
-    await expect(cb.call(async () => "ok")).rejects.toThrow(
-      "Circuit breaker is open"
-    );
+    await expect(cb.call(async () => "ok")).rejects.toThrow("Circuit breaker is open");
   });
 
   it("transitions to half-open after reset timeout", async () => {
@@ -58,7 +56,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     expect(cb.state).toBe("open");
@@ -77,7 +75,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     vi.advanceTimersByTime(5000);
@@ -98,7 +96,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     vi.advanceTimersByTime(5000);
@@ -107,7 +105,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("still broken");
-      })
+      }),
     ).rejects.toThrow("still broken");
 
     expect(cb.state).toBe("open");
@@ -119,7 +117,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     expect(cb.failures).toBe(1);
@@ -134,7 +132,7 @@ describe("CircuitBreaker", () => {
     await expect(
       cb.call(async () => {
         throw new Error("boom");
-      })
+      }),
     ).rejects.toThrow("boom");
 
     expect(cb.state).toBe("open");

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { GatewayProvider } from "../providers/types.js";
 import type { RoutingContext } from "../routing/types.js";
 
@@ -93,10 +93,7 @@ describe("latency strategy", () => {
   it("falls back to first provider with no data", async () => {
     const { getStrategy } = await import("../routing/registry.js");
     const strategy = getStrategy("latency");
-    const providers = [
-      makeMockProvider("unknown-a"),
-      makeMockProvider("unknown-b"),
-    ];
+    const providers = [makeMockProvider("unknown-a"), makeMockProvider("unknown-b")];
     const selected = strategy.select(providers, defaultContext);
     expect(selected.name).toBe("unknown-a");
   });
@@ -107,10 +104,7 @@ describe("cost strategy", () => {
     await import("../routing/cost.js");
     const { getStrategy } = await import("../routing/registry.js");
     const strategy = getStrategy("cost");
-    const providers = [
-      makeMockProvider("expensive", 10, 30),
-      makeMockProvider("cheap", 0.5, 1),
-    ];
+    const providers = [makeMockProvider("expensive", 10, 30), makeMockProvider("cheap", 0.5, 1)];
 
     const selected = strategy.select(providers, defaultContext);
     expect(selected.name).toBe("cheap");

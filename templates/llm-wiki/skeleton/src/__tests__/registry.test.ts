@@ -1,8 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  getStorageProvider,
-  listStorageProviders,
-} from "../storage/index.js";
+import { describe, expect, it } from "vitest";
+import { getStorageProvider, listStorageProviders } from "../storage/index.js";
 
 /**
  * Storage registry is tested directly since it ships with built-in providers.
@@ -26,9 +23,7 @@ describe("storage registry", () => {
   });
 
   it("throws on unknown provider", () => {
-    expect(() => getStorageProvider("nonexistent")).toThrow(
-      /not registered/,
-    );
+    expect(() => getStorageProvider("nonexistent")).toThrow(/not registered/);
   });
 
   it("returns a new instance per call (factory pattern)", () => {
@@ -47,9 +42,7 @@ describe("source registry", async () => {
   });
 
   it.skipIf(!sourceModule)("throws on unknown provider", () => {
-    expect(() => sourceModule!.getSourceProvider("nonexistent")).toThrow(
-      /not registered/,
-    );
+    expect(() => sourceModule!.getSourceProvider("nonexistent")).toThrow(/not registered/);
   });
 });
 
@@ -62,8 +55,6 @@ describe("llm registry", async () => {
   });
 
   it.skipIf(!llmModule)("throws on unknown provider", () => {
-    expect(() => llmModule!.getLlmProvider("nonexistent")).toThrow(
-      /not registered/,
-    );
+    expect(() => llmModule!.getLlmProvider("nonexistent")).toThrow(/not registered/);
   });
 });

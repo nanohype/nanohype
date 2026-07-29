@@ -1,6 +1,6 @@
 import type { GatewayResponse } from "../types.js";
-import type { CachingStrategy, CacheContext, CachedResponse } from "./types.js";
 import { registerCachingStrategy } from "./registry.js";
+import type { CacheContext, CachedResponse, CachingStrategy } from "./types.js";
 
 // ── None Caching Strategy ───────────────────────────────────────────
 //

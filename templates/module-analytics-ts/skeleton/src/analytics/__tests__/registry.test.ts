@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerProvider,
-  getProvider,
-  listProviders,
-} from "../providers/registry.js";
+import { describe, expect, it } from "vitest";
+import { getProvider, listProviders, registerProvider } from "../providers/registry.js";
 import type { AnalyticsProvider, AnalyticsProviderFactory } from "../providers/types.js";
 
 // ── Registry Tests ────────────────────────────────────────────────
@@ -27,8 +23,7 @@ function stubFactory(name: string): AnalyticsProviderFactory {
 }
 
 describe("analytics provider registry", () => {
-  const unique = () =>
-    `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const unique = () => `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   it("registers a factory and retrieves a provider instance by name", () => {
     const name = unique();
@@ -56,9 +51,7 @@ describe("analytics provider registry", () => {
     const name = unique();
     registerProvider(name, stubFactory(name));
 
-    expect(() => registerProvider(name, stubFactory(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerProvider(name, stubFactory(name))).toThrow(/already registered/);
   });
 
   it("lists all registered provider names", () => {

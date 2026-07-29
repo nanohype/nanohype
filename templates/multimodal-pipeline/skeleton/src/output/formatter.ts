@@ -7,16 +7,16 @@
  * not valid JSON.
  */
 
+import { logger } from "../logger.js";
 import type { Modality } from "../processors/types.js";
 import type { AnalysisResult } from "../providers/types.js";
+import type { AudioAnalysis, ImageAnalysis, PipelineResult, VideoAnalysis } from "./types.js";
 import {
-  imageAnalysisSchema,
   audioAnalysisSchema,
-  videoAnalysisSchema,
+  imageAnalysisSchema,
   pipelineResultSchema,
+  videoAnalysisSchema,
 } from "./types.js";
-import type { PipelineResult, ImageAnalysis, AudioAnalysis, VideoAnalysis } from "./types.js";
-import { logger } from "../logger.js";
 
 function parseAnalysis(
   raw: string,

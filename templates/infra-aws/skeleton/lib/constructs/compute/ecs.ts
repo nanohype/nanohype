@@ -20,9 +20,7 @@ export class ComputeConstruct extends Construct {
   constructor(scope: Construct, id: string, props: ComputeConstructProps) {
     super(scope, id);
 
-    const vpc =
-      props.vpc ??
-      ec2.Vpc.fromLookup(this, "DefaultVpc", { isDefault: true });
+    const vpc = props.vpc ?? ec2.Vpc.fromLookup(this, "DefaultVpc", { isDefault: true });
 
     const cluster = new ecs.Cluster(this, "Cluster", { vpc });
 

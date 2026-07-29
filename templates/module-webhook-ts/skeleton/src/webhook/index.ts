@@ -10,34 +10,34 @@ import "./signatures/index.js";
 
 validateBootstrap();
 
+export type {
+  EventDirection,
+  EventLogEntry,
+  EventStatus,
+  ListOptions,
+  WebhookEventLog,
+} from "./event-log.js";
+export { InMemoryEventLog } from "./event-log.js";
+export type { WebhookReceiver } from "./receiver.js";
 // Re-export everything consumers need
 export { createWebhookReceiver } from "./receiver.js";
+export type { WebhookEventBody, WebhookSender } from "./sender.js";
 export { createWebhookSender } from "./sender.js";
-export { InMemoryEventLog } from "./event-log.js";
 export {
   getSignatureProvider,
   listSignatureProviders,
   registerSignatureProvider,
 } from "./signatures/index.js";
 export type { SignatureProvider } from "./signatures/types.js";
-export type { WebhookReceiver } from "./receiver.js";
-export type { WebhookSender, WebhookEventBody } from "./sender.js";
 export type {
-  WebhookEventLog,
-  EventLogEntry,
-  EventDirection,
-  EventStatus,
-  ListOptions,
-} from "./event-log.js";
-export type {
-  EventId,
-  WebhookEvent,
-  WebhookPayload,
-  DeliveryResult,
   DeliveryOptions,
+  DeliveryResult,
+  EventHandler,
+  EventId,
+  HandleResult,
+  HandlerMap,
   ReceiverConfig,
   SenderConfig,
-  EventHandler,
-  HandlerMap,
-  HandleResult,
+  WebhookEvent,
+  WebhookPayload,
 } from "./types.js";

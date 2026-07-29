@@ -1,6 +1,6 @@
 import type { Message } from "../providers/index.js";
 import { countTokens } from "../tokens.js";
-import { MessageStore } from "./store.js";
+import type { MessageStore } from "./store.js";
 
 /**
  * Default token budgets. These are conservative estimates that leave
@@ -36,19 +36,14 @@ export class ContextManager {
     this.store = store;
     this.maxContextTokens = config.maxContextTokens ?? DEFAULT_MAX_CONTEXT_TOKENS;
     this.systemPromptTokens = config.systemPromptTokens ?? DEFAULT_SYSTEM_PROMPT_TOKENS;
-    this.responseReserveTokens =
-      config.responseReserveTokens ?? DEFAULT_RESPONSE_RESERVE_TOKENS;
+    this.responseReserveTokens = config.responseReserveTokens ?? DEFAULT_RESPONSE_RESERVE_TOKENS;
   }
 
   /**
    * Calculate the token budget available for conversation history.
    */
   private get historyBudget(): number {
-    return (
-      this.maxContextTokens -
-      this.systemPromptTokens -
-      this.responseReserveTokens
-    );
+    return this.maxContextTokens - this.systemPromptTokens - this.responseReserveTokens;
   }
 
   /**

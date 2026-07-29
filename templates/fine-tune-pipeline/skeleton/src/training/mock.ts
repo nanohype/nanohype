@@ -1,9 +1,5 @@
-import type {
-  TrainingProvider,
-  TrainingJobConfig,
-  TrainingJobStatus,
-} from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { TrainingJobConfig, TrainingJobStatus, TrainingProvider } from "./types.js";
 
 // ── Mock Training Provider ────────────────────────────────────────
 //
@@ -86,7 +82,7 @@ class MockTrainingProvider implements TrainingProvider {
       };
     } else if (currentStatus === "running") {
       updated.metrics = {
-        training_loss: Math.max(0.01, 0.2150 - calls * 0.04),
+        training_loss: Math.max(0.01, 0.215 - calls * 0.04),
         step: calls * 50,
       };
     }

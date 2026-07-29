@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getProvider, listProviders } from "@/lib/ai/providers";
 
 describe("AI Provider Registry", () => {
@@ -15,9 +15,7 @@ describe("AI Provider Registry", () => {
   });
 
   it("throws for unknown provider", () => {
-    expect(() => getProvider("nonexistent")).toThrow(
-      'Unknown AI provider: "nonexistent"'
-    );
+    expect(() => getProvider("nonexistent")).toThrow('Unknown AI provider: "nonexistent"');
   });
 
   it("lists all registered providers", () => {

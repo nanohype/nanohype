@@ -9,8 +9,8 @@
 
 import * as jose from "jose";
 import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 /**
  * Extract a Bearer token from the Authorization header.
@@ -59,9 +59,7 @@ const auth0Provider: AuthProvider = {
       // for roles. Common patterns: `${namespace}/roles` or
       // `permissions` for RBAC.
       const roles: string[] =
-        (payload.permissions as string[]) ??
-        (payload[`${issuer}roles`] as string[]) ??
-        [];
+        (payload.permissions as string[]) ?? (payload[`${issuer}roles`] as string[]) ?? [];
 
       return {
         authenticated: true,
@@ -74,8 +72,7 @@ const auth0Provider: AuthProvider = {
         },
       };
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Auth0 verification failed";
+      const message = err instanceof Error ? err.message : "Auth0 verification failed";
       return { authenticated: false, error: message };
     }
   },

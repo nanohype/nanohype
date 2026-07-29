@@ -4,7 +4,7 @@
 // splits a document into chunks suitable for embedding and indexing.
 //
 
-import type { Document, Chunk } from "../types.js";
+import type { Chunk, Document } from "../types.js";
 
 export interface ChunkOptions {
   /** Target chunk size in estimated tokens. Default: 512 */

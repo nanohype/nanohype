@@ -5,7 +5,7 @@
 // Import individual presets or the full PRESETS map.
 //
 
-import type { TransformPreset, TransformOptions } from "../types.js";
+import type { TransformOptions, TransformPreset } from "../types.js";
 
 /** 150x150 cover crop -- small square for lists and grids. */
 export const thumbnail: TransformPreset = {

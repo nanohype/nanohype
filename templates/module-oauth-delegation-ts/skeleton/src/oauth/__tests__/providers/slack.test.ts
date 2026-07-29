@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-
-import { slackProvider } from "../../providers/slack.js";
 import { getProvider } from "../../providers/registry.js";
+import { slackProvider } from "../../providers/slack.js";
 
 describe("slackProvider", () => {
   it("self-registers under name 'slack'", () => {

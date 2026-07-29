@@ -7,10 +7,10 @@
  */
 
 import type { Config } from "./config.js";
+import { logger } from "./logger.js";
+import { getLlmProvider } from "./providers/index.js";
 import type { RetrievalResult } from "./retrieval.js";
 import { createRetriever } from "./retrieval.js";
-import { getLlmProvider } from "./providers/index.js";
-import { logger } from "./logger.js";
 
 const SYSTEM_PROMPT = `You are a helpful assistant that answers questions based on the provided context.
 
@@ -24,10 +24,7 @@ function formatContext(results: RetrievalResult[]): string {
   if (!results.length) return "(No relevant documents found.)";
 
   return results
-    .map(
-      (r) =>
-        `--- Source: ${r.source} (relevance: ${r.score.toFixed(2)}) ---\n${r.content}\n`,
-    )
+    .map((r) => `--- Source: ${r.source} (relevance: ${r.score.toFixed(2)}) ---\n${r.content}\n`)
     .join("\n");
 }
 

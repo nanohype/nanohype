@@ -1,17 +1,9 @@
 import { validateBootstrap } from "./bootstrap.js";
-import {
-  getProvider,
-  type Message,
-  type LlmResponse,
-} from "./providers/index.js";
-import { registry } from "./tools/index.js";
 import { logger } from "./logger.js";
-import {
-  llmRequestTotal,
-  llmRequestDuration,
-  llmTokenUsage,
-} from "./metrics.js";
 import type { ConversationStore } from "./memory/conversation.js";
+import { llmRequestDuration, llmRequestTotal, llmTokenUsage } from "./metrics.js";
+import { getProvider, type LlmResponse, type Message } from "./providers/index.js";
+import { registry } from "./tools/index.js";
 
 const MAX_ITERATIONS = Number("__MAX_ITERATIONS__");
 const PROVIDER_NAME = "__LLM_PROVIDER__";
@@ -95,10 +87,7 @@ export interface AgentRunOptions {
  * loads prior messages before running and saves the updated history
  * after completion.
  */
-export async function runAgent(
-  userInput: string,
-  options?: AgentRunOptions,
-): Promise<AgentResult> {
+export async function runAgent(userInput: string, options?: AgentRunOptions): Promise<AgentResult> {
   // Load prior conversation history if a store and ID are provided
   let messages: Message[] = [];
   if (options?.conversationStore && options.conversationId) {
@@ -236,7 +225,10 @@ export async function* runStream(
 
   while (iterations < MAX_ITERATIONS) {
     iterations++;
-    logger.debug("agent.stream_iteration", { iteration: iterations, messageCount: messages.length });
+    logger.debug("agent.stream_iteration", {
+      iteration: iterations,
+      messageCount: messages.length,
+    });
 
     const streamStart = performance.now();
     const stream = resolveProvider().streamChat(SYSTEM_PROMPT, messages, registry.list());
@@ -323,8 +315,8 @@ async function main(): Promise<void> {
   const input = process.argv.slice(2).join(" ");
 
   if (!input) {
-    console.log("Usage: npm start -- \"<your question>\"");
-    console.log("Example: npm start -- \"What is 144 / 12?\"");
+    console.log('Usage: npm start -- "<your question>"');
+    console.log('Example: npm start -- "What is 144 / 12?"');
     process.exit(0);
   }
 

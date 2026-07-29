@@ -14,13 +14,7 @@ import { encodingForModel, type TiktokenModel } from "js-tiktoken";
 const encoderCache = new Map<string, ReturnType<typeof encodingForModel>>();
 
 // Models that use cl100k_base encoding
-const CL100K_MODELS = new Set([
-  "gpt-4o",
-  "gpt-4o-mini",
-  "gpt-4-turbo",
-  "gpt-4",
-  "gpt-3.5-turbo",
-]);
+const CL100K_MODELS = new Set(["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo"]);
 
 function getEncoder(model?: string): ReturnType<typeof encodingForModel> {
   // Default to cl100k_base via gpt-4o if model is unknown

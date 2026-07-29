@@ -1,6 +1,6 @@
 import type { Flag } from "../types.js";
-import type { FlagStore } from "./types.js";
 import { registerStore } from "./registry.js";
+import type { FlagStore } from "./types.js";
 
 // ── In-Memory Flag Store ────────────────────────────────────────────
 //

@@ -1,7 +1,7 @@
-import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import type { DatabaseDriver } from "./types.js";
+import pg from "pg";
 import { registerDriver } from "./registry.js";
+import type { DatabaseDriver } from "./types.js";
 
 // ── PostgreSQL Driver ───────────────────────────────────────────────
 //

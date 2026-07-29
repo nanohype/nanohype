@@ -6,7 +6,7 @@
 // Unmatched placeholders are left in place.
 //
 
-import type { NotificationTemplate, Notification } from "./types.js";
+import type { Notification, NotificationTemplate } from "./types.js";
 
 /**
  * Replace all `{{key}}` placeholders in a string with values from the

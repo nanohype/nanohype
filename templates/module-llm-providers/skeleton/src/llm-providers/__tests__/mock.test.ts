@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
 
@@ -15,9 +15,7 @@ describe("mock provider", () => {
 
   it("returns keyword-matched response for 'hello'", async () => {
     const provider = getMock();
-    const response = await provider.chat([
-      { role: "user", content: "hello" },
-    ]);
+    const response = await provider.chat([{ role: "user", content: "hello" }]);
 
     expect(response.text).toContain("Hello");
     expect(response.provider).toBe("mock");
@@ -26,37 +24,30 @@ describe("mock provider", () => {
 
   it("returns keyword-matched response for 'code'", async () => {
     const provider = getMock();
-    const response = await provider.chat([
-      { role: "user", content: "Write some code" },
-    ]);
+    const response = await provider.chat([{ role: "user", content: "Write some code" }]);
 
     expect(response.text).toContain("function");
   });
 
   it("returns default response for unmatched keywords", async () => {
     const provider = getMock();
-    const response = await provider.chat([
-      { role: "user", content: "xyzzy" },
-    ]);
+    const response = await provider.chat([{ role: "user", content: "xyzzy" }]);
 
     expect(response.text).toContain("mock response");
   });
 
   it("respects model override in options", async () => {
     const provider = getMock();
-    const response = await provider.chat(
-      [{ role: "user", content: "hello" }],
-      { model: "custom-model" },
-    );
+    const response = await provider.chat([{ role: "user", content: "hello" }], {
+      model: "custom-model",
+    });
 
     expect(response.model).toBe("custom-model");
   });
 
   it("reports fake token counts based on text length", async () => {
     const provider = getMock();
-    const response = await provider.chat([
-      { role: "user", content: "hello" },
-    ]);
+    const response = await provider.chat([{ role: "user", content: "hello" }]);
 
     expect(response.usage.inputTokens).toBeGreaterThan(0);
     expect(response.usage.outputTokens).toBeGreaterThan(0);
@@ -70,9 +61,7 @@ describe("mock provider", () => {
 
   it("has zero cost", async () => {
     const provider = getMock();
-    const response = await provider.chat([
-      { role: "user", content: "hello" },
-    ]);
+    const response = await provider.chat([{ role: "user", content: "hello" }]);
     expect(response.cost).toBe(0);
   });
 
@@ -85,9 +74,7 @@ describe("mock provider", () => {
   describe("streaming", () => {
     it("yields chunks word-by-word", async () => {
       const provider = getMock();
-      const stream = provider.streamChat([
-        { role: "user", content: "hello" },
-      ]);
+      const stream = provider.streamChat([{ role: "user", content: "hello" }]);
 
       const chunks: string[] = [];
       for await (const chunk of stream) {
@@ -101,9 +88,7 @@ describe("mock provider", () => {
 
     it("provides complete response after stream finishes", async () => {
       const provider = getMock();
-      const stream = provider.streamChat([
-        { role: "user", content: "hello" },
-      ]);
+      const stream = provider.streamChat([{ role: "user", content: "hello" }]);
 
       // Consume the stream
       for await (const chunk of stream) {

@@ -1,7 +1,7 @@
-import type { Notification, NotificationResult } from "../../types.js";
-import type { ChannelProvider } from "../types.js";
-import { registerChannel } from "../registry.js";
 import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
+import type { Notification, NotificationResult } from "../../types.js";
+import { registerChannel } from "../registry.js";
+import type { ChannelProvider } from "../types.js";
 
 // ── Twilio SMS Provider ─────────────────────────────────────────────
 //
@@ -48,7 +48,7 @@ const twilioProvider: ChannelProvider = {
           from: fromNumber,
           to: notification.to,
           body: notification.body,
-        })
+        }),
       );
 
       return { success: true, messageId: message.sid };

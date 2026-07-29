@@ -7,12 +7,7 @@
 //
 
 import { readFile, writeFile } from "node:fs/promises";
-import type {
-  BaselineEntry,
-  ComparisonResult,
-  SuiteComparison,
-  SuiteScore,
-} from "./types.js";
+import type { BaselineEntry, ComparisonResult, SuiteComparison, SuiteScore } from "./types.js";
 
 /**
  * Load baseline entries from a JSON file. Returns an empty array if
@@ -32,10 +27,7 @@ export async function loadBaseline(path: string): Promise<BaselineEntry[]> {
 /**
  * Save current suite scores as the new baseline.
  */
-export async function saveBaseline(
-  path: string,
-  scores: SuiteScore[],
-): Promise<void> {
+export async function saveBaseline(path: string, scores: SuiteScore[]): Promise<void> {
   const now = new Date().toISOString();
   const entries: BaselineEntry[] = scores.map((s) => ({
     suite: s.suite,

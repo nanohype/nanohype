@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { piiFilter } from "../pii.js";
 
 describe("pii filter", () => {
@@ -15,10 +15,7 @@ describe("pii filter", () => {
   });
 
   it("detects and redacts email addresses", () => {
-    const result = piiFilter.filter(
-      "Send an email to alice@example.com for more info",
-      "output",
-    );
+    const result = piiFilter.filter("Send an email to alice@example.com for more info", "output");
 
     expect(result.filtered).toContain("[EMAIL_REDACTED]");
     expect(result.filtered).not.toContain("alice@example.com");
@@ -48,20 +45,14 @@ describe("pii filter", () => {
   });
 
   it("detects and redacts credit card numbers", () => {
-    const result = piiFilter.filter(
-      "Card: 4111-1111-1111-1111",
-      "output",
-    );
+    const result = piiFilter.filter("Card: 4111-1111-1111-1111", "output");
 
     expect(result.filtered).toContain("[CC_REDACTED]");
     expect(result.violations.some((v) => v.message.includes("credit-card"))).toBe(true);
   });
 
   it("redacts multiple PII instances in the same input", () => {
-    const result = piiFilter.filter(
-      "Email alice@example.com or bob@test.org for help",
-      "output",
-    );
+    const result = piiFilter.filter("Email alice@example.com or bob@test.org for help", "output");
 
     expect(result.filtered).not.toContain("alice@example.com");
     expect(result.filtered).not.toContain("bob@test.org");
@@ -69,10 +60,7 @@ describe("pii filter", () => {
   });
 
   it("truncates detected values in violation messages for privacy", () => {
-    const result = piiFilter.filter(
-      "Email alice@example.com",
-      "output",
-    );
+    const result = piiFilter.filter("Email alice@example.com", "output");
 
     const emailViolation = result.violations.find((v) => v.message.includes("email"));
     expect(emailViolation).toBeDefined();

@@ -75,9 +75,7 @@ export function createKeywordMatchStrategy(): RoutingStrategy {
         }
       }
 
-      return scored
-        .sort((a, b) => b.score - a.score)
-        .map((s) => s.name);
+      return scored.sort((a, b) => b.score - a.score).map((s) => s.name);
     },
   };
 }

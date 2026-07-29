@@ -9,37 +9,37 @@
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { FlagServiceConfigSchema } from "./config.js";
-import { getStore, listStores } from "./stores/index.js";
 import { evaluate, notFoundResult } from "./evaluator.js";
-import { createVariantTracker } from "./tracker.js";
-import { flagEvalTotal, flagEvalDuration } from "./metrics.js";
+import { flagEvalDuration, flagEvalTotal } from "./metrics.js";
+import { getStore, listStores } from "./stores/index.js";
 import type { FlagStore } from "./stores/types.js";
+import type { FlushCallback, TrackingRecord, VariantTracker } from "./tracker.js";
+import { createVariantTracker } from "./tracker.js";
 import type {
+  EvaluationResult,
   Flag,
+  FlagServiceConfig,
   FlagType,
-  Variant,
   Rule,
   TargetingContext,
-  EvaluationResult,
-  FlagServiceConfig,
+  Variant,
 } from "./types.js";
-import type { VariantTracker, TrackingRecord, FlushCallback } from "./tracker.js";
 
-// Re-export everything consumers need
-export { registerStore, getStore, listStores } from "./stores/index.js";
 export { evaluate, notFoundResult } from "./evaluator.js";
-export { createVariantTracker } from "./tracker.js";
+// Re-export everything consumers need
+export { getStore, listStores, registerStore } from "./stores/index.js";
 export type { FlagStore } from "./stores/types.js";
+export type { FlushCallback, TrackingRecord, VariantTracker } from "./tracker.js";
+export { createVariantTracker } from "./tracker.js";
 export type {
+  EvaluationResult,
   Flag,
+  FlagServiceConfig,
   FlagType,
-  Variant,
   Rule,
   TargetingContext,
-  EvaluationResult,
-  FlagServiceConfig,
+  Variant,
 } from "./types.js";
-export type { VariantTracker, TrackingRecord, FlushCallback } from "./tracker.js";
 
 // ── Flag Service Facade ─────────────────────────────────────────────
 
@@ -83,9 +83,7 @@ export interface FlagService {
  *   const result = await flags.evaluate("new-checkout", { userId: "user-42" });
  *   console.log(result.variant, result.value);
  */
-export async function createFlagService(
-  config: FlagServiceConfig = {},
-): Promise<FlagService> {
+export async function createFlagService(config: FlagServiceConfig = {}): Promise<FlagService> {
   const parsed = FlagServiceConfigSchema.safeParse(config);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");

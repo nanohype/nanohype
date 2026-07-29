@@ -16,18 +16,12 @@ export const gatewayProxyTotal = meter.createCounter("gateway_proxy_total", {
 });
 
 /** Proxy request duration in milliseconds, labeled by method, route path, upstream, and status. */
-export const gatewayProxyDuration = meter.createHistogram(
-  "gateway_proxy_duration_ms",
-  {
-    description: "Proxy request latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const gatewayProxyDuration = meter.createHistogram("gateway_proxy_duration_ms", {
+  description: "Proxy request latency in milliseconds",
+  unit: "ms",
+});
 
 /** Upstream health status gauge (1 = healthy, 0 = unhealthy). */
-export const gatewayUpstreamHealth = meter.createUpDownCounter(
-  "gateway_upstream_health",
-  {
-    description: "Upstream health status (1 = healthy, 0 = unhealthy)",
-  },
-);
+export const gatewayUpstreamHealth = meter.createUpDownCounter("gateway_upstream_health", {
+  description: "Upstream health status (1 = healthy, 0 = unhealthy)",
+});

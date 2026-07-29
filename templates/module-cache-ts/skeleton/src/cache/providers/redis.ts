@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import type { CacheConfig } from "../types.js";
-import type { CacheProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { CacheProvider } from "./types.js";
 
 // ── Redis Cache Provider ───────────────────────────────────────────
 //
@@ -27,12 +27,9 @@ const redisProvider: CacheProvider = {
   name: "redis",
 
   async init(config: CacheConfig): Promise<void> {
-    const url =
-      (config.url as string) ?? process.env.REDIS_URL ?? undefined;
-    const host =
-      (config.host as string) ?? process.env.REDIS_HOST ?? "127.0.0.1";
-    const port =
-      Number((config.port as number) ?? process.env.REDIS_PORT ?? 6379);
+    const url = (config.url as string) ?? process.env.REDIS_URL ?? undefined;
+    const host = (config.host as string) ?? process.env.REDIS_HOST ?? "127.0.0.1";
+    const port = Number((config.port as number) ?? process.env.REDIS_PORT ?? 6379);
     const password = (config.password as string) ?? undefined;
     keyPrefix = (config.keyPrefix as string) ?? "";
 

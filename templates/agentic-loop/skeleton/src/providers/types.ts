@@ -64,11 +64,7 @@ export interface LlmProvider {
    * Send a conversation to the LLM and return its response, including
    * any tool-call requests.
    */
-  sendMessage(
-    systemPrompt: string,
-    messages: Message[],
-    tools: Tool[],
-  ): Promise<LlmResponse>;
+  sendMessage(systemPrompt: string, messages: Message[], tools: Tool[]): Promise<LlmResponse>;
 
   /**
    * Stream a conversation to the LLM, yielding text chunks as they
@@ -76,11 +72,7 @@ export interface LlmProvider {
    * LlmResponse (including any tool calls) is available after the
    * stream completes via the `response` property on the returned object.
    */
-  streamChat(
-    systemPrompt: string,
-    messages: Message[],
-    tools: Tool[],
-  ): StreamChat;
+  streamChat(systemPrompt: string, messages: Message[], tools: Tool[]): StreamChat;
 
   /**
    * Build a tool-result message in the format the provider expects.

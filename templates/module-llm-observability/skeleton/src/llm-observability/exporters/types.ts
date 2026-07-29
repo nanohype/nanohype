@@ -1,4 +1,4 @@
-import type { LlmSpan, CostEntry } from "../types.js";
+import type { CostEntry, LlmSpan } from "../types.js";
 
 // ── LLM Exporter Interface ─────────────────────────────────────────
 //

@@ -1,6 +1,6 @@
 import { logger } from "./logger.js";
-import { getProvider } from "./providers/index.js";
 import type { ChatMessage } from "./providers/index.js";
+import { getProvider } from "./providers/index.js";
 
 const DEFAULT_PROVIDER = "__LLM_PROVIDER__";
 

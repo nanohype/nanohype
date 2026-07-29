@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { evaluateArithmetic, calculatorTool } from "../tools/example.js";
+import { describe, expect, it } from "vitest";
+import { calculatorTool, evaluateArithmetic } from "../tools/example.js";
 
 describe("evaluateArithmetic", () => {
   it("evaluates simple addition", () => {
@@ -73,14 +73,12 @@ describe("calculatorTool", () => {
   });
 
   it("throws on non-finite results", async () => {
-    await expect(
-      calculatorTool.execute({ expression: "0 / 0" }),
-    ).rejects.toThrow(/did not evaluate to a finite number/);
+    await expect(calculatorTool.execute({ expression: "0 / 0" })).rejects.toThrow(
+      /did not evaluate to a finite number/,
+    );
   });
 
   it("rejects malformed expressions", async () => {
-    await expect(
-      calculatorTool.execute({ expression: "1 +" }),
-    ).rejects.toThrow();
+    await expect(calculatorTool.execute({ expression: "1 +" })).rejects.toThrow();
   });
 });

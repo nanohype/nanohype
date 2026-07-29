@@ -9,8 +9,8 @@
  */
 
 import type { EmbeddedChunk } from "../types.js";
-import type { OutputAdapter, OutputAdapterConfig } from "./types.js";
 import { registerAdapter } from "./registry.js";
+import type { OutputAdapter, OutputAdapterConfig } from "./types.js";
 
 const PREVIEW_LENGTH = 120;
 
@@ -23,9 +23,10 @@ class ConsoleAdapter implements OutputAdapter {
 
   async write(chunks: EmbeddedChunk[]): Promise<void> {
     for (const chunk of chunks) {
-      const preview = chunk.content.length > PREVIEW_LENGTH
-        ? chunk.content.slice(0, PREVIEW_LENGTH) + "..."
-        : chunk.content;
+      const preview =
+        chunk.content.length > PREVIEW_LENGTH
+          ? chunk.content.slice(0, PREVIEW_LENGTH) + "..."
+          : chunk.content;
 
       console.log(`[${chunk.id}]`);
       console.log(`  Content: ${preview}`);

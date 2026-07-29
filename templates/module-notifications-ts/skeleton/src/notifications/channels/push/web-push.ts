@@ -1,7 +1,7 @@
-import type { Notification, NotificationResult } from "../../types.js";
-import type { ChannelProvider } from "../types.js";
-import { registerChannel } from "../registry.js";
 import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
+import type { Notification, NotificationResult } from "../../types.js";
+import { registerChannel } from "../registry.js";
+import type { ChannelProvider } from "../types.js";
 
 // ── Web Push Provider ───────────────────────────────────────────────
 //
@@ -31,7 +31,8 @@ const webPushProvider: ChannelProvider = {
     if (!vapidPublicKey || !vapidPrivateKey || !vapidSubject) {
       return {
         success: false,
-        error: "VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT environment variables are required",
+        error:
+          "VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, and VAPID_SUBJECT environment variables are required",
       };
     }
 
@@ -47,9 +48,7 @@ const webPushProvider: ChannelProvider = {
         ...(notification.metadata ?? {}),
       });
 
-      const result = await cb.execute(() =>
-        webpush.sendNotification(subscription, payload)
-      );
+      const result = await cb.execute(() => webpush.sendNotification(subscription, payload));
 
       return {
         success: result.statusCode >= 200 && result.statusCode < 300,

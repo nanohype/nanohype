@@ -9,9 +9,8 @@
  */
 
 import { createHash } from "node:crypto";
-
-import type { EmbeddingProvider } from "./types.js";
 import { registerEmbeddingProvider } from "./registry.js";
+import type { EmbeddingProvider } from "./types.js";
 
 const DEFAULT_DIMENSIONS = 128;
 
@@ -43,7 +42,7 @@ class MockEmbedder implements EmbeddingProvider {
     for (let i = 0; i < this.dimensions; i++) {
       // Cycle through hash bytes and map to [-1, 1] range
       const byteIndex = i % hash.length;
-      embedding[i] = (hash[byteIndex] / 127.5) - 1;
+      embedding[i] = hash[byteIndex] / 127.5 - 1;
     }
 
     // Normalize to unit length
@@ -58,7 +57,4 @@ class MockEmbedder implements EmbeddingProvider {
   }
 }
 
-registerEmbeddingProvider(
-  "mock",
-  (dims?: unknown) => new MockEmbedder(dims as number),
-);
+registerEmbeddingProvider("mock", (dims?: unknown) => new MockEmbedder(dims as number));

@@ -1,4 +1,4 @@
-import { trace, type Tracer, type Span, SpanStatusCode } from "@opentelemetry/api";
+import { type Span, SpanStatusCode, type Tracer, trace } from "@opentelemetry/api";
 
 /**
  * Tracer wrapper for creating spans.
@@ -51,11 +51,7 @@ export async function withSpan<T>(
 /**
  * Run a synchronous function inside a new span.
  */
-export function withSpanSync<T>(
-  tracerName: string,
-  spanName: string,
-  fn: (span: Span) => T,
-): T {
+export function withSpanSync<T>(tracerName: string, spanName: string, fn: (span: Span) => T): T {
   const tracer = getTracer(tracerName);
 
   return tracer.startActiveSpan(spanName, (span: Span) => {

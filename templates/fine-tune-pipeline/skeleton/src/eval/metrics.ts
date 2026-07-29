@@ -79,9 +79,7 @@ export function computeComparisonMetrics(
 /**
  * Compute aggregate metrics across all comparison results.
  */
-export function computeAggregateMetrics(
-  results: ComparisonResult[],
-): AggregateMetrics {
+export function computeAggregateMetrics(results: ComparisonResult[]): AggregateMetrics {
   if (results.length === 0) {
     return {
       totalComparisons: 0,

@@ -6,9 +6,9 @@
 // `refresh_token`; the refresh path in refresh.ts reuses the previous
 // one when missing.
 
-import type { OAuthProvider, TokenGrant } from "./types.js";
 import { registerProvider } from "./registry.js";
 import { expiresAtFromExpiresIn, TokenResponseSchema } from "./shared.js";
+import type { OAuthProvider, TokenGrant } from "./types.js";
 
 function parse(raw: unknown, previous?: TokenGrant): TokenGrant {
   const r = TokenResponseSchema.parse(raw);

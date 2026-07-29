@@ -26,7 +26,10 @@ export default defineConfig({
 
   /* Reporter configuration */
   reporter: process.env.CI
-    ? [["html", { open: "never" }], ["json", { outputFile: "test-results/results.json" }]]
+    ? [
+        ["html", { open: "never" }],
+        ["json", { outputFile: "test-results/results.json" }],
+      ]
     : [["html", { open: "on-failure" }]],
 
   /* Shared settings for all projects */

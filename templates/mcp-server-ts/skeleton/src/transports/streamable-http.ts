@@ -1,6 +1,6 @@
-import express from "express";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import express from "express";
 import { logger } from "../logger.js";
 
 const PORT = parseInt(process.env.PORT ?? "3000", 10);

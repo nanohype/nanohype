@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { selectUpstream, isCanaryConfig } from "../traffic/canary.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { isCanaryConfig, selectUpstream } from "../traffic/canary.js";
 import type { CanaryConfig } from "../types.js";
 
 // ── Canary Tests ────────────────────────────────────────────────────

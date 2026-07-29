@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 // Import the mock provider module to trigger self-registration
 import { resetMockState } from "../providers/mock.js";
@@ -69,9 +69,9 @@ describe("mock knowledge base provider", () => {
   });
 
   it("throws when updating a non-existent page", async () => {
-    await expect(
-      provider.updatePage("nonexistent", { title: "Updated" }),
-    ).rejects.toThrow(/not found/i);
+    await expect(provider.updatePage("nonexistent", { title: "Updated" })).rejects.toThrow(
+      /not found/i,
+    );
   });
 
   // ── Search ───────────────────────────────────────────────────────

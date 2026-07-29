@@ -1,18 +1,18 @@
-import type { ProjectProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Project,
-  Issue,
   Comment,
-  Priority,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
+  Priority,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { ProjectProvider } from "./types.js";
 
 // ── Jira Provider ─────────────────────────────────────────────────
 //
@@ -37,23 +37,34 @@ import { logger } from "../logger.js";
 /** Map Jira priority name to unified Priority. */
 function fromJiraPriority(name: string | undefined): Priority {
   switch (name?.toLowerCase()) {
-    case "highest": return "urgent";
-    case "high": return "high";
-    case "medium": return "medium";
-    case "low": return "low";
-    case "lowest": return "none";
-    default: return "none";
+    case "highest":
+      return "urgent";
+    case "high":
+      return "high";
+    case "medium":
+      return "medium";
+    case "low":
+      return "low";
+    case "lowest":
+      return "none";
+    default:
+      return "none";
   }
 }
 
 /** Map unified Priority to Jira priority name. */
 function toJiraPriorityName(p: Priority): string {
   switch (p) {
-    case "urgent": return "Highest";
-    case "high": return "High";
-    case "medium": return "Medium";
-    case "low": return "Low";
-    case "none": return "Lowest";
+    case "urgent":
+      return "Highest";
+    case "high":
+      return "High";
+    case "medium":
+      return "Medium";
+    case "low":
+      return "Low";
+    case "none":
+      return "Lowest";
   }
 }
 
@@ -106,11 +117,7 @@ function createJiraProvider(): ProjectProvider {
     return config;
   }
 
-  async function api<T>(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<T> {
+  async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
     const { email, token, baseUrl } = getConfig();
     const auth = Buffer.from(`${email}:${token}`).toString("base64");
 
@@ -302,7 +309,8 @@ function createJiraProvider(): ProjectProvider {
       const fields: Record<string, unknown> = {};
       if (input.title !== undefined) fields.summary = input.title;
       if (input.description !== undefined) fields.description = textToAdf(input.description);
-      if (input.priority !== undefined) fields.priority = { name: toJiraPriorityName(input.priority) };
+      if (input.priority !== undefined)
+        fields.priority = { name: toJiraPriorityName(input.priority) };
       if (input.assigneeId !== undefined) fields.assignee = { accountId: input.assigneeId };
       if (input.labelIds !== undefined) fields.labels = input.labelIds;
 

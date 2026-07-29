@@ -1,6 +1,6 @@
-import type { Task, TaskRequest, TaskResponse, A2AMessage } from "./types.js";
-import { getSkill, listSkills } from "../skills/index.js";
 import { logger } from "../logger.js";
+import { getSkill, listSkills } from "../skills/index.js";
+import type { A2AMessage, Task, TaskRequest, TaskResponse } from "./types.js";
 
 /**
  * A2A server — handles incoming task requests.

@@ -1,6 +1,6 @@
-import { Client, EmbedBuilder } from "discord.js";
-import type { Config } from "../config.js";
+import { type Client, EmbedBuilder } from "discord.js";
 import { handleAskCommand } from "../commands/ask.js";
+import type { Config } from "../config.js";
 import { logger } from "../logger.js";
 
 // ── Interaction Create Handler ───────────────────────────────────────

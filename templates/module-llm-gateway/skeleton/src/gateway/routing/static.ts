@@ -1,6 +1,6 @@
 import type { GatewayProvider } from "../providers/types.js";
-import type { RoutingStrategy, RoutingContext } from "./types.js";
 import { registerStrategy } from "./registry.js";
+import type { RoutingContext, RoutingStrategy } from "./types.js";
 
 // ── Static Routing Strategy ─────────────────────────────────────────
 //

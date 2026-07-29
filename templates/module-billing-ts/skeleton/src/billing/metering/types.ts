@@ -3,7 +3,7 @@
 // Interfaces specific to the usage metering subsystem.
 //
 
-import type { BillingPeriod, UsageRecord, UsageSummary, PricingRule } from "../types.js";
+import type { BillingPeriod, PricingRule, UsageRecord, UsageSummary } from "../types.js";
 
 /** Options for recording a usage event. */
 export interface RecordOptions {
@@ -35,10 +35,7 @@ export interface UsageTracker {
   getRecords(customerId: string, period: BillingPeriod): UsageRecord[];
 
   /** Retrieve all usage records for a customer, optionally filtered by tags. */
-  getRecordsByTags(
-    customerId: string,
-    tags: Record<string, string>,
-  ): UsageRecord[];
+  getRecordsByTags(customerId: string, tags: Record<string, string>): UsageRecord[];
 
   /** Clear all stored records. */
   clear(): void;
@@ -56,9 +53,5 @@ export interface UsageAggregatorConfig {
 /** A usage aggregator that computes summaries from raw records. */
 export interface UsageAggregator {
   /** Aggregate usage for a customer over a period, applying pricing rules. */
-  aggregate(
-    records: UsageRecord[],
-    customerId: string,
-    period: BillingPeriod,
-  ): UsageSummary;
+  aggregate(records: UsageRecord[], customerId: string, period: BillingPeriod): UsageSummary;
 }

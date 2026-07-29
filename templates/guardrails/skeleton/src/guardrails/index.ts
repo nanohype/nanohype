@@ -14,23 +14,21 @@
 // your own Filter implementation.
 
 import { validateBootstrap } from "./bootstrap.js";
-import type { Direction, FilterResult, GuardrailConfig } from "./types.js";
-import { createPipeline } from "./pipeline.js";
-import { setMaxTokens } from "./filters/token-limit.js";
 import { setBlockedKeywords } from "./filters/content-policy.js";
+import { setMaxTokens } from "./filters/token-limit.js";
+import { createPipeline } from "./pipeline.js";
+import type { Direction, FilterResult, GuardrailConfig } from "./types.js";
 
 // Trigger self-registration of all built-in filters
 import "./filters/index.js";
 
-// Re-export core types
-export type { FilterResult, GuardrailConfig, Violation, Direction } from "./types.js";
-
 // Re-export filter utilities for custom filter registration
-export { registerFilter, getFilter, listFilters } from "./filters/index.js";
+export { getFilter, listFilters, registerFilter } from "./filters/index.js";
 export type { Filter } from "./filters/types.js";
-
 // Re-export pipeline
 export { createPipeline } from "./pipeline.js";
+// Re-export core types
+export type { Direction, FilterResult, GuardrailConfig, Violation } from "./types.js";
 
 /**
  * Create a guardrail function from the given configuration. This is

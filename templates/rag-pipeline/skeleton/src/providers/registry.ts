@@ -7,7 +7,7 @@
  * by name at runtime.
  */
 
-import type { LlmProvider, EmbeddingProvider, VectorStoreProvider } from "./types.js";
+import type { EmbeddingProvider, LlmProvider, VectorStoreProvider } from "./types.js";
 
 // ── LLM Registry ──────────────────────────────────────────────────
 
@@ -72,9 +72,7 @@ export function getVectorStoreProvider(name: string, ...args: unknown[]): Vector
   const factory = vectorStoreProviders.get(name);
   if (!factory) {
     const available = [...vectorStoreProviders.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown vector store provider "${name}". Registered providers: ${available}`,
-    );
+    throw new Error(`Unknown vector store provider "${name}". Registered providers: ${available}`);
   }
   return factory(...args);
 }

@@ -11,12 +11,13 @@ import { stat } from "node:fs/promises";
 import { extname } from "node:path";
 import { lookup } from "mime-types";
 import type { Config } from "./config.js";
-import type { ProcessedInput, Modality } from "./processors/types.js";
-import { getProcessorByMimeType } from "./processors/registry.js";
-import { getProvider } from "./providers/registry.js";
+import { logger } from "./logger.js";
 import { formatResult } from "./output/formatter.js";
 import type { PipelineResult } from "./output/types.js";
-import { logger } from "./logger.js";
+import { getProcessorByMimeType } from "./processors/registry.js";
+import type { Modality, ProcessedInput } from "./processors/types.js";
+import { getProvider } from "./providers/registry.js";
+import type { AnalysisResult } from "./providers/types.js";
 
 // Ensure all processors and providers are registered
 import "./processors/index.js";
@@ -102,7 +103,7 @@ export async function processFile(filePath: string, config: Config): Promise<Pip
 
   // Route to the appropriate analysis method
   const systemPrompt = SYSTEM_PROMPTS[modality];
-  let analysisResult;
+  let analysisResult: AnalysisResult;
 
   if (modality === "video" && processed.frames?.length) {
     analysisResult = await provider.analyzeFrames(

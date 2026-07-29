@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { json } from "./helpers.js";
 import { Hono } from "hono";
+import { describe, expect, it } from "vitest";
 import { idempotency } from "../middleware/idempotency.js";
+import { json } from "./helpers.js";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -58,7 +58,7 @@ describe("idempotency middleware", () => {
       { name: "Widget" },
       {
         "Idempotency-Key": "key-001",
-      }
+      },
     );
 
     expect(res.status).toBe(201);
@@ -101,7 +101,7 @@ describe("idempotency middleware", () => {
       { name: "Widget" },
       {
         "Idempotency-Key": "key-003",
-      }
+      },
     );
     expect(res1.status).toBe(201);
 
@@ -111,7 +111,7 @@ describe("idempotency middleware", () => {
       { name: "Gadget" },
       {
         "Idempotency-Key": "key-003",
-      }
+      },
     );
     expect(res2.status).toBe(409);
 

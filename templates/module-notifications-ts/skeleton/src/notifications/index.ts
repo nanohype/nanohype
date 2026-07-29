@@ -8,25 +8,25 @@ import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { getChannel, listChannels } from "./channels/index.js";
 import type { ChannelProvider } from "./channels/types.js";
+import { interpolate, renderTemplate } from "./template.js";
 import type {
   Notification,
+  NotificationChannel,
   NotificationConfig,
   NotificationResult,
   NotificationTemplate,
-  NotificationChannel,
 } from "./types.js";
-import { renderTemplate, interpolate } from "./template.js";
 
-// Re-export everything consumers need
-export { renderTemplate, interpolate } from "./template.js";
 export { getChannel, listChannels, registerChannel } from "./channels/index.js";
 export type { ChannelProvider } from "./channels/types.js";
+// Re-export everything consumers need
+export { interpolate, renderTemplate } from "./template.js";
 export type {
   Notification,
+  NotificationChannel,
   NotificationConfig,
   NotificationResult,
   NotificationTemplate,
-  NotificationChannel,
 } from "./types.js";
 
 // ── Notifier Facade ─────────────────────────────────────────────────
@@ -70,10 +70,12 @@ export interface ChannelProviderMap {
 /** Zod schema for validating createNotifier arguments. */
 const CreateNotifierSchema = z.object({
   emailProviderName: z.string().min(1, "emailProviderName must be a non-empty string"),
-  providers: z.object({
-    sms: z.string().optional(),
-    push: z.string().optional(),
-  }).optional(),
+  providers: z
+    .object({
+      sms: z.string().optional(),
+      push: z.string().optional(),
+    })
+    .optional(),
   config: z.object({}).passthrough().optional(),
 });
 
@@ -84,7 +86,7 @@ export function createNotifier(
 ): Notifier {
   const parsed = CreateNotifierSchema.safeParse({ emailProviderName, providers, config: _config });
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid notifier config: ${issues}`);
   }
 
@@ -101,7 +103,7 @@ export function createNotifier(
     if (!providerName) {
       throw new Error(
         `No provider configured for channel "${channel}". ` +
-        `Pass { ${channel}: "providerName" } in the providers map.`,
+          `Pass { ${channel}: "providerName" } in the providers map.`,
       );
     }
     return getChannel(channel, providerName);

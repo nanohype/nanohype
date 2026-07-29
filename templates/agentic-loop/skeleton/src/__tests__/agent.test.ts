@@ -1,13 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import type {
-  LlmProvider,
-  LlmResponse,
-  Message,
-  StreamChat,
-} from "../providers/types.js";
-import { registerProvider, getProvider } from "../providers/registry.js";
-import { ToolRegistry, type Tool } from "../tools/registry.js";
+import { getProvider, registerProvider } from "../providers/registry.js";
+import type { LlmProvider, LlmResponse, Message, StreamChat } from "../providers/types.js";
+import { type Tool, ToolRegistry } from "../tools/registry.js";
 
 /**
  * Build a text-only LlmResponse with no tool calls.
@@ -33,16 +28,12 @@ function toolCallResponse(
   callId = "call_001",
 ): LlmResponse {
   return {
-    content: [
-      { type: "tool_use", id: callId, name: toolName, input },
-    ],
+    content: [{ type: "tool_use", id: callId, name: toolName, input }],
     toolCalls: [{ id: callId, name: toolName, input }],
     stopReason: "tool_use",
     rawAssistantMessage: {
       role: "assistant",
-      content: [
-        { type: "tool_use", id: callId, name: toolName, input },
-      ],
+      content: [{ type: "tool_use", id: callId, name: toolName, input }],
     },
   };
 }
@@ -81,13 +72,9 @@ describe("agent loop integration", () => {
 
   it("executes a tool call and returns the final response", async () => {
     // First LLM call: request the greet tool
-    mockSendMessage.mockResolvedValueOnce(
-      toolCallResponse("greet", { name: "Alice" }),
-    );
+    mockSendMessage.mockResolvedValueOnce(toolCallResponse("greet", { name: "Alice" }));
     // Second LLM call: return a text response after seeing the tool result
-    mockSendMessage.mockResolvedValueOnce(
-      textResponse("I greeted Alice for you."),
-    );
+    mockSendMessage.mockResolvedValueOnce(textResponse("I greeted Alice for you."));
 
     const provider = getProvider("mock-test");
     const messages: Message[] = [{ role: "user", content: "Say hi to Alice" }];
@@ -151,9 +138,7 @@ describe("agent loop integration", () => {
       toolCallResponse("risky_operation", { value: "good" }, "call_err_2"),
     );
     // Third LLM call: return a final text response
-    mockSendMessage.mockResolvedValueOnce(
-      textResponse("Operation completed after retry."),
-    );
+    mockSendMessage.mockResolvedValueOnce(textResponse("Operation completed after retry."));
 
     const provider = getProvider("mock-test");
     const messages: Message[] = [{ role: "user", content: "Run risky operation" }];
@@ -215,9 +200,7 @@ describe("agent loop integration", () => {
 
   it("respects the max iterations limit", async () => {
     // Provider always requests a tool call, never returns text
-    mockSendMessage.mockResolvedValue(
-      toolCallResponse("greet", { name: "Loop" }),
-    );
+    mockSendMessage.mockResolvedValue(toolCallResponse("greet", { name: "Loop" }));
 
     const provider = getProvider("mock-test");
     const messages: Message[] = [{ role: "user", content: "loop forever" }];

@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import type * as vscode from "vscode";
 import { validateBootstrap } from "./bootstrap.js";
 import { registerExampleCommand } from "./commands/example";
 

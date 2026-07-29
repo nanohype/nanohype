@@ -1,5 +1,5 @@
-import type { Context, Next } from "hono";
 import { createHash } from "node:crypto";
+import type { Context, Next } from "hono";
 
 // ── Idempotency Key Middleware ──────────────────────────────────────
 //
@@ -99,7 +99,7 @@ export function idempotency(options?: IdempotencyOptions) {
                 statusCode: 409,
               },
             },
-            409
+            409,
           );
         }
 
@@ -113,7 +113,7 @@ export function idempotency(options?: IdempotencyOptions) {
                 statusCode: 409,
               },
             },
-            409
+            409,
           );
         }
 

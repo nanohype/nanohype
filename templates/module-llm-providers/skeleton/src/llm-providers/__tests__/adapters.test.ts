@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createGatewayAdapter } from "../adapters/gateway.js";
-import { normalizeStream, collectStream, fromStringStream } from "../adapters/streaming.js";
+import { collectStream, fromStringStream, normalizeStream } from "../adapters/streaming.js";
 import { getProvider } from "../providers/registry.js";
 import "../providers/mock.js";
 
@@ -24,9 +24,7 @@ describe("gateway adapter", () => {
     const provider = getProvider("mock");
     const adapted = createGatewayAdapter(provider);
 
-    const response = await adapted.chat([
-      { role: "user", content: "hello" },
-    ]);
+    const response = await adapted.chat([{ role: "user", content: "hello" }]);
 
     expect(response.text).toContain("Hello");
     expect(response.provider).toBe("mock");
@@ -68,9 +66,7 @@ describe("streaming adapter", () => {
 
   it("collectStream aggregates StreamResponse into string", async () => {
     const provider = getProvider("mock");
-    const stream = provider.streamChat([
-      { role: "user", content: "hello" },
-    ]);
+    const stream = provider.streamChat([{ role: "user", content: "hello" }]);
 
     const text = await collectStream(stream);
     expect(text).toContain("Hello");

@@ -4,7 +4,7 @@
 // exposes the steady-state `getValidToken` / `revokeTokens` /
 // `revokeAllForUser` calls.
 
-import { createCallbackHandler, type CallbackDeps } from "./handlers/callback.js";
+import { type CallbackDeps, createCallbackHandler } from "./handlers/callback.js";
 import { createRefreshHandler } from "./handlers/refresh.js";
 import { createRevokeHandler, type RevokeDeps } from "./handlers/revoke.js";
 import { createStartHandler } from "./handlers/start.js";

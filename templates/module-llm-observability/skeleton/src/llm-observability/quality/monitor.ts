@@ -6,9 +6,9 @@
 //
 
 import type { QualityScore } from "../types.js";
-import type { QualityWindow, QualityStats } from "./types.js";
+import type { QualityStats, QualityWindow } from "./types.js";
 
-export type { QualityWindow, QualityStats } from "./types.js";
+export type { QualityStats, QualityWindow } from "./types.js";
 
 /**
  * Create a quality monitor instance. Records scores and computes

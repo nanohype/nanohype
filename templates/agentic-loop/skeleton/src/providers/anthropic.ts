@@ -1,16 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import type { Tool } from "../tools/registry.js";
-import type {
-  LlmProvider,
-  Message,
-  ContentBlock,
-  ToolCall,
-  LlmResponse,
-  StreamChat,
-} from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import type { Tool } from "../tools/registry.js";
+import { registerProvider } from "./registry.js";
+import type {
+  ContentBlock,
+  LlmProvider,
+  LlmResponse,
+  Message,
+  StreamChat,
+  ToolCall,
+} from "./types.js";
 
 function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   if (zodType instanceof z.ZodNumber) return "number";
@@ -20,9 +20,7 @@ function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
   return "string";
 }
 
-function formatTools(
-  tools: Tool[],
-): Anthropic.Messages.Tool[] {
+function formatTools(tools: Tool[]): Anthropic.Messages.Tool[] {
   return tools.map((tool) => ({
     name: tool.name,
     description: tool.description,
@@ -57,7 +55,7 @@ class AnthropicProvider implements LlmProvider {
         system: systemPrompt,
         messages: messages as Anthropic.Messages.MessageParam[],
         tools: formatTools(tools),
-      })
+      }),
     );
 
     const toolCalls: ToolCall[] = [];
@@ -88,11 +86,7 @@ class AnthropicProvider implements LlmProvider {
     };
   }
 
-  streamChat(
-    systemPrompt: string,
-    messages: Message[],
-    tools: Tool[],
-  ): StreamChat {
+  streamChat(systemPrompt: string, messages: Message[], tools: Tool[]): StreamChat {
     // Use cb.execute to guard the stream creation — if the breaker is
     // open, the returned promise rejects with CircuitBreakerOpenError
     // before any network I/O occurs.
@@ -103,7 +97,7 @@ class AnthropicProvider implements LlmProvider {
         system: systemPrompt,
         messages: messages as Anthropic.Messages.MessageParam[],
         tools: formatTools(tools),
-      })
+      }),
     );
 
     let resolveResponse!: (value: LlmResponse) => void;
@@ -123,10 +117,7 @@ class AnthropicProvider implements LlmProvider {
       }
 
       for await (const event of stream) {
-        if (
-          event.type === "content_block_delta" &&
-          event.delta.type === "text_delta"
-        ) {
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
           yield event.delta.text;
         }
       }

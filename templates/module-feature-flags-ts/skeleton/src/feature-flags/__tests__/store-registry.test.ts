@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  registerStore,
-  getStore,
-  listStores,
-} from "../stores/registry.js";
+import { describe, expect, it } from "vitest";
+import { getStore, listStores, registerStore } from "../stores/registry.js";
 import type { FlagStore } from "../stores/types.js";
 
 /**
@@ -13,9 +9,13 @@ function stubStore(name: string): FlagStore {
   return {
     name,
     async init() {},
-    async getFlag() { return undefined; },
+    async getFlag() {
+      return undefined;
+    },
     async setFlag() {},
-    async listFlags() { return []; },
+    async listFlags() {
+      return [];
+    },
     async deleteFlag() {},
     async close() {},
   };
@@ -42,18 +42,14 @@ describe("flag store registry", () => {
   });
 
   it("throws when retrieving an unregistered store", () => {
-    expect(() => getStore("nonexistent-store")).toThrow(
-      /not found/,
-    );
+    expect(() => getStore("nonexistent-store")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate store name", () => {
     const name = unique();
     registerStore(name, () => stubStore(name));
 
-    expect(() => registerStore(name, () => stubStore(name))).toThrow(
-      /already registered/,
-    );
+    expect(() => registerStore(name, () => stubStore(name))).toThrow(/already registered/);
   });
 
   it("lists all registered store names", () => {

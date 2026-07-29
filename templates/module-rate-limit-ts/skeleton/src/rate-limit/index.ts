@@ -9,21 +9,21 @@
 //
 
 import { z } from "zod";
-import { validateBootstrap } from "./bootstrap.js";
 import { getAlgorithm, listAlgorithms } from "./algorithms/index.js";
-import { getStore, listStores } from "./stores/index.js";
 import type { RateLimitAlgorithm } from "./algorithms/types.js";
+import { validateBootstrap } from "./bootstrap.js";
+import { getStore, listStores } from "./stores/index.js";
 import type { RateLimitStore, StoreConfig } from "./stores/types.js";
 import type { RateLimitOptions, RateLimitResult } from "./types.js";
 
-// Re-export everything consumers need
-export { honoMiddleware, expressMiddleware } from "./middleware.js";
-export type { MiddlewareOptions } from "./middleware.js";
 export { getAlgorithm, listAlgorithms, registerAlgorithm } from "./algorithms/index.js";
-export { getStore, listStores, registerStore } from "./stores/index.js";
 export type { RateLimitAlgorithm } from "./algorithms/types.js";
+export type { MiddlewareOptions } from "./middleware.js";
+// Re-export everything consumers need
+export { expressMiddleware, honoMiddleware } from "./middleware.js";
+export { getStore, listStores, registerStore } from "./stores/index.js";
 export type { RateLimitStore, StoreConfig } from "./stores/types.js";
-export type { RateLimitConfig, RateLimitResult, RateLimitOptions } from "./types.js";
+export type { RateLimitConfig, RateLimitOptions, RateLimitResult } from "./types.js";
 
 // ── Rate Limiter Facade ────────────────────────────────────────────
 
@@ -66,11 +66,13 @@ export interface RateLimiter {
 const CreateRateLimiterSchema = z.object({
   algorithmName: z.string().min(1, "algorithmName must be a non-empty string"),
   storeName: z.string().min(1, "storeName must be a non-empty string"),
-  opts: z.object({
-    limit: z.number().positive("limit must be a positive number").optional(),
-    window: z.number().positive("window must be a positive number").optional(),
-    keyPrefix: z.string().optional(),
-  }).optional(),
+  opts: z
+    .object({
+      limit: z.number().positive("limit must be a positive number").optional(),
+      window: z.number().positive("window must be a positive number").optional(),
+      keyPrefix: z.string().optional(),
+    })
+    .optional(),
   storeConfig: z.object({}).passthrough().optional(),
 });
 
@@ -82,7 +84,7 @@ export async function createRateLimiter(
 ): Promise<RateLimiter> {
   const parsed = CreateRateLimiterSchema.safeParse({ algorithmName, storeName, opts, storeConfig });
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid rate limiter config: ${issues}`);
   }
 

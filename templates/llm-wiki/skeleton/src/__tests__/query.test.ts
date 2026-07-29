@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, rmSync } from "fs";
-import { join } from "path";
 import { tmpdir } from "os";
-import type { StorageProvider } from "../storage/types.js";
-import type { PageMeta } from "../wiki/types.js";
-import { serializePage } from "../wiki/page.js";
+import { join } from "path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetConfig } from "../config.js";
+import type { StorageProvider } from "../storage/types.js";
+import { serializePage } from "../wiki/page.js";
+import type { PageMeta } from "../wiki/types.js";
 
 const pages = new Map<string, string>();
 let llmResponse: string;
@@ -55,12 +55,7 @@ vi.mock("../llm/index.js", () => ({
 
 let tempDir: string;
 
-function seedPage(
-  path: string,
-  title: string,
-  type: string,
-  content: string,
-): void {
+function seedPage(path: string, title: string, type: string, content: string): void {
   const meta: PageMeta = {
     title,
     type,
@@ -135,7 +130,8 @@ describe("query operation", () => {
       citations: [{ page: "apollo-11.md", excerpt: "Apollo 11" }],
       suggestedPagePath: "saturn-v.md",
       suggestedPageTitle: "Saturn V",
-      suggestedPageContent: "## Definition\nThe Saturn V was a heavy-lift rocket.\n\n## Context\nUsed in Apollo program.\n\n## Related Concepts\nApollo program.",
+      suggestedPageContent:
+        "## Definition\nThe Saturn V was a heavy-lift rocket.\n\n## Context\nUsed in Apollo program.\n\n## Related Concepts\nApollo program.",
     });
 
     const { query } = await import("../operations/query.js");

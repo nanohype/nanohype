@@ -38,9 +38,7 @@ describe("DDBKmsTokenStorage", () => {
   });
 
   it("put encrypts via KMS with EncryptionContext bound to userId+provider", async () => {
-    kmsMock
-      .on(EncryptCommand)
-      .resolves({ CiphertextBlob: new Uint8Array([1, 2, 3, 4]) });
+    kmsMock.on(EncryptCommand).resolves({ CiphertextBlob: new Uint8Array([1, 2, 3, 4]) });
     ddbMock.on(PutItemCommand).resolves({});
 
     const storage = makeStorage();

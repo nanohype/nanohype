@@ -1,9 +1,9 @@
-import { validateBootstrap } from "./bootstrap.js";
 import { serve } from "@hono/node-server";
 import { app } from "./app.js";
+import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
-import { initTelemetry } from "./telemetry/index.js";
 import { markReady } from "./routes/readiness.js";
+import { initTelemetry } from "./telemetry/index.js";
 
 // ── Bootstrap ────────────────────────────────────────────────────────
 //

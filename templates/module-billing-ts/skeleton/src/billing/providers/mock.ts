@@ -1,14 +1,14 @@
-import type { PaymentProvider } from "./types.js";
+import { logger } from "../logger.js";
 import type {
   BillingConfig,
-  Customer,
-  Subscription,
-  Invoice,
-  ChargeResult,
   BillingWebhookEvent,
+  ChargeResult,
+  Customer,
+  Invoice,
+  Subscription,
 } from "../types.js";
-import { logger } from "../logger.js";
 import { registerProvider } from "./registry.js";
+import type { PaymentProvider } from "./types.js";
 
 // ── Mock Payment Provider ──────────────────────────────────────────
 //
@@ -63,10 +63,7 @@ function createMockProvider(): PaymentProvider {
       return customer;
     },
 
-    async createSubscription(
-      customerId: string,
-      planId: string,
-    ): Promise<Subscription> {
+    async createSubscription(customerId: string, planId: string): Promise<Subscription> {
       subscriptionCounter++;
       const id = `mock-sub-${subscriptionCounter}`;
 
@@ -109,10 +106,7 @@ function createMockProvider(): PaymentProvider {
       };
     },
 
-    async handleWebhook(
-      payload: string,
-      _signature: string,
-    ): Promise<BillingWebhookEvent> {
+    async handleWebhook(payload: string, _signature: string): Promise<BillingWebhookEvent> {
       // Mock provider accepts any signature
       let parsed: { type?: string; data?: unknown };
       try {

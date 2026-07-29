@@ -4,11 +4,11 @@
 // revocation endpoint (if any), unconditional storage delete, and a
 // revocation event with reason `user`.
 
-import { UnauthenticatedError, UnknownProviderError, errorMessage } from "../errors.js";
+import { errorMessage, UnauthenticatedError, UnknownProviderError } from "../errors.js";
 import { logger } from "../logger.js";
 import type { OAuthProvider, OAuthRouterConfig, RequestHandler } from "../types.js";
 import { mapHandlerError } from "./errorMapping.js";
-import { FETCH_TIMEOUT_MS, extractProvider } from "./shared.js";
+import { extractProvider, FETCH_TIMEOUT_MS } from "./shared.js";
 
 export interface RevokeDeps {
   fetchImpl?: typeof fetch;

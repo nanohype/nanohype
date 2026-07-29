@@ -7,38 +7,42 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
+import type { AnalyticsClientConfig } from "./config.js";
 import { AnalyticsClientConfigSchema } from "./config.js";
+import {
+  analyticsEventsTracked,
+  analyticsFlushDurationMs,
+  analyticsFlushTotal,
+} from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
-import { analyticsEventsTracked, analyticsFlushTotal, analyticsFlushDurationMs } from "./metrics.js";
 import type { AnalyticsProvider } from "./providers/types.js";
 import type {
-  TrackEvent,
-  IdentifyPayload,
-  GroupPayload,
-  PagePayload,
   AnalyticsConfig,
+  GroupPayload,
+  IdentifyPayload,
+  PagePayload,
+  TrackEvent,
 } from "./types.js";
-import type { AnalyticsClientConfig } from "./config.js";
 
+export type { EventBuffer, EventBufferOptions } from "./buffer/event-buffer.js";
+export { createEventBuffer } from "./buffer/event-buffer.js";
+export type { AnalyticsClientConfig } from "./config.js";
+export { AnalyticsClientConfigSchema } from "./config.js";
+export { createExpressAnalytics } from "./middleware/express.js";
+export { createHonoAnalytics } from "./middleware/hono.js";
 // Re-export everything consumers need
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { AnalyticsProvider, AnalyticsProviderFactory } from "./providers/types.js";
+export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
+export { CircuitBreakerOpenError, createCircuitBreaker } from "./resilience/circuit-breaker.js";
 export type {
-  TrackEvent,
-  IdentifyPayload,
-  GroupPayload,
-  PagePayload,
   AnalyticsConfig,
   EventBufferConfig,
+  GroupPayload,
+  IdentifyPayload,
+  PagePayload,
+  TrackEvent,
 } from "./types.js";
-export { createEventBuffer } from "./buffer/event-buffer.js";
-export type { EventBuffer, EventBufferOptions } from "./buffer/event-buffer.js";
-export { createHonoAnalytics } from "./middleware/hono.js";
-export { createExpressAnalytics } from "./middleware/express.js";
-export { createCircuitBreaker, CircuitBreakerOpenError } from "./resilience/circuit-breaker.js";
-export type { CircuitBreakerOptions } from "./resilience/circuit-breaker.js";
-export { AnalyticsClientConfigSchema } from "./config.js";
-export type { AnalyticsClientConfig } from "./config.js";
 
 // ── Analytics Client Facade ──────────────────────────────────────
 

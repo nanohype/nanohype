@@ -13,9 +13,9 @@
     "build": "tsc",
     "dev": "tsx --watch src/audit/index.ts",
     "start": "node dist/audit/index.js",
-    "lint": "eslint src/",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -30,16 +30,13 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.20.0",
+    "@biomejs/biome": "^2.5.6",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
+    "@vitest/coverage-v8": "^3.1.0",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
-    "typescript-eslint": "^8.25.0",
-    "vitest": "^3.1.0",
-    "@vitest/coverage-v8": "^3.1.0"
+    "vitest": "^3.1.0"
   },
   "engines": {
     "node": ">=22"

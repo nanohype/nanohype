@@ -12,10 +12,7 @@ const transports = new Map<string, () => A2ATransport>();
  * Register a transport factory under the given name.
  * Called at module load time by each transport module.
  */
-export function registerTransport(
-  name: string,
-  factory: () => A2ATransport,
-): void {
+export function registerTransport(name: string, factory: () => A2ATransport): void {
   transports.set(name, factory);
 }
 
@@ -27,9 +24,7 @@ export function getTransport(name: string): A2ATransport {
   const factory = transports.get(name);
   if (!factory) {
     const available = [...transports.keys()].join(", ") || "(none)";
-    throw new Error(
-      `Unknown A2A transport "${name}". Registered transports: ${available}`,
-    );
+    throw new Error(`Unknown A2A transport "${name}". Registered transports: ${available}`);
   }
   return factory();
 }

@@ -67,7 +67,7 @@ Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document in
       registry.test.ts                 # All 4 registry tests (conditional)
   package.json
   tsconfig.json
-  eslint.config.js
+  biome.json
   vitest.config.ts
   .env.example
   README.md

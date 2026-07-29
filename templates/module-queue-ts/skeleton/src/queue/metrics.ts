@@ -14,10 +14,7 @@ export const queueJobTotal = meter.createCounter("queue_job_total", {
 });
 
 /** Job processing duration in milliseconds, labeled by job name. */
-export const queueJobDuration = meter.createHistogram(
-  "queue_job_duration_ms",
-  {
-    description: "Queue job processing latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const queueJobDuration = meter.createHistogram("queue_job_duration_ms", {
+  description: "Queue job processing latency in milliseconds",
+  unit: "ms",
+});

@@ -1,18 +1,18 @@
-import type { ProjectProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  Project,
-  Issue,
   Comment,
-  Priority,
-  ProjectCreate,
+  Issue,
   IssueCreate,
   IssueUpdate,
   ListOptions,
   PaginatedResult,
+  Priority,
+  Project,
+  ProjectCreate,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { ProjectProvider } from "./types.js";
 
 // ── Linear Provider ───────────────────────────────────────────────
 //
@@ -35,22 +35,32 @@ const LINEAR_API = "https://api.linear.app/graphql";
 /** Map Linear priority number (0-4) to unified Priority. */
 function fromLinearPriority(p: number): Priority {
   switch (p) {
-    case 1: return "urgent";
-    case 2: return "high";
-    case 3: return "medium";
-    case 4: return "low";
-    default: return "none";
+    case 1:
+      return "urgent";
+    case 2:
+      return "high";
+    case 3:
+      return "medium";
+    case 4:
+      return "low";
+    default:
+      return "none";
   }
 }
 
 /** Map unified Priority to Linear priority number (0-4). */
 function toLinearPriority(p: Priority): number {
   switch (p) {
-    case "urgent": return 1;
-    case "high": return 2;
-    case "medium": return 3;
-    case "low": return 4;
-    case "none": return 0;
+    case "urgent":
+      return 1;
+    case "high":
+      return 2;
+    case "medium":
+      return 3;
+    case "low":
+      return 4;
+    case "none":
+      return 0;
   }
 }
 
@@ -87,7 +97,7 @@ function createLinearProvider(): ProjectProvider {
       throw new Error(`Linear API error (${response.status}): ${text}`);
     }
 
-    const json = await response.json() as { data?: T; errors?: Array<{ message: string }> };
+    const json = (await response.json()) as { data?: T; errors?: Array<{ message: string }> };
     if (json.errors?.length) {
       throw new Error(`Linear GraphQL error: ${json.errors[0].message}`);
     }
@@ -434,9 +444,7 @@ function createLinearProvider(): ProjectProvider {
           createdAt: i.createdAt,
           updatedAt: i.updatedAt,
         })),
-        nextCursor: data.issues.pageInfo.hasNextPage
-          ? data.issues.pageInfo.endCursor
-          : undefined,
+        nextCursor: data.issues.pageInfo.hasNextPage ? data.issues.pageInfo.endCursor : undefined,
       };
     },
 

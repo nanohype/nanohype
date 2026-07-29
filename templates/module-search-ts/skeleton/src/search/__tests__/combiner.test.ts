@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { reciprocalRankFusion } from "../hybrid/combiner.js";
+import { describe, expect, it } from "vitest";
 import type { RankableHit } from "../hybrid/combiner.js";
+import { reciprocalRankFusion } from "../hybrid/combiner.js";
 
 // ── RRF Combiner Tests ───────────────────────────────────────────
 //
@@ -82,8 +82,7 @@ describe("reciprocalRankFusion", () => {
     const highK = reciprocalRankFusion(keyword, vector, 1000);
 
     const lowKDiff =
-      lowK.hits.find((h) => h.id === "a")!.rrfScore -
-      lowK.hits.find((h) => h.id === "b")!.rrfScore;
+      lowK.hits.find((h) => h.id === "a")!.rrfScore - lowK.hits.find((h) => h.id === "b")!.rrfScore;
 
     const highKDiff =
       highK.hits.find((h) => h.id === "a")!.rrfScore -

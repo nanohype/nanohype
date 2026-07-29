@@ -14,9 +14,9 @@ export interface Page {
 }
 
 export interface CrossRef {
-  source: string;   // page path
-  target: string;   // page path
-  context: string;  // surrounding text
+  source: string; // page path
+  target: string; // page path
+  context: string; // surrounding text
 }
 
 export interface Contradiction {

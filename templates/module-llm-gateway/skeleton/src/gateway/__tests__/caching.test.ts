@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import type { GatewayResponse } from "../types.js";
+import { describe, expect, it } from "vitest";
 import type { CacheContext } from "../caching/types.js";
+import type { GatewayResponse } from "../types.js";
 
 // ── Caching Strategy Tests ──────────────────────────────────────────
 

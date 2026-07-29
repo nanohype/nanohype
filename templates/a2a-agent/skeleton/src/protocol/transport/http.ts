@@ -1,8 +1,8 @@
-import type { TaskRequest, TaskResponse } from "../types.js";
-import type { A2ATransport } from "./types.js";
-import { registerTransport } from "./registry.js";
 import { logger } from "../../logger.js";
 import { createCircuitBreaker } from "../../resilience/circuit-breaker.js";
+import type { TaskRequest, TaskResponse } from "../types.js";
+import { registerTransport } from "./registry.js";
+import type { A2ATransport } from "./types.js";
 
 /**
  * HTTP transport for A2A protocol.

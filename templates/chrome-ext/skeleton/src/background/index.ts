@@ -1,8 +1,8 @@
-import { validateBootstrap } from "../bootstrap.js";
 import { sendMessage } from "@/lib/ai";
 import { logger } from "@/lib/logger";
-import { getSettings } from "@/lib/storage";
 import type { ChatRequest, ChatResponse, ExtensionMessage } from "@/lib/messaging";
+import { getSettings } from "@/lib/storage";
+import { validateBootstrap } from "../bootstrap.js";
 
 validateBootstrap();
 
@@ -35,12 +35,14 @@ chrome.runtime.onMessage.addListener(
     logger.info("background.message", { type: message.type });
 
     if (message.type === "chat") {
-      handleChat(message.payload).then(sendResponse).catch((err) => {
-        sendResponse({
-          content: "",
-          error: err instanceof Error ? err.message : "Unknown error",
+      handleChat(message.payload)
+        .then(sendResponse)
+        .catch((err) => {
+          sendResponse({
+            content: "",
+            error: err instanceof Error ? err.message : "Unknown error",
+          });
         });
-      });
       // Return true to indicate async response
       return true;
     }
@@ -55,12 +57,14 @@ chrome.runtime.onMessage.addListener(
           },
         ],
       };
-      handleChat(selectionRequest).then(sendResponse).catch((err) => {
-        sendResponse({
-          content: "",
-          error: err instanceof Error ? err.message : "Unknown error",
+      handleChat(selectionRequest)
+        .then(sendResponse)
+        .catch((err) => {
+          sendResponse({
+            content: "",
+            error: err instanceof Error ? err.message : "Unknown error",
+          });
         });
-      });
       return true;
     }
   },

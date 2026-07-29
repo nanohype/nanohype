@@ -1,15 +1,11 @@
 import OpenAI from "openai";
-import type { AiProvider, ChatMessage } from "./types";
 import { registerProvider } from "./registry";
+import type { AiProvider, ChatMessage } from "./types";
 
 class OpenAIProvider implements AiProvider {
   readonly defaultModel = "gpt-4o";
 
-  async sendMessage(
-    messages: ChatMessage[],
-    apiKey: string,
-    model?: string,
-  ): Promise<string> {
+  async sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string> {
     const client = new OpenAI({ apiKey });
 
     const response = await client.chat.completions.create({

@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { registerExporter, getExporter, listExporters } from "../exporters/registry.js";
+import { describe, expect, it } from "vitest";
+import { getExporter, listExporters, registerExporter } from "../exporters/registry.js";
 import type { LlmExporter } from "../exporters/types.js";
 
 // ── Exporter Registry Tests ────────────────────────────────────────

@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  registerEmbeddingProvider,
   getEmbeddingProvider,
   listEmbeddingProviders,
+  registerEmbeddingProvider,
 } from "../embedder/registry.js";
 import type { EmbeddingProvider } from "../embedder/types.js";
 
@@ -45,9 +45,7 @@ describe("embedding provider registry", () => {
   });
 
   it("throws when retrieving an unregistered provider", () => {
-    expect(() => getEmbeddingProvider("nonexistent-embedder")).toThrow(
-      /not found/,
-    );
+    expect(() => getEmbeddingProvider("nonexistent-embedder")).toThrow(/not found/);
   });
 
   it("throws when registering a duplicate provider name", () => {

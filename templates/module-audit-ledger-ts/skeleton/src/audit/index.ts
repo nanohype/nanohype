@@ -6,14 +6,14 @@
 
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
-import { getProvider } from "./providers/index.js";
 import { auditAppendTotal, auditQueryTotal } from "./metrics.js";
+import { getProvider } from "./providers/index.js";
 import type { AuditAdapter } from "./providers/types.js";
 import type { AuditConfig, AuditEvent, QueryOptions } from "./types.js";
 
+export { deriveEventId, eventIdOf } from "./event-id.js";
 // Re-export everything consumers need.
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
-export { deriveEventId, eventIdOf } from "./event-id.js";
 export type { AuditAdapter } from "./providers/types.js";
 export type { AuditConfig, AuditEvent, QueryOptions } from "./types.js";
 

@@ -1,11 +1,6 @@
-import { useState, useCallback, type CSSProperties } from "react";
+import { type CSSProperties, useCallback, useState } from "react";
 import { Chat } from "./components/Chat";
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  timestamp: number;
-}
+import type { Message } from "./types";
 
 /**
  * Root component for the __PROJECT_NAME__ renderer.
@@ -20,6 +15,7 @@ export function App() {
   const handleSend = useCallback(
     async (text: string) => {
       const userMessage: Message = {
+        id: crypto.randomUUID(),
         role: "user",
         content: text,
         timestamp: Date.now(),
@@ -41,6 +37,7 @@ export function App() {
         }
 
         const assistantMessage: Message = {
+          id: crypto.randomUUID(),
           role: "assistant",
           content: response?.content ?? "No response received.",
           timestamp: Date.now(),
@@ -49,6 +46,7 @@ export function App() {
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {
         const errorMessage: Message = {
+          id: crypto.randomUUID(),
           role: "assistant",
           content: `Error: ${err instanceof Error ? err.message : "Something went wrong."}`,
           timestamp: Date.now(),
@@ -58,7 +56,7 @@ export function App() {
         setIsLoading(false);
       }
     },
-    [messages]
+    [messages],
   );
 
   return (
@@ -100,7 +98,7 @@ declare global {
       sendMessage: (
         messages: Array<{ role: string; content: string }>,
         provider?: string,
-        model?: string
+        model?: string,
       ) => Promise<{ content: string; error?: string }>;
     };
   }

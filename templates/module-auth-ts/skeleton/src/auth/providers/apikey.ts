@@ -13,8 +13,8 @@
 //   sk-abc123:admin+editor:production-key,sk-xyz789:reader:staging-key
 
 import type { AuthResult } from "../types.js";
-import type { AuthProvider, AuthRequest } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { AuthProvider, AuthRequest } from "./types.js";
 
 interface ParsedKey {
   key: string;

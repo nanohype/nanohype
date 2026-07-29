@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createOrchestrator } from "../index.js";
+import { beforeEach, describe, expect, it } from "vitest";
 import { registerAgent } from "../agents/registry.js";
 import type { Agent } from "../agents/types.js";
-import type { SubTask, AgentResult } from "../types.js";
+import { createOrchestrator } from "../index.js";
+import type { AgentResult, SubTask } from "../types.js";
 
 // Import mock provider to self-register
 import "../providers/mock.js";
@@ -43,9 +43,9 @@ describe("orchestrator", () => {
   });
 
   it("throws on invalid config", () => {
-    expect(() =>
-      createOrchestrator({ maxSubtasks: -1, providerName: "mock" }),
-    ).toThrow(/Invalid orchestrator config/);
+    expect(() => createOrchestrator({ maxSubtasks: -1, providerName: "mock" })).toThrow(
+      /Invalid orchestrator config/,
+    );
   });
 
   it("executes a task through the full pipeline", async () => {
@@ -76,11 +76,13 @@ describe("orchestrator", () => {
 
     registerAgent(analyzerName, () => ({
       name: analyzerName,
-      capabilities: [{
-        name: "analysis",
-        description: "Analyzes data",
-        keywords: ["analyze", "analysis"],
-      }],
+      capabilities: [
+        {
+          name: "analysis",
+          description: "Analyzes data",
+          keywords: ["analyze", "analysis"],
+        },
+      ],
       async execute(subtask: SubTask, context): Promise<AgentResult> {
         executionOrder.push(analyzerName);
         context.set(`${analyzerName}:findings`, { data: "analyzed" });
@@ -95,11 +97,13 @@ describe("orchestrator", () => {
 
     registerAgent(writerName, () => ({
       name: writerName,
-      capabilities: [{
-        name: "writing",
-        description: "Writes reports",
-        keywords: ["write", "report", "summarize"],
-      }],
+      capabilities: [
+        {
+          name: "writing",
+          description: "Writes reports",
+          keywords: ["write", "report", "summarize"],
+        },
+      ],
       async execute(subtask: SubTask, context): Promise<AgentResult> {
         executionOrder.push(writerName);
         // Read data from the analyzer agent via shared context
@@ -160,8 +164,11 @@ describe("orchestrator", () => {
     expect(analyzerResult?.success).toBe(true);
     expect(writerResult?.success).toBe(true);
 
-    // The writer agent consumed the analyzer's context
-    expect((writerResult?.output as Record<string, unknown>).usedFindings).toBe(true);
+    // The writer agent consumed the analyzer's context. Casting through the
+    // optional chain would defeat it — an absent result would throw a TypeError
+    // here rather than failing the assertion.
+    const writerOutput = writerResult?.output as Record<string, unknown> | undefined;
+    expect(writerOutput?.usedFindings).toBe(true);
   });
 
   it("handles planning failure gracefully", async () => {

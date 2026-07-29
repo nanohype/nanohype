@@ -1,10 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  extractLinks,
-  buildLinkGraph,
-  findOrphans,
-  findBrokenLinks,
-} from "../wiki/link-graph.js";
+import { describe, expect, it } from "vitest";
+import { buildLinkGraph, extractLinks, findBrokenLinks, findOrphans } from "../wiki/link-graph.js";
 import type { Page } from "../wiki/types.js";
 
 function makePage(path: string, content: string): Page {
@@ -83,10 +78,7 @@ describe("findOrphans", () => {
   });
 
   it("returns empty array when all pages are linked", () => {
-    const pages = [
-      makePage("a.md", "Links to [[b.md]]"),
-      makePage("b.md", "Links to [[a.md]]"),
-    ];
+    const pages = [makePage("a.md", "Links to [[b.md]]"), makePage("b.md", "Links to [[a.md]]")];
 
     const graph = buildLinkGraph(pages);
     const allPaths = pages.map((p) => p.path);
@@ -111,10 +103,7 @@ describe("findBrokenLinks", () => {
   });
 
   it("returns empty array when all links resolve", () => {
-    const pages = [
-      makePage("a.md", "Links to [[b.md]]"),
-      makePage("b.md", "Links to [[a.md]]"),
-    ];
+    const pages = [makePage("a.md", "Links to [[b.md]]"), makePage("b.md", "Links to [[a.md]]")];
 
     const graph = buildLinkGraph(pages);
     const allPaths = pages.map((p) => p.path);

@@ -53,6 +53,6 @@ export function errorHandler(err: Error, c: Context): Response {
         statusCode: status,
       },
     },
-    status as any
+    status as any,
   );
 }

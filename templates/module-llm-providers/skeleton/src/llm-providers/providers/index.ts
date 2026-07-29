@@ -24,5 +24,5 @@ import "./vertex.js";
 import "./huggingface.js";
 import "./ollama.js";
 
-export { registerProvider, getProvider, listProviders } from "./registry.js";
+export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { LlmProvider, LlmProviderFactory } from "./types.js";

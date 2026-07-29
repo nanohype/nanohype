@@ -25,8 +25,5 @@ export interface LlmProvider {
    * Used for agent reasoning — deciding which skill to invoke
    * and how to interpret results.
    */
-  sendMessage(
-    systemPrompt: string,
-    messages: Message[],
-  ): Promise<LlmResponse>;
+  sendMessage(systemPrompt: string, messages: Message[]): Promise<LlmResponse>;
 }

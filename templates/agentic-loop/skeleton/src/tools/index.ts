@@ -1,5 +1,5 @@
-import { ToolRegistry } from "./registry.js";
 import { calculatorTool } from "./example.js";
+import { ToolRegistry } from "./registry.js";
 
 /**
  * The shared tool registry. Import this wherever you need to access

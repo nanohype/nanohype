@@ -10,12 +10,12 @@
 // alongside this module if you use this backend.
 
 import {
+  type AttributeValue,
   DeleteItemCommand,
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
   QueryCommand,
-  type AttributeValue,
   type QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { DecryptCommand, EncryptCommand, KMSClient } from "@aws-sdk/client-kms";
@@ -52,11 +52,9 @@ export class DDBKmsTokenStorage implements TokenStorage {
 
     const handler = new NodeHttpHandler({ connectionTimeout: 1000, requestTimeout: 5000 });
     this.ddb =
-      config.ddbClient ??
-      new DynamoDBClient({ region: config.region, requestHandler: handler });
+      config.ddbClient ?? new DynamoDBClient({ region: config.region, requestHandler: handler });
     this.kms =
-      config.kmsClient ??
-      new KMSClient({ region: config.region, requestHandler: handler });
+      config.kmsClient ?? new KMSClient({ region: config.region, requestHandler: handler });
   }
 
   async get(userId: string, provider: string): Promise<TokenGrant | null> {
@@ -104,7 +102,7 @@ export class DDBKmsTokenStorage implements TokenStorage {
   }
 
   async deleteAllForUser(userId: string): Promise<void> {
-    let exclusiveStartKey: Record<string, AttributeValue> | undefined = undefined;
+    let exclusiveStartKey: Record<string, AttributeValue> | undefined;
     do {
       const response: QueryCommandOutput = await this.ddb.send(
         new QueryCommand({
@@ -148,11 +146,7 @@ export class DDBKmsTokenStorage implements TokenStorage {
     return Buffer.from(response.CiphertextBlob);
   }
 
-  private async decrypt(
-    ciphertext: Buffer,
-    userId: string,
-    provider: string,
-  ): Promise<TokenGrant> {
+  private async decrypt(ciphertext: Buffer, userId: string, provider: string): Promise<TokenGrant> {
     const response = await this.kms.send(
       new DecryptCommand({
         CiphertextBlob: ciphertext,

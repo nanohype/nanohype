@@ -9,8 +9,8 @@
 //   - "memory"   → Predicate function for in-memory evaluation
 //
 
-import type { FilterExpression, ComparisonFilter } from "./types.js";
-import { isComparison, isAnd, isOr } from "./types.js";
+import type { ComparisonFilter, FilterExpression } from "./types.js";
+import { isAnd, isComparison, isOr } from "./types.js";
 
 export type FilterBackend = "sql" | "qdrant" | "pinecone" | "memory";
 

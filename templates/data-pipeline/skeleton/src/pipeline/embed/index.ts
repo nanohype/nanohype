@@ -5,13 +5,12 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { EmbeddingProvider } from "./types.js";
-
 export {
-  registerEmbeddingProvider,
   getEmbeddingProvider,
   listEmbeddingProviders,
+  registerEmbeddingProvider,
 } from "./registry.js";
+export type { EmbeddingProvider } from "./types.js";
 
 // Import provider modules to trigger registration. Bedrock (Titan v2) is the
 // org default; openai is an alternate.

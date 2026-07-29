@@ -9,24 +9,24 @@ import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { QueueProvider } from "./providers/types.js";
-import type { QueueConfig, HandlerMap } from "./types.js";
+import type { HandlerMap, QueueConfig } from "./types.js";
 import { createWorker, type WorkerOptions } from "./worker.js";
 
-// Re-export everything consumers need
-export { createWorker } from "./worker.js";
-export { defineJob, buildJob, resolveJobOptions } from "./job.js";
+export { buildJob, defineJob, resolveJobOptions } from "./job.js";
 export { getProvider, listProviders, registerProvider } from "./providers/index.js";
 export type { QueueProvider } from "./providers/types.js";
-export type { WorkerOptions } from "./worker.js";
 export type {
+  HandlerMap,
   Job,
+  JobHandler,
   JobId,
   JobOptions,
-  JobHandler,
   JobPriority,
-  HandlerMap,
   QueueConfig,
 } from "./types.js";
+export type { WorkerOptions } from "./worker.js";
+// Re-export everything consumers need
+export { createWorker } from "./worker.js";
 
 // ── Queue Facade ────────────────────────────────────────────────────
 
@@ -57,22 +57,26 @@ export interface Queue {
 /** Zod schema for validating createQueue arguments. */
 const CreateQueueSchema = z.object({
   providerName: z.string().min(1, "providerName must be a non-empty string"),
-  config: z.object({
-    connection: z.object({
-      host: z.string(),
-      port: z.number(),
-    }).optional(),
-    queueName: z.string().optional(),
-  }).passthrough(),
+  config: z
+    .object({
+      connection: z
+        .object({
+          host: z.string(),
+          port: z.number(),
+        })
+        .optional(),
+      queueName: z.string().optional(),
+    })
+    .passthrough(),
 });
 
 export async function createQueue(
   providerName: string = "__QUEUE_PROVIDER__",
-  config: QueueConfig = {}
+  config: QueueConfig = {},
 ): Promise<Queue> {
   const parsed = CreateQueueSchema.safeParse({ providerName, config });
   if (!parsed.success) {
-    const issues = parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join(", ");
+    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
     throw new Error(`Invalid queue config: ${issues}`);
   }
 

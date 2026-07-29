@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { createInvoiceGenerator } from "../invoicing/generator.js";
+import { describe, expect, it } from "vitest";
 import { formatInvoice } from "../invoicing/formatter.js";
+import { createInvoiceGenerator } from "../invoicing/generator.js";
 import type { BillingPeriod, LineItem } from "../types.js";
 
 describe("invoice generator", () => {
@@ -106,8 +106,8 @@ describe("invoice formatter", () => {
   });
 
   it("throws on unsupported format", () => {
-    expect(() =>
-      formatInvoice(sampleInvoice, "xml" as "json"),
-    ).toThrow("Unsupported invoice format");
+    expect(() => formatInvoice(sampleInvoice, "xml" as "json")).toThrow(
+      "Unsupported invoice format",
+    );
   });
 });

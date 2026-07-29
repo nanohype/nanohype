@@ -3,18 +3,9 @@
 // Builds the auth URL with PKCE challenge + signed state cookie, then
 // redirects the user to the provider. Returns 302 + Set-Cookie.
 
-import {
-  MissingCredentialsError,
-  UnauthenticatedError,
-  UnknownProviderError,
-} from "../errors.js";
+import { MissingCredentialsError, UnauthenticatedError, UnknownProviderError } from "../errors.js";
 import { codeChallenge, generateCodeVerifier } from "../pkce.js";
-import {
-  buildStateCookie,
-  generateNonce,
-  signState,
-  type StatePayload,
-} from "../state.js";
+import { buildStateCookie, generateNonce, type StatePayload, signState } from "../state.js";
 import type {
   ClientCredentials,
   OAuthProvider,

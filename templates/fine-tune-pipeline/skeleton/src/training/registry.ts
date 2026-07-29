@@ -13,10 +13,7 @@ const providers = new Map<string, () => TrainingProvider>();
  * Register a provider factory under the given name.
  * Called at the bottom of each provider module.
  */
-export function registerProvider(
-  name: string,
-  factory: () => TrainingProvider,
-): void {
+export function registerProvider(name: string, factory: () => TrainingProvider): void {
   providers.set(name, factory);
 }
 
@@ -28,9 +25,7 @@ export function getProvider(name: string): TrainingProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = listProviders().join(", ");
-    throw new Error(
-      `Unknown training provider: "${name}". Registered: ${available || "(none)"}`,
-    );
+    throw new Error(`Unknown training provider: "${name}". Registered: ${available || "(none)"}`);
   }
   return factory();
 }

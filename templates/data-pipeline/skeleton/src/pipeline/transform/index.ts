@@ -5,13 +5,12 @@
  * module to trigger self-registration as a side effect.
  */
 
-export type { ChunkStrategy, ChunkOptions } from "./types.js";
-
 export {
-  registerStrategy,
   getStrategy,
   listStrategies,
+  registerStrategy,
 } from "./registry.js";
+export type { ChunkOptions, ChunkStrategy } from "./types.js";
 
 // Import strategy modules to trigger registration
 import "./recursive.js";

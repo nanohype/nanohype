@@ -6,11 +6,7 @@
 // timingSafeEqual and reject on mismatch.
 
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import {
-  StateExpiredError,
-  StateMissingError,
-  StateTamperedError,
-} from "./errors.js";
+import { StateExpiredError, StateMissingError, StateTamperedError } from "./errors.js";
 
 export interface StatePayload {
   /** Opaque nonce — echoed back by the provider as the `state` query param. */

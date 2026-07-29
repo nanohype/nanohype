@@ -4,13 +4,13 @@
  * Registers itself as the "qdrant" vector store provider on import.
  */
 
-import { QdrantClient } from "@qdrant/js-client-rest";
 import { randomUUID } from "node:crypto";
-import type { VectorStoreProvider, VectorDocument, SearchResult } from "./types.js";
+import { QdrantClient } from "@qdrant/js-client-rest";
 import type { VectorStoreConfig } from "../config.js";
-import { registerVectorStoreProvider } from "./registry.js";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerVectorStoreProvider } from "./registry.js";
+import type { SearchResult, VectorDocument, VectorStoreProvider } from "./types.js";
 
 /**
  * Generate a deterministic UUID v5-style hash from a document ID.
@@ -42,16 +42,14 @@ class QdrantVectorStore implements VectorStoreProvider {
   }
 
   async init(): Promise<void> {
-    const collections = await this.cb.execute(() =>
-      this.client.getCollections()
-    );
+    const collections = await this.cb.execute(() => this.client.getCollections());
     const exists = collections.collections.some((c) => c.name === this.collectionName);
 
     if (!exists) {
       await this.cb.execute(() =>
         this.client.createCollection(this.collectionName, {
           vectors: { size: this.dimensions, distance: "Cosine" },
-        })
+        }),
       );
     }
 
@@ -67,9 +65,7 @@ class QdrantVectorStore implements VectorStoreProvider {
       payload: { content: doc.content, doc_id: doc.id, ...doc.metadata },
     }));
 
-    await this.cb.execute(() =>
-      this.client.upsert(this.collectionName, { points })
-    );
+    await this.cb.execute(() => this.client.upsert(this.collectionName, { points }));
   }
 
   async search(
@@ -91,7 +87,7 @@ class QdrantVectorStore implements VectorStoreProvider {
         vector: queryEmbedding,
         limit: topK,
         filter: searchFilter,
-      })
+      }),
     );
 
     return hits.map((hit) => {
@@ -109,9 +105,7 @@ class QdrantVectorStore implements VectorStoreProvider {
 
   async delete(ids: string[]): Promise<void> {
     const pointIds = ids.map(deterministicId);
-    await this.cb.execute(() =>
-      this.client.delete(this.collectionName, { points: pointIds })
-    );
+    await this.cb.execute(() => this.client.delete(this.collectionName, { points: pointIds }));
   }
 }
 

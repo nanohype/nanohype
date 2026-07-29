@@ -1,6 +1,6 @@
+import { logger } from "../logger.js";
 import type { AgentCard, SkillDescriptor } from "../protocol/types.js";
 import { getAllSkills } from "../skills/index.js";
-import { logger } from "../logger.js";
 
 /**
  * Agent Card generator.

@@ -1,6 +1,6 @@
 import type { GatewayProvider } from "../providers/types.js";
-import type { RoutingStrategy, RoutingContext } from "./types.js";
 import { registerStrategy } from "./registry.js";
+import type { RoutingContext, RoutingStrategy } from "./types.js";
 
 // ── LinUCB Contextual Bandit Routing Strategy ───────────────────────
 //
@@ -77,7 +77,7 @@ function buildFeatureVector(ctx: RoutingContext): number[] {
   }
 
   x[6] = Math.min(latencyBudget / 5000, 2); // normalized latency budget
-  x[7] = quality;                            // quality (0–1)
+  x[7] = quality; // quality (0–1)
 
   return x;
 }
@@ -86,7 +86,7 @@ function buildFeatureVector(ctx: RoutingContext): number[] {
 
 interface ArmState {
   ainv: number[]; // d×d inverse covariance
-  b: number[];    // d×1 reward-weighted features
+  b: number[]; // d×1 reward-weighted features
   samples: number;
 }
 

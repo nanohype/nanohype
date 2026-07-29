@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
-import { z } from "zod";
 import { parse } from "yaml";
+import { z } from "zod";
 import type { WikiSchema } from "./types.js";
 
 const pageTypeSchema = z.object({

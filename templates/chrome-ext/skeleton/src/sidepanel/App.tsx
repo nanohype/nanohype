@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { Chat } from "./components/Chat";
+import { useCallback, useState } from "react";
 import type { Message } from "@/lib/messaging";
+import { Chat } from "./components/Chat";
 
 export function App() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -9,6 +9,7 @@ export function App() {
   const handleSend = useCallback(
     async (text: string) => {
       const userMessage: Message = {
+        id: crypto.randomUUID(),
         role: "user",
         content: text,
         timestamp: Date.now(),
@@ -33,6 +34,7 @@ export function App() {
         }
 
         const assistantMessage: Message = {
+          id: crypto.randomUUID(),
           role: "assistant",
           content: response?.content ?? "No response received.",
           timestamp: Date.now(),
@@ -41,6 +43,7 @@ export function App() {
         setMessages((prev) => [...prev, assistantMessage]);
       } catch (err) {
         const errorMessage: Message = {
+          id: crypto.randomUUID(),
           role: "assistant",
           content: `Error: ${err instanceof Error ? err.message : "Something went wrong."}`,
           timestamp: Date.now(),

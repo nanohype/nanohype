@@ -1,18 +1,18 @@
-import { Hono } from "hono";
 import { serve } from "@hono/node-server";
+import { Hono } from "hono";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
 import { createLogger } from "./logger.js";
+import { gatewayProxyDuration, gatewayProxyTotal } from "./metrics.js";
+import { createAuthMiddleware } from "./middleware/auth.js";
+import { createCorsMiddleware } from "./middleware/cors.js";
+import { createRateLimitMiddleware } from "./middleware/rate-limit.js";
+import { createTransformMiddleware } from "./middleware/transform.js";
+import { type CircuitBreaker, createCircuitBreaker } from "./resilience/circuit-breaker.js";
 import { matchRoute } from "./router/matcher.js";
 import { proxyRequest } from "./router/proxy.js";
-import { createAuthMiddleware } from "./middleware/auth.js";
-import { createRateLimitMiddleware } from "./middleware/rate-limit.js";
-import { createCorsMiddleware } from "./middleware/cors.js";
-import { createTransformMiddleware } from "./middleware/transform.js";
-import { selectUpstream, isCanaryConfig } from "./traffic/canary.js";
+import { isCanaryConfig, selectUpstream } from "./traffic/canary.js";
 import { createHealthChecker } from "./traffic/health.js";
-import { createCircuitBreaker, type CircuitBreaker } from "./resilience/circuit-breaker.js";
-import { gatewayProxyTotal, gatewayProxyDuration } from "./metrics.js";
 import type { GatewayConfig, RouteRule, TransformRule } from "./types.js";
 
 // ── Hono context variables ──────────────────────────────────────────
@@ -60,7 +60,10 @@ function collectUpstreams(routes: RouteRule[]): string[] {
  * Returns the Hono app and a shutdown function for cleanup.
  */
 export function createGateway(config: GatewayConfig) {
-  const logger = createLogger("gateway", (config.logLevel as "debug" | "info" | "warn" | "error") ?? "info");
+  const logger = createLogger(
+    "gateway",
+    (config.logLevel as "debug" | "info" | "warn" | "error") ?? "info",
+  );
   const app = new Hono<GatewayEnv>();
 
   // ── Per-upstream circuit breakers (instance-scoped) ──────────────
@@ -106,22 +109,42 @@ export function createGateway(config: GatewayConfig) {
 
     // CORS middleware
     if (rule.cors) {
-      middlewares.push(createCorsMiddleware(rule.cors) as (c: unknown, next: () => Promise<void>) => Promise<unknown>);
+      middlewares.push(
+        createCorsMiddleware(rule.cors) as (
+          c: unknown,
+          next: () => Promise<void>,
+        ) => Promise<unknown>,
+      );
     }
 
     // Auth middleware
     if (rule.auth && rule.auth !== "none") {
-      middlewares.push(createAuthMiddleware(rule.auth, config, logger) as (c: unknown, next: () => Promise<void>) => Promise<unknown>);
+      middlewares.push(
+        createAuthMiddleware(rule.auth, config, logger) as (
+          c: unknown,
+          next: () => Promise<void>,
+        ) => Promise<unknown>,
+      );
     }
 
     // Rate limit middleware
     if (rule.rateLimit) {
-      middlewares.push(createRateLimitMiddleware(rule.rateLimit) as (c: unknown, next: () => Promise<void>) => Promise<unknown>);
+      middlewares.push(
+        createRateLimitMiddleware(rule.rateLimit) as (
+          c: unknown,
+          next: () => Promise<void>,
+        ) => Promise<unknown>,
+      );
     }
 
     // Transform middleware
     if (rule.transform) {
-      middlewares.push(createTransformMiddleware(rule.transform) as (c: unknown, next: () => Promise<void>) => Promise<unknown>);
+      middlewares.push(
+        createTransformMiddleware(rule.transform) as (
+          c: unknown,
+          next: () => Promise<void>,
+        ) => Promise<unknown>,
+      );
     }
 
     // Register middleware for this route path
@@ -167,23 +190,17 @@ export function createGateway(config: GatewayConfig) {
         upstream: upstreamUrl,
         path,
       });
-      return c.json(
-        { error: "Service Unavailable", message: "Upstream is unhealthy" },
-        503,
-      );
+      return c.json({ error: "Service Unavailable", message: "Upstream is unhealthy" }, 503);
     }
 
     // Proxy the request
     const timeoutMs = match.rule.timeoutMs ?? config.defaultTimeoutMs ?? 30_000;
     const transform = c.get("transformRule") ?? match.rule.transform;
 
-    const proxyResponse = await proxyRequest(
-      upstreamUrl,
-      match.forwardPath,
-      c.req.raw,
-      logger,
-      { timeoutMs, transform },
-    );
+    const proxyResponse = await proxyRequest(upstreamUrl, match.forwardPath, c.req.raw, logger, {
+      timeoutMs,
+      transform,
+    });
 
     // Record circuit breaker outcome
     if (proxyResponse.status >= 500) {

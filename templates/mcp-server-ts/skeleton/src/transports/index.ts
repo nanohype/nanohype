@@ -12,7 +12,7 @@ const transports: Record<TransportName, StartFn> = {
 };
 
 function isTransportName(name: string): name is TransportName {
-  return Object.prototype.hasOwnProperty.call(transports, name);
+  return Object.hasOwn(transports, name);
 }
 
 /**

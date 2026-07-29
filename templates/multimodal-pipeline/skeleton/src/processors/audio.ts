@@ -8,10 +8,10 @@
  */
 
 import { stat } from "node:fs/promises";
-import type { Processor, ProcessedInput } from "./types.js";
-import { registerProcessor } from "./registry.js";
-import { getTranscriptionProvider } from "../providers/index.js";
 import { loadConfig } from "../config.js";
+import { getTranscriptionProvider } from "../providers/index.js";
+import { registerProcessor } from "./registry.js";
+import type { ProcessedInput, Processor } from "./types.js";
 
 const SUPPORTED_MIME_TYPES = [
   "audio/mpeg",

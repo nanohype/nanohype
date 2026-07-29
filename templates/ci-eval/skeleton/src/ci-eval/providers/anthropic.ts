@@ -7,8 +7,8 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import type { LlmProvider } from "./types.js";
 import { registerProvider } from "./registry.js";
+import type { LlmProvider } from "./types.js";
 
 class AnthropicProvider implements LlmProvider {
   private client: Anthropic | null = null;

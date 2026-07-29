@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { withRetry, withTimeout, batchChunk } from "../helpers.js";
+import { describe, expect, it, vi } from "vitest";
+import { batchChunk, withRetry, withTimeout } from "../helpers.js";
 
 describe("withRetry", () => {
   it("returns the result on first success", async () => {
@@ -126,9 +126,13 @@ describe("withTimeout", () => {
 
   it("propagates the operation's own rejection", async () => {
     await expect(
-      withTimeout(async () => {
-        throw new Error("inner failure");
-      }, 1000, "op"),
+      withTimeout(
+        async () => {
+          throw new Error("inner failure");
+        },
+        1000,
+        "op",
+      ),
     ).rejects.toThrow("inner failure");
   });
 });

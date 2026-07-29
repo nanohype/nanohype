@@ -8,32 +8,20 @@ import { z } from "zod";
 //
 
 const configSchema = z.object({
-  SLACK_BOT_TOKEN: z
-    .string()
-    .min(1, "SLACK_BOT_TOKEN is required"),
+  SLACK_BOT_TOKEN: z.string().min(1, "SLACK_BOT_TOKEN is required"),
 
-  SLACK_APP_TOKEN: z
-    .string()
-    .optional(),
+  SLACK_APP_TOKEN: z.string().optional(),
 
-  SLACK_SIGNING_SECRET: z
-    .string()
-    .min(1, "SLACK_SIGNING_SECRET is required"),
+  SLACK_SIGNING_SECRET: z.string().min(1, "SLACK_SIGNING_SECRET is required"),
 
-  LLM_PROVIDER: z
-    .string()
-    .default("__LLM_PROVIDER__"),
+  LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
 
   // Bedrock model id (Converse). Injectable so the model isn't hardcoded.
-  LLM_MODEL: z
-    .string()
-    .default("anthropic.claude-sonnet-4-6"),
+  LLM_MODEL: z.string().default("anthropic.claude-sonnet-4-6"),
 
   // Region where the Bedrock model is enabled. Bedrock auth is the AWS
   // credential chain (IRSA on-cluster) — no API keys.
-  AWS_REGION: z
-    .string()
-    .default("us-west-2"),
+  AWS_REGION: z.string().default("us-west-2"),
 
   // Per-call LLM request timeout (ms) — a hung upstream trips the breaker.
   LLM_REQUEST_TIMEOUT_MS: z
@@ -42,15 +30,9 @@ const configSchema = z.object({
     .transform(Number)
     .pipe(z.number().int().positive()),
 
-  PORT: z
-    .string()
-    .default("3000")
-    .transform(Number)
-    .pipe(z.number().int().min(1).max(65535)),
+  PORT: z.string().default("3000").transform(Number).pipe(z.number().int().min(1).max(65535)),
 
-  LOG_LEVEL: z
-    .enum(["debug", "info", "warn", "error"])
-    .default("info"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
   SOCKET_MODE: z
     .string()

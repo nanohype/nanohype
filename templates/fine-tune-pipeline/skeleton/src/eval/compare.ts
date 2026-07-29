@@ -7,16 +7,16 @@
  */
 
 import { readFile } from "node:fs/promises";
-import type { TrainingProvider } from "../training/types.js";
 import type { TrainingExample } from "../dataset/types.js";
 import { parseJsonl } from "../dataset/validate.js";
-import {
-  computeComparisonMetrics,
-  computeAggregateMetrics,
-  type ComparisonResult,
-  type AggregateMetrics,
-} from "./metrics.js";
 import { logger } from "../logger.js";
+import type { TrainingProvider } from "../training/types.js";
+import {
+  type AggregateMetrics,
+  type ComparisonResult,
+  computeAggregateMetrics,
+  computeComparisonMetrics,
+} from "./metrics.js";
 
 /**
  * Configuration for running an evaluation comparison.

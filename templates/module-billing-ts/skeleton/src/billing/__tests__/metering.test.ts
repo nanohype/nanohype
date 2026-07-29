@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { createUsageTracker } from "../metering/tracker.js";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createUsageAggregator } from "../metering/aggregator.js";
+import { createUsageTracker } from "../metering/tracker.js";
 import type { UsageTracker } from "../metering/types.js";
 import type { BillingPeriod } from "../types.js";
 
@@ -42,9 +42,9 @@ describe("usage tracker", () => {
   });
 
   it("throws on non-positive quantity", () => {
-    expect(() =>
-      tracker.record({ customerId: "cus-1", metric: "api_calls", quantity: 0 }),
-    ).toThrow("positive number");
+    expect(() => tracker.record({ customerId: "cus-1", metric: "api_calls", quantity: 0 })).toThrow(
+      "positive number",
+    );
 
     expect(() =>
       tracker.record({ customerId: "cus-1", metric: "api_calls", quantity: -5 }),
@@ -127,9 +127,30 @@ describe("usage aggregator", () => {
     };
 
     const records = [
-      { id: "1", customerId: "cus-1", metric: "api_calls", quantity: 100, timestamp: now.toISOString(), tags: {} },
-      { id: "2", customerId: "cus-1", metric: "api_calls", quantity: 50, timestamp: now.toISOString(), tags: {} },
-      { id: "3", customerId: "cus-1", metric: "tokens_used", quantity: 1000, timestamp: now.toISOString(), tags: {} },
+      {
+        id: "1",
+        customerId: "cus-1",
+        metric: "api_calls",
+        quantity: 100,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
+      {
+        id: "2",
+        customerId: "cus-1",
+        metric: "api_calls",
+        quantity: 50,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
+      {
+        id: "3",
+        customerId: "cus-1",
+        metric: "tokens_used",
+        quantity: 1000,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
     ];
 
     const summary = aggregator.aggregate(records, "cus-1", period);
@@ -171,7 +192,14 @@ describe("usage aggregator", () => {
     };
 
     const records = [
-      { id: "1", customerId: "cus-1", metric: "storage_gb", quantity: 150, timestamp: now.toISOString(), tags: {} },
+      {
+        id: "1",
+        customerId: "cus-1",
+        metric: "storage_gb",
+        quantity: 150,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
     ];
 
     const summary = aggregator.aggregate(records, "cus-1", period);
@@ -186,9 +214,7 @@ describe("usage aggregator", () => {
 
   it("applies flat pricing", () => {
     const aggregator = createUsageAggregator({
-      pricingRules: [
-        { metric: "seats", model: "flat", flatAmount: 9900 },
-      ],
+      pricingRules: [{ metric: "seats", model: "flat", flatAmount: 9900 }],
     });
 
     const now = new Date();
@@ -198,7 +224,14 @@ describe("usage aggregator", () => {
     };
 
     const records = [
-      { id: "1", customerId: "cus-1", metric: "seats", quantity: 5, timestamp: now.toISOString(), tags: {} },
+      {
+        id: "1",
+        customerId: "cus-1",
+        metric: "seats",
+        quantity: 5,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
     ];
 
     const summary = aggregator.aggregate(records, "cus-1", period);
@@ -217,7 +250,14 @@ describe("usage aggregator", () => {
     };
 
     const records = [
-      { id: "1", customerId: "cus-1", metric: "unknown_metric", quantity: 100, timestamp: now.toISOString(), tags: {} },
+      {
+        id: "1",
+        customerId: "cus-1",
+        metric: "unknown_metric",
+        quantity: 100,
+        timestamp: now.toISOString(),
+        tags: {},
+      },
     ];
 
     const summary = aggregator.aggregate(records, "cus-1", period);

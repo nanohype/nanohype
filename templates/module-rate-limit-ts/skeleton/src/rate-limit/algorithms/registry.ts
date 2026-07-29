@@ -20,9 +20,7 @@ export function getAlgorithm(name: string): RateLimitAlgorithm {
   const algorithm = algorithms.get(name);
   if (!algorithm) {
     const available = Array.from(algorithms.keys()).join(", ") || "(none)";
-    throw new Error(
-      `Rate limit algorithm "${name}" not found. Available: ${available}`,
-    );
+    throw new Error(`Rate limit algorithm "${name}" not found. Available: ${available}`);
   }
   return algorithm;
 }

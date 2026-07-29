@@ -5,9 +5,9 @@
 // Each factory call produces an independent instance.
 //
 
-import type { Agent, AgentExecutionContext } from "./types.js";
-import type { SubTask, AgentResult } from "../types.js";
+import type { AgentResult, SubTask } from "../types.js";
 import { registerAgent } from "./registry.js";
+import type { Agent, AgentExecutionContext } from "./types.js";
 
 function createMockAgent(): Agent {
   return {

@@ -1,15 +1,15 @@
-import type { SearchProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
-  SearchIndex,
+  FilterExpression,
+  SearchConfig,
   SearchDocument,
+  SearchIndex,
   SearchQuery,
   SearchResult,
-  SearchConfig,
-  FilterExpression,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { logger } from "../logger.js";
+import type { SearchProvider } from "./types.js";
 
 // ── Meilisearch Provider ──────────────────────────────────────────
 //
@@ -26,11 +26,7 @@ function createMeilisearchProvider(): SearchProvider {
   const cb = createCircuitBreaker();
   const indexSchemas = new Map<string, SearchIndex>();
 
-  async function request(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<unknown> {
+  async function request(method: string, path: string, body?: unknown): Promise<unknown> {
     const url = `${baseUrl}${path}`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -65,7 +61,7 @@ function createMeilisearchProvider(): SearchProvider {
     const pollInterval = 100;
 
     while (Date.now() - start < maxWaitMs) {
-      const task = await request("GET", `/tasks/${taskUid}`) as Record<string, unknown>;
+      const task = (await request("GET", `/tasks/${taskUid}`)) as Record<string, unknown>;
       const status = task.status as string;
 
       if (status === "succeeded") return;
@@ -81,10 +77,16 @@ function createMeilisearchProvider(): SearchProvider {
 
   function compileFilter(expr: FilterExpression): string {
     if ("and" in expr) {
-      return expr.and.map(compileFilter).map((s) => `(${s})`).join(" AND ");
+      return expr.and
+        .map(compileFilter)
+        .map((s) => `(${s})`)
+        .join(" AND ");
     }
     if ("or" in expr) {
-      return expr.or.map(compileFilter).map((s) => `(${s})`).join(" OR ");
+      return expr.or
+        .map(compileFilter)
+        .map((s) => `(${s})`)
+        .join(" OR ");
     }
     const { field, operator, value } = expr;
     if (operator === "in" && Array.isArray(value)) {
@@ -97,37 +99,45 @@ function createMeilisearchProvider(): SearchProvider {
     name: "meilisearch",
 
     async init(config: SearchConfig): Promise<void> {
-      baseUrl = ((config.url as string) ?? process.env.MEILISEARCH_URL ?? "http://localhost:7700").replace(/\/$/, "");
+      baseUrl = (
+        (config.url as string) ??
+        process.env.MEILISEARCH_URL ??
+        "http://localhost:7700"
+      ).replace(/\/$/, "");
       masterKey = (config.masterKey as string) ?? process.env.MEILISEARCH_MASTER_KEY ?? "";
       logger.info("meilisearch provider initialized", { url: baseUrl });
     },
 
     async createIndex(index: SearchIndex): Promise<void> {
       const primaryField = index.fields.find((f) => f.primary);
-      const result = await request("POST", "/indexes", {
+      const result = (await request("POST", "/indexes", {
         uid: index.name,
         primaryKey: primaryField?.name ?? "id",
-      }) as Record<string, unknown>;
+      })) as Record<string, unknown>;
 
       if (result && typeof result === "object" && "taskUid" in result) {
         await waitForTask(result.taskUid as number);
       }
 
       // Configure filterable and sortable attributes
-      const filterableFields = index.fields
-        .filter((f) => f.facet)
-        .map((f) => f.name);
-      const sortableFields = index.fields
-        .filter((f) => f.sortable)
-        .map((f) => f.name);
+      const filterableFields = index.fields.filter((f) => f.facet).map((f) => f.name);
+      const sortableFields = index.fields.filter((f) => f.sortable).map((f) => f.name);
 
       if (filterableFields.length > 0) {
-        const task = await request("PUT", `/indexes/${index.name}/settings/filterable-attributes`, filterableFields) as Record<string, unknown>;
+        const task = (await request(
+          "PUT",
+          `/indexes/${index.name}/settings/filterable-attributes`,
+          filterableFields,
+        )) as Record<string, unknown>;
         if (task && "taskUid" in task) await waitForTask(task.taskUid as number);
       }
 
       if (sortableFields.length > 0) {
-        const task = await request("PUT", `/indexes/${index.name}/settings/sortable-attributes`, sortableFields) as Record<string, unknown>;
+        const task = (await request(
+          "PUT",
+          `/indexes/${index.name}/settings/sortable-attributes`,
+          sortableFields,
+        )) as Record<string, unknown>;
         if (task && "taskUid" in task) await waitForTask(task.taskUid as number);
       }
 
@@ -142,7 +152,10 @@ function createMeilisearchProvider(): SearchProvider {
         ...doc.metadata,
       }));
 
-      const result = await request("POST", `/indexes/${indexName}/documents`, docs) as Record<string, unknown>;
+      const result = (await request("POST", `/indexes/${indexName}/documents`, docs)) as Record<
+        string,
+        unknown
+      >;
       if (result && "taskUid" in result) {
         await waitForTask(result.taskUid as number);
       }
@@ -171,7 +184,10 @@ function createMeilisearchProvider(): SearchProvider {
         body.attributesToHighlight = query.highlightFields;
       }
 
-      const result = await request("POST", `/indexes/${indexName}/search`, body) as Record<string, unknown>;
+      const result = (await request("POST", `/indexes/${indexName}/search`, body)) as Record<
+        string,
+        unknown
+      >;
       const processingTimeMs = performance.now() - start;
 
       const rawHits = (result.hits as Array<Record<string, unknown>>) ?? [];
@@ -202,7 +218,9 @@ function createMeilisearchProvider(): SearchProvider {
       });
 
       let facetCounts: Record<string, Record<string, number>> | undefined;
-      const rawDistribution = result.facetDistribution as Record<string, Record<string, number>> | undefined;
+      const rawDistribution = result.facetDistribution as
+        | Record<string, Record<string, number>>
+        | undefined;
       if (rawDistribution && Object.keys(rawDistribution).length > 0) {
         facetCounts = rawDistribution;
       }
@@ -216,7 +234,11 @@ function createMeilisearchProvider(): SearchProvider {
     },
 
     async deleteDocuments(indexName: string, ids: string[]): Promise<void> {
-      const result = await request("POST", `/indexes/${indexName}/documents/delete-batch`, ids) as Record<string, unknown>;
+      const result = (await request(
+        "POST",
+        `/indexes/${indexName}/documents/delete-batch`,
+        ids,
+      )) as Record<string, unknown>;
       if (result && "taskUid" in result) {
         await waitForTask(result.taskUid as number);
       }
@@ -227,7 +249,7 @@ function createMeilisearchProvider(): SearchProvider {
     },
 
     async deleteIndex(indexName: string): Promise<void> {
-      const result = await request("DELETE", `/indexes/${indexName}`) as Record<string, unknown>;
+      const result = (await request("DELETE", `/indexes/${indexName}`)) as Record<string, unknown>;
       if (result && "taskUid" in result) {
         await waitForTask(result.taskUid as number);
       }

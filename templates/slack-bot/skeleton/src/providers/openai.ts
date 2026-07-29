@@ -1,7 +1,7 @@
 import OpenAI from "openai";
-import type { LlmProvider, ChatMessage } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { registerProvider } from "./registry.js";
+import type { ChatMessage, LlmProvider } from "./types.js";
 
 // Direct OpenAI API — an alternate to the Bedrock default
 // (set LLM_PROVIDER=openai). Requires OPENAI_API_KEY. Explicit per-request

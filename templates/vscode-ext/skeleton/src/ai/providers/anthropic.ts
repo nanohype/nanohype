@@ -1,15 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiProvider, ChatMessage } from "./types";
 import { registerProvider } from "./registry";
+import type { AiProvider, ChatMessage } from "./types";
 
 class AnthropicProvider implements AiProvider {
   readonly defaultModel = "claude-sonnet-4-20250514";
 
-  async sendMessage(
-    messages: ChatMessage[],
-    apiKey: string,
-    model?: string,
-  ): Promise<string> {
+  async sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string> {
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({

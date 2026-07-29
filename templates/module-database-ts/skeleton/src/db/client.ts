@@ -1,6 +1,6 @@
 import { validateBootstrap } from "./bootstrap.js";
-import type { DatabaseConfig } from "./types.js";
 import { getDriver } from "./drivers/registry.js";
+import type { DatabaseConfig } from "./types.js";
 
 // ── Import drivers so they self-register ─────────────────────────────
 import "./drivers/postgres.js";

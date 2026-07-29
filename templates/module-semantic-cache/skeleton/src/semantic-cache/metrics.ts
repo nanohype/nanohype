@@ -24,10 +24,7 @@ export const cacheOperationDuration = meter.createHistogram(
 );
 
 /** Embedding generation duration in milliseconds. */
-export const embeddingDuration = meter.createHistogram(
-  "semantic_cache_embedding_duration_ms",
-  {
-    description: "Embedding generation latency in milliseconds",
-    unit: "ms",
-  },
-);
+export const embeddingDuration = meter.createHistogram("semantic_cache_embedding_duration_ms", {
+  description: "Embedding generation latency in milliseconds",
+  unit: "ms",
+});

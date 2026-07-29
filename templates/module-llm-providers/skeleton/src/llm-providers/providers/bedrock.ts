@@ -1,28 +1,25 @@
+import type { Message, SystemContentBlock } from "@aws-sdk/client-bedrock-runtime";
 import {
   BedrockRuntimeClient,
   ConverseCommand,
   ConverseStreamCommand,
 } from "@aws-sdk/client-bedrock-runtime";
-import type {
-  Message,
-  SystemContentBlock,
-} from "@aws-sdk/client-bedrock-runtime";
 import { z } from "zod";
-import type { LlmProvider } from "./types.js";
+import { logger } from "../logger.js";
+import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
   ChatOptions,
   LlmResponse,
-  StreamResponse,
-  StreamChunk,
   Pricing,
+  StreamChunk,
+  StreamResponse,
   TokenUsage,
 } from "../types.js";
-import { getPricing, estimateCost } from "../types.js";
+import { estimateCost, getPricing } from "../types.js";
 import { registerProvider } from "./registry.js";
-import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
-import { countTokens } from "../tokens/counter.js";
-import { logger } from "../logger.js";
+import type { LlmProvider } from "./types.js";
 
 // ── AWS Bedrock Provider ───────────────────────────────────────────
 //

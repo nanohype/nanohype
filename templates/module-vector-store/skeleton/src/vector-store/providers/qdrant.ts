@@ -1,9 +1,9 @@
-import type { VectorDocument, SearchResult, VectorStoreConfig } from "../types.js";
-import type { FilterExpression } from "../filters/types.js";
-import type { VectorStoreProvider } from "./types.js";
-import { registerProvider } from "./registry.js";
 import { compileFilter } from "../filters/compiler.js";
+import type { FilterExpression } from "../filters/types.js";
 import { withRetry } from "../helpers.js";
+import type { SearchResult, VectorDocument, VectorStoreConfig } from "../types.js";
+import { registerProvider } from "./registry.js";
+import type { VectorStoreProvider } from "./types.js";
 
 // -- Qdrant Provider -----------------------------------------------------
 //
@@ -105,36 +105,28 @@ class QdrantProvider implements VectorStoreProvider {
     });
 
     const results = response.result || [];
-    return (results as Array<Record<string, unknown>>).map(
-      (hit: Record<string, unknown>) => {
-        const payload = (hit.payload || {}) as Record<string, unknown>;
-        const { content, ...metadata } = payload;
-        return {
-          id: String(hit.id),
-          content: (content as string) || "",
-          score: hit.score as number,
-          metadata,
-        };
-      },
-    );
+    return (results as Array<Record<string, unknown>>).map((hit: Record<string, unknown>) => {
+      const payload = (hit.payload || {}) as Record<string, unknown>;
+      const { content, ...metadata } = payload;
+      return {
+        id: String(hit.id),
+        content: (content as string) || "",
+        score: hit.score as number,
+        metadata,
+      };
+    });
   }
 
   async delete(ids: string[]): Promise<void> {
     await withRetry(async () => {
-      await this.request(
-        "POST",
-        `/collections/${this.collection}/points/delete`,
-        { points: ids },
-      );
+      await this.request("POST", `/collections/${this.collection}/points/delete`, { points: ids });
     });
   }
 
   async count(): Promise<number> {
-    const response = await this.request(
-      "POST",
-      `/collections/${this.collection}/points/count`,
-      { exact: true },
-    );
+    const response = await this.request("POST", `/collections/${this.collection}/points/count`, {
+      exact: true,
+    });
     return (response.result?.count as number) ?? 0;
   }
 

@@ -99,6 +99,27 @@ npm run validate:catalog                   # full catalog validation + summary
 - Error handling at tool/provider boundaries
 - Type hints in Python, strict mode in TypeScript
 
+### Skeleton toolchain
+
+Every JavaScript skeleton ships a `biome.json` and declares `@biomejs/biome`;
+`lint`, `format` and `format:check` invoke Biome. The config is
+`library/config/biome.base.json` inlined rather than extended, because a
+scaffolded project has no nanohype checkout to extend from — only `$schema`,
+`files` and `css` may differ per template.
+
+Two gates hold it, both run by `validate-templates.yml`:
+
+```sh
+npm run validate:skeleton-toolchain   # every skeleton carries the shared config
+npm run lint:skeletons                # and its code passes it
+```
+
+The second exists because the root `biome.json` excludes `templates/*/skeleton`
+— a skeleton is scaffolding output with its own root and config, so nothing else
+in this repository reads it. `npm run lint` has to pass on a scaffolded
+project's first commit, and `lint:skeletons` runs the same command, from the
+same directory, against the same config a consumer gets.
+
 ## Style
 
 - 2-space indent for YAML, JSON, TypeScript, Markdown

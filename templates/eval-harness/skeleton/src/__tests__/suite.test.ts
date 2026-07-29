@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { EvalSuite } from "../suite.js";
+import { describe, expect, it } from "vitest";
 import { EvalCase } from "../case.js";
-import type { LlmProvider, ChatMessage } from "../providers/types.js";
+import type { ChatMessage, LlmProvider } from "../providers/types.js";
+import { EvalSuite } from "../suite.js";
 
 /**
  * Creates a mock provider that returns predetermined responses

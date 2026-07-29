@@ -6,11 +6,11 @@
  * handling works for unknown providers.
  */
 
-import { describe, it, expect } from "vitest";
-import { getSource, listSources } from "../ingest/index.js";
-import { getStrategy, listStrategies } from "../transform/index.js";
+import { describe, expect, it } from "vitest";
 import { getEmbeddingProvider, listEmbeddingProviders } from "../embed/index.js";
+import { getSource, listSources } from "../ingest/index.js";
 import { getAdapter, listAdapters } from "../output/index.js";
+import { getStrategy, listStrategies } from "../transform/index.js";
 
 describe("Ingest Source Registry", () => {
   it("lists registered sources", () => {
