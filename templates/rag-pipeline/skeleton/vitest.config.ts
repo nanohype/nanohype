@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     coverage: {
+      enabled: true,
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
@@ -24,9 +25,9 @@ export default defineConfig({
         "src/providers/**",
       ],
       thresholds: {
-        lines: 70,
-        functions: 70,
-        statements: 70,
+        lines: 75,
+        functions: 75,
+        statements: 75,
         branches: 70,
       },
     },

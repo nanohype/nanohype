@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     coverage: {
+      enabled: true,
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
@@ -23,12 +24,13 @@ export default defineConfig({
         "src/**/index.ts",
         "src/**/types.ts",
       ],
-      // Floors sit just below measured coverage so the gate catches
-      // regressions; ratchet upward as the suite grows.
+      // The floor published in nanohype/standards/testing-rubric.json. A
+      // scaffolded project starts held to the same bar it will be graded
+      // against; raise these as the suite grows, never lower them.
       thresholds: {
-        lines: 72,
+        lines: 75,
         functions: 82,
-        statements: 72,
+        statements: 75,
         branches: 75,
       },
     },
