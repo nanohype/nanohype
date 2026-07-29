@@ -133,6 +133,29 @@ async function readManifest(root) {
   return manifest;
 }
 
+/**
+ * Move `upstream.ref` by rewriting that one string in place.
+ *
+ * Deliberately textual rather than a re-serialisation of the parsed object.
+ * `JSON.stringify` would reflow the whole manifest — collapsing or expanding
+ * arrays, re-escaping non-ASCII — so moving a pin would leave the file failing
+ * the repo's own format check and bury a one-token change in an unrelated diff.
+ * The old ref is a 40-character hex string, and finding anything other than
+ * exactly one of it means the file is not what this function assumes.
+ */
+async function movePin(root, from, to) {
+  const path = join(root, "scripts", "vendored.json");
+  const text = await readFile(path, "utf8");
+  const occurrences = text.split(from).length - 1;
+  if (occurrences !== 1) {
+    die(
+      `expected exactly one occurrence of the current pin in scripts/vendored.json, found ${occurrences}`,
+      "Edit `upstream.ref` by hand and re-run without --ref.",
+    );
+  }
+  await writeFile(path, text.replace(from, to));
+}
+
 /* ────────────────────────────── upstream ────────────────────────────── */
 
 /**
@@ -528,6 +551,26 @@ async function runSelfTest(up, manifest) {
       );
       await rm(stray);
     }
+
+    // Moving the pin must touch the pin and nothing else — the whole reason it
+    // is a textual replacement rather than a re-serialisation.
+    const moveRoot = await writeManifest(await mkdtemp(join(scratch, "move-")), base);
+    const before = await readFile(join(moveRoot, "scripts", "vendored.json"), "utf8");
+    const target = "a".repeat(40);
+    await movePin(moveRoot, base.upstream.ref, target);
+    const after = await readFile(join(moveRoot, "scripts", "vendored.json"), "utf8");
+    record(
+      "moving the pin rewrites the ref and nothing else",
+      after === before.replace(base.upstream.ref, target) && after.includes(target),
+    );
+
+    await expectRejected("moving a pin that appears more than once", async () => {
+      const at = await writeManifest(await mkdtemp(join(scratch, "dup-")), {
+        ...base,
+        entries: [...base.entries, { src: base.upstream.ref, dest: "x" }],
+      });
+      await movePin(at, base.upstream.ref, target);
+    });
   } finally {
     await rm(scratch, { recursive: true, force: true });
   }
@@ -603,8 +646,7 @@ async function main() {
   }
 
   if (REF_ARG !== undefined) {
-    const pinned = { ...manifest, upstream: { ...manifest.upstream, ref: REF_ARG } };
-    await writeFile(join(ROOT, "scripts", "vendored.json"), `${JSON.stringify(pinned, null, 2)}\n`);
+    await movePin(ROOT, manifest.upstream.ref, REF_ARG);
     out(`✓ vendored from ${repository}@${REF_ARG.slice(0, 12)}; pin moved`);
     return;
   }
