@@ -1,7 +1,6 @@
 """Tests for MCP server lifecycle and tool listing."""
 
 import pytest
-
 from mcp.server.fastmcp import FastMCP
 
 from src.config import Config

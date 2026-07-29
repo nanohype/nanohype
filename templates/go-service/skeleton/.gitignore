@@ -2,3 +2,6 @@ bin/
 dist/
 *.exe
 .env
+
+# Coverage profile written by `make test`
+coverage.out
