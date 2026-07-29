@@ -125,7 +125,12 @@ jobs:
           failed=0
           tested=0
 
-          for pkg in templates/*/skeleton/package.json; do
+          # Every package.json under a skeleton, not just the one at its root.
+          # A skeleton whose code lives a directory deeper (prompt-library/sdk,
+          # monorepo/packages/*) was invisible to a `templates/*/skeleton/`
+          # glob, so its suite never ran here — which is how prompt-library
+          # shipped a test suite that had been failing outright.
+          while IFS= read -r pkg; do
             [ -f "$pkg" ] || continue
             dir=$(dirname "$pkg")
 
@@ -145,7 +150,7 @@ jobs:
             fi
 
             echo ""
-          done
+          done < <(find templates -mindepth 3 -name package.json -not -path '*/node_modules/*' | sort)
 
           echo "──────────────────────────────────────"
           echo "Templates tested: $tested"

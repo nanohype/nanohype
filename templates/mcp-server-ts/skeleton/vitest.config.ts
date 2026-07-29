@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/__tests__/**/*.test.ts"],
     coverage: {
+      enabled: true,
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
@@ -20,13 +21,20 @@ export default defineConfig({
         "src/transports/**",
         "src/**/index.ts",
         "src/**/types.ts",
+        // The `example.*` tool and resource are demo handlers a consumer
+        // deletes on first use — the same exclusion ts-service makes, for the
+        // same reason. Gating them would hold the scaffold to coverage of code
+        // that is not meant to survive scaffolding.
+        "src/tools/example.ts",
+        "src/resources/example.ts",
       ],
-      // Floors sit just below measured coverage so the gate catches
-      // regressions; ratchet upward as the suite grows.
+      // The floor published in nanohype/standards/testing-rubric.json. A
+      // scaffolded project starts held to the same bar it will be graded
+      // against; raise these as the suite grows, never lower them.
       thresholds: {
-        lines: 69,
+        lines: 75,
         functions: 85,
-        statements: 69,
+        statements: 75,
         branches: 83,
       },
     },

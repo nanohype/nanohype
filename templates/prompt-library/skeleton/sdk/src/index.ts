@@ -1,7 +1,11 @@
 import { readFile, readdir, stat } from "fs/promises";
 import { join, resolve } from "path";
 import { parse as parseYaml } from "yaml";
-import Ajv from "ajv";
+// ajv 8 ships one entrypoint per JSON Schema draft, and the bare "ajv" import
+// is draft-07. prompt.schema.json declares draft 2020-12, so the default
+// import cannot resolve its $schema and every validation throws before it
+// checks anything.
+import Ajv from "ajv/dist/2020.js";
 
 import type { Prompt, PromptMetadata, RenderedPrompt } from "./types.js";
 

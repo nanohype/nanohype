@@ -36,7 +36,10 @@ Thumbs.db
 # Runtime
 tmp/
 
-# Generated lock files in template skeletons
+# Generated lock files in template skeletons, at any depth — a skeleton whose
+# code lives a directory deeper (prompt-library/sdk, monorepo/packages/*) got
+# its lockfile committed by accident under a single-level pattern.
+**/skeleton/**/package-lock.json
 **/skeleton/package-lock.json
 
 # Template doctor report artifact

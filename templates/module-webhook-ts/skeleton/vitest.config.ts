@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     coverage: {
+      enabled: true,
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
@@ -18,8 +19,10 @@ export default defineConfig({
         "src/**/index.ts",
         "src/**/types.ts",
       ],
-      // Floors sit just below measured coverage so the gate catches
-      // regressions; ratchet upward as the suite grows.
+      // Below the floor published in nanohype/standards/testing-rubric.json
+      // (lines/functions/statements 75, branches 60). These are the measured
+      // values, now actually enforced: closing the gap needs tests for the
+      // scaffolding this skeleton ships, not a higher number here.
       thresholds: {
         lines: 85,
         functions: 61,
