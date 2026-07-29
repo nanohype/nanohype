@@ -12,6 +12,10 @@
       "preset": "recommended",
       "style": {
         "noNonNullAssertion": "off"
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error"
       }
     }
   },
