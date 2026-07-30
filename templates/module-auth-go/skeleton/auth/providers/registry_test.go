@@ -13,7 +13,7 @@ type stubProvider struct {
 	result auth.Result
 }
 
-func (s stubProvider) Name() string                            { return s.name }
+func (s stubProvider) Name() string                              { return s.name }
 func (s stubProvider) VerifyRequest(_ *http.Request) auth.Result { return s.result }
 
 func TestRegisterAndGet(t *testing.T) {

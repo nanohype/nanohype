@@ -59,4 +59,3 @@ func (p *Auth0Provider) VerifyRequest(r *http.Request) auth.Result {
 	}
 	return p.inner.verifyToken(token)
 }
-

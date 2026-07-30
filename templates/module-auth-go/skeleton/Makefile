@@ -17,9 +17,10 @@ build:
 
 # Coverage floor. standards/testing-rubric.json publishes 75 and says to encode
 # it where a regression fails the build rather than as a CI flag. This suite
-# reaches 56%, so the gate is set there and the distance to 75 is closed by
-# writing tests for the packages below — never by lowering this number.
-COVERAGE_MIN := 56
+# clears it. The remainder is the JWKS happy path in the auth0 and clerk
+# providers, which fetches a signing key over the network; their configuration
+# handling — the half that decides whether a deploy starts at all — is covered.
+COVERAGE_MIN := 80
 
 test:
 	go test ./... -coverprofile=coverage.out

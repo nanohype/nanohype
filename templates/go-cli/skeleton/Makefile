@@ -8,9 +8,9 @@ build:
 
 # Coverage floor. standards/testing-rubric.json publishes 75 and says to encode
 # it where a regression fails the build rather than as a CI flag. This suite
-# reaches 34%, so the gate is set there and the distance to 75 is closed by
-# writing tests for the packages below — never by lowering this number.
-COVERAGE_MIN := 34
+# clears it: main.go is the entrypoint and holds no logic, so the reachable
+# ceiling is a little under 90.
+COVERAGE_MIN := 85
 
 test:
 	go test ./... -coverprofile=coverage.out
