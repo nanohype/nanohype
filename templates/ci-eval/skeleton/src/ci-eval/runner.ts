@@ -35,7 +35,12 @@ const CaseSchema = z.object({
 });
 
 const SuiteFileSchema = z.object({
-  name: z.string(),
+  // Optional, because `runSuite` already falls back to the file's basename —
+  // and while this was required, that fallback was unreachable: Zod rejected a
+  // nameless suite before the runner ever got to default it. A filename is a
+  // fine suite name, so the field earns its keep only when you want a different
+  // one.
+  name: z.string().optional(),
   description: z.string().optional(),
   model: z.string().optional(),
   cases: z.array(CaseSchema),

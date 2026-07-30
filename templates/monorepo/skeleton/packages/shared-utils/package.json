@@ -16,13 +16,16 @@
     "build": "tsc --build",
     "dev": "tsc --build --watch",
     "lint": "biome lint .",
-    "test": "echo \"no tests yet\"",
+    "test": "vitest run",
     "clean": "rm -rf dist *.tsbuildinfo",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format:check": "biome format .",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
-    "typescript": "^5.8.0"
+    "@vitest/coverage-v8": "^4.1.10",
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.10"
   }
 }

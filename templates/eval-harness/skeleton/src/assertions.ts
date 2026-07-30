@@ -239,11 +239,22 @@ function tfidfCosineSimilarity(a: string, b: string): number {
   // Build vocabulary (union of both token sets)
   const vocab = new Set<string>([...tfA.keys(), ...tfB.keys()]);
 
-  // IDF: log(N / df) where N = 2 (two documents), df = number of docs containing the term
+  // Smoothed IDF: log((1 + N) / (1 + df)) + 1, with N = 2 (two documents).
+  //
+  // Textbook IDF is log(N / df), and with a two-document corpus that is fatal
+  // rather than merely imprecise: a term in both documents has df = 2, so
+  // log(2 / 2) = 0. Every *shared* term gets zero weight — and shared terms are
+  // the entire similarity signal. Two identical strings then produce two
+  // all-zero vectors, magnitude 0, and a similarity of 0. The assertion scored
+  // every comparison, identical text included, as completely dissimilar.
+  //
+  // The `+ 1` (scikit-learn's smooth_idf) keeps a term that appears everywhere
+  // at weight 1 instead of 0, and the `1 +` on both terms keeps the ratio finite.
+  // Identical input now scores 1, unrelated input 0, partial overlap in between.
   const idf = new Map<string, number>();
   for (const term of vocab) {
     const df = (tfA.has(term) ? 1 : 0) + (tfB.has(term) ? 1 : 0);
-    idf.set(term, Math.log(2 / df));
+    idf.set(term, Math.log((1 + 2) / (1 + df)) + 1);
   }
 
   // Build TF-IDF vectors and compute cosine similarity in one pass

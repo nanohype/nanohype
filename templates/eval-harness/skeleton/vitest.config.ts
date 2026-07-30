@@ -23,15 +23,16 @@ export default defineConfig({
         "src/**/index.ts",
         "src/**/types.ts",
       ],
-      // Below the floor published in nanohype/standards/testing-rubric.json
-      // (lines/functions/statements 75, branches 60). These are the measured
-      // values, now actually enforced: closing the gap needs tests for the
-      // scaffolding this skeleton ships, not a higher number here.
+      // Above the floor published in nanohype/standards/testing-rubric.json
+      // (lines/functions/statements 75, branches 60). Branches sits over the
+      // published number because the gated surface is assertion evaluation and
+      // suite orchestration, which is mostly branching — dropping it to 60 would
+      // let a real regression through.
       thresholds: {
-        lines: 72,
-        functions: 69,
-        statements: 72,
-        branches: 77,
+        lines: 95,
+        functions: 95,
+        statements: 95,
+        branches: 85,
       },
     },
   },

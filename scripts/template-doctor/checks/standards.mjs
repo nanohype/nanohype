@@ -41,37 +41,13 @@ const FLOOR = JSON.parse(readFileSync(join(ROOT, "standards", "testing-rubric.js
  * close the distance. Raising a number here without writing the tests puts the
  * gate back to decorative, which is the exact failure this check exists to
  * prevent.
+ *
+ * Empty: every TypeScript skeleton now meets the published floor. The check
+ * below reports a stale entry as an error precisely so this does not quietly
+ * become a permanent allowlist — an exception that outlives its reason reads as
+ * a standard with a carve-out rather than a standard.
  */
-const BELOW_FLOOR = {
-  "ci-eval": {
-    lines: 55,
-    functions: 72,
-    statements: 55,
-    why: "assertions.ts and runner.ts carry the evaluation logic and are largely untested",
-  },
-  "eval-harness": {
-    lines: 72,
-    functions: 69,
-    statements: 72,
-    why: "assertions.ts is the reusable half and sits around two thirds covered",
-  },
-  "module-queue-ts": {
-    functions: 63,
-    lines: 73,
-    statements: 73,
-    why: "job.ts has no tests for its handler surface",
-  },
-  "module-webhook-ts": {
-    functions: 61,
-    why: "hmac-sha1.ts and the mock transport have no function-level coverage",
-  },
-  "multimodal-pipeline": {
-    lines: 52,
-    functions: 70,
-    statements: 52,
-    why: "the per-modality processors and the pipeline stage runner are untested",
-  },
-};
+const BELOW_FLOOR = {};
 
 /** Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way. */
 const GO_BELOW_FLOOR = {

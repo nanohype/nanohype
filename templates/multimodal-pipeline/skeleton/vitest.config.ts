@@ -24,14 +24,15 @@ export default defineConfig({
         "src/**/index.ts",
         "src/**/types.ts",
       ],
-      // Below the floor published in nanohype/standards/testing-rubric.json
-      // (lines/functions/statements 75, branches 60). These are the measured
-      // values, now actually enforced: closing the gap needs tests for the
-      // scaffolding this skeleton ships, not a higher number here.
+      // Above the floor published in nanohype/standards/testing-rubric.json
+      // (lines/functions/statements 75, branches 60). The remaining gap is the
+      // video path: `analyzeFrames` needs a real video and an ffmpeg binary, so
+      // it is exercised against the mock provider directly rather than through
+      // `processFile`. It is not excluded — it counts against these numbers.
       thresholds: {
-        lines: 52,
-        functions: 70,
-        statements: 52,
+        lines: 79,
+        functions: 90,
+        statements: 79,
         branches: 81,
       },
     },
