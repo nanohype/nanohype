@@ -22,7 +22,7 @@
     "format:check": "biome format ."
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.6",
+    "@biomejs/biome": "2.5.6",
     "typescript": "^5.8.0"
   }
 }
