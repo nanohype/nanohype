@@ -17,7 +17,7 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // circuit breaker instead of hanging forever.
 //
 
-const DEFAULT_MODEL = process.env.LLM_MODEL ?? "anthropic.claude-sonnet-4-6";
+const DEFAULT_MODEL = process.env.LLM_MODEL ?? "us.anthropic.claude-sonnet-5";
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
 let client: BedrockRuntimeClient | null = null;

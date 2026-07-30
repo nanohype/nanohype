@@ -21,7 +21,7 @@ describe("pricing", () => {
   });
 
   it("looks up pricing for known models", () => {
-    const pricing = getModelPricing("claude-sonnet-4-6");
+    const pricing = getModelPricing("claude-sonnet-5");
     expect(pricing.input).toBe(3);
     expect(pricing.output).toBe(15);
   });
@@ -44,7 +44,7 @@ describe("cost tracker", () => {
   it("records and queries cost entries", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
       user: "alice",
       project: "alpha",
     });
@@ -52,7 +52,7 @@ describe("cost tracker", () => {
       user: "bob",
       project: "alpha",
     });
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.02), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02), {
       user: "alice",
       project: "beta",
     });
@@ -65,7 +65,7 @@ describe("cost tracker", () => {
   it("filters by provider", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01));
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01));
     tracker.record(makeResponse("openai", "gpt-4o", 0.005));
 
     const summary = tracker.query({ provider: "anthropic" });
@@ -76,10 +76,10 @@ describe("cost tracker", () => {
   it("breaks down cost by user", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
       user: "alice",
     });
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.02), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02), {
       user: "alice",
     });
     tracker.record(makeResponse("openai", "gpt-4o", 0.005), { user: "bob" });
@@ -92,7 +92,7 @@ describe("cost tracker", () => {
   it("breaks down cost by project", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
       project: "alpha",
     });
     tracker.record(makeResponse("openai", "gpt-4o", 0.02), { project: "beta" });
@@ -105,19 +105,19 @@ describe("cost tracker", () => {
   it("breaks down cost by model", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01));
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.02));
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01));
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02));
     tracker.record(makeResponse("openai", "gpt-4o", 0.005));
 
     const summary = tracker.query();
-    expect(summary.byModel["claude-sonnet-4-6"]).toBeCloseTo(0.03, 6);
+    expect(summary.byModel["claude-sonnet-5"]).toBeCloseTo(0.03, 6);
     expect(summary.byModel["gpt-4o"]).toBeCloseTo(0.005, 6);
   });
 
   it("filters by tags", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-4-6", 0.01), {
+    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
       user: "alice",
       project: "alpha",
     });
@@ -142,7 +142,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01 + Math.random() * 0.001,
@@ -155,7 +155,7 @@ describe("anomaly detection", () => {
     entries.push({
       timestamp: new Date(baseTimestamp.getTime() + 25000).toISOString(),
       provider: "anthropic",
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       inputTokens: 10000,
       outputTokens: 5000,
       cost: 0.5,
@@ -183,7 +183,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,
@@ -201,7 +201,7 @@ describe("anomaly detection", () => {
       {
         timestamp: new Date().toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,

@@ -24,9 +24,14 @@ spec:
       modelFamily: __MODEL_FAMILY__
       modelId: __MODEL_ID__
 
-      # Cross-region inference profile (e.g. us.anthropic.claude-sonnet-4-6).
-      # Leave empty to pin to the gateway's home region. Per LLM policy, prefer
-      # the us.* profile so capacity spans us-west-2 / us-east-1.
+      # Redundant here: modelId accepts an inference-profile ID directly and the
+      # default above is already the us.* profile, which is what the current
+      # Claude family requires — Bedrock reports
+      # inferenceTypesSupported: [INFERENCE_PROFILE] for all of it, so there is no
+      # home region to pin to and a bare anthropic.* ID is refused. Set this only
+      # to route a bare foundation-model ID (an older model, or a non-Anthropic
+      # family) through a profile without changing modelId; it overrides modelId
+      # when non-empty.
       crossRegionProfile: ""
 
       # Requests-per-minute cap enforced at the gateway — defends downstream

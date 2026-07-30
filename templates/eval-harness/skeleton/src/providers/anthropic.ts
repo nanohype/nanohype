@@ -12,7 +12,7 @@ export class AnthropicProvider implements LlmProvider {
   private model: string;
   private cb = createCircuitBreaker();
 
-  constructor(model = "claude-sonnet-4-20250514") {
+  constructor(model = "claude-sonnet-5") {
     this.client = new Anthropic();
     this.model = model;
   }

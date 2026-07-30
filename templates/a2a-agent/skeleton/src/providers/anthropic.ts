@@ -10,7 +10,7 @@ class AnthropicProvider implements LlmProvider {
   async sendMessage(systemPrompt: string, messages: Message[]): Promise<LlmResponse> {
     const response = await cb.execute(() =>
       client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-5",
         max_tokens: 4096,
         system: systemPrompt,
         messages: messages.map((m) => ({

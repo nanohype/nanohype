@@ -60,9 +60,9 @@ variables:
   - name: ModelId
     type: string
     placeholder: '__MODEL_ID__'
-    description: 'Bedrock model ID (full path including version).'
-    prompt: 'Bedrock model ID'
-    default: 'anthropic.claude-sonnet-4-6'
+    description: 'Bedrock inference-profile ID, or a foundation-model ID for a family that still offers on-demand invoke. The current Claude family is inference-profile-only, so it needs the geo prefix.'
+    prompt: 'Bedrock model or inference-profile ID'
+    default: 'us.anthropic.claude-sonnet-5'
 
   - name: RouteName
     type: string

@@ -23,7 +23,7 @@ import type { LlmProvider } from "./types.js";
 // Auth: ANTHROPIC_API_KEY environment variable (read by the SDK).
 //
 
-const DEFAULT_MODEL = "claude-sonnet-4-6";
+const DEFAULT_MODEL = "claude-sonnet-5";
 
 function createAnthropicProvider(): LlmProvider {
   let client: Anthropic | null = null;

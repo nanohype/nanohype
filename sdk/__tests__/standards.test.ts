@@ -41,7 +41,14 @@ describe("loadStandard", () => {
     const s = await loadStandard(source, "llm-policy");
     if (s.kind !== "nanohype/standards/llm-policy") throw new Error("kind narrow");
     expect(s.content.primary_provider).toBe("AWS Bedrock");
-    expect(s.content.models.default).toMatch(/^anthropic\.claude-sonnet/);
+    // Every declared tier is a cross-region inference-profile ID, geo prefix and
+    // all. The current Claude family is INFERENCE_PROFILE-only on Bedrock, so a
+    // bare `anthropic.`-prefixed default would name something that cannot be
+    // invoked — which is what this policy shipped before.
+    expect(s.content.models.default).toMatch(/^us\.anthropic\.claude-sonnet/);
+    for (const id of Object.values(s.content.models)) {
+      expect(id).toMatch(/^(?:us|eu|jp|ap|apac|global)\.anthropic\./);
+    }
     expect(s.content.regions_preferred).toContain("us-west-2");
   });
 

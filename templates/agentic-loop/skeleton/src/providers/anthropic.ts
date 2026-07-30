@@ -50,7 +50,7 @@ class AnthropicProvider implements LlmProvider {
   ): Promise<LlmResponse> {
     const response = await this.cb.execute(() =>
       this.client.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-5",
         max_tokens: 4096,
         system: systemPrompt,
         messages: messages as Anthropic.Messages.MessageParam[],
@@ -92,7 +92,7 @@ class AnthropicProvider implements LlmProvider {
     // before any network I/O occurs.
     const streamPromise = this.cb.execute(async () =>
       this.client.messages.stream({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-5",
         max_tokens: 4096,
         system: systemPrompt,
         messages: messages as Anthropic.Messages.MessageParam[],

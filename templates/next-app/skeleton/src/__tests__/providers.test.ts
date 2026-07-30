@@ -5,7 +5,7 @@ describe("AI Provider Registry", () => {
   it("registers anthropic provider", () => {
     const provider = getProvider("anthropic");
     expect(provider).toBeDefined();
-    expect(provider.defaultModel).toBe("claude-sonnet-4-20250514");
+    expect(provider.defaultModel).toBe("claude-sonnet-5");
   });
 
   it("registers openai provider", () => {

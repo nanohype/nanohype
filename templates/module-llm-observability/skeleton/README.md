@@ -26,7 +26,7 @@ const response = await observer.trace(async () => {
   // Call your LLM provider here
   return {
     text: "Hello, world!",
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-5",
     provider: "anthropic",
     inputTokens: 100,
     outputTokens: 50,

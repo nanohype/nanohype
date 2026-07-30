@@ -9,7 +9,7 @@ import type { ChatMessage, LlmProvider } from "./types.js";
 // instead of hanging; the model id is injectable via ANTHROPIC_MODEL.
 
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
-const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
+const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
 
 const client = new Anthropic({ timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
 const cb = createCircuitBreaker();

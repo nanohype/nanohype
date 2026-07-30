@@ -30,6 +30,7 @@
     "validate:schema": "node scripts/validate-schema.mjs --schema schemas/template.schema.json --data 'templates/*/template.yaml'",
     "validate:catalog": "./scripts/validate-catalog.sh",
     "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
+    "validate:model-ids": "node scripts/check-model-ids.mjs",
     "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
     "validate:doc-commands": "node scripts/check-doc-commands.mjs",
     "validate:skeleton-toolchain": "node scripts/check-skeleton-toolchain.mjs",

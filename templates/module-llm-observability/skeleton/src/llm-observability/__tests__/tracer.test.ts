@@ -7,7 +7,7 @@ import type { LlmResponse } from "../types.js";
 function makeResponse(overrides: Partial<LlmResponse> = {}): LlmResponse {
   return {
     text: "Hello, world!",
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-5",
     provider: "anthropic",
     inputTokens: 100,
     outputTokens: 50,
@@ -22,7 +22,7 @@ describe("LLM tracer", () => {
     const { response, span } = await tracer.trace(async () => makeResponse());
 
     expect(response.text).toBe("Hello, world!");
-    expect(span.model).toBe("claude-sonnet-4-6");
+    expect(span.model).toBe("claude-sonnet-5");
     expect(span.provider).toBe("anthropic");
     expect(span.inputTokens).toBe(100);
     expect(span.outputTokens).toBe(50);

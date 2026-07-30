@@ -34,7 +34,7 @@ import type { LlmProvider } from "./types.js";
 // request/response shape, so there is no hand-rolled body marshalling.
 //
 
-const DEFAULT_MODEL = "anthropic.claude-sonnet-4-6";
+const DEFAULT_MODEL = "us.anthropic.claude-sonnet-5";
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
 // Never trust raw model output — validate the Converse usage block before
@@ -99,7 +99,7 @@ function createBedrockProvider(): LlmProvider {
     return client;
   }
 
-  const pricing: Pricing = getPricing("claude-sonnet-4-6");
+  const pricing: Pricing = getPricing("claude-sonnet-5");
 
   return {
     name: "bedrock",

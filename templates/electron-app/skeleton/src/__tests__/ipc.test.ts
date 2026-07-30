@@ -85,7 +85,7 @@ describe("IPC message shape", () => {
         { role: "assistant" as const, content: "Hi there" },
       ],
       provider: "anthropic",
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-5",
     };
 
     expect(payload.messages).toHaveLength(2);
