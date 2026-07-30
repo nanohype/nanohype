@@ -10,10 +10,20 @@ run: build
 	./$(BINARY)
 
 # Coverage floor. standards/testing-rubric.json publishes 75 and says to encode
-# it where a regression fails the build rather than as a CI flag. This suite
-# reaches 12%, so the gate is set there and the distance to 75 is closed by
-# writing tests for the packages below — never by lowering this number.
-COVERAGE_MIN := 12
+# it where a regression fails the build rather than as a CI flag.
+#
+# This suite reaches 67. The gap to 75 is the PostgreSQL repository, whose CRUD
+# methods need a live server — mocking pgx would assert that the mock was
+# called, not that the SQL is right, which is the only thing worth knowing about
+# a repository. Cover it in an integration tier against a real database; it is
+# deliberately NOT excluded from this profile, so it counts against the number
+# here rather than being hidden from it.
+#
+# `cmd/server/main.go` is the other uncovered file and is process wiring.
+#
+# The gate is set at the measured value so a regression fails. Close the distance
+# by adding the integration tier — never by lowering this number.
+COVERAGE_MIN := 67
 
 test:
 	go test ./... -coverprofile=coverage.out

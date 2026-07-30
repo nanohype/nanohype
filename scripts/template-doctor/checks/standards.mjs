@@ -49,11 +49,17 @@ const FLOOR = JSON.parse(readFileSync(join(ROOT, "standards", "testing-rubric.js
  */
 const BELOW_FLOOR = {};
 
-/** Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way. */
+/**
+ * Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way.
+ *
+ * go-cli and module-auth-go now clear the published floor and are gone from
+ * here. What remains cannot be closed by writing more unit tests.
+ */
 const GO_BELOW_FLOOR = {
-  "go-cli": { min: 34, why: "cobra command bodies carry the logic and are untested" },
-  "go-service": { min: 12, why: "handlers, middleware and the repository layer have no tests" },
-  "module-auth-go": { min: 56, why: "the provider implementations are partially covered" },
+  "go-service": {
+    min: 67,
+    why: "the PostgreSQL repository's CRUD needs a live server; it is not excluded from the profile, so it counts against the number rather than being hidden from it",
+  },
 };
 
 const findings = [];
