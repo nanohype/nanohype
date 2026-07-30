@@ -12,7 +12,7 @@ import type { ChatMessage, LlmProvider } from "./types.js";
 // hung Bedrock socket trips the circuit breaker instead of hanging forever.
 
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
-const MODEL = process.env.LLM_MODEL ?? "anthropic.claude-sonnet-4-6";
+const MODEL = process.env.LLM_MODEL ?? "us.anthropic.claude-sonnet-5";
 
 class BedrockProvider implements LlmProvider {
   private readonly client = new BedrockRuntimeClient({

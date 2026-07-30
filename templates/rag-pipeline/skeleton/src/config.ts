@@ -41,8 +41,8 @@ const generationSchema = z.object({
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
   // Bedrock model id (the org default). For the direct Anthropic API use
-  // "claude-sonnet-4-6"; for OpenAI use e.g. "gpt-4o".
-  model: z.string().default("anthropic.claude-sonnet-4-6"),
+  // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
+  model: z.string().default("us.anthropic.claude-sonnet-5"),
   temperature: z.coerce.number().min(0).max(2).default(0.1),
   maxTokens: z.coerce.number().int().positive().default(1024),
 });

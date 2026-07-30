@@ -4,6 +4,12 @@
 // can be overridden by provider pricing. Kept as a reference for
 // cost estimation when provider-reported usage is unavailable.
 //
+// Rates are each vendor's published list price for the direct API, not a
+// cloud reseller's — Bedrock and Vertex price the same models differently.
+// Check the vendor's pricing page when adding a model rather than copying a
+// neighbouring row: tiers within one family do not share a ratio, and a
+// promotional rate is not the rate to store.
+//
 
 export interface ModelPricing {
   /** Cost per 1M input tokens in USD. */
@@ -14,9 +20,9 @@ export interface ModelPricing {
 
 export const DEFAULT_PRICING: Record<string, ModelPricing> = {
   // Anthropic
-  "claude-sonnet-4-6": { input: 3, output: 15 },
-  "claude-haiku-4-20250514": { input: 0.8, output: 4 },
-  "claude-opus-4-20250514": { input: 15, output: 75 },
+  "claude-sonnet-5": { input: 3, output: 15 },
+  "claude-haiku-4-5": { input: 1, output: 5 },
+  "claude-opus-5": { input: 5, output: 25 },
 
   // OpenAI
   "gpt-4o": { input: 2.5, output: 10 },

@@ -1,7 +1,7 @@
 ---
 name: summarize-document
 version: "1.2.0"
-model: claude-sonnet-4-5-20250514
+model: claude-sonnet-5
 temperature: 0.3
 tags: [summarization, documents]
 variables:

@@ -3,7 +3,7 @@ import { registerProvider } from "./registry";
 import type { AiProvider, ChatMessage } from "./types";
 
 class AnthropicProvider implements AiProvider {
-  readonly defaultModel = "claude-sonnet-4-20250514";
+  readonly defaultModel = "claude-sonnet-5";
 
   async sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string> {
     const client = new Anthropic({ apiKey });

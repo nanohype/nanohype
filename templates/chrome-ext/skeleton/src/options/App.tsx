@@ -3,7 +3,7 @@ import type { LlmProvider, Settings } from "@/lib/storage";
 import { getSettings, saveSettings } from "@/lib/storage";
 
 const MODELS: Record<LlmProvider, string[]> = {
-  anthropic: ["claude-sonnet-4-20250514", "claude-haiku-4-20250414"],
+  anthropic: ["claude-sonnet-5", "claude-haiku-4-5"],
   openai: ["gpt-4o", "gpt-4o-mini"],
 };
 

@@ -20,7 +20,7 @@
     "model": {
       "type": "string",
       "minLength": 1,
-      "description": "Model identifier (e.g. claude-sonnet-4-5-20250514)."
+      "description": "Model identifier (e.g. claude-sonnet-5)."
     },
     "temperature": {
       "type": "number",

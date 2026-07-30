@@ -14,7 +14,7 @@ const llmSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
-  model: z.string().default("claude-sonnet-4-20250514"),
+  model: z.string().default("claude-sonnet-5"),
   temperature: z.coerce.number().min(0).max(2).default(0.1),
   maxTokens: z.coerce.number().int().positive().default(4096),
 });

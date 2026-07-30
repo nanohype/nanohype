@@ -67,15 +67,17 @@ OTel resource attributes every pod must emit: `agents.tenant`, `agents.platform`
 
 ## LLM policy — `llm-policy.json`
 
-Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (Pod Identity on EKS, task role on ECS, execution role on Lambda) — never API keys. On-demand invoke uses cross-region inference profile IDs (`us.anthropic.…`); bare foundation-model IDs are refused.
+Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (Pod Identity on EKS, task role on ECS, execution role on Lambda) — never API keys.
+
+Every current Claude model is invoked through a **cross-region inference-profile ID**, never the bare foundation-model ID. Bedrock reports `inferenceTypesSupported: [INFERENCE_PROFILE]` for the whole family — there is no on-demand path — so `anthropic.claude-sonnet-5` is refused with a `ValidationException` while `us.anthropic.claude-sonnet-5` works. The geo prefix tracks the deploy region (`us.`, `eu.`); prefer it over `global.` so routing stays inside the intended jurisdiction.
 
 Models (from `llm-policy.json`):
 
-- **Default**: `anthropic.claude-sonnet-4-6` — most work
-- **Escalation**: `anthropic.claude-opus-4-8` — complex reasoning, architecture decisions
-- **Light**: `anthropic.claude-haiku-4-5` — classification, routing, filter steps
+- **Default**: `us.anthropic.claude-sonnet-5` — most work
+- **Escalation**: `us.anthropic.claude-opus-5` — complex reasoning, architecture decisions
+- **Light**: `us.anthropic.claude-haiku-4-5-20251001-v1:0` — classification, routing, filter steps
 
-Regions in order of preference: `us-west-2`, `us-east-1`, `eu-central-1`. Verify the chosen model is available in the deploy region before committing IaC.
+Regions in order of preference: `us-west-2`, `us-east-1`, `eu-central-1`. Verify the model's inference profile is `ACTIVE` in the deploy region before committing IaC — `aws bedrock list-inference-profiles` — not merely that the foundation model is listed.
 
 Prompt caching is mandatory — use Bedrock `cachePoint` markers on the system prompt and any stable context prefix; measure cache-hit ratio and surface it in the architecture artifact.
 

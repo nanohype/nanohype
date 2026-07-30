@@ -22,7 +22,7 @@ vi.mock("fs/promises", async () => {
 const samplePrompt = `---
 name: test-prompt
 version: 1.0.0
-model: claude-sonnet-4-20250514
+model: claude-sonnet-5
 variables:
   - name: topic
     description: The topic to write about
@@ -78,7 +78,7 @@ describe("loadPrompt", () => {
 
     expect(prompt.metadata.name).toBe("test-prompt");
     expect(prompt.metadata.version).toBe("1.0.0");
-    expect(prompt.metadata.model).toBe("claude-sonnet-4-20250514");
+    expect(prompt.metadata.model).toBe("claude-sonnet-5");
     expect(prompt.metadata.variables).toHaveLength(2);
     expect(prompt.template).toBe("Write a {{tone}} article about {{topic}}.");
   });

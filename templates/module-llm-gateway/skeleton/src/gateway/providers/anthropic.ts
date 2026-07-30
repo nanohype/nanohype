@@ -12,7 +12,7 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // responses into the unified GatewayResponse shape.
 //
 
-const DEFAULT_MODEL = "claude-sonnet-4-6";
+const DEFAULT_MODEL = "claude-sonnet-5";
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic {

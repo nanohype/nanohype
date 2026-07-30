@@ -2,7 +2,7 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-07-29T21:35:09.000Z",
+  "generated_at": "2026-07-30T02:27:09.000Z",
   "templates": [
     {
       "name": "a2a-agent",

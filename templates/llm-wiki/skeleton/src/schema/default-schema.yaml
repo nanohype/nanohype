@@ -36,6 +36,6 @@ structure:
 
 llm:
   provider: __LLM_PROVIDER__
-  model: claude-sonnet-4-6
+  model: claude-sonnet-5
   temperature: 0.2
   maxPagesPerIngest: 10

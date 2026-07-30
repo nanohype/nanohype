@@ -12,7 +12,7 @@ function makeSpan(overrides: Partial<LlmSpan> = {}): LlmSpan {
     startedAt: new Date().toISOString(),
     endedAt: new Date().toISOString(),
     durationMs: 200,
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-5",
     provider: "anthropic",
     inputTokens: 1000,
     outputTokens: 500,
@@ -37,15 +37,15 @@ describe("pricing", () => {
   });
 
   it("looks up pricing for known models", () => {
-    const pricing = getModelPricing("claude-sonnet-4-6");
+    const pricing = getModelPricing("claude-sonnet-5");
     expect(pricing.input).toBe(3);
     expect(pricing.output).toBe(15);
   });
 
   it("calculates anthropic opus pricing", () => {
-    const cost = calculateCost("claude-opus-4-20250514", 1000, 500);
-    // (1000 * 15 / 1M) + (500 * 75 / 1M) = 0.015 + 0.0375 = 0.0525
-    expect(cost).toBeCloseTo(0.0525, 6);
+    const cost = calculateCost("claude-opus-5", 1000, 500);
+    // (1000 * 5 / 1M) + (500 * 25 / 1M) = 0.005 + 0.0125 = 0.0175
+    expect(cost).toBeCloseTo(0.0175, 6);
   });
 });
 
@@ -55,14 +55,14 @@ describe("cost calculator", () => {
 
     const entry = calculator.record(makeSpan());
     expect(entry.cost).toBeGreaterThan(0);
-    expect(entry.model).toBe("claude-sonnet-4-6");
+    expect(entry.model).toBe("claude-sonnet-5");
     expect(entry.provider).toBe("anthropic");
   });
 
   it("queries with no filters returns all entries", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-6", inputTokens: 100, outputTokens: 50 }));
+    calculator.record(makeSpan({ model: "claude-sonnet-5", inputTokens: 100, outputTokens: 50 }));
     calculator.record(
       makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 200, outputTokens: 100 }),
     );
@@ -85,7 +85,7 @@ describe("cost calculator", () => {
   it("filters by model", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(makeSpan({ model: "claude-sonnet-4-6" }));
+    calculator.record(makeSpan({ model: "claude-sonnet-5" }));
     calculator.record(makeSpan({ model: "gpt-4o", provider: "openai" }));
 
     const summary = calculator.query({ model: "gpt-4o" });
@@ -95,15 +95,13 @@ describe("cost calculator", () => {
   it("breaks down cost by model", () => {
     const calculator = createCostCalculator();
 
-    calculator.record(
-      makeSpan({ model: "claude-sonnet-4-6", inputTokens: 1000, outputTokens: 500 }),
-    );
+    calculator.record(makeSpan({ model: "claude-sonnet-5", inputTokens: 1000, outputTokens: 500 }));
     calculator.record(
       makeSpan({ model: "gpt-4o", provider: "openai", inputTokens: 1000, outputTokens: 500 }),
     );
 
     const summary = calculator.query();
-    expect(summary.byModel["claude-sonnet-4-6"]).toBeGreaterThan(0);
+    expect(summary.byModel["claude-sonnet-5"]).toBeGreaterThan(0);
     expect(summary.byModel["gpt-4o"]).toBeGreaterThan(0);
   });
 
@@ -151,7 +149,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01 + Math.random() * 0.001,
@@ -164,7 +162,7 @@ describe("anomaly detection", () => {
     entries.push({
       timestamp: new Date(baseTimestamp.getTime() + 25000).toISOString(),
       provider: "anthropic",
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       inputTokens: 10000,
       outputTokens: 5000,
       cost: 0.5,
@@ -192,7 +190,7 @@ describe("anomaly detection", () => {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,
@@ -210,7 +208,7 @@ describe("anomaly detection", () => {
       {
         timestamp: new Date().toISOString(),
         provider: "anthropic",
-        model: "claude-sonnet-4-6",
+        model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
         cost: 0.01,

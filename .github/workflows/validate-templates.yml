@@ -101,6 +101,15 @@ jobs:
       - name: Validate standards manifests
         run: npm run validate:standards
 
+      # A model ID is a plain string, so no compiler, linter or type checker has
+      # an opinion about it — a scaffold born on a retired or never-existent ID
+      # fails only at the first invocation, in the consumer's project. This
+      # checks every ID against the set standards/llm-policy.json names, and
+      # rejects a bare Bedrock foundation-model ID in invoke position (the
+      # current Claude family is INFERENCE_PROFILE-only, so those are refused).
+      - name: Verify model IDs match the LLM policy
+        run: npm run validate:model-ids
+
       - name: Verify catalog is regenerated (no drift)
         run: npm run verify:catalog
 

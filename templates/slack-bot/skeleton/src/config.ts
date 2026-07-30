@@ -17,7 +17,7 @@ const configSchema = z.object({
   LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
 
   // Bedrock model id (Converse). Injectable so the model isn't hardcoded.
-  LLM_MODEL: z.string().default("anthropic.claude-sonnet-4-6"),
+  LLM_MODEL: z.string().default("us.anthropic.claude-sonnet-5"),
 
   // Region where the Bedrock model is enabled. Bedrock auth is the AWS
   // credential chain (IRSA on-cluster) — no API keys.

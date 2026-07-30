@@ -7,9 +7,9 @@
   "content": {
     "primary_provider": "AWS Bedrock",
     "models": {
-      "default": "anthropic.claude-sonnet-4-6",
-      "escalation": "anthropic.claude-opus-4-8",
-      "light": "anthropic.claude-haiku-4-5"
+      "default": "us.anthropic.claude-sonnet-5",
+      "escalation": "us.anthropic.claude-opus-5",
+      "light": "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     },
     "regions_preferred": ["us-west-2", "us-east-1", "eu-central-1"],
     "sdk_by_language": {
@@ -27,11 +27,15 @@
       },
       {
         "id": "default-sonnet",
-        "summary": "Use claude-sonnet-4-6 for the bulk of inference. Escalate to opus only for complex reasoning or architecture decisions. Use haiku for classification, routing, and filter steps."
+        "summary": "Use claude-sonnet-5 for the bulk of inference. Escalate to claude-opus-5 only for complex reasoning or architecture decisions. Use claude-haiku-4-5 for classification, routing, and filter steps."
+      },
+      {
+        "id": "inference-profile-required",
+        "summary": "Invoke every current Claude model through a cross-region inference-profile ID, never the bare foundation-model ID. Bedrock reports inferenceTypesSupported: [INFERENCE_PROFILE] for the whole current Claude family — there is no ON_DEMAND path — so a bare ID such as anthropic.claude-sonnet-5 is refused with a ValidationException on the first call. The geo prefix must match the deploy region: us. for us-east-1 / us-west-2, eu. for eu-central-1. Prefer a geo prefix over global. so routing stays inside the intended jurisdiction. Confirm with: aws bedrock list-inference-profiles."
       },
       {
         "id": "verify-region",
-        "summary": "Verify the chosen model is available in the deploy region before committing IaC. Cross-region inference profiles (us.anthropic.*) work but require explicit configuration."
+        "summary": "Verify the chosen model is available in the deploy region before committing IaC. Check the model's inference profile is ACTIVE there, not merely that the foundation model is listed."
       },
       {
         "id": "prompt-caching-mandatory",
