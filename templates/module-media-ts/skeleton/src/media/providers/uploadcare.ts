@@ -86,6 +86,16 @@ function createUploadcareProvider(): MediaProvider {
    * comes back 401 with nothing to indicate which of the five components was
    * wrong. A request that does carry a body needs the body's own digest here.
    *
+   * On SHA-1: the algorithm is fixed by Uploadcare's protocol — the server
+   * validates HMAC-SHA1 and nothing else, so this is not a choice the client
+   * gets to make. A static analyser will flag it as a weak hash, and for a
+   * *digest* that would be right; for an HMAC it is not. HMAC's security rests
+   * on the PRF property of the compression function, not on collision
+   * resistance, so the SHAttered-class attacks on SHA-1 do not carry over.
+   * HMAC-SHA1 has no practical break and remains acceptable for authentication.
+   * (Contrast the Cloudinary provider, which signs a bare digest and therefore
+   * uses SHA-256 — there the vendor accepts both and the stronger hash is free.)
+   *
    * https://uploadcare.com/docs/api/rest/authentication/
    */
   function signedHeaders(method: string, uri: string): Record<string, string> {

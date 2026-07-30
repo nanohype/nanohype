@@ -56,6 +56,13 @@ const DEFAULT_SRCSET_WIDTHS = [320, 640, 960, 1280, 1920];
  * `getResponsiveSrcSet` sign URLs, and a second inline copy is how the two
  * drifted apart.
  *
+ * MD5 is not a choice here — imgix validates this exact construction and no
+ * other, so a stronger hash produces a signature the CDN rejects. What the
+ * signature protects against is a third party minting transform URLs against
+ * your source, and the guarantee comes from the token being secret and
+ * unguessable rather than from the hash's collision resistance: forging a URL
+ * requires the token, not a collision. Treat the token as a credential.
+ *
  * https://github.com/imgix/imgix-blueprint#securing-urls
  */
 function signUrl(pathWithQuery: string, token: string): string {
