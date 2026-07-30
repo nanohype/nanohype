@@ -55,6 +55,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["sdk/__tests__/resolver.test.ts", "sdk/__tests__/composite.test.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noTemplateCurlyInString": "off"
+          }
+        }
+      }
     }
   ]
 }

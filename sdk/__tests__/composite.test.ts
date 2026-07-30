@@ -11,6 +11,13 @@ import type {
   TemplateManifest,
 } from "../src/types.js";
 
+// `noTemplateCurlyInString` is off for this file in biome.json. The suites here
+// pass `${VarName}` placeholders through as *data* — that is the syntax the
+// resolver is specified to expand — so writing them as JS template literals
+// would interpolate them at parse time and test nothing. The rule is correct in
+// general and wrong here, which is why the exemption is scoped to this file
+// rather than disabled repo-wide.
+
 function mockTemplate(
   name: string,
   variables: TemplateManifest["variables"] = [],

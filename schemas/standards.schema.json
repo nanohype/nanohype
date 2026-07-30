@@ -63,15 +63,7 @@
               "toolchains": {
                 "type": "object",
                 "propertyNames": {
-                  "enum": [
-                    "typescript",
-                    "go",
-                    "python",
-                    "rust",
-                    "java",
-                    "kotlin",
-                    "csharp"
-                  ]
+                  "enum": ["typescript", "go", "python", "rust", "java", "kotlin", "csharp"]
                 },
                 "additionalProperties": {
                   "type": "object",
@@ -434,12 +426,7 @@
         "properties": {
           "content": {
             "type": "object",
-            "required": [
-              "transforms",
-              "reserved_prefixes",
-              "dimensions",
-              "required_by_surface"
-            ],
+            "required": ["transforms", "reserved_prefixes", "dimensions", "required_by_surface"],
             "properties": {
               "transforms": {
                 "type": "object",
@@ -707,12 +694,7 @@
         "properties": {
           "content": {
             "type": "object",
-            "required": [
-              "principles",
-              "slo",
-              "burn_rate_alerts",
-              "dashboard_requirements"
-            ],
+            "required": ["principles", "slo", "burn_rate_alerts", "dashboard_requirements"],
             "properties": {
               "principles": {
                 "type": "object",
@@ -740,12 +722,7 @@
               },
               "slo": {
                 "type": "object",
-                "required": [
-                  "definition",
-                  "window_days",
-                  "sli_types",
-                  "error_budget"
-                ],
+                "required": ["definition", "window_days", "sli_types", "error_budget"],
                 "properties": {
                   "definition": {
                     "type": "string"
@@ -759,11 +736,7 @@
                     "minItems": 1,
                     "items": {
                       "type": "object",
-                      "required": [
-                        "id",
-                        "good_over_valid",
-                        "default_objective"
-                      ],
+                      "required": ["id", "good_over_valid", "default_objective"],
                       "properties": {
                         "id": {
                           "type": "string",
@@ -986,11 +959,7 @@
             "properties": {
               "principles": {
                 "type": "object",
-                "required": [
-                  "neutral_waist",
-                  "one_egress",
-                  "absent_is_not_healthy"
-                ],
+                "required": ["neutral_waist", "one_egress", "absent_is_not_healthy"],
                 "properties": {
                   "neutral_waist": {
                     "type": "string"
@@ -1008,12 +977,7 @@
               },
               "collection_contract": {
                 "type": "object",
-                "required": [
-                  "protocol",
-                  "endpoint",
-                  "topology",
-                  "workload_requirements"
-                ],
+                "required": ["protocol", "endpoint", "topology", "workload_requirements"],
                 "properties": {
                   "protocol": {
                     "type": "string",
@@ -1127,13 +1091,7 @@
                     "minItems": 1,
                     "items": {
                       "type": "object",
-                      "required": [
-                        "detail_type",
-                        "source",
-                        "when",
-                        "detail_fields",
-                        "severity"
-                      ],
+                      "required": ["detail_type", "source", "when", "detail_fields", "severity"],
                       "properties": {
                         "detail_type": {
                           "type": "string",
@@ -1237,13 +1195,7 @@
         "properties": {
           "content": {
             "type": "object",
-            "required": [
-              "canonical_host",
-              "gsc",
-              "required_files",
-              "head_tags",
-              "rules"
-            ],
+            "required": ["canonical_host", "gsc", "required_files", "head_tags", "rules"],
             "properties": {
               "canonical_host": {
                 "type": "object",

@@ -37,9 +37,7 @@ const c = JSON.parse(readFileSync(STANDARD, "utf-8")).content;
 // actually implements; ticket-tier (3, 1) are defined but not alerted in prod.
 const windows = c.burn_rate_alerts.windows;
 const allFactors = new Set(windows.map((w) => w.factor));
-const pageFactors = new Set(
-  windows.filter((w) => w.severity === "page").map((w) => w.factor),
-);
+const pageFactors = new Set(windows.filter((w) => w.severity === "page").map((w) => w.factor));
 
 // The full (severity, long, short, factor) tuples, keyed for set comparison
 // against the operator's Go table.
@@ -48,13 +46,9 @@ const standardPairs = new Set(windows.map(windowKey));
 
 // Objective denominators = 1 - objective, rounded to kill float dust (0.999 -> 0.001).
 const round = (n) => Math.round(n * 1e6) / 1e6;
-const denominators = new Set(
-  c.slo.sli_types.map((t) => round(1 - t.default_objective)),
-);
+const denominators = new Set(c.slo.sli_types.map((t) => round(1 - t.default_objective)));
 
-const files = readdirSync(alertDir).filter(
-  (f) => f.endsWith(".yaml") || f.endsWith(".yml"),
-);
+const files = readdirSync(alertDir).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
 if (files.length === 0) {
   console.error(`no alert files under ${alertDir}`);
   process.exit(2);
@@ -89,9 +83,7 @@ for (const f of files) {
 // Every page-tier factor must be implemented by at least one alert.
 for (const pf of pageFactors) {
   if (!usedFactors.has(pf)) {
-    errors.push(
-      `page-tier burn-rate factor ${pf} from ${STANDARD} is not used in any alert expr`,
-    );
+    errors.push(`page-tier burn-rate factor ${pf} from ${STANDARD} is not used in any alert expr`);
   }
 }
 
