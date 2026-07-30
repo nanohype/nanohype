@@ -26,12 +26,27 @@
  *      skeleton is a failure rather than a local preference.
  *   3. No eslint or prettier config file survives anywhere under templates/.
  *   4. No manifest declares an eslint or prettier dependency.
- *   5. Every manifest declares @biomejs/biome.
+ *   5. Every manifest declares @biomejs/biome, pinned to an exact version.
  *   6. `lint`, `format` and `format:check` invoke Biome.
+ *   7. That version is the one `library/config/biome.base.json` declares in its
+ *      `$schema`, and each skeleton's own `$schema` names it too.
  *
  * Rule 2 is the one that matters over time. Without it each skeleton's config
  * is free to drift from the base, and the catalog goes back to teaching 48
  * slightly different bars.
+ *
+ * Rule 7 is why `$schema` is a local key at all. Biome only validates the
+ * `$schema` of the config it enters through, so a skeleton's is never checked by
+ * anything until someone scaffolds it — and even then a mismatch is an `info`,
+ * not a failure, so it never turns a build red. It stays wrong quietly, and an
+ * editor validates the config against rules the installed Biome does not have.
+ *
+ * The pin has to be exact for that to mean anything: `^2.5.6` resolves to
+ * whatever patch is newest at install time, so the `$schema` beside it starts
+ * lying on the next release and every scaffolded project inherits the lie.
+ * Exact is also what every repository in the org already does — Biome is the one
+ * dependency pinned rather than ranged, because a formatter that floats makes
+ * two contributors disagree about the same file.
  *
  *   node scripts/check-skeleton-toolchain.mjs
  */
@@ -45,10 +60,16 @@ const BASE_PATH = join(ROOT, "library", "config", "biome.base.json");
 
 /** Keys a skeleton may set beyond the shared base, and why. */
 const LOCAL_KEYS = new Set([
-  "$schema", // editor metadata, tracks whichever Biome the skeleton pins
+  "$schema", // editor metadata — excluded here, checked by rule 7 instead
   "files", // build-output paths differ per template
   "css", // only the Tailwind-bearing skeletons need the directive parser
 ]);
+
+/** The version in a `$schema` URL, or null when there isn't one. */
+function schemaVersion(config) {
+  const match = /biomejs\.dev\/schemas\/(\d+\.\d+\.\d+)\/schema\.json/.exec(config?.$schema ?? "");
+  return match ? match[1] : null;
+}
 
 const BANNED = /eslint|prettier/i;
 const CONFIG_NAMES =
@@ -80,6 +101,19 @@ function readJson(path) {
 const base = readJson(BASE_PATH);
 if (!base) {
   console.error("check-skeleton-toolchain: cannot read the shared Biome base");
+  process.exit(1);
+}
+
+// The base's `$schema` is the catalog's Biome version: one place to bump, and
+// rule 7 holds every skeleton to it. Without a parseable version here the rule
+// would compare everything against null and pass, so this is a hard stop.
+const BASE_VERSION = schemaVersion(base);
+if (!BASE_VERSION) {
+  console.error(
+    "check-skeleton-toolchain: library/config/biome.base.json has no versioned $schema\n" +
+      "  (expected https://biomejs.dev/schemas/<x.y.z>/schema.json) — it is the catalog's\n" +
+      "  Biome version, and nothing else names it.",
+  );
   process.exit(1);
 }
 
@@ -145,6 +179,20 @@ for (const dir of readdirSync(TEMPLATES, { withFileTypes: true })) {
       fail(relative(ROOT, configPath), `declares \`${key}\`, which the shared base does not`);
     }
   }
+
+  // 7a. Its `$schema` names the catalog's Biome version.
+  const version = schemaVersion(config);
+  if (version === null) {
+    fail(
+      relative(ROOT, configPath),
+      `has no versioned $schema — it should be https://biomejs.dev/schemas/${BASE_VERSION}/schema.json`,
+    );
+  } else if (version !== BASE_VERSION) {
+    fail(
+      relative(ROOT, configPath),
+      `$schema names Biome ${version}, but the catalog is on ${BASE_VERSION} (library/config/biome.base.json)`,
+    );
+  }
 }
 
 // 4-6. Manifest rules, for nested packages as well as skeleton roots.
@@ -161,8 +209,17 @@ for (const path of files) {
   for (const name of Object.keys(deps)) {
     if (BANNED.test(name)) fail(where, `declares \`${name}\` — the catalog is Biome-only`);
   }
-  if (!deps["@biomejs/biome"]) {
+  const pin = deps["@biomejs/biome"];
+  if (!pin) {
     fail(where, "does not declare @biomejs/biome, so its lint and format scripts cannot run");
+  } else if (pin !== BASE_VERSION) {
+    // 7b. Exact, and the catalog's version. A range would resolve to a newer
+    // patch than the `$schema` beside it names.
+    fail(
+      where,
+      `pins @biomejs/biome to \`${pin}\`, but the catalog is on exactly ${BASE_VERSION} ` +
+        "(library/config/biome.base.json's $schema) — an exact pin keeps that claim true",
+    );
   }
 
   for (const [name, command] of Object.entries(manifest.scripts ?? {})) {
