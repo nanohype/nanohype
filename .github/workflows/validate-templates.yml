@@ -95,6 +95,15 @@ jobs:
       - name: Install yq
         uses: mikefarah/yq@v4.53.2
 
+      # This repository's own source — the SDK, the MCP server, the shared
+      # library, and every script under scripts/. `lint:skeletons` below covers
+      # the catalog's scaffolding output, which the root config excludes; nothing
+      # covered what lints the catalog. So `npm run lint` sat failing on main,
+      # which is the same defect the skeleton gate was built for, one level up:
+      # a command the contributing docs tell you to run, that no job runs.
+      - name: Lint this repository
+        run: npm run lint
+
       - name: Run catalog validation
         run: npm run validate:catalog
 

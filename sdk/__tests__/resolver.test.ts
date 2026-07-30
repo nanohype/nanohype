@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { resolveVariables } from "../src/resolver.js";
 import type { TemplateVariable } from "../src/types.js";
 
+// `noTemplateCurlyInString` is off for this file in biome.json. The suites here
+// pass `${VarName}` placeholders through as *data* — that is the syntax the
+// resolver is specified to expand — so writing them as JS template literals
+// would interpolate them at parse time and test nothing. The rule is correct in
+// general and wrong here, which is why the exemption is scoped to this file
+// rather than disabled repo-wide.
+
 function v(overrides: Partial<TemplateVariable> & { name: string }): TemplateVariable {
   return {
     type: "string",

@@ -49,7 +49,13 @@ describe("withRetry", () => {
   /** Records requested delays instead of sleeping. */
   function makeSleepRecorder() {
     const delays: number[] = [];
-    return { delays, sleep: (ms: number) => (delays.push(ms), Promise.resolve()) };
+    return {
+      delays,
+      sleep: (ms: number) => {
+        delays.push(ms);
+        return Promise.resolve();
+      },
+    };
   }
 
   it("returns the first successful result without sleeping", async () => {

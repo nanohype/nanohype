@@ -24,7 +24,13 @@ describe("listTools", () => {
   });
 
   it("get_contract enum reflects the current contract surface", () => {
-    const tool = listTools().find((t) => t.name === "get_contract")!;
+    const tool = listTools().find((t) => t.name === "get_contract");
+    // Narrowed by a throw rather than `!`: if the tool is ever renamed, the next
+    // line would read a property off undefined and report a TypeError instead of
+    // the actual problem, which is that `get_contract` is gone. `expect(...)
+    // .toBeDefined()` reads better but does not narrow the type, so it would
+    // leave the same unchecked access behind it.
+    if (!tool) throw new Error("get_contract is no longer a registered tool");
     const repoEnum = (tool.inputSchema.properties as { repo: { enum: string[] } }).repo.enum;
     expect(repoEnum).toEqual([...KNOWN_CONTRACT_REPOS]);
     expect(repoEnum).toEqual(expect.arrayContaining(["fab", "portal", "eks-fleet"]));

@@ -58,7 +58,9 @@ for (const dir of skeletons) {
   const result = spawnSync(BIOME, ["check", "."], { cwd: dir, encoding: "utf8" });
   if (result.status !== 0) {
     failed.push(relative(ROOT, dir));
-    process.stderr.write(`\n══ ${relative(ROOT, dir)}\n${result.stdout ?? ""}${result.stderr ?? ""}`);
+    process.stderr.write(
+      `\n══ ${relative(ROOT, dir)}\n${result.stdout ?? ""}${result.stderr ?? ""}`,
+    );
   }
 }
 
