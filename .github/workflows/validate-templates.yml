@@ -125,6 +125,15 @@ jobs:
       - name: Verify documented commands exist
         run: npm run validate:doc-commands
 
+      # npm does not rewrite `file:`/`link:` specifiers at publish time, and a
+      # package that carries one to the registry installs cleanly, omits the
+      # dependency, and crashes on the consumer's first import. The development
+      # tree resolves the path fine, so lint, typecheck and the test suites all
+      # pass on a manifest that is already broken downstream — this is the only
+      # step that can see it.
+      - name: Verify no local-path deps in publishable packages
+        run: npm run validate:publishable-deps
+
       # A skeleton is what a consumer's project starts as, and the root
       # biome.json excludes templates/*/skeleton — it has to, since each
       # skeleton is scaffolding output with its own root and config. These two

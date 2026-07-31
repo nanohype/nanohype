@@ -112,12 +112,18 @@ jobs:
       # actually enforces. Adding a failing gate here would make releases
       # impossible; fixing the root formatting is its own change, not a rider on
       # a release.
+      # `validate:publishable-deps` is the one that has to run here rather than
+      # only on PRs. A release is a tag push, so it can reach this workflow
+      # without the catalog gate having run on that exact tree — and a local-path
+      # specifier is invisible to every other check, since the development tree
+      # resolves it and only the published tarball is broken.
       - name: Verify the repo
         run: |
           npm run validate:schema
           npm run validate:standards
           npm run validate:manifest
           npm run verify:catalog
+          npm run validate:publishable-deps
 
       - name: Verify the package
         working-directory: ${{ steps.target.outputs.dir }}

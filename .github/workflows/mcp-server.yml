@@ -46,18 +46,14 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: |
-            sdk/package-lock.json
-            mcp-server/package-lock.json
+          cache-dependency-path: mcp-server/package-lock.json
 
-      # The MCP server depends on @nanohype/sdk via file:../sdk, so the sibling
-      # package must be installed and built before the MCP package resolves it.
-      - name: Build the linked SDK
-        working-directory: sdk
-        run: |
-          npm ci
-          npm run build
-
+      # The MCP server resolves @nanohype/sdk from the registry, the same way a
+      # consumer does, so there is no sibling to build first. The consequence is
+      # a release ordering: an MCP change that needs a new SDK symbol waits for
+      # the SDK release and a bumped range, because CI here proves the published
+      # pair works together rather than a locally-linked one that no consumer
+      # ever gets.
       - name: Install dependencies
         working-directory: mcp-server
         run: npm ci
