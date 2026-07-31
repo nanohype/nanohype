@@ -12,6 +12,15 @@ coverage/
 # runners). The blanket bin/ rule above targets compiled build output, so
 # re-include template sources explicitly.
 !templates/**/bin/
+
+# Same problem, one level up: `bin/` is unanchored, so it also swallowed the
+# packages' own CLI entry points under src/. sdk/src/bin/nanohype.ts sat
+# untracked for months while the published @nanohype/sdk shipped it — the
+# tarball carried 12kB of source that existed in no repository, and a CI
+# rebuild would have produced a package with no CLI in it.
+#
+# src/ is source by definition; only dist/bin is build output.
+!**/src/bin/
 !templates/**/bin/**
 
 # Environment
