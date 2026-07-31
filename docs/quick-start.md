@@ -33,13 +33,13 @@ Browse the [full catalog](catalog.md) for decision matrices by client problem, e
 ## Scaffold a template
 
 ```bash
-npx nanohype scaffold <template> --var ProjectName=my-project
+npx @nanohype/sdk scaffold <template> --var ProjectName=my-project
 ```
 
 For example, to scaffold an autonomous AI agent:
 
 ```bash
-npx nanohype scaffold agentic-loop --var ProjectName=my-agent
+npx @nanohype/sdk scaffold agentic-loop --var ProjectName=my-agent
 cd my-agent
 npm install   # or pnpm install — check package.json for the project's package manager
 npm run dev
@@ -50,7 +50,7 @@ Every template declares its variables in `template.yaml`. Pass them with `--var 
 To browse all available templates:
 
 ```bash
-npx nanohype list
+npx @nanohype/sdk list
 ```
 
 ---
@@ -60,7 +60,7 @@ npx nanohype list
 Composites combine multiple templates into a single project. They handle nesting, variable flow, and conditional inclusion.
 
 ```bash
-npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
+npx @nanohype/sdk scaffold --composite ai-chatbot --var ProjectName=my-bot
 ```
 
 This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth-ts`, `module-database-ts`, and `infra-fly` into a ready-to-run stack.
@@ -79,7 +79,7 @@ Available composites:
 | `ai-platform`           | Service + gateway + vectors + auth + billing + monitoring                 |
 | `agent-team`            | Orchestrator + specialized agents + MCP tools + evals                     |
 
-See the full list in `composites/` or run `npx nanohype list --composites`.
+See the full list in `composites/` or run `npx @nanohype/sdk list --composites`.
 
 ---
 
