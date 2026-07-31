@@ -1,6 +1,6 @@
 {
   "name": "@nanohype/sdk",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Reference implementation of the nanohype template rendering contract, catalog discovery, and Platform Reference loaders",
   "license": "Apache-2.0",
   "type": "module",
