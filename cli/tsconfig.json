@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    // Unlike the sibling packages, node types are needed by src/ too: the entry
+    // point is a CLI that spawns a child process and reads process.argv.
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src", "__tests__"],
+  "exclude": ["dist"]
+}
