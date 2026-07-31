@@ -2,7 +2,7 @@
 
 ## What are composites?
 
-A composite scaffolds multiple templates into one integrated project. Instead of running `npx nanohype scaffold` five times and wiring things together by hand, a composite does it in a single command -- it picks the right templates, nests them into a monorepo (or flat structure), flows shared variables to each one, and respects conditional flags so you only get the pieces you asked for.
+A composite scaffolds multiple templates into one integrated project. Instead of running `npx @nanohype/sdk scaffold` five times and wiring things together by hand, a composite does it in a single command -- it picks the right templates, nests them into a monorepo (or flat structure), flows shared variables to each one, and respects conditional flags so you only get the pieces you asked for.
 
 Individual templates are building blocks. Composites are the blueprints that assemble them into real project architectures.
 
@@ -42,7 +42,7 @@ Individual templates are building blocks. Composites are the blueprints that ass
 ## How to scaffold a composite
 
 ```bash
-npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
+npx @nanohype/sdk scaffold --composite ai-chatbot --var ProjectName=my-bot
 ```
 
 The scaffolder reads the composite YAML, collects composite-level variables once, then distributes them to each template entry. Entry-level overrides can transform variable values -- for example, the `ai-chatbot` composite takes `ProjectName=my-bot` and passes `my-bot-api` to the API service and `my-bot-ai` to the agentic loop.
@@ -50,13 +50,13 @@ The scaffolder reads the composite YAML, collects composite-level variables once
 To see all available composites before scaffolding:
 
 ```bash
-npx nanohype list --composites
+npx @nanohype/sdk list --composites
 ```
 
 Conditional entries are controlled by boolean variables. For example, `production-api` has `IncludeQueue` (default `true`) and `IncludeCache` (default `true`). To skip the queue:
 
 ```bash
-npx nanohype scaffold --composite production-api \
+npx @nanohype/sdk scaffold --composite production-api \
   --var ProjectName=my-api \
   --var IncludeQueue=false
 ```
