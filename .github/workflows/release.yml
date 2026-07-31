@@ -31,13 +31,14 @@ on:
       - 'sdk-v*'
       - 'mcp-v*'
       - 'tokens-v*'
+      - 'cli-v*'
   workflow_dispatch:
     inputs:
       package:
         description: Which package to publish
         required: true
         type: choice
-        options: [sdk, mcp, tokens]
+        options: [sdk, mcp, tokens, cli]
 
 permissions:
   contents: read
@@ -56,9 +57,9 @@ jobs:
           cache: 'npm'
 
       # sdk-v* → sdk (@nanohype/sdk); mcp-v* → mcp-server (@nanohype/mcp);
-      # tokens-v* → tokens (@nanohype/tokens). The tag key, the directory and
-      # the package name all differ, so the mapping is resolved here rather
-      # than assumed downstream.
+      # tokens-v* → tokens (@nanohype/tokens); cli-v* → cli (nanohype — the
+      # unscoped one). The tag key, the directory and the package name all
+      # differ, so the mapping is resolved here rather than assumed downstream.
       - name: Resolve the target
         id: target
         run: |
@@ -74,7 +75,8 @@ jobs:
             sdk) dir=sdk ;;
             mcp) dir=mcp-server ;;
             tokens) dir=tokens ;;
-            *) echo "::error::unrecognised release key '$key' (expected sdk, mcp or tokens)"; exit 1 ;;
+            cli) dir=cli ;;
+            *) echo "::error::unrecognised release key '$key' (expected sdk, mcp, tokens or cli)"; exit 1 ;;
           esac
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
           echo "tag_version=$tag_version" >> "$GITHUB_OUTPUT"

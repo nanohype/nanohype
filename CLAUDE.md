@@ -128,6 +128,27 @@ same directory, against the same config a consumer gets.
 - LF line endings everywhere
 - No trailing whitespace (except Markdown for line breaks)
 
+## CLI
+
+`cli/` contains `nanohype` — the unscoped package, and the one `npx nanohype`
+resolves to. It holds no scaffolding logic: it locates the `nanohype` bin
+inside `@nanohype/sdk` and runs it as a child process, so argv, exit codes and
+signals belong to the SDK.
+
+It exists because npm's unscoped namespace is separate from the `@nanohype`
+scope — owning the scope does not reserve the bare name, and `npx nanohype` is
+what people reach for. A name left unclaimed there is a name someone else can
+publish under.
+
+The path arithmetic lives in `src/resolve.ts` rather than in the entry point,
+because that is the part which breaks silently if the SDK moves its bin — the
+SDK's `exports` map declares only `"."`, so the bin is reached as a filesystem
+path rather than a subpath import. `cli.yml` runs the built binary against the
+installed SDK, since every other check passes on a wrapper that resolves to
+nothing.
+
+Released on a `cli-v*` tag through the shared `release.yml`.
+
 ## SDK
 
 `sdk/` contains `@nanohype/sdk` — the reference implementation of the template rendering contract. It's a standalone TypeScript package with no dependencies on any consumer.
