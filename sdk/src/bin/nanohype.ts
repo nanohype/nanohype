@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { join, resolve, dirname } from 'node:path';
-import { createInterface } from 'node:readline';
-import * as yaml from 'js-yaml';
-
-import { LocalSource } from '../sources/local.js';
-import { GitHubSource } from '../sources/github.js';
-import { renderTemplate } from '../renderer.js';
-import { renderComposite } from '../composite.js';
-import { validateManifest, validateCompositeManifest } from '../validator.js';
-import type { CatalogSource } from '../source.js';
-import type { TemplateManifest, CompositeManifest } from '../types.js';
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
+import { createInterface } from "node:readline";
+import * as yaml from "js-yaml";
+import { renderComposite } from "../composite.js";
+import { renderTemplate } from "../renderer.js";
+import type { CatalogSource } from "../source.js";
+import { GitHubSource } from "../sources/github.js";
+import { LocalSource } from "../sources/local.js";
+import type { CompositeManifest, TemplateManifest } from "../types.js";
+import { validateCompositeManifest, validateManifest } from "../validator.js";
 
 // ── Arg parsing ──────────────────────────────────────────────────────
 
@@ -30,8 +29,8 @@ interface ParsedArgs {
 function parseArgs(argv: string[]): ParsedArgs {
   const args = argv.slice(2);
   const result: ParsedArgs = {
-    command: '',
-    positional: '',
+    command: "",
+    positional: "",
     vars: {},
     composite: false,
     composites: false,
@@ -40,42 +39,42 @@ function parseArgs(argv: string[]): ParsedArgs {
 
   let i = 0;
   // First non-flag arg is the command
-  while (i < args.length && args[i].startsWith('-')) {
-    if (args[i] === '--help' || args[i] === '-h') {
+  while (i < args.length && args[i].startsWith("-")) {
+    if (args[i] === "--help" || args[i] === "-h") {
       result.help = true;
       i++;
       continue;
     }
-    if (args[i] === '--composite') {
+    if (args[i] === "--composite") {
       result.composite = true;
       i++;
       continue;
     }
-    if (args[i] === '--composites') {
+    if (args[i] === "--composites") {
       result.composites = true;
       i++;
       continue;
     }
-    if (args[i] === '--var') {
+    if (args[i] === "--var") {
       if (i + 1 >= args.length) {
-        console.error('Error: --var requires a Key=value argument');
+        console.error("Error: --var requires a Key=value argument");
         process.exit(1);
       }
       parseVar(result.vars, args[++i]);
       i++;
       continue;
     }
-    if ((args[i] === '--output' || args[i] === '-o') && i + 1 < args.length) {
+    if ((args[i] === "--output" || args[i] === "-o") && i + 1 < args.length) {
       result.output = args[++i];
       i++;
       continue;
     }
-    if (args[i] === '--local' && i + 1 < args.length) {
+    if (args[i] === "--local" && i + 1 < args.length) {
       result.local = args[++i];
       i++;
       continue;
     }
-    if (args[i] === '--token' && i + 1 < args.length) {
+    if (args[i] === "--token" && i + 1 < args.length) {
       result.token = args[++i];
       i++;
       continue;
@@ -87,41 +86,41 @@ function parseArgs(argv: string[]): ParsedArgs {
   // Remaining args: positional and flags interleaved
   while (i < args.length) {
     const arg = args[i];
-    if (arg === '--help' || arg === '-h') {
+    if (arg === "--help" || arg === "-h") {
       result.help = true;
       i++;
       continue;
     }
-    if (arg === '--composite') {
+    if (arg === "--composite") {
       result.composite = true;
       i++;
       continue;
     }
-    if (arg === '--composites') {
+    if (arg === "--composites") {
       result.composites = true;
       i++;
       continue;
     }
-    if (arg === '--var') {
+    if (arg === "--var") {
       if (i + 1 >= args.length) {
-        console.error('Error: --var requires a Key=value argument');
+        console.error("Error: --var requires a Key=value argument");
         process.exit(1);
       }
       parseVar(result.vars, args[++i]);
       i++;
       continue;
     }
-    if ((arg === '--output' || arg === '-o') && i + 1 < args.length) {
+    if ((arg === "--output" || arg === "-o") && i + 1 < args.length) {
       result.output = args[++i];
       i++;
       continue;
     }
-    if (arg === '--local' && i + 1 < args.length) {
+    if (arg === "--local" && i + 1 < args.length) {
       result.local = args[++i];
       i++;
       continue;
     }
-    if (arg === '--token' && i + 1 < args.length) {
+    if (arg === "--token" && i + 1 < args.length) {
       result.token = args[++i];
       i++;
       continue;
@@ -134,7 +133,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function parseVar(vars: Record<string, string>, raw: string): void {
-  const eq = raw.indexOf('=');
+  const eq = raw.indexOf("=");
   if (eq === -1) {
     console.error(`Invalid --var format: ${raw} (expected Key=value)`);
     process.exit(1);
@@ -169,7 +168,7 @@ function prompt(question: string): Promise<string> {
 async function scaffold(args: ParsedArgs): Promise<void> {
   const name = args.positional;
   if (!name) {
-    console.error('Usage: nanohype scaffold <name> [--composite] [--var K=V] [-o dir]');
+    console.error("Usage: nanohype scaffold <name> [--composite] [--var K=V] [-o dir]");
     process.exit(1);
   }
 
@@ -189,7 +188,7 @@ async function scaffold(args: ParsedArgs): Promise<void> {
       if (isInteractive) {
         const answer = await prompt(`${v.prompt || v.name} (${v.description}): `);
         values[v.name] =
-          v.type === 'bool' ? answer === 'true' : v.type === 'int' ? parseInt(answer, 10) : answer;
+          v.type === "bool" ? answer === "true" : v.type === "int" ? parseInt(answer, 10) : answer;
       } else {
         console.error(`Missing required variable: ${v.name}`);
         process.exit(1);
@@ -202,13 +201,13 @@ async function scaffold(args: ParsedArgs): Promise<void> {
     for (const file of result.files) {
       const dest = join(outDir, file.path);
       await mkdir(dirname(dest), { recursive: true });
-      await writeFile(dest, file.content, 'utf-8');
+      await writeFile(dest, file.content, "utf-8");
     }
 
     console.log(`${result.files.length} files written to ${outDir}`);
     if (result.entries.length > 0) {
       console.log(
-        `Composed ${result.entries.length} templates: ${result.entries.map((e) => e.template).join(', ')}`,
+        `Composed ${result.entries.length} templates: ${result.entries.map((e) => e.template).join(", ")}`,
       );
     }
     for (const w of result.warnings) console.log(`  warn: ${w}`);
@@ -226,7 +225,7 @@ async function scaffold(args: ParsedArgs): Promise<void> {
       if (isInteractive) {
         const answer = await prompt(`${v.prompt || v.name} (${v.description}): `);
         values[v.name] =
-          v.type === 'bool' ? answer === 'true' : v.type === 'int' ? parseInt(answer, 10) : answer;
+          v.type === "bool" ? answer === "true" : v.type === "int" ? parseInt(answer, 10) : answer;
       } else {
         console.error(`Missing required variable: ${v.name}`);
         process.exit(1);
@@ -234,13 +233,13 @@ async function scaffold(args: ParsedArgs): Promise<void> {
     }
 
     const result = renderTemplate(manifest, files, values);
-    const defaultDir = String(values['ProjectName'] || name);
+    const defaultDir = String(values["ProjectName"] || name);
     const outDir = resolve(args.output || `./${defaultDir}`);
 
     for (const file of result.files) {
       const dest = join(outDir, file.path);
       await mkdir(dirname(dest), { recursive: true });
-      await writeFile(dest, file.content, 'utf-8');
+      await writeFile(dest, file.content, "utf-8");
     }
 
     console.log(`${result.files.length} files written to ${outDir}`);
@@ -255,28 +254,28 @@ async function list(args: ParsedArgs): Promise<void> {
   if (args.composites) {
     const entries = await source.listComposites();
     if (entries.length === 0) {
-      console.log('No composites found.');
+      console.log("No composites found.");
       return;
     }
     const nameW = Math.max(4, ...entries.map((e) => e.name.length));
     const dispW = Math.max(7, ...entries.map((e) => e.displayName.length));
-    console.log(`${'NAME'.padEnd(nameW)}  ${'DISPLAY'.padEnd(dispW)}  TEMPLATES  TAGS`);
+    console.log(`${"NAME".padEnd(nameW)}  ${"DISPLAY".padEnd(dispW)}  TEMPLATES  TAGS`);
     for (const e of entries) {
       console.log(
-        `${e.name.padEnd(nameW)}  ${e.displayName.padEnd(dispW)}  ${String(e.templateCount).padStart(9)}  ${e.tags.join(', ')}`,
+        `${e.name.padEnd(nameW)}  ${e.displayName.padEnd(dispW)}  ${String(e.templateCount).padStart(9)}  ${e.tags.join(", ")}`,
       );
     }
   } else {
     const entries = await source.listTemplates();
     if (entries.length === 0) {
-      console.log('No templates found.');
+      console.log("No templates found.");
       return;
     }
     const nameW = Math.max(4, ...entries.map((e) => e.name.length));
     const dispW = Math.max(7, ...entries.map((e) => e.displayName.length));
-    console.log(`${'NAME'.padEnd(nameW)}  ${'DISPLAY'.padEnd(dispW)}  TAGS`);
+    console.log(`${"NAME".padEnd(nameW)}  ${"DISPLAY".padEnd(dispW)}  TAGS`);
     for (const e of entries) {
-      console.log(`${e.name.padEnd(nameW)}  ${e.displayName.padEnd(dispW)}  ${e.tags.join(', ')}`);
+      console.log(`${e.name.padEnd(nameW)}  ${e.displayName.padEnd(dispW)}  ${e.tags.join(", ")}`);
     }
   }
 }
@@ -284,14 +283,14 @@ async function list(args: ParsedArgs): Promise<void> {
 async function validate(args: ParsedArgs): Promise<void> {
   const filePath = args.positional;
   if (!filePath) {
-    console.error('Usage: nanohype validate <path-to-template.yaml>');
+    console.error("Usage: nanohype validate <path-to-template.yaml>");
     process.exit(1);
   }
 
   const absPath = resolve(filePath);
   let text: string;
   try {
-    text = await readFile(absPath, 'utf-8');
+    text = await readFile(absPath, "utf-8");
   } catch {
     console.error(`Cannot read file: ${absPath}`);
     process.exit(1);
@@ -300,7 +299,7 @@ async function validate(args: ParsedArgs): Promise<void> {
   const doc = yaml.load(text) as Record<string, unknown>;
 
   try {
-    if (doc.kind === 'composite') {
+    if (doc.kind === "composite") {
       validateCompositeManifest(doc as unknown as CompositeManifest);
       console.log(`PASS  ${absPath} (composite)`);
     } else {
@@ -350,13 +349,13 @@ async function main(): Promise<void> {
 
   try {
     switch (args.command) {
-      case 'scaffold':
+      case "scaffold":
         await scaffold(args);
         break;
-      case 'list':
+      case "list":
         await list(args);
         break;
-      case 'validate':
+      case "validate":
         await validate(args);
         break;
       default:
@@ -370,4 +369,11 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+// The inner try/catch covers the subcommands; this covers everything outside
+// it — argument parsing, and a throw from the handler itself. Without it the
+// exit code on that path is Node's default for an unhandled rejection, which
+// is a flag away from being 0.
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+});
