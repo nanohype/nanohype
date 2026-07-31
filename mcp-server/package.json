@@ -1,6 +1,6 @@
 {
   "name": "@nanohype/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server exposing the nanohype Platform Reference (catalog + standards + per-repo contracts) as resources and tools",
   "license": "Apache-2.0",
   "type": "module",

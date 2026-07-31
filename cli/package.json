@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
-  "version": "0.1.1",
-  "description": "The nanohype CLI — scaffold templates and composites from the nanohype catalog. Thin entry point over @nanohype/sdk.",
+  "version": "0.1.2",
+  "description": "The nanohype CLI \u2014 scaffold templates and composites from the nanohype catalog. Thin entry point over @nanohype/sdk.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
