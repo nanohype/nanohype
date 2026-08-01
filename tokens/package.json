@@ -1,6 +1,6 @@
 {
   "name": "@nanohype/tokens",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Design tokens for nanohype interfaces \u2014 Tailwind v4 theme plus a typed mirror, held together by a parity test.",
   "license": "MIT",
   "type": "module",

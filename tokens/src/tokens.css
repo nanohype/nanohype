@@ -66,6 +66,12 @@
   --duration-fast: 120ms;
   --duration-base: 180ms;
   --duration-slow: 260ms;
+
+  /* Brand gradient. No html.light counterpart on purpose: a gradient used as a
+     text fill or accent wash reads on either theme, and a per-theme variant
+     would be a second value nobody compares. Stops are the two primaries plus
+     a lighter tint of the same hue. */
+  --gradient-brand: linear-gradient(135deg, #2f7a6e 0%, #3e8e82 52%, #7fc4b8 100%);
 }
 
 html.light {

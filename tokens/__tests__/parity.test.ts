@@ -16,7 +16,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { colors, duration, easing, fonts, light, radius } from "../src/tokens.js";
+import { colors, duration, easing, fonts, gradient, light, radius } from "../src/tokens.js";
 
 const CSS = readFileSync(
   join(dirname(fileURLToPath(import.meta.url)), "..", "src", "tokens.css"),
@@ -63,6 +63,7 @@ describe.each([
   ["fonts", scoped(themeDecls, "font"), fonts as Record<string, string>],
   ["easing", scoped(themeDecls, "ease"), easing as Record<string, string>],
   ["duration", scoped(themeDecls, "duration"), duration as Record<string, string>],
+  ["gradient", scoped(themeDecls, "gradient"), gradient as Record<string, string>],
   ["light colors", scoped(lightDecls, "color"), light as Record<string, string>],
 ])("%s parity", (_name, css, ts) => {
   it("has the same token names in the stylesheet and the mirror", () => {

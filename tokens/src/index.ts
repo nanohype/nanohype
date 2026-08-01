@@ -7,6 +7,8 @@ export {
   easing,
   type FontToken,
   fonts,
+  type GradientToken,
+  gradient,
   light,
   type RadiusToken,
   radius,
