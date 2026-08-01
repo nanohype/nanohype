@@ -26,14 +26,23 @@ export interface ErrorPageReport {
   violations: string[];
 }
 
+// The two patterns that open on a bare `<` exclude `<` from the run that
+// follows it, rather than only `>`. A tag body cannot contain a raw `<`
+// anyway, so this is the stricter reading — and it is what keeps them linear.
+//
+// With `[^>]+`, input of many consecutive `<` makes every one of them a fresh
+// start position whose scan runs to the end of the string: quadratic, on input
+// this package accepts from a caller. `[^<>]+` fails at the second character
+// instead. The patterns that name a tag (`<meta\b`, `<link\b`) never had the
+// problem — a `<` not followed by that name is rejected immediately.
 const ROBOTS_META = /<meta\b[^>]*\bname=(["'])robots\1[^>]*>/i;
 const CONTENT_ATTR = /\bcontent=(["'])([^"']*)\1/i;
 const SCRIPT_TAG = /<script\b/i;
-const EVENT_HANDLER = /<[^>]+\son[a-z]+\s*=/i;
+const EVENT_HANDLER = /<[^<>]+\son[a-z]+\s*=/i;
 const STYLESHEET_LINK = /<link\b[^>]*\brel=(["'])[^"']*\bstylesheet\b[^"']*\1[^>]*>/gi;
 const HREF_ATTR = /\bhref=(["'])([^"']*)\1/i;
 const INLINE_STYLE_TAG = /<style\b/i;
-const INLINE_STYLE_ATTR = /<[^>]+\sstyle=["']/i;
+const INLINE_STYLE_ATTR = /<[^<>]+\sstyle=["']/i;
 const CROSS_ORIGIN_IMPORT = /@import\s+(?:url\(\s*)?(["']?)(?:https?:)?\/\//i;
 
 /** True for absolute (`https://…`) or protocol-relative (`//…`) URLs; false for same-origin paths. */
@@ -74,9 +83,11 @@ export function checkErrorPage(html: string, options: CheckErrorPageOptions = {}
     const href = HREF_ATTR.exec(link[0]);
     const url = href?.[2];
     if (url && isCrossOrigin(url)) {
-      violations.push(
-        `cross-origin stylesheet <link href="${url}"> — link a same-origin stylesheet instead`,
-      );
+      // Reported as a bare URL rather than reconstructed markup. This string is
+      // read in a terminal, so the angle brackets were only noise — and quoting
+      // caller-supplied text back inside an attribute shape is the pattern
+      // static analysis flags as sanitisation, which it is not doing here.
+      violations.push(`cross-origin stylesheet: ${url} — link a same-origin stylesheet instead`);
     }
   }
   if (INLINE_STYLE_TAG.test(html)) {
