@@ -149,6 +149,30 @@ nothing.
 
 Released on a `cli-v*` tag through the shared `release.yml`.
 
+## Error pages
+
+`error-pages/` contains `@nanohype/error-pages` — a JS-free 404/500 renderer
+and a checker for the contract those pages have to meet: `noindex`, no
+JavaScript, and same-origin styling only. The three exist because an error page
+is served exactly when something else is broken, so it cannot depend on the app
+bundle, and a strict `style-src 'self'` CSP will drop anything inline.
+
+It renders from `@nanohype/tokens` and takes no theme argument. A site whose
+error page drifted from its own palette is precisely what a shared package
+should make impossible.
+
+One inversion worth knowing: `tokens.css` ships dark in `:root` with
+`html.light` overriding, because an app can run a pre-paint script and choose.
+An error page cannot — `script-src 'self'` blocks that script, and the visitor
+often arrives with empty `localStorage`. So the generated stylesheet puts light
+in `:root` and dark behind `prefers-color-scheme`.
+
+`error-pages.yml` runs the built binary end to end: generate, check what was
+generated, then confirm the checker rejects a page containing a `<script>`.
+Every other check passes on a package whose two halves disagree.
+
+Released on an `error-pages-v*` tag through the shared `release.yml`.
+
 ## SDK
 
 `sdk/` contains `@nanohype/sdk` — the reference implementation of the template rendering contract. It's a standalone TypeScript package with no dependencies on any consumer.
