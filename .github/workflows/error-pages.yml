@@ -1,0 +1,77 @@
+name: error-pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'error-pages/**'
+      - '.github/workflows/error-pages.yml'
+  pull_request:
+    paths:
+      - 'error-pages/**'
+      - '.github/workflows/error-pages.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: error-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: error-pages
+
+jobs:
+  build:
+    name: Build and test error-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: error-pages/package-lock.json
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npx vitest run --coverage
+
+      - name: Build
+        run: npm run build
+
+      # The load-bearing step. Everything above passes on a package whose two
+      # halves disagree: the unit tests exercise `renderSitePages` and
+      # `checkErrorPage` against strings in the same process, and lint,
+      # typecheck and build never execute the binary at all.
+      #
+      # Generate is one half of this package and check is the other, and they
+      # are what a consumer wires into `prebuild` and `postbuild` as two
+      # separate commands. Running them that way — real files on disk, one
+      # process writing and another reading — is the only thing here that
+      # proves the pair agrees.
+      - name: The generated pages satisfy the checker
+        run: |
+          set -euo pipefail
+          out="$(mktemp -d)"
+          node dist/bin/nanohype-error-pages.js --out "$out" --brand nanohype
+          node dist/bin/nanohype-error-pages.js check "$out/404.html" --status 404
+          node dist/bin/nanohype-error-pages.js check "$out/500.html" --status 500
+
+          # And the checker has to reject something, or "ok" above means
+          # nothing. A page with a script in it is the plainest violation of
+          # the contract this package exists to enforce.
+          printf '<script></script>' > "$out/bad.html"
+          if node dist/bin/nanohype-error-pages.js check "$out/bad.html" > /dev/null 2>&1; then
+            echo "::error::the checker passed a page containing a <script> — it is not checking anything"
+            exit 1
+          fi

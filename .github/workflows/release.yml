@@ -32,13 +32,14 @@ on:
       - 'mcp-v*'
       - 'tokens-v*'
       - 'cli-v*'
+      - 'error-pages-v*'
   workflow_dispatch:
     inputs:
       package:
         description: Which package to publish
         required: true
         type: choice
-        options: [sdk, mcp, tokens, cli]
+        options: [sdk, mcp, tokens, cli, error-pages]
 
 permissions:
   contents: read
@@ -58,8 +59,14 @@ jobs:
 
       # sdk-v* → sdk (@nanohype/sdk); mcp-v* → mcp-server (@nanohype/mcp);
       # tokens-v* → tokens (@nanohype/tokens); cli-v* → cli (nanohype — the
-      # unscoped one). The tag key, the directory and the package name all
-      # differ, so the mapping is resolved here rather than assumed downstream.
+      # unscoped one); error-pages-v* → error-pages (@nanohype/error-pages).
+      # The tag key, the directory and the package name all differ, so the
+      # mapping is resolved here rather than assumed downstream.
+      #
+      # The key is `${REF%%-v*}`, which is why a hyphenated key still works:
+      # `-v` appears exactly once in `error-pages-v0.1.0`, so the strip lands
+      # where it should. A key containing `-v` would not, and would need a
+      # different split rather than another case arm.
       - name: Resolve the target
         id: target
         run: |
@@ -76,6 +83,7 @@ jobs:
             mcp) dir=mcp-server ;;
             tokens) dir=tokens ;;
             cli) dir=cli ;;
+            error-pages) dir=error-pages ;;
             *) echo "::error::unrecognised release key '$key' (expected sdk, mcp, tokens or cli)"; exit 1 ;;
           esac
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
