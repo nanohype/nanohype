@@ -105,11 +105,25 @@ export const duration = {
   slow: "260ms",
 } as const;
 
+/**
+ * Brand gradients.
+ *
+ * Mode-independent, which is why there is no `light` counterpart: a gradient
+ * used as a text fill or an accent wash reads on either theme, and giving it a
+ * per-theme variant would mean two values nobody compares. The stops are the
+ * two `primary` values — light and dark — plus a lighter tint of the same hue,
+ * so a change to the brand colour has one obvious place to follow.
+ */
+export const gradient = {
+  brand: "linear-gradient(135deg, #2f7a6e 0%, #3e8e82 52%, #7fc4b8 100%)",
+} as const;
+
 export type ColorToken = keyof typeof colors;
 export type RadiusToken = keyof typeof radius;
 export type FontToken = keyof typeof fonts;
 export type EasingToken = keyof typeof easing;
 export type DurationToken = keyof typeof duration;
+export type GradientToken = keyof typeof gradient;
 
 /** Every token, grouped — the shape a consumer usually wants. */
-export const tokens = { colors, light, radius, fonts, easing, duration } as const;
+export const tokens = { colors, light, radius, fonts, easing, duration, gradient } as const;
