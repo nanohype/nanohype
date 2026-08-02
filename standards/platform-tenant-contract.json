@@ -44,7 +44,7 @@
       },
       {
         "path": "<app>/agentfleet.yaml (AI workloads only)",
-        "description": "Optional AgentFleet CR composing a kagent Agent + ModelConfig + KEDA scaler. Required only when the app runs an AI agent fleet inside its tenant."
+        "description": "Optional AgentFleet CR declaring one or more agents, each an image bound to a named ModelGateway route, which the operator runs as a Deployment behind a KEDA scaler. Required only when the app runs an AI agent fleet inside its tenant."
       }
     ],
     "platform_cr_shape": {

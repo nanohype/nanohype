@@ -13,7 +13,7 @@ The default AWS path is `k8s-app-tenant` (Helm chart + Platform CR on `eks-agent
 ## When NOT to use this
 
 - **Anything long-running or stateful** → use `k8s-app-tenant`
-- **AI workloads with kagent or KEDA scaling** → use `k8s-app-tenant` + `agent-fleet`
+- **AI workloads with an agent fleet or KEDA scaling** → use `k8s-app-tenant` + `agent-fleet`
 - **HTTP services that handle non-trivial concurrent load** → use `k8s-app-tenant`
 - **Anything that needs IRSA + per-tenant ResourceQuota + ArgoCD-managed rollouts** → use `k8s-app-tenant`
 
