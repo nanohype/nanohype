@@ -185,10 +185,10 @@ What fab does, broadly:
 2. Loads the public standards via the SDK (and adds private review-process layers on top)
 3. Selects templates from the catalog based on the brief
 4. Renders the selected templates + plans the multi-template composition
-5. Orchestrates 80 Claude agents across Discovery → Design → Build → Verify → Ship phases
+5. Orchestrates 78 Claude agents across Discovery → Design → Build → Verify → Ship phases
 6. Produces a PR that meets the production bar, with evidence
 
-Your client doesn't have to be 80 agents. A single Claude session that reads the catalog, picks one template, renders it, and meets the bar is a conformant client. The reference exists to show the upper bound, not set the minimum.
+Your client doesn't have to be 78 agents. A single Claude session that reads the catalog, picks one template, renders it, and meets the bar is a conformant client. The reference exists to show the upper bound, not set the minimum.
 
 ## Quickstart: build your own client
 
