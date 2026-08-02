@@ -1,11 +1,11 @@
 # __FLEET_NAME__
 
-AI workload composite for the `__APP_NAME__` Platform tenant. Composes kagent agents on top of a Bedrock-backed ModelGateway route, scaled by KEDA. Namespace, ownership, and IRSA come from the Platform via `spec.platformRef`.
+AI workload composite for the `__APP_NAME__` Platform tenant. Runs one or more agent Deployments against a Bedrock-backed ModelGateway route, scaled by KEDA. Namespace, ownership, and the Pod Identity association come from the Platform via `spec.platformRef`.
 
 ## Files
 
 - `modelgateway.yaml` — the ModelGateway route(s) + Bedrock model resolution + rate limit + optional Guardrail
-- `agentfleet.yaml` — the AgentFleet CR (kagent Agent + ModelConfig + KEDA scaler)
+- `agentfleet.yaml` — the AgentFleet CR (a Deployment per agent + KEDA scaler)
 
 ## Apply order
 
@@ -17,15 +17,17 @@ AI workload composite for the `__APP_NAME__` Platform tenant. Composes kagent ag
 
 - Change the model → edit `modelgateway.yaml` `spec.routes[].{modelFamily,modelId}`, reapply
 - Change scaling → edit `agentfleet.yaml` `spec.scaling` (set `queueUrl` for SQS-depth scaling), reapply
-- Add a new agent persona → add an entry under `agentfleet.yaml` `spec.agents[]` referencing a route `name`
+- Add a new agent persona → add an entry under `agentfleet.yaml` `spec.agents[]` with its own `image` and a `modelRoute` naming a route
+- Change the agent code → publish a new image tag and edit `agentfleet.yaml` `spec.agents[].image`
 - Tighten the rate limit → edit `modelgateway.yaml` `spec.routes[].rateLimit` (requests/min)
 
-## Bedrock access (IRSA)
+## Bedrock access
 
 Bedrock access is granted by the **Platform** CR, not this fleet. Ensure the
 companion `platform.yaml`'s `spec.identity.allowedModelFamilies` includes the
 family this fleet uses (`__MODEL_FAMILY__`). The operator expands that into the
-per-Platform IRSA role at reconcile time — no per-fleet IAM is configured here.
+per-Platform IAM role at reconcile time, reached through the Pod Identity
+association it creates — no per-fleet IAM is configured here.
 
 ## Bedrock Guardrails
 

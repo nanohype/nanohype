@@ -1,15 +1,18 @@
-# AgentFleet — provisions one or more kagent Agents behind a KEDA-scaled runtime.
+# AgentFleet — one Deployment per agent, behind a KEDA scaler.
 # Apply AFTER the Platform CR (from k8s-app-tenant) and the ModelGateway
-# (modelgateway.yaml in this directory) are Ready. Ownership, namespace, and IRSA
-# come from the Platform via spec.platformRef — the AgentFleet carries no tenant
-# or identity of its own.
+# (modelgateway.yaml in this directory) are Ready. Ownership, namespace, and the
+# Pod Identity association come from the Platform via spec.platformRef — the
+# AgentFleet carries no tenant or identity of its own.
 #
 # The operator reconciles, per fleet:
-#   - a kagent Agent + ModelConfig for each spec.agents[] entry
+#   - a Deployment for each spec.agents[] entry, running that entry's image
 #   - a KEDA ScaledObject from spec.scaling (SQS-depth trigger when queueUrl is
 #     set, CPU-utilization otherwise)
 #   - a per-fleet NetworkPolicy
-#   - an optional ResourceClaimTemplate when spec.compute requests an accelerator
+#
+# The agent framework is whatever the image carries. The platform's contract is
+# the route: an agent is given a base URL and a wire format, and anything that
+# speaks that format is a valid agent.
 
 apiVersion: agents.nanohype.dev/v1alpha1
 kind: AgentFleet
@@ -22,17 +25,25 @@ spec:
     name: __APP_NAME__
 
   agents:
-    # Each entry becomes a kagent Agent + ModelConfig. modelRoute must name a
-    # route declared on the ModelGateway. Add more entries as the fleet's
-    # persona structure grows.
+    # Each entry becomes one Deployment. modelRoute must name a route declared
+    # on the ModelGateway; the operator resolves that route and publishes its
+    # endpoint and wire format on the gateway's status. Add more entries as the
+    # fleet's persona structure grows.
     - name: __FLEET_NAME__-primary
+      image: __AGENT_IMAGE__
       modelRoute: __ROUTE_NAME__
       systemPrompt: |
         You are __FLEET_NAME__-primary. Replace this with the agent's
         instructions. Keep the static prefix large and stable so Bedrock
         prompt caching amortizes; append any per-request context at the end.
-      # kagent ToolServer references this agent may call. e.g. [{name: my-tools}]
-      tools: []
+      # replicas is the floor; KEDA owns the count while scaling is enabled.
+      # replicas: 1
+      #
+      # resources are the agent container's requests and limits. An accelerator
+      # is asked for here, as a device-plugin resource on limits:
+      # resources:
+      #   limits:
+      #     nvidia.com/gpu: 1
 
   scaling:
     enabled: true
@@ -40,14 +51,8 @@ spec:
     max: 10
     # SQS depth-based scaling: uncomment queueUrl with the fleet's queue and
     # tune queueDepthTrigger. Without queueUrl the operator emits a
-    # CPU-utilization trigger. The tenant IRSA role needs
-    # sqs:GetQueueAttributes on the queue.
+    # CPU-utilization trigger. The tenant role needs sqs:GetQueueAttributes on
+    # the queue, which it has when the queue is declared in the Platform's
+    # spec.datastores.
     queueDepthTrigger: 10
     # queueUrl: https://sqs.us-west-2.amazonaws.com/000000000000/__FLEET_NAME__
-
-  # Accelerator (DRA). CPU-only fleets (Compute=__COMPUTE__) leave this off. To
-  # request an accelerator, provision an AcceleratorClaim CR (via
-  # landing-zone/components/aws/accelerator-pools) and reference it by name:
-  # compute:
-  #   acceleratorClaim:
-  #     name: <accelerator-claim-name>

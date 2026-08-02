@@ -1,11 +1,13 @@
-# ModelGateway — declares the agentgateway route(s) + Bedrock model resolution.
+# ModelGateway — the routes the fleet's agents call, and the models behind them.
 # Apply BEFORE the AgentFleet: each agent's spec.agents[].modelRoute references a
 # route name declared here. Owned by the Platform named in spec.platformRef.
 #
-# The operator reconciles one agentgateway Route per entry, resolves the Bedrock
-# model (optionally via a cross-region inference profile), attaches the guardrail,
-# and enforces the per-route rate limit. status.endpoint is the cluster-internal
-# hostname the fleet's agents call.
+# The operator renders these into an Envoy AI Gateway route set — a Gateway, an
+# AIGatewayRoute holding every rule, an AIServiceBackend per model and the
+# policies that carry credentials and rate limits. It resolves the Bedrock model
+# (optionally via a cross-region inference profile), attaches the guardrail, and
+# publishes each route's resolved wire format and base URL on status.routes, so a
+# caller reads the contract instead of assuming it.
 
 apiVersion: agents.nanohype.dev/v1alpha1
 kind: ModelGateway
@@ -23,6 +25,14 @@ spec:
       # amazon-nova | stability
       modelFamily: __MODEL_FAMILY__
       modelId: __MODEL_ID__
+
+      # The wire format callers speak to this route, and therefore which base URL
+      # they use — the gateway serves each format under its own endpoint prefix.
+      # Left unset it is derived from the model: an anthropic-family route serves
+      # Anthropic, everything else serves OpenAI. Set it explicitly to pin the
+      # format across a model change, so repointing this route at an open-weight
+      # model is a CR edit and the app is untouched.
+      # api: Anthropic
 
       # Redundant here: modelId accepts an inference-profile ID directly and the
       # default above is already the us.* profile, which is what the current
