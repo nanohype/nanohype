@@ -82,15 +82,20 @@ class QdrantVectorStore implements VectorStoreProvider {
         }
       : undefined;
 
-    const hits = await this.cb.execute(() =>
-      this.client.search(this.collectionName, {
-        vector: queryEmbedding,
+    // The Query API, not the removed Search API. qdrant-js dropped
+    // `client.search()` in 1.19; `query` supersedes it and answers with
+    // `{ points }` rather than a bare array. `with_payload` is requested
+    // explicitly because this provider reads doc_id and content back out of it.
+    const { points } = await this.cb.execute(() =>
+      this.client.query(this.collectionName, {
+        query: queryEmbedding,
         limit: topK,
         filter: searchFilter,
+        with_payload: true,
       }),
     );
 
-    return hits.map((hit) => {
+    return points.map((hit) => {
       const payload = (hit.payload ?? {}) as Record<string, unknown>;
       return {
         id: (payload.doc_id as string) ?? String(hit.id),

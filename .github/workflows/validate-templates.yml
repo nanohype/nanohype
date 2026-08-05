@@ -125,6 +125,16 @@ jobs:
       - name: Verify documented commands exist
         run: npm run validate:doc-commands
 
+      # A template README is a step an agent scaffolding from it will carry out,
+      # not a note to a reader. The agent-fleet skeleton told its author to
+      # uncomment a block that was not in the file it named — wrong on the day it
+      # was written, and later naming a CR kind and a landing-zone component that
+      # had both been deleted. Catalog validation and Template Doctor were green
+      # throughout: they check catalog health and skeleton structure, and nothing
+      # read whether a sentence described the file beside it.
+      - name: Verify uncomment instructions resolve
+        run: npm run validate:uncomment-instructions
+
       # npm does not rewrite `file:`/`link:` specifiers at publish time, and a
       # package that carries one to the registry installs cleanly, omits the
       # dependency, and crashes on the consumer's first import. The development

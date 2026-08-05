@@ -50,7 +50,6 @@ Requires the target cluster to have:
 - `nanohype/eks-agent-platform` operator running (provides the `AgentFleet`, `ModelGateway` CRDs)
 - Envoy Gateway and Envoy AI Gateway installed via `nanohype/eks-gitops` — the operator renders route resources into them
 - KEDA, for `spec.scaling`
-- For an accelerator: the matching device plugin from `eks-gitops/addons/operations/`, and a node pool that can satisfy the request
 
 ## Apply order
 

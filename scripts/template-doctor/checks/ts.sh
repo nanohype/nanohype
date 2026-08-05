@@ -95,7 +95,16 @@ _ts_typecheck() {
   # the skeleton is clean (error_count=0), which would abort the whole run on the
   # first clean template.
   if [ "$error_count" -gt 0 ]; then
-    finding "error" "ts" "$name" "typecheck" "tsc --noEmit reports ${error_count} errors"
+    # Carry the first few diagnostics, not just the count. A finding that says
+    # "reports 3 errors" and nothing else cannot be acted on from the report or
+    # the CI log — and this check runs against a FRESH dependency resolve, so the
+    # failure often does not reproduce on a working tree that still has a
+    # node_modules and a lockfile from an earlier install. The one line naming
+    # the symbol is the difference between a diagnosis and a bisect.
+    local first
+    first="$(printf '%s' "$output" | grep -E "error TS[0-9]+" | head -3 | tr '\n' ' ')"
+    finding "error" "ts" "$name" "typecheck" \
+      "tsc --noEmit reports ${error_count} errors: ${first}"
   fi
 }
 
