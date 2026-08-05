@@ -39,11 +39,10 @@ spec:
       # replicas is the floor; KEDA owns the count while scaling is enabled.
       # replicas: 1
       #
-      # resources are the agent container's requests and limits. An accelerator
-      # is asked for here, as a device-plugin resource on limits:
+      # resources are the agent container's requests and limits:
       # resources:
-      #   limits:
-      #     nvidia.com/gpu: 1
+      #   requests: { cpu: 250m, memory: 512Mi }
+      #   limits:   { cpu: "1",  memory: 2Gi }
 
   scaling:
     enabled: true

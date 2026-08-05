@@ -35,10 +35,3 @@ Until a guardrail is provisioned in landing-zone, leave the `guardrailRef` (and
 `spec.defaultGuardrailRef`) blocks commented out in `modelgateway.yaml`. Once
 provisioned, uncomment and set the `name` to the guardrail resource's name.
 
-## DRA accelerator
-
-If `Compute` is `nvidia-*` or `neuron`, uncomment the `spec.compute.acceleratorClaim`
-block in `agentfleet.yaml` and set its `name` to an `AcceleratorClaim` CR. The operator
-turns that into a `ResourceClaimTemplate` referenced by the pod. Confirm the matching
-`AcceleratorClaim` exists (provisioned by `landing-zone/components/aws/accelerator-pools`);
-if absent, the AgentFleet stays `Pending` indefinitely.
