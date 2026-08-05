@@ -26,7 +26,7 @@
  *
  *   node scripts/check-uncomment-instructions.mjs
  */
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -115,9 +115,7 @@ for (const doc of markdownFiles(TEMPLATES)) {
 }
 
 if (problems.length > 0) {
-  console.error(
-    `\nThe catalog gives ${problems.length} instruction(s) an author cannot follow.\n`,
-  );
+  console.error(`\nThe catalog gives ${problems.length} instruction(s) an author cannot follow.\n`);
   for (const problem of problems) console.error(`  ${problem}`);
   console.error(
     [
