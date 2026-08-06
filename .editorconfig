@@ -14,6 +14,12 @@ indent_style = tab
 [*.py]
 indent_size = 4
 
+# Excalidraw writes its own export format and closes the JSON without a final
+# newline. Adding one here would be reverted the next time a diagram round-trips
+# through the editor, so this states what the format actually is.
+[*.excalidraw]
+insert_final_newline = false
+
 [*.md]
 trim_trailing_whitespace = false
 

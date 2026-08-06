@@ -27,6 +27,36 @@ jobs:
             --recursive
             ./
 
+  # .editorconfig declares charset, LF endings, a final newline and no trailing
+  # whitespace for every file. Biome covers TS and JSON, so those rules held for
+  # part of the tree and were unobserved everywhere else — YAML, Markdown, the
+  # template skeletons, shell.
+  #
+  # This job lives here rather than in a workflow of its own because the gate
+  # covers every tracked file, so it has to run on every change, and this is the
+  # one workflow with no path filter. A path-filtered editorconfig gate would be
+  # unable to observe most of what it checks.
+  #
+  # Indentation checks stay off: Go answers to gofmt, TS and JSON to biome, and a
+  # Makefile needs tabs for its recipes and spaces for the continuation lines
+  # inside them — the skeleton Makefiles are correct and would be flagged. This
+  # takes the rules nothing else owns.
+  editorconfig:
+    name: editorconfig
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - run: npm ci
+      - run: npm run editorconfig
+
   validate:
     name: Validate template catalog
     runs-on: ubuntu-latest
