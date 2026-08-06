@@ -15,9 +15,9 @@ import type { IngestSource } from "./ingest/types.js";
 import { logger } from "./logger.js";
 import {
   pipelineChunksCreated,
-  pipelineRequestsTotal,
   pipelineDuration,
   pipelineErrorsTotal,
+  pipelineRequestsTotal,
 } from "./metrics.js";
 import type { OutputAdapter } from "./output/types.js";
 import type { ChunkStrategy } from "./transform/types.js";
