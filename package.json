@@ -43,7 +43,8 @@
     "verify:library": "node scripts/sync-library.mjs --check",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.plans/**'"
+    "lint:docs": "markdownlint-cli2 '**/*.md' '!**/node_modules/**' '!templates/*/skeleton/**' '!.plans/**'",
+    "validate:sli-metric-names": "node scripts/check-sli-metric-names.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",

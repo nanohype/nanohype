@@ -21,9 +21,9 @@ export const llmErrorsTotal = meter.createCounter("llm_errors_total", {
 });
 
 /** LLM call latency in milliseconds. */
-export const llmDuration = meter.createHistogram("llm_request_duration_ms", {
-  description: "LLM chat latency in milliseconds",
-  unit: "ms",
+export const llmDuration = meter.createHistogram("llm_request_duration_seconds", {
+  description: "LLM chat latency in seconds",
+  unit: "s",
 });
 
 /** Token usage by kind (input/output/cache_read/cache_write). Cost is derived

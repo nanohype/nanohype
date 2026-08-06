@@ -135,6 +135,19 @@ jobs:
       - name: Verify uncomment instructions resolve
         run: npm run validate:uncomment-instructions
 
+      # SLOPolicy builds its PromQL from `sli.metric` plus the suffix `sli.type`
+      # implies — it never takes a raw query — so a template's series either fit
+      # that shape or the tenant cannot have an objective at all, and the failure
+      # is silent: the query resolves to nothing and the policy reports NoData
+      # while AgentSLOEvaluationStale pages on a metric that was never there.
+      #
+      # Two templates were one character from working. ts-service emitted
+      # `http_errors_total` beside `http_request_total` — singular — and its own
+      # comment called the first "the 'errors' of RED". data-pipeline had the
+      # errors half and named its denominator `pipeline_documents_processed`.
+      - name: Verify SLI metric names
+        run: npm run validate:sli-metric-names
+
       # npm does not rewrite `file:`/`link:` specifiers at publish time, and a
       # package that carries one to the registry installs cleanly, omits the
       # dependency, and crashes on the consumer's first import. The development

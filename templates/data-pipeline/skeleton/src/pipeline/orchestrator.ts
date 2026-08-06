@@ -15,7 +15,7 @@ import type { IngestSource } from "./ingest/types.js";
 import { logger } from "./logger.js";
 import {
   pipelineChunksCreated,
-  pipelineDocumentsProcessed,
+  pipelineRequestsTotal,
   pipelineDuration,
   pipelineErrorsTotal,
 } from "./metrics.js";
@@ -81,7 +81,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
 
   progress({ stage: "ingest", processed: documents.length, total: documents.length });
   logger.info("Ingest complete", { documents: documents.length });
-  pipelineDocumentsProcessed.add(documents.length, { status: "loaded" });
+  pipelineRequestsTotal.add(documents.length, { status: "loaded" });
 
   // ── Stage 2: Transform ───────────────────────────────────────────
   logger.info("Stage 2: Transform", { strategy: strategy.name });

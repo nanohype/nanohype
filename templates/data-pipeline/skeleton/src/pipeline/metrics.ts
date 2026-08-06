@@ -8,9 +8,17 @@ import { metrics } from "@opentelemetry/api";
 
 const meter = metrics.getMeter("__PROJECT_NAME__");
 
-/** Total documents processed, labeled by outcome status. */
-export const pipelineDocumentsProcessed = meter.createCounter("pipeline_documents_processed", {
-  description: "Total number of documents processed by the pipeline",
+/** Total documents the pipeline took in, labeled by outcome status — the
+ *  "requests" of RED, and the denominator pipelineErrorsTotal divides into.
+ *
+ *  Named _requests_total rather than _documents_processed because SLOPolicy's
+ *  availability SLI builds `<metric>_errors_total / <metric>_requests_total`
+ *  from `sli.metric` alone. A denominator under any other name means the ratio
+ *  evaluates empty and the objective reports NoData forever — the errors
+ *  counter below already called itself the "errors" of RED, and this is the
+ *  half that was missing. */
+export const pipelineRequestsTotal = meter.createCounter("pipeline_requests_total", {
+  description: "Total documents taken in by the pipeline, labeled by outcome status",
 });
 
 /** Total chunks created across all documents. */

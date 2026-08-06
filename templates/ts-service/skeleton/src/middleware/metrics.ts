@@ -22,7 +22,8 @@ export async function metricsMiddleware(c: Context, next: Next): Promise<void> {
   };
 
   httpRequestTotal.add(1, labels);
-  httpRequestDuration.record(durationMs, labels);
+  // Seconds, not milliseconds — the histogram is in base units (see metrics.ts).
+  httpRequestDuration.record(durationMs / 1000, labels);
   if (c.res.status >= 500) {
     httpErrorsTotal.add(1, labels);
   }

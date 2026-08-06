@@ -16,9 +16,9 @@ export const gatewayRequestTotal = meter.createCounter("gateway_request_total", 
 });
 
 /** Gateway request duration in milliseconds, labeled by provider. */
-export const gatewayRequestDuration = meter.createHistogram("gateway_request_duration_ms", {
-  description: "Gateway chat request latency in milliseconds",
-  unit: "ms",
+export const gatewayRequestDuration = meter.createHistogram("gateway_request_duration_seconds", {
+  description: "Gateway chat request latency in seconds",
+  unit: "s",
 });
 
 /** Token usage counter, labeled by provider and direction (input/output). */

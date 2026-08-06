@@ -62,7 +62,8 @@ class BedrockProvider implements LlmProvider {
       llmErrorsTotal.add(1, labels);
       throw err;
     } finally {
-      llmDuration.record(performance.now() - start, labels);
+      // performance.now() is milliseconds; the histogram is in seconds.
+      llmDuration.record((performance.now() - start) / 1000, labels);
     }
   }
 }
