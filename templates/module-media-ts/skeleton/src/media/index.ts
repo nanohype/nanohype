@@ -8,7 +8,7 @@
 import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import { MediaClientConfigSchema } from "./config.js";
-import { mediaDurationMs, mediaTransformTotal, mediaUploadTotal } from "./metrics.js";
+import { mediaDuration, mediaTransformTotal, mediaUploadTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { MediaProvider } from "./providers/types.js";
 import type {
@@ -121,7 +121,7 @@ export async function createMediaClient(
       const durationMs = performance.now() - start;
 
       mediaUploadTotal.add(1, { provider: providerName });
-      mediaDurationMs.record(durationMs, { operation: "upload" });
+      mediaDuration.record(durationMs / 1000, { operation: "upload" });
 
       return asset;
     },
@@ -136,13 +136,13 @@ export async function createMediaClient(
     async delete(assetId: string): Promise<void> {
       const start = performance.now();
       await provider.delete(assetId);
-      mediaDurationMs.record(performance.now() - start, { operation: "delete" });
+      mediaDuration.record((performance.now() - start) / 1000, { operation: "delete" });
     },
 
     async list(options?: ListOptions): Promise<ListResult> {
       const start = performance.now();
       const result = await provider.list(options);
-      mediaDurationMs.record(performance.now() - start, { operation: "list" });
+      mediaDuration.record((performance.now() - start) / 1000, { operation: "list" });
       return result;
     },
 

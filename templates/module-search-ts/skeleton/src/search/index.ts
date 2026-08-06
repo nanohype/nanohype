@@ -9,7 +9,7 @@ import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import type { SearchClientConfig } from "./config.js";
 import { SearchClientConfigSchema } from "./config.js";
-import { searchDurationMs, searchIndexTotal, searchRequestTotal } from "./metrics.js";
+import { searchDuration, searchIndexTotal, searchRequestTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { SearchProvider } from "./providers/types.js";
 import type {
@@ -119,7 +119,7 @@ export async function createSearchClient(
     async indexDocuments(indexName: string, documents: SearchDocument[]): Promise<void> {
       const start = performance.now();
       await provider.indexDocuments(indexName, documents);
-      searchDurationMs.record(performance.now() - start, { operation: "index" });
+      searchDuration.record((performance.now() - start) / 1000, { operation: "index" });
     },
 
     async search(indexName: string, query: SearchQuery): Promise<SearchResult> {
@@ -128,7 +128,7 @@ export async function createSearchClient(
       const durationMs = performance.now() - start;
 
       searchRequestTotal.add(1, { provider: providerName, index: indexName });
-      searchDurationMs.record(durationMs, { operation: "search" });
+      searchDuration.record(durationMs / 1000, { operation: "search" });
 
       return result;
     },

@@ -71,7 +71,7 @@ export function createQueueConsumer(
 
       const durationMs = performance.now() - start;
       workerJobTotal.add(1, { job_name: job.name, status: "success" });
-      workerJobDuration.record(durationMs, { job_name: job.name });
+      workerJobDuration.record(durationMs / 1000, { job_name: job.name });
 
       logger.debug(`Job completed: ${job.name}`, {
         jobId: job.id,
@@ -82,7 +82,7 @@ export function createQueueConsumer(
       const durationMs = performance.now() - start;
 
       workerJobTotal.add(1, { job_name: job.name, status: "error" });
-      workerJobDuration.record(durationMs, { job_name: job.name });
+      workerJobDuration.record(durationMs / 1000, { job_name: job.name });
 
       logger.error(`Job failed: ${job.name}`, {
         jobId: job.id,

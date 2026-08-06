@@ -218,7 +218,7 @@ export function createGateway(config: GatewayConfig) {
       status: String(proxyResponse.status),
     };
     gatewayProxyTotal.add(1, labels);
-    gatewayProxyDuration.record(durationMs, labels);
+    gatewayProxyDuration.record(durationMs / 1000, labels);
 
     // Build the response
     const response = new Response(proxyResponse.body, {

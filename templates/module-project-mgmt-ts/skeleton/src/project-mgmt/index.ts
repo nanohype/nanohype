@@ -8,7 +8,7 @@
 import { validateBootstrap } from "./bootstrap.js";
 import type { ProjectConfig } from "./config.js";
 import { ProjectConfigSchema } from "./config.js";
-import { projectMgmtDurationMs, projectMgmtRequestTotal } from "./metrics.js";
+import { projectMgmtDuration, projectMgmtRequestTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { ProjectProvider } from "./providers/types.js";
 import type {
@@ -130,7 +130,7 @@ export function createProjectClient(rawConfig: Partial<ProjectConfig> = {}): Pro
       projectMgmtRequestTotal.add(1, { provider: providerName, operation, status: "error" });
       throw error;
     } finally {
-      projectMgmtDurationMs.record(performance.now() - start, {
+      projectMgmtDuration.record((performance.now() - start) / 1000, {
         provider: providerName,
         operation,
       });

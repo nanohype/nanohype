@@ -14,8 +14,8 @@ export const projectMgmtRequestTotal = meter.createCounter("project_mgmt_request
   description: "Total project management requests by provider and operation",
 });
 
-/** Project management request duration in milliseconds, labeled by provider and operation. */
-export const projectMgmtDurationMs = meter.createHistogram("project_mgmt_duration_ms", {
-  description: "Project management request latency in milliseconds",
-  unit: "ms",
+/** Project management request duration in seconds, labeled by provider and operation. */
+export const projectMgmtDuration = meter.createHistogram("project_mgmt_duration_seconds", {
+  description: "Project management request latency in seconds",
+  unit: "s",
 });

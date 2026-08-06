@@ -26,10 +26,10 @@ export const pipelineChunksCreated = meter.createCounter("pipeline_chunks_create
   description: "Total number of chunks created by the transform stage",
 });
 
-/** Full pipeline run duration in milliseconds. */
-export const pipelineDuration = meter.createHistogram("pipeline_duration_ms", {
-  description: "Pipeline run duration in milliseconds",
-  unit: "ms",
+/** Full pipeline run duration in seconds. */
+export const pipelineDuration = meter.createHistogram("pipeline_duration_seconds", {
+  description: "Pipeline run duration in seconds",
+  unit: "s",
 });
 
 /** Terminal stage errors, labeled by stage (ingest/transform/embed/output) — the

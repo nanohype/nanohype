@@ -14,10 +14,10 @@ export const searchRequestTotal = meter.createCounter("search_request_total", {
   description: "Total search requests by provider and index",
 });
 
-/** Search request duration in milliseconds, labeled by provider. */
-export const searchDurationMs = meter.createHistogram("search_duration_ms", {
-  description: "Search request latency in milliseconds",
-  unit: "ms",
+/** Search request duration in seconds, labeled by provider. */
+export const searchDuration = meter.createHistogram("search_duration_seconds", {
+  description: "Search request latency in seconds",
+  unit: "s",
 });
 
 /** Total index operations (create, delete), labeled by operation. */

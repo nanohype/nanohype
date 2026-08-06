@@ -8,11 +8,7 @@
 import { validateBootstrap } from "./bootstrap.js";
 import type { ProviderConfig } from "./config.js";
 import { ProviderConfigSchema } from "./config.js";
-import {
-  llmProviderDurationMs,
-  llmProviderRequestTotal,
-  llmProviderTokenUsage,
-} from "./metrics.js";
+import { llmProviderDuration, llmProviderRequestTotal, llmProviderTokenUsage } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { LlmProvider } from "./providers/types.js";
 import type { ChatMessage, ChatOptions, LlmResponse, StreamResponse } from "./types.js";
@@ -108,7 +104,7 @@ export function createProviderRegistry(rawConfig: Partial<ProviderConfig> = {}):
       provider: response.provider,
       model: response.model,
     });
-    llmProviderDurationMs.record(response.latencyMs, {
+    llmProviderDuration.record(response.latencyMs / 1000, {
       provider: response.provider,
     });
     llmProviderTokenUsage.add(response.usage.inputTokens, {

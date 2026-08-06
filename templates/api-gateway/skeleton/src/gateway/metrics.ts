@@ -15,10 +15,10 @@ export const gatewayProxyTotal = meter.createCounter("gateway_proxy_total", {
   description: "Total number of proxied requests",
 });
 
-/** Proxy request duration in milliseconds, labeled by method, route path, upstream, and status. */
-export const gatewayProxyDuration = meter.createHistogram("gateway_proxy_duration_ms", {
-  description: "Proxy request latency in milliseconds",
-  unit: "ms",
+/** Proxy request duration in seconds, labeled by method, route path, upstream, and status. */
+export const gatewayProxyDuration = meter.createHistogram("gateway_proxy_duration_seconds", {
+  description: "Proxy request latency in seconds",
+  unit: "s",
 });
 
 /** Upstream health status gauge (1 = healthy, 0 = unhealthy). */

@@ -72,14 +72,14 @@ export function createWorker(
 
       const durationMs = performance.now() - start;
       queueJobTotal.add(1, { job_name: job.name, status: "success" });
-      queueJobDuration.record(durationMs, { job_name: job.name });
+      queueJobDuration.record(durationMs / 1000, { job_name: job.name });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error(`[worker] Job "${job.name}" (${job.id}) failed: ${error.message}`);
 
       const durationMs = performance.now() - start;
       queueJobTotal.add(1, { job_name: job.name, status: "error" });
-      queueJobDuration.record(durationMs, { job_name: job.name });
+      queueJobDuration.record(durationMs / 1000, { job_name: job.name });
 
       await provider.fail(job.id, error);
     }

@@ -100,7 +100,7 @@ export async function createCache(
       const raw = await provider.get(nsKey(key));
       const durationMs = performance.now() - start;
 
-      cacheOperationDuration.record(durationMs, { operation: "get" });
+      cacheOperationDuration.record(durationMs / 1000, { operation: "get" });
 
       if (raw === undefined) {
         cacheGetTotal.add(1, { result: "miss" });
@@ -115,26 +115,26 @@ export async function createCache(
       const start = performance.now();
       const serialized = JSON.stringify(value);
       await provider.set(nsKey(key), serialized, opts?.ttl);
-      cacheOperationDuration.record(performance.now() - start, { operation: "set" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, { operation: "set" });
     },
 
     async delete(key: string): Promise<void> {
       const start = performance.now();
       await provider.delete(nsKey(key));
-      cacheOperationDuration.record(performance.now() - start, { operation: "delete" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, { operation: "delete" });
     },
 
     async has(key: string): Promise<boolean> {
       const start = performance.now();
       const exists = await provider.has(nsKey(key));
-      cacheOperationDuration.record(performance.now() - start, { operation: "has" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, { operation: "has" });
       return exists;
     },
 
     async clear(): Promise<void> {
       const start = performance.now();
       await provider.clear();
-      cacheOperationDuration.record(performance.now() - start, { operation: "clear" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, { operation: "clear" });
     },
 
     async getOrSet<T = unknown>(
@@ -145,13 +145,15 @@ export async function createCache(
       const start = performance.now();
       const existing = await cache.get<T>(key);
       if (existing !== undefined) {
-        cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
+        cacheOperationDuration.record((performance.now() - start) / 1000, {
+          operation: "getOrSet",
+        });
         return existing;
       }
 
       const value = await factory();
       await cache.set(key, value, opts);
-      cacheOperationDuration.record(performance.now() - start, { operation: "getOrSet" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, { operation: "getOrSet" });
       return value;
     },
 

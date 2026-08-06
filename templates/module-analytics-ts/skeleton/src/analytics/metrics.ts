@@ -19,8 +19,8 @@ export const analyticsFlushTotal = meter.createCounter("analytics_flush_total", 
   description: "Total analytics flush operations by provider",
 });
 
-/** Flush duration in milliseconds, labeled by provider. */
-export const analyticsFlushDurationMs = meter.createHistogram("analytics_flush_duration_ms", {
-  description: "Analytics flush latency in milliseconds",
-  unit: "ms",
+/** Flush duration in seconds, labeled by provider. */
+export const analyticsFlushDuration = meter.createHistogram("analytics_flush_duration_seconds", {
+  description: "Analytics flush latency in seconds",
+  unit: "s",
 });
