@@ -14,8 +14,8 @@ export const knowledgeBaseRequestTotal = meter.createCounter("knowledge_base_req
   description: "Total knowledge base requests by provider and operation",
 });
 
-/** Knowledge base request duration in milliseconds, labeled by provider and operation. */
-export const knowledgeBaseDurationMs = meter.createHistogram("knowledge_base_duration_ms", {
-  description: "Knowledge base request latency in milliseconds",
-  unit: "ms",
+/** Knowledge base request duration in seconds, labeled by provider and operation. */
+export const knowledgeBaseDuration = meter.createHistogram("knowledge_base_duration_seconds", {
+  description: "Knowledge base request latency in seconds",
+  unit: "s",
 });

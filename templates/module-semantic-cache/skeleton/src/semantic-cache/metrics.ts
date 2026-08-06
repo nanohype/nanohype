@@ -14,17 +14,20 @@ export const cacheLookupTotal = meter.createCounter("semantic_cache_lookup_total
   description: "Total semantic cache lookup operations by result",
 });
 
-/** Semantic cache operation duration in milliseconds, labeled by operation name. */
+/** Semantic cache operation duration in seconds, labeled by operation name. */
 export const cacheOperationDuration = meter.createHistogram(
-  "semantic_cache_operation_duration_ms",
+  "semantic_cache_operation_duration_seconds",
   {
-    description: "Semantic cache operation latency in milliseconds",
-    unit: "ms",
+    description: "Semantic cache operation latency in seconds",
+    unit: "s",
   },
 );
 
-/** Embedding generation duration in milliseconds. */
-export const embeddingDuration = meter.createHistogram("semantic_cache_embedding_duration_ms", {
-  description: "Embedding generation latency in milliseconds",
-  unit: "ms",
-});
+/** Embedding generation duration in seconds. */
+export const embeddingDuration = meter.createHistogram(
+  "semantic_cache_embedding_duration_seconds",
+  {
+    description: "Embedding generation latency in seconds",
+    unit: "s",
+  },
+);

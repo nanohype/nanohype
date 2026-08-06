@@ -9,11 +9,7 @@ import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import type { AnalyticsClientConfig } from "./config.js";
 import { AnalyticsClientConfigSchema } from "./config.js";
-import {
-  analyticsEventsTracked,
-  analyticsFlushDurationMs,
-  analyticsFlushTotal,
-} from "./metrics.js";
+import { analyticsEventsTracked, analyticsFlushDuration, analyticsFlushTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { AnalyticsProvider } from "./providers/types.js";
 import type {
@@ -131,14 +127,18 @@ export async function createAnalyticsClient(
       const start = performance.now();
       await provider.flush();
       analyticsFlushTotal.add(1, { provider: providerName });
-      analyticsFlushDurationMs.record(performance.now() - start, { provider: providerName });
+      analyticsFlushDuration.record((performance.now() - start) / 1000, {
+        provider: providerName,
+      });
     },
 
     async close(): Promise<void> {
       const start = performance.now();
       await provider.close();
       analyticsFlushTotal.add(1, { provider: providerName });
-      analyticsFlushDurationMs.record(performance.now() - start, { provider: providerName });
+      analyticsFlushDuration.record((performance.now() - start) / 1000, {
+        provider: providerName,
+      });
     },
   };
 }

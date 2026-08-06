@@ -129,13 +129,13 @@ export async function createSemanticCache(
       // Generate embedding for the query prompt
       const embedStart = performance.now();
       const embedding = await embedder.embed(prompt);
-      embeddingDuration.record(performance.now() - embedStart);
+      embeddingDuration.record((performance.now() - embedStart) / 1000);
 
       // Search the vector store
       const hit = await vectorStore.search(embedding, similarityThreshold);
 
       const durationMs = performance.now() - lookupStart;
-      cacheOperationDuration.record(durationMs, { operation: "lookup" });
+      cacheOperationDuration.record(durationMs / 1000, { operation: "lookup" });
 
       if (!hit) {
         cacheLookupTotal.add(1, { result: "miss" });
@@ -152,7 +152,7 @@ export async function createSemanticCache(
       // Generate embedding for the prompt
       const embedStart = performance.now();
       const embedding = await embedder.embed(prompt);
-      embeddingDuration.record(performance.now() - embedStart);
+      embeddingDuration.record((performance.now() - embedStart) / 1000);
 
       const entry: CacheVector = {
         id: randomUUID(),
@@ -164,13 +164,17 @@ export async function createSemanticCache(
 
       await vectorStore.upsert(entry);
 
-      cacheOperationDuration.record(performance.now() - storeStart, { operation: "store" });
+      cacheOperationDuration.record((performance.now() - storeStart) / 1000, {
+        operation: "store",
+      });
     },
 
     async invalidate(id: string): Promise<void> {
       const start = performance.now();
       await vectorStore.delete(id);
-      cacheOperationDuration.record(performance.now() - start, { operation: "invalidate" });
+      cacheOperationDuration.record((performance.now() - start) / 1000, {
+        operation: "invalidate",
+      });
     },
 
     async close(): Promise<void> {

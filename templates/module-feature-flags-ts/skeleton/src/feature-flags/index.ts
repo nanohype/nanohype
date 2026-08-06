@@ -108,7 +108,7 @@ export async function createFlagService(config: FlagServiceConfig = {}): Promise
       const flag = await store.getFlag(flagKey);
       if (!flag) {
         const result = notFoundResult(flagKey);
-        flagEvalDuration.record(performance.now() - start);
+        flagEvalDuration.record((performance.now() - start) / 1000);
         return result;
       }
 
@@ -116,7 +116,7 @@ export async function createFlagService(config: FlagServiceConfig = {}): Promise
       const durationMs = performance.now() - start;
 
       flagEvalTotal.add(1, { flagKey, variant: result.variant });
-      flagEvalDuration.record(durationMs);
+      flagEvalDuration.record(durationMs / 1000);
 
       if (tracker) {
         tracker.record(flagKey, result.variant, context.userId);

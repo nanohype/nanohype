@@ -233,7 +233,7 @@ export function createOrchestratorInstance(config: ValidatedConfig): Orchestrato
           };
         }
 
-        agentDuration.record(result.durationMs, { agent: agentName });
+        agentDuration.record(result.durationMs / 1000, { agent: agentName });
         results.set(subtask.id, result);
         previousAgent = agentName;
 
@@ -246,7 +246,7 @@ export function createOrchestratorInstance(config: ValidatedConfig): Orchestrato
       }
 
       const totalDuration = performance.now() - start;
-      orchestrationDuration.record(totalDuration);
+      orchestrationDuration.record(totalDuration / 1000);
 
       const allSucceeded = Array.from(results.values()).every((r) => r.success);
 

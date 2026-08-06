@@ -22,9 +22,9 @@ export function createLlmMetrics(serviceName: string): LlmMetrics {
     unit: "{call}",
   });
 
-  const traceDuration = meter.createHistogram("llm_trace_duration_ms", {
-    description: "Duration of traced LLM calls in milliseconds",
-    unit: "ms",
+  const traceDuration = meter.createHistogram("llm_trace_duration_seconds", {
+    description: "Duration of traced LLM calls in seconds",
+    unit: "s",
   });
 
   const qualityScore = meter.createHistogram("llm_quality_score", {
@@ -41,7 +41,7 @@ export function createLlmMetrics(serviceName: string): LlmMetrics {
         "llm.success": String(success),
       };
       traceTotal.add(1, attributes);
-      traceDuration.record(durationMs, attributes);
+      traceDuration.record(durationMs / 1000, attributes);
     },
 
     recordQuality(score: number, model?: string) {

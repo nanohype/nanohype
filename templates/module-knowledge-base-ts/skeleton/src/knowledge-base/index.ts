@@ -10,7 +10,7 @@ import { z } from "zod";
 import { validateBootstrap } from "./bootstrap.js";
 import type { KnowledgeConfig } from "./config.js";
 import { KnowledgeConfigSchema } from "./config.js";
-import { knowledgeBaseDurationMs, knowledgeBaseRequestTotal } from "./metrics.js";
+import { knowledgeBaseDuration, knowledgeBaseRequestTotal } from "./metrics.js";
 import { getProvider, listProviders } from "./providers/index.js";
 import type { KnowledgeProvider } from "./providers/types.js";
 import type {
@@ -103,7 +103,7 @@ export async function createKnowledgeClient(
     return fn().then(
       (result) => {
         knowledgeBaseRequestTotal.add(1, { provider: config.provider, operation });
-        knowledgeBaseDurationMs.record(performance.now() - start, {
+        knowledgeBaseDuration.record((performance.now() - start) / 1000, {
           provider: config.provider,
           operation,
         });
@@ -115,7 +115,7 @@ export async function createKnowledgeClient(
           operation,
           error: "true",
         });
-        knowledgeBaseDurationMs.record(performance.now() - start, {
+        knowledgeBaseDuration.record((performance.now() - start) / 1000, {
           provider: config.provider,
           operation,
         });

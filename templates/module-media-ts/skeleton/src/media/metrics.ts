@@ -19,8 +19,8 @@ export const mediaTransformTotal = meter.createCounter("media_transform_total", 
   description: "Total media transform operations by provider",
 });
 
-/** Media operation duration in milliseconds, labeled by operation. */
-export const mediaDurationMs = meter.createHistogram("media_duration_ms", {
-  description: "Media operation latency in milliseconds",
-  unit: "ms",
+/** Media operation duration in seconds, labeled by operation. */
+export const mediaDuration = meter.createHistogram("media_duration_seconds", {
+  description: "Media operation latency in seconds",
+  unit: "s",
 });

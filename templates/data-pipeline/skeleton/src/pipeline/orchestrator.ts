@@ -223,7 +223,7 @@ export async function runPipeline(opts: OrchestratorOptions): Promise<PipelineRe
   progress({ stage: "index", processed: embeddedChunks.length, total: embeddedChunks.length });
 
   const durationMs = Date.now() - startTime;
-  pipelineDuration.record(durationMs);
+  pipelineDuration.record(durationMs / 1000);
 
   logger.info("Pipeline complete", {
     documentsIngested: documents.length,
