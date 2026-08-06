@@ -11,14 +11,14 @@ import { metrics } from "@opentelemetry/api";
 const meter = metrics.getMeter("__PROJECT_NAME__");
 
 /** Total HTTP requests, labeled by method, path, and status code. */
-export const httpRequestTotal = meter.createCounter("http_request_total", {
+export const httpRequestTotal = meter.createCounter("http_requests_total", {
   description: "Total number of HTTP requests received",
 });
 
 /** HTTP request duration in milliseconds, labeled by method, path, and status. */
-export const httpRequestDuration = meter.createHistogram("http_request_duration_ms", {
-  description: "HTTP request latency in milliseconds",
-  unit: "ms",
+export const httpRequestDuration = meter.createHistogram("http_request_duration_seconds", {
+  description: "HTTP request latency in seconds",
+  unit: "s",
 });
 
 /** Total HTTP responses with a server-error (5xx) status — the "errors" of RED. */

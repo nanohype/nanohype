@@ -191,7 +191,8 @@ export function createGateway(config: GatewayConfig): Gateway {
       // Record metrics
       const labels = { provider: response.provider, model: response.model };
       gatewayRequestTotal.add(1, labels);
-      gatewayRequestDuration.record(response.latencyMs, labels);
+      // latencyMs -> seconds: the histogram is in base units (see metrics.ts).
+      gatewayRequestDuration.record(response.latencyMs / 1000, labels);
       gatewayTokenUsage.add(response.inputTokens, { ...labels, direction: "input" });
       gatewayTokenUsage.add(response.outputTokens, { ...labels, direction: "output" });
       gatewayCostTotal.add(response.cost, labels);

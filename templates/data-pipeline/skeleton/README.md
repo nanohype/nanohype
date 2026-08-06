@@ -53,7 +53,7 @@ Each stage uses a factory-based registry pattern (`registry.ts`):
 - **VectorDocument-compatible output** -- the JSONL adapter writes objects with `id`, `content`, `embedding`, and `metadata` fields, matching `module-vector-store`'s `VectorDocument` interface.
 - **Lazy SDK initialization** -- the OpenAI client is created on first use, not at import time, keeping startup fast and avoiding errors when the provider isn't selected.
 - **Circuit breaker** -- all external API calls (embeddings) are wrapped in a sliding-window circuit breaker that fast-fails after repeated failures.
-- **OTel metrics** -- `pipeline_documents_processed`, `pipeline_chunks_created`, and `pipeline_duration_ms` are emitted as OTel counters/histograms. No-ops without an OTel SDK.
+- **OTel metrics** -- `pipeline_requests_total`, `pipeline_errors_total` (the RED pair a SLOPolicy availability SLI reads), `pipeline_chunks_created`, and `pipeline_duration_ms` are emitted as OTel counters/histograms. No-ops without an OTel SDK.
 
 ## Configuration
 

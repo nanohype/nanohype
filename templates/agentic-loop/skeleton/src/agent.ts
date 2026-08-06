@@ -23,7 +23,10 @@ function resolveProvider() {
 function recordLlmMetrics(response: LlmResponse, durationMs: number): void {
   const labels = { provider: PROVIDER_NAME, model: "default" };
   llmRequestTotal.add(1, labels);
-  llmRequestDuration.record(durationMs, { provider: PROVIDER_NAME });
+  // Seconds, not milliseconds. The histogram is named _seconds because that is
+  // the base unit Prometheus expects and the unit SLOPolicy's latency SLI
+  // queries; recording ms into it would be off by 1000 with nothing to say so.
+  llmRequestDuration.record(durationMs / 1000, { provider: PROVIDER_NAME });
 
   if (response.usage) {
     if (response.usage.inputTokens != null) {
