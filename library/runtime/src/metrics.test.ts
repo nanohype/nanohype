@@ -87,6 +87,43 @@ describe("createMetrics", () => {
     expect(metric.dataPoints[0]?.value.sum).toBe(400);
   });
 
+  it("records durations as seconds histograms", async () => {
+    const m = createMetrics(cfg);
+    m.duration("assembly", 1.5);
+    m.duration("assembly", 2.5);
+
+    const instruments = await collectedInstruments();
+    const metric = instruments.get("test_service.assembly") as {
+      descriptor: { unit: string };
+      dataPoints: { value: { count: number; sum: number } }[];
+    };
+    // `s`, not `ms`. The SLI contract queries *_duration_seconds, so a
+    // millisecond histogram cannot satisfy it whatever it is named.
+    expect(metric.descriptor.unit).toBe("s");
+    expect(metric.dataPoints[0]?.value.count).toBe(2);
+    expect(metric.dataPoints[0]?.value.sum).toBe(4);
+  });
+
+  it("lets a duration set bucket edges past OTel's ms-scale default", async () => {
+    // The defect this exists to prevent: OTel's default edges top out at 10000,
+    // which reads as ten seconds once the unit is `s`. histogram_quantile cannot
+    // return above the highest finite edge, so an alert thresholded past it is
+    // false for every possible input. Two shipped alerts were dead exactly here.
+    const m = createMetrics(cfg);
+    const boundaries = [30, 60, 120, 300, 600];
+    m.duration("assembly", 450, undefined, { boundaries });
+
+    const instruments = await collectedInstruments();
+    const metric = instruments.get("test_service.assembly") as {
+      descriptor: { unit: string };
+      dataPoints: { value: { buckets: { boundaries: number[]; counts: number[] } } }[];
+    };
+    expect(metric.descriptor.unit).toBe("s");
+    expect(metric.dataPoints[0]?.value.buckets.boundaries).toEqual(boundaries);
+    // 450 lands in (300,600] — the second-to-last bucket, not the overflow one.
+    expect(metric.dataPoints[0]?.value.buckets.counts).toEqual([0, 0, 0, 0, 1, 0]);
+  });
+
   it("applies explicit bucket boundaries to distributions", async () => {
     const m = createMetrics(cfg);
     const boundaries = [0, 0.5, 1];
