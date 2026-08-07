@@ -1,5 +1,6 @@
 import { VariableResolutionError } from "./errors.js";
 import { renderTemplate } from "./renderer.js";
+import { resolveVariables } from "./resolver.js";
 import type { CatalogSource } from "./source.js";
 import type {
   CompositeManifest,
@@ -30,21 +31,25 @@ export async function renderComposite(
   const allHooks: { pre: TemplateHook[]; post: TemplateHook[] } = { pre: [], post: [] };
   const entries: { template: string; path?: string; fileCount: number }[] = [];
 
-  // Resolve composite-level variables
-  const resolved: Record<string, string> = {};
+  // Resolve composite-level variables through the same resolver a template
+  // uses. A composite declares variables in the template shape, so the cascade
+  // is identical — and re-implementing it here dropped the `${VarName}`
+  // expansion pass, which is not an omission a composite can survive. A
+  // composite default like `${GroupId}.app` reached the child template as
+  // literal text, and the child does not declare `GroupId`, so the render died
+  // inside the entry rather than at the composite that wrote it.
+  //
+  // Required-variable failures keep their composite wording: at this layer the
+  // caller supplied composite inputs, not template ones, and naming the wrong
+  // layer is the difference between a fixable error and a confusing one.
   for (const v of manifest.variables) {
-    if (v.name in values) {
-      resolved[v.name] = String(values[v.name]);
-    } else if (v.default !== undefined) {
-      resolved[v.name] = String(v.default);
-    } else if (v.required) {
+    if (v.required && !(v.name in values) && v.default === undefined) {
       throw new VariableResolutionError(
         `Required composite variable '${v.name}' has no value and no default`,
       );
-    } else {
-      resolved[v.name] = v.type === "bool" ? "false" : v.type === "int" ? "0" : "";
     }
   }
+  const resolved = resolveVariables(manifest.variables, values);
 
   // Evaluate conditions and order entries (root first)
   const activeEntries = manifest.templates.filter((entry) => {
