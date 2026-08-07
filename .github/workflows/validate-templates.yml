@@ -202,6 +202,19 @@ jobs:
       - name: Verify vendored library copies are in sync
         run: npm run verify:library
 
+      # Every gate above this line reads the catalog UNRENDERED — the schema
+      # validator checks template.yaml, the skeleton linter lints files with
+      # placeholders still in them, and validate.sh asserts placeholders ARE
+      # present. All of them pass on a template that throws the moment anyone
+      # scaffolds it, which is what shipped: infra-aws could not render at all
+      # and took four composites with it. This is the only check that runs the
+      # thing the repository sells.
+      - name: Build the SDK the catalog renders through
+        run: npm --prefix sdk ci && npm --prefix sdk run build
+
+      - name: Verify every template and composite renders
+        run: node scripts/check-catalog-renders.mjs
+
   test-templates:
     name: Test template skeletons
     runs-on: ubuntu-latest

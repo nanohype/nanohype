@@ -3,12 +3,12 @@ import type * as ec2 from "aws-cdk-lib/aws-ec2";
 import type { Construct } from "constructs";
 import { ApiConstruct } from "./constructs/api";
 import { ComputeConstruct } from "./constructs/compute";
-// #endif
 // #if IncludeRds
 import { DatabaseConstruct } from "./constructs/database";
 // #endif
 // #if IncludeMonitoring
 import { MonitoringConstruct } from "./constructs/monitoring";
+// #endif
 // #if IncludeVpc || IncludeRds
 import { VpcConstruct } from "./constructs/vpc";
 // #endif
