@@ -48,6 +48,19 @@ export interface Metrics {
   counter(name: string, value?: number, attributes?: Attributes, opts?: InstrumentOptions): void;
   /** Record a duration in milliseconds (histogram, unit `ms`). */
   timing(name: string, ms: number, attributes?: Attributes): void;
+  /**
+   * Record a duration in SECONDS (histogram, unit `s`). The base unit, and the
+   * one the SLI contract queries — an SLI names `*_request_duration_seconds`,
+   * so a millisecond histogram cannot satisfy it whatever it is called.
+   *
+   * Pass `boundaries` whenever the duration can exceed ten seconds. OTel's
+   * default bucket edges top out at 10000, which is fine as milliseconds and
+   * badly wrong as seconds: `histogram_quantile` cannot return a value above
+   * the highest finite edge, so an alert thresholded past it is false for every
+   * possible input. Two shipped alerts were dead for exactly that reason, at 30x
+   * and 60x the top edge.
+   */
+  duration(name: string, seconds: number, attributes?: Attributes, opts?: InstrumentOptions): void;
   /** Record a unitless value into a histogram (unit `1` unless overridden). */
   distribution(
     name: string,
@@ -121,6 +134,10 @@ export function createMetrics(cfg: MetricsConfig): Metrics {
 
     timing(name, ms, attributes): void {
       histogramInstrument(name, { unit: "ms" }).record(ms, attributes);
+    },
+
+    duration(name, seconds, attributes, opts): void {
+      histogramInstrument(name, { unit: "s", ...opts }).record(seconds, attributes);
     },
 
     distribution(name, value, attributes, opts): void {
