@@ -7,7 +7,7 @@
   "content": {
     "transforms": {
       "aws": "Render the canonical kebab-case id as PascalCase (split on '-', capitalize each part, join). cost-center -> CostCenter.",
-      "k8s": "Well-known dimensions render under app.kubernetes.io/<leaf>; org dimensions render under <group>.nanohype.dev/<id>. The label value must match [a-z0-9A-Z._-]{0,63}.",
+      "k8s": "Well-known dimensions render under app.kubernetes.io/<leaf>; org dimensions render under <group>.nanohype.dev/<id>. The label value must match [a-z0-9A-Z._-]{0,63} and start and end alphanumeric — the API server's own rule, and narrower than an AWS tag value. A dimension whose canonical value carries a character outside that set renders it with '/' replaced by '.' on this surface only (repository: nanohype/eks-gitops -> nanohype.eks-gitops). Slashes are legal in a label KEY's prefix and in an AWS tag value, which is why one dimension is spelled differently per surface. A value that cannot survive the transform belongs in an annotation, whose values are unconstrained — annotations are not selectable, so that is a real trade.",
       "otel": "Dotted lower-case attribute names. Reserved namespace agents.* (tenant/platform/model identity) plus the well-known deployment.environment and service.version."
     },
     "reserved_prefixes": {
@@ -59,7 +59,7 @@
       {
         "id": "repository",
         "tier": "required",
-        "meaning": "The source repository as org/name (e.g. nanohype/landing-zone).",
+        "meaning": "The source repository as org/name (e.g. nanohype/landing-zone). The k8s label renders it org.name (nanohype.landing-zone) — a label value may not contain '/'.",
         "render": {
           "aws": "Repository",
           "k8s": "platform.nanohype.dev/repository",
