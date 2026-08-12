@@ -65,9 +65,18 @@ jobs:
       #
       # GITHUB_TOKEN is the job's own automatic token; it raises the limit and
       # costs no secret to manage.
+      #
+      # EC_VERSION pins the binary. The npm devDependency pins the wrapper, not
+      # the binary — those are separately versioned, and without this the
+      # wrapper asks the release API for "latest", so what the gate enforces can
+      # change with no commit here. The org preset's customManager tracks this
+      # line, so the pin is upgraded like any other dependency rather than
+      # quietly going stale.
       - run: npm run editorconfig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # renovate: datasource=github-releases depName=editorconfig-checker/editorconfig-checker
+          EC_VERSION: v3.11.1
 
   validate:
     name: Validate template catalog
