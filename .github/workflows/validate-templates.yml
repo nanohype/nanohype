@@ -55,7 +55,19 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # editorconfig-checker ships a Node wrapper around a Go binary it fetches
+      # from GitHub releases on first run. Unauthenticated, that request is rate
+      # limited per runner IP, which GitHub's shared pool exhausts routinely — so
+      # the gate fails with "API rate limit exceeded" on a change it never read.
+      # A gate that goes red without looking at the diff teaches people to re-run
+      # it rather than read it.
+      #
+      # GITHUB_TOKEN is the job's own automatic token; it raises the limit and
+      # costs no secret to manage.
       - run: npm run editorconfig
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   validate:
     name: Validate template catalog
