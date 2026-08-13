@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDatabase, disconnectDatabase, getDb } from "../client.js";
 import { getDriver, registerDriver } from "../drivers/registry.js";
 import type { DatabaseDriver } from "../drivers/types.js";
@@ -128,5 +128,74 @@ describe("disconnectDatabase", () => {
     await disconnectDatabase();
 
     expect(state.disconnectCalls).toBe(0);
+  });
+});
+
+/**
+ * getDb() picks a driver from the environment when the caller does not name
+ * one. That resolution is the seam a scaffolded project actually runs through —
+ * DATABASE_URL is set by the platform, not by application code — so each shape
+ * it recognises is asserted rather than assumed.
+ *
+ * The built-in drivers are already registered, so these stub the real driver's
+ * connect rather than registering a fake under a name that is taken.
+ */
+describe("driver resolution from the environment", () => {
+  const saved = { driver: process.env.DB_DRIVER, url: process.env.DATABASE_URL };
+
+  beforeEach(async () => {
+    await disconnectDatabase();
+    // Assigning undefined to a process.env property stores the string
+    // "undefined", which resolveDriverName would happily return.
+    delete process.env.DB_DRIVER;
+    delete process.env.DATABASE_URL;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (saved.driver === undefined) delete process.env.DB_DRIVER;
+    else process.env.DB_DRIVER = saved.driver;
+    if (saved.url === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = saved.url;
+  });
+
+  it("prefers an explicit DB_DRIVER over the URL scheme", async () => {
+    const name = freshDriverName("explicit");
+    const state = installFakeDriver(name);
+    process.env.DB_DRIVER = name;
+    process.env.DATABASE_URL = "postgres://ignored/db";
+
+    await getDb();
+
+    expect(state.connectCalls).toBe(1);
+  });
+
+  it.each([
+    ["postgres://user@host/db", "postgres"],
+    ["libsql://host.turso.io", "turso"],
+    ["https://host.turso.io", "turso"],
+    ["file:./local.db", "sqlite"],
+    ["sqlite://./local.db", "sqlite"],
+  ])("resolves %s to the %s driver", async (url, expected) => {
+    const connect = vi.spyOn(getDriver(expected), "connect").mockResolvedValue({ stub: expected });
+    process.env.DATABASE_URL = url;
+
+    await getDb();
+
+    // The driver takes an optional second argument; assert the URL it was
+    // handed, not the whole call shape.
+    expect(connect.mock.calls[0]?.[0]).toBe(url);
+  });
+
+  it("returns the live instance without reconnecting", async () => {
+    const name = freshDriverName("singleton");
+    const state = installFakeDriver(name);
+    process.env.DB_DRIVER = name;
+
+    const first = await getDb();
+    const second = await getDb();
+
+    expect(second).toBe(first);
+    expect(state.connectCalls).toBe(1);
   });
 });

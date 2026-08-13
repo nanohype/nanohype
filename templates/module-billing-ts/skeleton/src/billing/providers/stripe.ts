@@ -59,7 +59,7 @@ function createStripeProvider(): PaymentProvider {
       // Lazy load the Stripe SDK
       const { default: Stripe } = await import("stripe");
       client = new Stripe(secretKey, {
-        apiVersion: "2025-02-24.acacia",
+        apiVersion: "2026-07-29.dahlia",
       });
 
       logger.info("Stripe provider initialized");
@@ -99,13 +99,20 @@ function createStripeProvider(): PaymentProvider {
 
       logger.info("Stripe subscription created", { externalId: stripeSub.id });
 
+      const period = stripeSub.items.data[0];
+      if (!period) throw new Error("Stripe returned a subscription with no items");
+
       return {
         id: stripeSub.id,
         customerId,
         planId,
         status: mapStripeSubStatus(stripeSub.status),
-        currentPeriodStart: new Date(stripeSub.current_period_start * 1000).toISOString(),
-        currentPeriodEnd: new Date(stripeSub.current_period_end * 1000).toISOString(),
+        // The billing period moved off the subscription and onto its items,
+        // because a subscription with staggered items has more than one. A
+        // single-price subscription — what this provider creates — has exactly
+        // one item, so its period is the subscription's.
+        currentPeriodStart: new Date(period.current_period_start * 1000).toISOString(),
+        currentPeriodEnd: new Date(period.current_period_end * 1000).toISOString(),
         externalId: stripeSub.id,
       };
     },
@@ -188,7 +195,9 @@ function createStripeProvider(): PaymentProvider {
           description: line.description ?? "",
           metric: "",
           quantity: line.quantity ?? 0,
-          unitPrice: line.price?.unit_amount ?? 0,
+          // pricing.unit_amount_decimal is a decimal string with up to 12
+          // places, not the integer minor-unit amount `price.unit_amount` was.
+          unitPrice: Math.round(Number(line.pricing?.unit_amount_decimal ?? 0)),
           amount: line.amount,
         })),
         totalAmount: inv.total,

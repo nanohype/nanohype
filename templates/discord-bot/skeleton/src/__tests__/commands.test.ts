@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { getProvider, registerProvider } from "../providers/registry.js";
 import type { ChatMessage, LlmProvider } from "../providers/types.js";
 
@@ -11,7 +11,9 @@ import type { ChatMessage, LlmProvider } from "../providers/types.js";
  */
 
 describe("provider registry", () => {
-  let mockChat: ReturnType<typeof vi.fn>;
+  // Typed to the method it stands in for. vitest 4 infers a bare vi.fn() as
+  // Mock<Procedure | Constructable>, which satisfies no specific signature.
+  let mockChat: Mock<LlmProvider["chat"]>;
 
   beforeEach(() => {
     mockChat = vi.fn();

@@ -42,7 +42,7 @@ class PineconeVectorStore implements VectorStoreProvider {
     const batchSize = 100;
     for (let i = 0; i < vectors.length; i += batchSize) {
       const batch = vectors.slice(i, i + batchSize);
-      await this.cb.execute(() => this.index.namespace(this.namespace).upsert(batch));
+      await this.cb.execute(() => this.index.namespace(this.namespace).upsert({ records: batch }));
     }
   }
 

@@ -73,7 +73,11 @@ class PineconeProvider implements VectorStoreProvider {
 
     for (const batch of batches) {
       await withRetry(async () => {
-        await withTimeout(() => ns.upsert(batch), this.timeoutMillis, "Pinecone upsert");
+        await withTimeout(
+          () => ns.upsert({ records: batch }),
+          this.timeoutMillis,
+          "Pinecone upsert",
+        );
       });
     }
   }

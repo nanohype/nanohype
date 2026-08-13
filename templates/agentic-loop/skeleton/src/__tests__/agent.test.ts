@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { z } from "zod";
 import { getProvider, registerProvider } from "../providers/registry.js";
 import type { LlmProvider, LlmResponse, Message, StreamChat } from "../providers/types.js";
@@ -39,7 +39,9 @@ function toolCallResponse(
 }
 
 describe("agent loop integration", () => {
-  let mockSendMessage: ReturnType<typeof vi.fn>;
+  // Typed to the method it stands in for. vitest 4 infers a bare vi.fn() as
+  // Mock<Procedure | Constructable>, which satisfies no specific signature.
+  let mockSendMessage: Mock<LlmProvider["sendMessage"]>;
   let registry: ToolRegistry;
 
   beforeEach(() => {

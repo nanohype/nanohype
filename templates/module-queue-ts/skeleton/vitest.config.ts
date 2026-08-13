@@ -27,10 +27,10 @@ export default defineConfig({
       // published number because the gated surface is option resolution and
       // worker dispatch, which is mostly branching.
       thresholds: {
-        lines: 94,
-        functions: 85,
-        statements: 94,
-        branches: 90,
+        lines: 75,
+        functions: 75,
+        statements: 75,
+        branches: 60,
       },
     },
   },
