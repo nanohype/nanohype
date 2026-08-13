@@ -188,6 +188,12 @@ jobs:
   merge-gate:
     name: merge gate (templates)
     runs-on: ubuntu-latest
+    # This workflow sets no top-level default, so a job without its own block
+    # inherits whatever the repository grants. The gate reads the calling
+    # workflow file back to check that no job in it escapes the gate, and wants
+    # nothing beyond that.
+    permissions:
+      contents: read
     needs: [audit, doctor]
     if: always() && github.event_name == 'pull_request'
     steps:
