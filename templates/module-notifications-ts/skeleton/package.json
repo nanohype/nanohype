@@ -25,7 +25,7 @@
     "resend": "^6.0.0",
     "twilio": "^6.0.0",
     "web-push": "^3.6.0",
-    "zod": "^3.24.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",

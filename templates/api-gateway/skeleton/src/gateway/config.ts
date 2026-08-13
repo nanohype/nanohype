@@ -25,9 +25,9 @@ const corsSchema = z.object({
 });
 
 const transformSchema = z.object({
-  setRequestHeaders: z.record(z.string()).optional(),
+  setRequestHeaders: z.record(z.string(), z.string()).optional(),
   removeRequestHeaders: z.array(z.string()).optional(),
-  setResponseHeaders: z.record(z.string()).optional(),
+  setResponseHeaders: z.record(z.string(), z.string()).optional(),
   removeResponseHeaders: z.array(z.string()).optional(),
 });
 

@@ -27,13 +27,19 @@ function formatTools(tools: Tool[]): Anthropic.Messages.Tool[] {
     input_schema: {
       type: "object" as const,
       properties: Object.fromEntries(
-        Object.entries(tool.inputSchema.shape).map(([key, zodType]) => [
-          key,
-          {
-            type: zodTypeToJsonType(zodType as z.ZodTypeAny),
-            description: String(zodType.description ?? key),
-          },
-        ]),
+        Object.entries(tool.inputSchema.shape).map(([key, raw]) => {
+          // zod 4's .shape yields the core $ZodType, which exposes neither the
+          // description getter nor the public surface — one cast up front rather
+          // than one per read.
+          const zodType = raw as z.ZodType;
+          return [
+            key,
+            {
+              type: zodTypeToJsonType(zodType),
+              description: String(zodType.description ?? key),
+            },
+          ];
+        }),
       ),
     },
   }));

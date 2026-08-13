@@ -32,13 +32,19 @@ function formatTools(tools: Tool[]): OpenAI.Chat.Completions.ChatCompletionTool[
       parameters: {
         type: "object",
         properties: Object.fromEntries(
-          Object.entries(tool.inputSchema.shape).map(([key, zodType]) => [
-            key,
-            {
-              type: zodTypeToJsonType(zodType as z.ZodTypeAny),
-              description: String(zodType.description ?? key),
-            },
-          ]),
+          Object.entries(tool.inputSchema.shape).map(([key, raw]) => {
+            // zod 4's .shape yields the core $ZodType, which exposes neither the
+            // description getter nor the public surface — one cast up front
+            // rather than one per read.
+            const zodType = raw as z.ZodType;
+            return [
+              key,
+              {
+                type: zodTypeToJsonType(zodType),
+                description: String(zodType.description ?? key),
+              },
+            ];
+          }),
         ),
       },
     },
@@ -80,6 +86,11 @@ class OpenAIProvider implements LlmProvider {
 
     if (choice.message.tool_calls) {
       for (const tc of choice.message.tool_calls) {
+        // openai 7 made this a union: a tool call is either a function call or a
+        // custom one, and only the function variant carries `.function`. This
+        // provider speaks the function-calling protocol, so anything else is not
+        // ours to interpret.
+        if (tc.type !== "function") continue;
         let parsed: Record<string, unknown>;
         try {
           parsed = JSON.parse(tc.function.arguments) as Record<string, unknown>;
@@ -100,11 +111,13 @@ class OpenAIProvider implements LlmProvider {
       content: choice.message.content ?? null,
       ...(choice.message.tool_calls
         ? {
-            tool_calls: choice.message.tool_calls.map((tc) => ({
-              id: tc.id,
-              type: "function" as const,
-              function: { name: tc.function.name, arguments: tc.function.arguments },
-            })),
+            tool_calls: choice.message.tool_calls
+              .filter((tc) => tc.type === "function")
+              .map((tc) => ({
+                id: tc.id,
+                type: "function" as const,
+                function: { name: tc.function.name, arguments: tc.function.arguments },
+              })),
           }
         : {}),
     };

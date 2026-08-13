@@ -57,7 +57,7 @@ export const pipelineResultSchema = z.object({
   analysis: z.union([imageAnalysisSchema, audioAnalysisSchema, videoAnalysisSchema]),
   raw: z.string(),
   model: z.string(),
-  usage: z.record(z.number()),
+  usage: z.record(z.string(), z.number()),
   processedAt: z.string(),
 });
 

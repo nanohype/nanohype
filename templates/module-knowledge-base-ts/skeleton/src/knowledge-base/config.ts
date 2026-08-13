@@ -10,7 +10,7 @@ export const KnowledgeConfigSchema = z.object({
   /** Provider name to use. */
   provider: z.string().min(1).default("mock"),
   /** Provider-specific options (tokens, URLs, etc.). */
-  options: z.record(z.unknown()).optional(),
+  options: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type KnowledgeConfig = z.infer<typeof KnowledgeConfigSchema>;
