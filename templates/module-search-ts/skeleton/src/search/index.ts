@@ -75,7 +75,7 @@ export interface SearchClient {
 /** Zod schema for validating createSearchClient arguments. */
 const CreateSearchClientSchema = z.object({
   providerName: z.string().min(1, "providerName must be a non-empty string"),
-  config: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.unknown()).default({}),
 });
 
 /**

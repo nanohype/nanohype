@@ -8,7 +8,7 @@ import { z } from "zod";
 
 export const FlagServiceConfigSchema = z.object({
   storeName: z.string().min(1, "storeName must be a non-empty string").default("memory"),
-  storeConfig: z.record(z.unknown()).default({}),
+  storeConfig: z.record(z.string(), z.unknown()).default({}),
   enableTracking: z.boolean().default(true),
 });
 
