@@ -1,4 +1,4 @@
-import { type Mock, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { getProvider, registerProvider } from "../providers/registry.js";
 import type { ChatMessage, LlmProvider } from "../providers/types.js";
 
