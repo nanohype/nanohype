@@ -37,7 +37,7 @@
     "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@pinecone-database/pinecone": "^4.0.0",
+    "@pinecone-database/pinecone": "^8.0.0",
     "pg": "^8.13.0",
     "zod": "^4.3.6"
   },
