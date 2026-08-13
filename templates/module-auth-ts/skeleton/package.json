@@ -31,7 +31,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@clerk/backend": "^1.0.0",
+    "@clerk/backend": "^3.0.0",
     "@supabase/supabase-js": "^2.0.0",
     "auth0": "^4.0.0",
     "jose": "^6.0.0"
