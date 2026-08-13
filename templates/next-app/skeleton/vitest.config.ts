@@ -3,11 +3,14 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   // Vitest 4 transforms with oxc, not esbuild, and an `esbuild` block here is
-  // silently ignored rather than rejected — the .tsx suites simply fail to
-  // parse. The JSX runtime has to be declared on the transformer actually in
-  // use.
+  // ignored with a notice rather than rejected — so the .tsx suites reach the
+  // parser with JSX left as-is and fail on the first tag. The runtime has to be
+  // declared on the transformer actually in use, and as an object: the bare
+  // string "automatic" is a Vite-level value oxc's types reject, and dropping
+  // the block entirely falls back to preserving JSX rather than transforming
+  // it. Both of those fail, in different places.
   oxc: {
-    jsx: "automatic",
+    jsx: { runtime: "automatic" },
   },
   test: {
     globals: true,
