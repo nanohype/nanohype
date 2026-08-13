@@ -20,7 +20,7 @@
     "@anthropic-ai/sdk": "^0.91.1",
     "discord.js": "^14.16.0",
     "dotenv": "^17.0.0",
-    "openai": "^4.85.0",
+    "openai": "^7.0.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
