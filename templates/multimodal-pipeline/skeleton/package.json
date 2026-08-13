@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
-    "dotenv": "^16.4.0",
+    "dotenv": "^17.0.0",
     "mime-types": "^2.1.35",
     "openai": "^4.85.0",
     "sharp": "^0.35.3",
