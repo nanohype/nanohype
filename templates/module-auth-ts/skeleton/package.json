@@ -33,7 +33,7 @@
   "dependencies": {
     "@clerk/backend": "^1.0.0",
     "@supabase/supabase-js": "^2.0.0",
-    "auth0": "^4.0.0",
+    "auth0": "^6.0.0",
     "jose": "^6.0.0"
   },
   "devDependencies": {
