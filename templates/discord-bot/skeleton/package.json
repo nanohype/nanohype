@@ -21,7 +21,7 @@
     "discord.js": "^14.16.0",
     "dotenv": "^17.0.0",
     "openai": "^4.85.0",
-    "zod": "^3.24.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
