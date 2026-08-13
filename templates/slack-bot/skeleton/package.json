@@ -18,7 +18,7 @@
     "audit:prod": "npm audit --audit-level=high --omit=dev"
   },
   "dependencies": {
-    "@slack/bolt": "^4.7.0",
+    "@slack/bolt": "^5.0.0",
     "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
     "@anthropic-ai/sdk": "^0.91.1",
     "openai": "^6.34.0",

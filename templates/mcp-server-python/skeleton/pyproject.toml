@@ -12,7 +12,7 @@ dependencies = [
     # this skeleton is built on, so an unbounded floor resolves to a release
     # the code cannot import. Within one major of current stable, so no @pin
     # annotation is owed under standards/version-currency.json.
-    "mcp>=1.29.0,<2.0.0",
+    "mcp>=2.0.0,<2.1.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.8.0",
     "fastapi>=0.115.0",
