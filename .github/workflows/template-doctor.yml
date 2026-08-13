@@ -16,6 +16,10 @@ on:
   # filter moved inside the jobs instead: they always run and always report, and
   # do the expensive work only when something they read actually changed.
   pull_request:
+  # The merge queue tests each entry on its own temporary branch. A required
+  # check that does not run there never reports, and the queue waits forever —
+  # so every workflow publishing a required check has to listen for this event.
+  merge_group:
   # Manual trigger for on-demand runs (e.g., before cutting a release).
   workflow_dispatch:
     inputs:
@@ -41,11 +45,11 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v6
 
       - name: audit (osv-scanner)
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
@@ -121,8 +125,10 @@ jobs:
         if: steps.scope.outputs.relevant == 'true'
         env:
           ONLY: ${{ github.event.inputs.only || 'ts,go,java,python,cross,standards' }}
-          # Gate pull requests on hard errors; cron / manual runs stay report-only.
-          FAIL_ON: ${{ github.event_name == 'pull_request' && 'error' || '' }}
+          # Gate both merge paths on hard errors; cron / manual runs stay
+          # report-only. Leaving merge_group out would let the queue's own gate
+          # pass on a catalog the pull-request gate had just rejected.
+          FAIL_ON: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group') && 'error' || '' }}
         run: |
           args=(--only "$ONLY" --format markdown)
           [ -n "$FAIL_ON" ] && args+=(--fail-on "$FAIL_ON")
@@ -195,7 +201,7 @@ jobs:
     permissions:
       contents: read
     needs: [audit, doctor]
-    if: always() && github.event_name == 'pull_request'
+    if: always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')
     steps:
       - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
         with:
