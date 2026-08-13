@@ -50,11 +50,7 @@ Templates span four engineering categories plus composable modules. Beyond engin
 
 | Template                                        | Description                                                                                | Tags                                          |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------- |
-| [infra-aws](templates/infra-aws/)               | AWS CDK with Lambda/ECS, VPC, RDS, and CloudWatch monitoring                               | `aws` `cdk` `infrastructure`                  |
-| [infra-fly](templates/infra-fly/)               | Fly.io deployment with Dockerfile, fly.toml, and CI/CD                                     | `fly` `deployment` `docker`                   |
-| [infra-vercel](templates/infra-vercel/)         | Vercel deployment with edge functions and CI/CD                                            | `vercel` `deployment` `edge`                  |
 | [infra-druid](templates/infra-druid/)           | Apache Druid cluster with ingestion and query configuration                                | `druid` `analytics` `infrastructure`          |
-| [infra-cloudflare](templates/infra-cloudflare/) | Cloudflare Workers with KV, D1, and R2                                                     | `cloudflare` `workers` `infrastructure`       |
 | [k8s-deploy](templates/k8s-deploy/)             | Kubernetes manifests and Helm chart with Ingress, HPA, and CI/CD                           | `kubernetes` `helm` `deployment`              |
 | [istio-policy](templates/istio-policy/)         | Istio policy bundle — AuthorizationPolicy, RequestAuthentication, JWT issuer + JWKs wiring | `istio` `service-mesh` `auth`                 |
 | [monorepo](templates/monorepo/)                 | Turborepo/pnpm workspace with shared packages and CI                                       | `monorepo` `turborepo` `pnpm`                 |

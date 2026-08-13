@@ -184,7 +184,7 @@ variables:
     type: string
     placeholder: '__DEPLOY_TARGET__'
     description: 'Deployment target template'
-    default: 'infra-fly'
+    default: 'k8s-deploy'
 
 templates:
   - template: monorepo
@@ -222,7 +222,7 @@ templates:
       ProjectName: '${ProjectName}-evals'
       LlmProvider: '${LlmProvider}'
 
-  - template: infra-fly
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'

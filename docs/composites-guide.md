@@ -94,7 +94,7 @@ npx nanohype scaffold --composite production-api \
 - The queue (`packages/queue/`) uses BullMQ by default -- requires `REDIS_URL` for the broker
 - Rate limiting (`packages/rate-limit/`) uses token-bucket -- configure per-route limits in the middleware setup
 - Observability (`packages/observability/`) exports to OTLP -- set `OTEL_EXPORTER_OTLP_ENDPOINT` to your collector
-- Deploy with `cd infra && fly deploy` or swap the `infra/` directory for `infra-aws` / `k8s-deploy`
+- Deploy with `cd infra && helm upgrade --install` — or swap the `infra/` directory for `k8s-app-tenant` when the app is a Platform tenant
 
 ### enterprise-ai
 

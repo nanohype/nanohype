@@ -99,8 +99,7 @@ npx auth secret
 
 - **module-auth-ts** — Extended auth providers and flows
 - **module-database-ts** — Extended database patterns
-- **infra-vercel** — Deploy to Vercel
-- **infra-aws** — Deploy to AWS
+- **k8s-deploy** — Deploy to a Kubernetes cluster
 
 ## Nests Inside
 

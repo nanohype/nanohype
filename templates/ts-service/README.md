@@ -44,8 +44,7 @@ TypeScript HTTP service with the Hono framework and OpenTelemetry instrumentatio
 
 ## Pairs with
 
-- [infra-aws](../infra-aws/) -- deploy to AWS
-- [infra-fly](../infra-fly/) -- deploy to Fly.io
+- [k8s-deploy](../k8s-deploy/) -- deploy to a Kubernetes cluster
 - [module-auth-ts](../module-auth-ts/) -- authentication (canonical -- stack alongside when you need auth)
 - [module-database-ts](../module-database-ts/) -- database layer (canonical -- stack alongside when you need persistence)
 

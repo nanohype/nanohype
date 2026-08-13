@@ -11,10 +11,10 @@
  * them, and validate.sh asserts that placeholders ARE present. All of them pass
  * on a template that throws the moment somebody scaffolds it.
  *
- * One did. `infra-aws/skeleton/lib/stack.ts` carried a `#endif` with no opening
- * `#if` — the imports were alphabetized and the marker comments stayed where
- * they were — so the template could not be scaffolded at all, and it took four
- * composites down with it. Green catalog, green CI, dead product surface.
+ * One did. A skeleton carried a `#endif` with no opening `#if` — its imports
+ * had been alphabetized and the marker comments stayed where they were — so the
+ * template could not be scaffolded at all, and it took every composite that
+ * included it down too. Green catalog, green CI, dead product surface.
  *
  * Two assertions per entry:
  *   1. it renders without throwing

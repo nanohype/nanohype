@@ -34,7 +34,7 @@ variables:
     type: string
     placeholder: '__DEPLOY_TARGET__'
     description: 'Deployment target'
-    default: 'fly'
+    default: 'kubernetes'
 
 templates:
   - template: go-service
@@ -58,9 +58,10 @@ templates:
     variables:
       ProjectName: '${ProjectName}-evals'
 
-  - template: infra-fly
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      AppName: '${ProjectName}'
+      IncludeHelm: true
+      IncludeIngress: true
       IncludeCi: true

@@ -123,8 +123,7 @@ const rows = await db.select().from(items);
 
 ## Pairs With
 
-- **infra-aws** — Deploy to AWS with ECS, ALB, and RDS
-- **infra-fly** — Deploy to Fly.io
+- **k8s-deploy** — Deploy to a Kubernetes cluster
 - **module-auth-ts** — Authentication (JWT, Clerk, Auth0, Supabase, API key)
 - **module-database-ts** — Database layer (PostgreSQL, SQLite, Turso with Drizzle ORM and migrations)
 

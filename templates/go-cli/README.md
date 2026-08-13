@@ -46,7 +46,6 @@ Scaffolds a Go CLI application using [Cobra](https://github.com/spf13/cobra) for
 ## Pairs with
 
 - [eval-harness](../eval-harness/) -- test and evaluation framework
-- [infra-fly](../infra-fly/) -- deploy to Fly.io
 
 ## Nests inside
 

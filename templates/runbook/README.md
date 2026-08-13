@@ -34,7 +34,7 @@ runbook/
 
 - [compliance-checklist](../compliance-checklist/) -- compliance controls for the service
 - [monitoring-stack](../monitoring-stack/) -- observability infrastructure
-- [infra-aws](../infra-aws/) -- AWS infrastructure
+- [k8s-deploy](../k8s-deploy/) -- cluster deployment
 
 ## Nests inside
 

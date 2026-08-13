@@ -131,7 +131,7 @@ __PROJECT_NAME__/
 
 - [go-service](../go-service/) — canonical Go HTTP service, stack this
   module alongside for authentication
-- [infra-fly](../infra-fly/), [infra-aws](../infra-aws/) — deployment
+- [k8s-deploy](../k8s-deploy/) — deployment
   targets
 
 ## Nests inside

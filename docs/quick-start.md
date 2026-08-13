@@ -22,7 +22,7 @@ A template catalog for AI-focused projects. Each template produces a production-
 | AI safety / content filtering | `guardrails`                                              | `agentic-loop`                             |
 | A Chrome extension with AI    | `chrome-ext`                                              | `mcp-server-ts`                            |
 | A VS Code extension           | `vscode-ext`                                              | `mcp-server-ts`, `prompt-library`          |
-| To deploy something           | `infra-aws`, `infra-fly`, `infra-vercel`, or `k8s-deploy` | —                                          |
+| To deploy something           | `k8s-deploy`, or `k8s-app-tenant` for a Platform tenant    | —                                          |
 
 ### Not sure?
 
@@ -63,7 +63,7 @@ Composites combine multiple templates into a single project. They handle nesting
 npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
 ```
 
-This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth-ts`, `module-database-ts`, and `infra-fly` into a ready-to-run stack.
+This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth-ts`, `module-database-ts`, and `k8s-deploy` into a ready-to-run stack.
 
 Available composites:
 

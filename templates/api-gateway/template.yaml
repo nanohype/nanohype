@@ -65,7 +65,7 @@ hooks:
       workdir: '.'
 
 composition:
-  pairsWith: [infra-aws, infra-fly, module-auth-ts, module-rate-limit-ts, module-cache-ts]
+  pairsWith: [module-auth-ts, module-rate-limit-ts, module-cache-ts, k8s-deploy]
   nestsInside: [monorepo]
 
 prerequisites:

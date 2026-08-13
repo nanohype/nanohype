@@ -52,8 +52,9 @@ templates:
     variables:
       ProjectName: '${ProjectName}-evals'
 
-  - template: infra-fly
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      AppName: '${ProjectName}'
+      IncludeHelm: true
+      IncludeIngress: true

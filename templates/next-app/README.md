@@ -73,8 +73,7 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 
 - [module-auth-ts](../module-auth-ts/) -- extended auth providers
 - [module-database-ts](../module-database-ts/) -- extended database layer
-- [infra-vercel](../infra-vercel/) -- deploy to Vercel
-- [infra-aws](../infra-aws/) -- deploy to AWS
+- [k8s-deploy](../k8s-deploy/) -- deploy to a Kubernetes cluster
 
 ## Nests inside
 

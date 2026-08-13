@@ -60,8 +60,7 @@ API gateway with edge routing, per-route authentication, rate limiting, traffic 
 
 ## Pairs with
 
-- [infra-aws](../infra-aws/) -- deploy to AWS
-- [infra-fly](../infra-fly/) -- deploy to Fly.io
+- [k8s-deploy](../k8s-deploy/) -- deploy to a Kubernetes cluster
 - [module-auth-ts](../module-auth-ts/) -- extended auth providers
 - [module-rate-limit-ts](../module-rate-limit-ts/) -- pluggable rate limit algorithms
 - [module-cache-ts](../module-cache-ts/) -- response caching layer
