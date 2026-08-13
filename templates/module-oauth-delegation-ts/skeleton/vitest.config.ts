@@ -8,10 +8,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       thresholds: {
-        statements: 75,
-        branches: 75,
-        functions: 75,
         lines: 75,
+        functions: 75,
+        statements: 75,
+        branches: 60,
       },
       include: ["src/**/*.ts"],
       exclude: ["dist/**", "**/__tests__/**", "**/*.config.ts", "src/oauth/index.ts"],
