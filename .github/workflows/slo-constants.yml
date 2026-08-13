@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout nanohype
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # The standard lives here; nothing that reads it does. Both consumers
       # transcribe its numbers, so both get pulled in and diffed against it —
@@ -44,7 +44,7 @@ jobs:
       # The alert PromQL that inlines the standard's burn-rate factors lives in
       # eks-gitops (a public repo), so pull just its alerting dir to diff against.
       - name: Checkout eks-gitops alerting
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: nanohype/eks-gitops
           path: eks-gitops
@@ -56,7 +56,7 @@ jobs:
       # A drift there does not merely misreport a number; it changes when the
       # platform acts on a burning error budget.
       - name: Checkout eks-agent-platform operator
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: nanohype/eks-agent-platform
           path: eks-agent-platform
