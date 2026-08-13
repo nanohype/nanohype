@@ -82,7 +82,7 @@ hooks:
       workdir: '.'
 
 composition:
-  pairsWith: [infra-aws, infra-fly, eval-harness, module-auth-go]
+  pairsWith: [eval-harness, module-auth-go, k8s-deploy]
   nestsInside: [monorepo]
 
 prerequisites:

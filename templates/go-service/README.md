@@ -64,8 +64,7 @@ Scaffolds a Go HTTP service using [chi v5](https://github.com/go-chi/chi) for ro
 
 ## Pairs with
 
-- [infra-aws](../infra-aws/) -- deploy to AWS
-- [infra-fly](../infra-fly/) -- deploy to Fly.io
+- [k8s-deploy](../k8s-deploy/) -- deploy to a Kubernetes cluster
 - [eval-harness](../eval-harness/) -- test and evaluation framework
 - [module-auth-go](../module-auth-go/) -- authentication (canonical -- stack alongside when you need auth)
 

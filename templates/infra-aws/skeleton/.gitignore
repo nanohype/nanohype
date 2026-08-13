@@ -1,6 +1,0 @@
-node_modules/
-dist/
-cdk.out/
-.env
-*.log
-*.tsbuildinfo

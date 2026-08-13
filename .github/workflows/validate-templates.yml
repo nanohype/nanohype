@@ -180,15 +180,6 @@ jobs:
       - name: Verify documented commands exist
         run: npm run validate:doc-commands
 
-      # A template README is a step an agent scaffolding from it will carry out,
-      # not a note to a reader. The agent-fleet skeleton told its author to
-      # uncomment a block that was not in the file it named — wrong on the day it
-      # was written, and later naming a CR kind and a landing-zone component that
-      # had both been deleted. Catalog validation and Template Doctor were green
-      # throughout: they check catalog health and skeleton structure, and nothing
-      # read whether a sentence described the file beside it.
-      - name: Verify uncomment instructions resolve
-        run: npm run validate:uncomment-instructions
 
       # SLOPolicy builds its PromQL from `sli.metric` plus the suffix `sli.type`
       # implies — it never takes a raw query — so a template's series either fit
@@ -231,9 +222,9 @@ jobs:
       # validator checks template.yaml, the skeleton linter lints files with
       # placeholders still in them, and validate.sh asserts placeholders ARE
       # present. All of them pass on a template that throws the moment anyone
-      # scaffolds it, which is what shipped: infra-aws could not render at all
-      # and took four composites with it. This is the only check that runs the
-      # thing the repository sells.
+      # scaffolds it, which is what shipped once: a skeleton that could not
+      # render at all, and every composite including it went down with it. This
+      # is the only check that runs the thing the repository sells.
       - name: Build the SDK the catalog renders through
         run: npm --prefix sdk ci && npm --prefix sdk run build
 

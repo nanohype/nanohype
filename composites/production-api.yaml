@@ -28,8 +28,8 @@ variables:
   - name: DeployTarget
     type: string
     placeholder: '__DEPLOY_TARGET__'
-    description: 'Deployment target (infra-fly, infra-aws, k8s-deploy)'
-    default: 'infra-fly'
+    description: 'Deployment target'
+    default: 'kubernetes'
 
   - name: IncludeQueue
     type: bool
@@ -94,9 +94,11 @@ templates:
       ProjectName: '${ProjectName}-rate-limit'
       Algorithm: 'token-bucket'
 
-  - template: infra-fly
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      AppName: '${ProjectName}'
+      IncludeHelm: true
+      IncludeIngress: true
+      IncludeHpa: true
       IncludeCi: true

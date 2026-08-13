@@ -88,7 +88,7 @@ nanohype placeholders are literal string substitutions — there's no way to der
 
 - [k8s-deploy](../k8s-deploy/) — Kubernetes manifests and Helm chart for deployment
 - [monitoring-stack](../monitoring-stack/) — Prometheus + Grafana + Loki observability stack
-- [infra-aws](../infra-aws/) — deploy to AWS ECS or Lambda
+- [k8s-deploy](../k8s-deploy/) — deploy to a Kubernetes cluster
 - [module-spring-security](../module-spring-security/) — authentication (canonical — stack alongside when you need auth)
 
 ## Nests inside

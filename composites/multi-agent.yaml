@@ -81,9 +81,10 @@ templates:
     variables:
       ProjectName: '${ProjectName}-auth'
 
-  - template: infra-aws
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      ComputeTarget: 'ecs'
-      IncludeVpc: true
+      IncludeHelm: true
+      IncludeHpa: true
+      IncludeCi: true

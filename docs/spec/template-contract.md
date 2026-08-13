@@ -494,7 +494,7 @@ hooks:
       workdir: '.'
 
 composition:
-  pairsWith: [eval-harness, infra-fly]
+  pairsWith: [eval-harness, k8s-deploy]
   nestsInside: [monorepo]
 
 prerequisites:

@@ -62,10 +62,10 @@ templates:
       ProjectName: '${ProjectName}-otel'
       Exporter: 'otlp'
 
-  - template: infra-fly
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      AppName: '${ProjectName}'
-      IncludeRedis: true
+      IncludeHelm: true
+      IncludeHpa: true
       IncludeCi: true

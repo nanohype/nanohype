@@ -111,7 +111,7 @@ hooks:
       workdir: '.'
 
 composition:
-  pairsWith: [k8s-deploy, monitoring-stack, infra-aws, module-spring-security]
+  pairsWith: [k8s-deploy, monitoring-stack, module-spring-security]
   nestsInside: [monorepo]
 
 prerequisites:

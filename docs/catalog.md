@@ -10,24 +10,22 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 | Client says...                  | Start with          | Layer in                                                    | Deploy with            |
 | ------------------------------- | ------------------- | ----------------------------------------------------------- | ---------------------- |
-| "We need an AI chatbot"         | agentic-loop        | module-auth-ts, module-database-ts                          | ts-service + infra-fly |
-| "Search our internal docs"      | rag-pipeline        | module-storage-ts, module-database-ts                       | ts-service + infra-aws |
-| "Build us an MCP server"        | mcp-server-ts       | eval-harness                                                | infra-fly              |
-| "CLI tool for our platform"     | go-cli              | eval-harness                                                | infra-fly              |
+| "We need an AI chatbot"         | agentic-loop        | module-auth-ts, module-database-ts                          | ts-service + k8s-deploy |
+| "Search our internal docs"      | rag-pipeline        | module-storage-ts, module-database-ts                       | ts-service + k8s-deploy |
+| "Build us an MCP server"        | mcp-server-ts       | eval-harness                                                | k8s-deploy             |
+| "CLI tool for our platform"     | go-cli              | eval-harness                                                | — (ships as a binary)  |
 | "Chrome extension with AI"      | chrome-ext          | mcp-server-ts                                               | —                      |
 | "VS Code extension"             | vscode-ext          | mcp-server-ts, prompt-library                               | —                      |
-| "Full-stack AI web app"         | next-app            | module-auth-ts, module-database-ts, rag-pipeline            | infra-vercel           |
-| "API service (TypeScript)"      | ts-service          | module-auth-ts, module-database-ts, module-observability-ts | infra-aws or infra-fly |
-| "API service (Go)"              | go-service          | — (auth + db built in)                                      | infra-aws or infra-fly |
-| "We need background processing" | ts-service          | module-queue-ts, module-database-ts                         | infra-aws              |
+| "Full-stack AI web app"         | next-app            | module-auth-ts, module-database-ts, rag-pipeline            | k8s-deploy             |
+| "API service (TypeScript)"      | ts-service          | module-auth-ts, module-database-ts, module-observability-ts | k8s-deploy             |
+| "API service (Go)"              | go-service          | — (auth + db built in)                                      | k8s-deploy             |
+| "We need background processing" | ts-service          | module-queue-ts, module-database-ts                         | k8s-deploy             |
 | "Evaluate our LLM outputs"      | eval-harness        | prompt-library                                              | —                      |
 | "Manage our prompts"            | prompt-library      | eval-harness                                                | —                      |
-| "Multi-agent system"            | a2a-agent           | agentic-loop, mcp-server-ts                                 | ts-service + infra-aws |
+| "Multi-agent system"            | a2a-agent           | agentic-loop, mcp-server-ts                                 | ts-service + k8s-deploy |
 | "AI safety / content filtering" | guardrails          | agentic-loop or ts-service                                  | —                      |
-| "Process images/audio/video"    | multimodal-pipeline | module-storage-ts, rag-pipeline                             | ts-service + infra-aws |
-| "Deploy to AWS"                 | infra-aws           | —                                                           | —                      |
-| "Deploy to Fly.io"              | infra-fly           | —                                                           | —                      |
-| "Deploy to Vercel"              | infra-vercel        | —                                                           | —                      |
+| "Process images/audio/video"    | multimodal-pipeline | module-storage-ts, rag-pipeline                             | ts-service + k8s-deploy |
+| "Deploy it somewhere"           | k8s-deploy          | —                                                           | —                      |
 | "Kubernetes deployment"         | k8s-deploy          | —                                                           | —                      |
 | "Monorepo for everything"       | monorepo            | (all others nest inside)                                    | —                      |
 
@@ -37,9 +35,9 @@ A decision guide for selecting and composing templates. Read this to understand 
 | -------------------------------- | ------------------------------------------------------------------------------------------- | --------------- |
 | **Proof of concept**             | agentic-loop + eval-harness                                                                 | Days            |
 | **Internal tool**                | go-cli or chrome-ext + mcp-server-ts                                                        | 1-2 weeks       |
-| **Customer-facing chatbot**      | agentic-loop + ts-service + module-auth-ts + module-database-ts + infra-fly                 | 2-4 weeks       |
-| **Document intelligence**        | rag-pipeline + ts-service + module-storage-ts + infra-aws                                   | 2-4 weeks       |
-| **Platform with AI features**    | next-app + rag-pipeline + module-auth-ts + module-database-ts + module-queue-ts + infra-aws | 4-8 weeks       |
+| **Customer-facing chatbot**      | agentic-loop + ts-service + module-auth-ts + module-database-ts + k8s-deploy                | 2-4 weeks       |
+| **Document intelligence**        | rag-pipeline + ts-service + module-storage-ts + k8s-deploy                                  | 2-4 weeks       |
+| **Platform with AI features**    | next-app + rag-pipeline + module-auth-ts + module-database-ts + module-queue-ts + k8s-deploy | 4-8 weeks       |
 | **Enterprise AI infrastructure** | monorepo + agentic-loop + mcp-server-ts + guardrails + eval-harness + k8s-deploy            | 8+ weeks        |
 | **Developer tooling**            | vscode-ext or chrome-ext + mcp-server-ts + prompt-library                                   | 2-4 weeks       |
 
@@ -62,7 +60,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 | Database                 | module-database-ts                     | Drizzle ORM with Postgres/SQLite/Turso             |
 | Content safety           | guardrails                             | Input/output filtering pipeline                    |
 | Multi-agent coordination | a2a-agent                              | Agent-to-Agent protocol                            |
-| CI/CD                    | infra-fly, infra-aws, k8s-deploy       | GitHub Actions workflows included                  |
+| CI/CD                    | k8s-deploy                             | GitHub Actions workflows included                  |
 
 ---
 
@@ -77,10 +75,10 @@ A decision guide for selecting and composing templates. Read this to understand 
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
 │  │  AI Systems  │  │ Applications │  │  Infrastructure   │  │
 │  │              │  │              │  │                    │  │
-│  │ agentic-loop │  │ ts-service   │  │ infra-aws         │  │
-│  │ rag-pipeline │  │ go-service   │  │ infra-fly         │  │
-│  │ mcp-server   │  │ go-cli       │  │ infra-vercel      │  │
-│  │ eval-harness │  │ chrome-ext   │  │ k8s-deploy        │  │
+│  │ agentic-loop │  │ ts-service   │  │ k8s-app-tenant    │  │
+│  │ rag-pipeline │  │ go-service   │  │ k8s-deploy        │  │
+│  │ mcp-server   │  │ go-cli       │  │ landing-zone-cmp  │  │
+│  │ eval-harness │  │ chrome-ext   │  │ infra-druid       │  │
 │  │ prompt-lib   │  │ vscode-ext   │  │                    │  │
 │  │ a2a-agent    │  │ next-app     │  │                    │  │
 │  │ guardrails   │  │ slack-bot    │  │                    │  │
@@ -111,7 +109,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 1. **AI systems + applications** — AI systems provide the intelligence, applications provide the interface. An agentic-loop needs a ts-service or next-app to expose it to users.
 2. **Modules plug into applications** — Modules are never standalone. They add capabilities (auth, database, caching) to a service or AI system.
-3. **Infrastructure deploys everything** — Pick one deploy target per project. infra-aws for production, infra-fly for speed, infra-vercel for frontend-heavy.
+3. **Infrastructure deploys everything** — Pick one deploy target per project. k8s-app-tenant when the app is a Platform tenant, k8s-deploy for a generic cluster. Cloud substrate is declared, not scaffolded: databases, buckets and queues belong in the tenant's Platform, not in the app.
 4. **monorepo wraps multi-template projects** — When scaffolding 3+ templates for one client, start with monorepo and nest the others inside.
 5. **eval-harness pairs with everything** — Every AI system should have evals. Scaffold eval-harness alongside any AI template.
 
@@ -167,19 +165,11 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 ### Infrastructure
 
-**infra-aws** — Reach for this when deploying to AWS. CDK constructs for Lambda or ECS, API Gateway or ALB, optional VPC, RDS, CloudWatch. The enterprise deploy target.
-
-**infra-fly** — Reach for this when deploying to Fly.io. Simpler than AWS, faster to set up, good for services that don't need the full AWS ecosystem. Dockerfile + fly.toml + deploy script.
-
-**infra-vercel** — Reach for this when deploying to Vercel. vercel.json with framework presets, environment variable management, GitHub Actions for preview and production deploys.
-
 **k8s-deploy** — Reach for this when deploying to Kubernetes. Helm chart with proper security hardening (non-root, read-only FS, resource limits), HPA, rolling updates, ingress with TLS. Raw manifests as alternative.
 
 **monorepo** — Reach for this when a client engagement involves 3+ templates. Turborepo workspace with shared TypeScript config and Biome for lint + format. Everything else nests inside.
 
 **infra-druid** — Reach for this when the client needs real-time analytics. Apache Druid OLAP cluster on Kubernetes with all six services (router, broker, coordinator, overlord, historical, task). Kubernetes-native discovery (no ZooKeeper), S3 deep storage, PostgreSQL metadata, optional mTLS and Prometheus monitoring.
-
-**infra-cloudflare** — Reach for this when deploying to the edge. Cloudflare Workers with wrangler.toml, optional R2 object storage and D1 database bindings, GitHub Actions deploy workflow with staging preview on PR.
 
 ### Composable Modules
 
@@ -287,7 +277,7 @@ monorepo
 │   ├── ai (agentic-loop)
 │   ├── evals (eval-harness)
 │   └── shared-utils
-└── infra/ (infra-aws or k8s-deploy)
+└── infra/ (k8s-deploy)
 ```
 
 ---

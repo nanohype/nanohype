@@ -86,11 +86,11 @@ templates:
       ProjectName: '${ProjectName}-evals'
       LlmProvider: '${LlmProvider}'
 
-  - template: infra-aws
+  - template: k8s-deploy
     path: infra
     variables:
       ProjectName: '${ProjectName}'
-      ComputeTarget: 'ecs'
-      IncludeVpc: true
-      IncludeRds: true
-      IncludeMonitoring: true
+      IncludeHelm: true
+      IncludeIngress: true
+      IncludeHpa: true
+      IncludeCi: true

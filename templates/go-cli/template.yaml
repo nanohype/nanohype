@@ -82,7 +82,7 @@ hooks:
       workdir: '.'
 
 composition:
-  pairsWith: [eval-harness, infra-fly]
+  pairsWith: [eval-harness]
   nestsInside: [monorepo]
 
 prerequisites:
