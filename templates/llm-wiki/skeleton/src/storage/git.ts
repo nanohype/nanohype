@@ -47,7 +47,9 @@ async function collectMdFiles(dir: string, prefix?: string): Promise<string[]> {
 
   for (const entry of entries) {
     if (entry.isFile() && entry.name.endsWith(".md")) {
-      const entryPath = join(entry.parentPath ?? entry.path, entry.name);
+      // parentPath has existed since Node 20.12; the deprecated `path` alias it
+      // replaced is gone from the Node 24 types entirely.
+      const entryPath = join(entry.parentPath, entry.name);
       results.push(relative(dir, entryPath));
     }
   }

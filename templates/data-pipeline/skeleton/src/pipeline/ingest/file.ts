@@ -23,14 +23,20 @@ function contentHash(text: string): string {
 }
 
 async function loadPdf(filePath: string): Promise<string | null> {
+  // pdf-parse 2 is a class rather than a callable default export, and it holds
+  // a document open until destroyed — so the parser is torn down in a finally,
+  // not left to the garbage collector.
+  const { PDFParse } = await import("pdf-parse");
+  const buffer = await readFile(filePath);
+  const parser = new PDFParse({ data: buffer });
   try {
-    const pdfParse = (await import("pdf-parse")).default;
-    const buffer = await readFile(filePath);
-    const result = await pdfParse(buffer);
+    const result = await parser.getText();
     return result.text?.trim() || null;
   } catch (err) {
     logger.warn("Failed to parse PDF", { path: filePath, error: String(err) });
     return null;
+  } finally {
+    await parser.destroy();
   }
 }
 
