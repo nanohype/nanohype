@@ -1,17 +1,26 @@
 name: SLO constants
 
+# The check reads three repositories and this one owns only the standard. Both
+# of the numbers it protects live somewhere else, so the trigger cannot be keyed
+# on changes here.
+#
+# It used to be, filtered to the standard, the script and this file. That makes
+# it a consumer-drift detector that only runs when the source of truth moves —
+# eks-gitops or the operator could drift for as long as nobody touched
+# standards/. They did: a minimum-traffic gate landed in eks-gitops on
+# 2026-08-07, this check went red against it, and nothing observed that for five
+# days until a dependency bump happened to edit the workflow file.
+#
+# So: every pull request (it is one node script over three sparse checkouts,
+# seconds of runtime), and daily, which is the only trigger that sees a consumer
+# change at all.
 on:
   push:
     branches: [main]
-    paths:
-      - "standards/observability-slo.json"
-      - "scripts/check-slo-constants.mjs"
-      - ".github/workflows/slo-constants.yml"
   pull_request:
-    paths:
-      - "standards/observability-slo.json"
-      - "scripts/check-slo-constants.mjs"
-      - ".github/workflows/slo-constants.yml"
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -55,3 +64,22 @@ jobs:
           node scripts/check-slo-constants.mjs \
             eks-gitops/dashboards/base/alerting \
             eks-agent-platform/operators/internal/controller
+
+  # The single required status check for this workflow. `always()` is
+  # load-bearing: without it a failed dependency skips this job, and GitHub
+  # counts a skipped check as passing for branch protection — the gate would
+  # report green exactly when the drift check failed.
+  #
+  # Named distinctly from validate-templates.yml's gate on purpose. Branch
+  # protection matches a required check by name, so two workflows publishing the
+  # same name are two checks GitHub cannot tell apart.
+  merge-gate:
+    name: merge gate (slo)
+    runs-on: ubuntu-latest
+    needs: [check]
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
+        with:
+          needs: ${{ toJSON(needs) }}
+          gate-job-id: merge-gate
