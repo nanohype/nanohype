@@ -3,6 +3,10 @@ import { logger } from "@/logger";
 
 describe("logger", () => {
   beforeEach(() => {
+    // Restore first. Vitest 4 hands back the existing spy when a method is
+    // already spied, so without this the console spies survive the test that
+    // created them and every call count below is cumulative.
+    vi.restoreAllMocks();
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });

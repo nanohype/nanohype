@@ -1,8 +1,12 @@
-import path from "path";
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  esbuild: {
+  // Vitest 4 transforms with oxc, not esbuild, and an `esbuild` block here is
+  // silently ignored rather than rejected — the .tsx suites simply fail to
+  // parse. The JSX runtime has to be declared on the transformer actually in
+  // use.
+  oxc: {
     jsx: "automatic",
   },
   test: {
@@ -43,7 +47,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      // import.meta.dirname, not __dirname: Vite's native config loader cannot
+      // supply the CommonJS globals, and it is on its way to being the default.
+      "@": resolve(import.meta.dirname, "src"),
     },
   },
 });
