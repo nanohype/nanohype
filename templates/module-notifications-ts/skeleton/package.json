@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.0",
-    "resend": "^4.0.0",
+    "resend": "^6.0.0",
     "twilio": "^5.0.0",
     "web-push": "^3.6.0",
     "zod": "^3.24.0"
