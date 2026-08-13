@@ -22,7 +22,7 @@
     "@opentelemetry/sdk-metrics": "^2.8.0",
     "@types/node": "^24.13.2",
     "@vitest/coverage-v8": "^4.1.10",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.0",
     "vitest": "^4.1.9"
   }
 }
