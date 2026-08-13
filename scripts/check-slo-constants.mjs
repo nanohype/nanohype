@@ -59,13 +59,21 @@ const usedFactors = new Set();
 
 for (const f of files) {
   const text = readFileSync(join(alertDir, f), "utf-8");
-  // "> bool <factor>" is the multi-window/multi-burn-rate comparison.
-  for (const m of text.matchAll(/> bool ([0-9]+(?:\.[0-9]+)?)/g)) {
-    const factor = Number(m[1]);
+  // A burn-rate comparison is the error ratio divided by (1 - objective), then
+  // compared against the factor: "… / 0.001 > bool 14.4". The division is what
+  // makes the number on the right a burn rate, so it is part of the pattern.
+  //
+  // Matching a bare "> bool <n>" cannot work. PromQL uses that operator for any
+  // comparison, and both alert files gate on minimum traffic with
+  // "sum(rate(…)) > bool 0.0167" — ~1 event/minute, so a ratio computed over a
+  // nearly-idle series cannot page. Read as a burn-rate factor, 0.0167 is not
+  // one, and the check fails on a file that is correct.
+  for (const m of text.matchAll(/\/ (0\.[0-9]+) > bool ([0-9]+(?:\.[0-9]+)?)/g)) {
+    const factor = Number(m[2]);
     usedFactors.add(factor);
     if (!allFactors.has(factor)) {
       errors.push(
-        `${f}: burn-rate factor ${factor} ("> bool ${m[1]}") is not a factor in ${STANDARD} (defined: ${[...allFactors].sort((a, b) => a - b).join(", ")})`,
+        `${f}: burn-rate factor ${factor} ("/ ${m[1]} > bool ${m[2]}") is not a factor in ${STANDARD} (defined: ${[...allFactors].sort((a, b) => a - b).join(", ")})`,
       );
     }
   }

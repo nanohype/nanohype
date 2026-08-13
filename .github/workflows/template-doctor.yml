@@ -8,16 +8,14 @@ on:
   # Gate PRs that touch templates, composites, or the doctor itself: fail on
   # hard errors so typecheck/build/lint/ref debt can't land silently. Advisory
   # findings (outdated deps, dead deps) are reported but don't block.
+  #
+  # No `paths:` filter here, deliberately, even though only a few paths matter.
+  # A path-filtered workflow does not run at all when nothing matches, so its
+  # check is never created — and a required check that is never created leaves
+  # every unrelated pull request waiting on a status that will not arrive. The
+  # filter moved inside the jobs instead: they always run and always report, and
+  # do the expensive work only when something they read actually changed.
   pull_request:
-    paths:
-      - 'templates/**'
-      - 'composites/**'
-      - 'scripts/template-doctor/**'
-      - '.github/workflows/template-doctor.yml'
-      # The standards group compares skeleton configs against these files, so
-      # raising a published floor has to run the check that enforces it —
-      # otherwise the bar moves and the catalog silently stops meeting it.
-      - 'standards/**'
   # Manual trigger for on-demand runs (e.g., before cutting a release).
   workflow_dispatch:
     inputs:
@@ -30,6 +28,12 @@ jobs:
   # Supply-chain gate. osv-scanner checks the committed lockfiles against the
   # OSV database and exits non-zero on a known vulnerability. Pinned to an exact
   # version (its behaviour can shift in a patch).
+  #
+  # validate-templates.yml runs this same scan, unfiltered, on every pull request
+  # and every push to main. What it cannot cover is the weekly cron: an advisory
+  # published against a lockfile nobody touched. That is the case this job is
+  # here for, so on a pull request the step is skipped and the job reports
+  # success rather than scanning the same tree twice.
   audit:
     name: audit (osv-scanner)
     runs-on: ubuntu-latest
@@ -37,9 +41,11 @@ jobs:
       contents: read
     steps:
       - name: Checkout
+        if: github.event_name != 'pull_request'
         uses: actions/checkout@v6
 
       - name: audit (osv-scanner)
+        if: github.event_name != 'pull_request'
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
           scan-args: |-
@@ -57,13 +63,40 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # The scope step below diffs against the merge base, which needs more
+          # than the default single commit.
+          fetch-depth: 0
+
+      # What the `paths:` filter used to do, moved to where it can no-op instead
+      # of preventing the job from reporting. Anything other than a pull request
+      # — the weekly cron, a manual run — always does the full pass.
+      - name: Decide whether this change reaches the catalog
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$BASE_SHA"...HEAD | grep -qE \
+            '^(templates/|composites/|standards/|scripts/template-doctor/|\.github/workflows/template-doctor\.yml$)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "catalog paths changed — running the full doctor pass"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "no catalog paths changed — nothing for the doctor to read"
+          fi
 
       - name: Set up Node
+        if: steps.scope.outputs.relevant == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '24'
 
       - name: Set up Go
+        if: steps.scope.outputs.relevant == 'true'
         uses: actions/setup-go@v6
         with:
           # go-service's pgx/otel deps require go 1.25; keep the doctor on a
@@ -71,18 +104,21 @@ jobs:
           go-version: '1.26'
 
       - name: Set up JDK
+        if: steps.scope.outputs.relevant == 'true'
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '25'
 
       - name: Set up Python
+        if: steps.scope.outputs.relevant == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: Run doctor
         id: doctor
+        if: steps.scope.outputs.relevant == 'true'
         env:
           ONLY: ${{ github.event.inputs.only || 'ts,go,java,python,cross,standards' }}
           # Gate pull requests on hard errors; cron / manual runs stay report-only.
@@ -93,11 +129,11 @@ jobs:
           ./scripts/template-doctor/run.sh "${args[@]}" > doctor-report.md
 
       - name: Post report to job summary
-        if: always()
+        if: always() && steps.scope.outputs.relevant == 'true'
         run: cat doctor-report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report artifact
-        if: always()
+        if: always() && steps.scope.outputs.relevant == 'true'
         uses: actions/upload-artifact@v5
         with:
           name: doctor-report
@@ -139,3 +175,23 @@ jobs:
               });
               core.info("Opened new tracking issue");
             }
+
+  # The single required status check for this workflow — the thing that makes
+  # the sentence at the top of this file true. Template Doctor is the only gate
+  # that typechecks a rendered skeleton against the dependencies it just took,
+  # and until this job existed it reported into nothing: branch protection
+  # required one check, `merge gate`, published by validate-templates.yml, and a
+  # red doctor could not hold a merge.
+  #
+  # `always()` is load-bearing: without it a failed dependency skips this job,
+  # and GitHub counts a skipped check as passing for branch protection.
+  merge-gate:
+    name: merge gate (templates)
+    runs-on: ubuntu-latest
+    needs: [audit, doctor]
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
+        with:
+          needs: ${{ toJSON(needs) }}
+          gate-job-id: merge-gate
