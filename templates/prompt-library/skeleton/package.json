@@ -11,7 +11,7 @@
     "format:check": "biome format ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.6",
+    "@biomejs/biome": "2.5.8",
     "ajv": "^8.17.0",
     "tsx": "^4.19.0",
     "yaml": "^2.7.0"
