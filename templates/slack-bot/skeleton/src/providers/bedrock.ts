@@ -16,7 +16,7 @@ const MODEL = process.env.LLM_MODEL ?? "us.anthropic.claude-sonnet-5";
 
 class BedrockProvider implements LlmProvider {
   private readonly client = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION ?? "us-west-2",
+    region: process.env.AWS_REGION ?? "us-east-1",
   });
   private readonly cb = createCircuitBreaker();
 

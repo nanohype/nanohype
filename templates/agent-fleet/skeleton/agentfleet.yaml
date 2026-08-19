@@ -54,4 +54,4 @@ spec:
     # the queue, which it has when the queue is declared in the Platform's
     # spec.datastores.
     queueDepthTrigger: 10
-    # queueUrl: https://sqs.us-west-2.amazonaws.com/000000000000/__FLEET_NAME__
+    # queueUrl: https://sqs.us-east-1.amazonaws.com/000000000000/__FLEET_NAME__

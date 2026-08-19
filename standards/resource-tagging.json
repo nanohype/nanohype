@@ -59,7 +59,7 @@
       {
         "id": "repository",
         "tier": "required",
-        "meaning": "The source repository as org/name (e.g. nanohype/landing-zone). The k8s label renders it org.name (nanohype.landing-zone) — a label value may not contain '/'.",
+        "meaning": "The repository that declares the resource, as org/name (e.g. <org>/<repo>). This is the declaring repo, not the product the resource belongs to — a resource declared by an infrastructure repo on behalf of a product carries the infrastructure repo. The k8s label renders it org.name (<org>.<repo>) — a label value may not contain '/'.",
         "render": {
           "aws": "Repository",
           "k8s": "platform.nanohype.dev/repository",

@@ -174,6 +174,16 @@ jobs:
       - name: Verify model IDs match the LLM policy
         run: npm run validate:model-ids
 
+      # Same failure shape as a model ID, one field over: a region is a plain
+      # string too. A service-control policy denies every non-global action
+      # outside the deploy region, so a skeleton defaulting elsewhere fails on
+      # its first call — and the AccessDenied it raises reads like a missing IAM
+      # permission, not a region guardrail, which is what makes it expensive to
+      # diagnose. This checks every region named under templates/ and standards/
+      # against the set standards/llm-policy.json lists.
+      - name: Verify regions match the LLM policy
+        run: npm run validate:regions
+
       - name: Verify catalog is regenerated (no drift)
         run: npm run verify:catalog
 

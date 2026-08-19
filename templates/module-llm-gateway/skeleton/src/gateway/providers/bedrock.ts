@@ -23,7 +23,7 @@ const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 let client: BedrockRuntimeClient | null = null;
 function getClient(): BedrockRuntimeClient {
   if (!client) {
-    client = new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? "us-west-2" });
+    client = new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? "us-east-1" });
   }
   return client;
 }

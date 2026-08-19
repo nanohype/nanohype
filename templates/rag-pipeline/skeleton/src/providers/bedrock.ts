@@ -22,7 +22,7 @@ import type { EmbeddingProvider, LlmProvider } from "./types.js";
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
 function newClient(): BedrockRuntimeClient {
-  return new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? "us-west-2" });
+  return new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? "us-east-1" });
 }
 
 class BedrockLlm implements LlmProvider {

@@ -35,8 +35,19 @@ export interface GitHubSourceOptions {
   ref?: string;
   token?: string;
   cacheTtl?: number;
-  /** Per-request timeout in milliseconds for GitHub API calls. Default 10 000. */
+  /**
+   * Timeout in milliseconds for a single GitHub API attempt. Default 10 000.
+   * This bounds one attempt, not one logical request — with `maxAttempts` above
+   * 1 the worst-case wall time is roughly this multiplied by the attempt count,
+   * plus backoff.
+   */
   requestTimeout?: number;
+  /**
+   * Attempts per request, including the first. Timeouts, network errors, 429
+   * and 5xx are retried with jittered exponential backoff; every other status
+   * (404 included) is returned as-is. Default 3; set 1 to disable retry.
+   */
+  maxAttempts?: number;
 }
 
 export interface LocalSourceOptions {

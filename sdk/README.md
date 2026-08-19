@@ -24,6 +24,8 @@ const source = new GitHubSource({
   ref: 'main', // default
   token: process.env.GITHUB_TOKEN, // optional, for rate limits
   cacheTtl: 5 * 60 * 1000, // 5 minutes, default
+  requestTimeout: 10_000, // per attempt, default
+  maxAttempts: 3, // default; timeouts, network errors, 429 and 5xx are retried
 });
 
 // List all templates in the catalog
@@ -165,7 +167,7 @@ Key interfaces exported from `@nanohype/sdk`:
 | `CompositeCatalogEntry` | Summary of a composite for listing — includes `templateCount`                                         |
 | `CompositeRenderResult` | Output of `renderComposite` — merged files, warnings, hooks, per-entry metadata                       |
 | `CatalogSource`         | Interface for template/composite discovery and fetching                                               |
-| `GitHubSourceOptions`   | Constructor options for `GitHubSource` — repo, ref, token, cacheTtl                                   |
+| `GitHubSourceOptions`   | Constructor options for `GitHubSource` — repo, ref, token, cacheTtl, requestTimeout, maxAttempts      |
 | `LocalSourceOptions`    | Constructor options for `LocalSource` — rootDir                                                       |
 
 ## Errors
