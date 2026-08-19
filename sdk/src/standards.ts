@@ -1,6 +1,22 @@
 import { NanohypeError } from "./errors.js";
 import type { CatalogSource } from "./source.js";
-import type { Standard, StandardName, Standards } from "./types.js";
+import type {
+  DocumentationVoiceStandard,
+  LanguageToolchainStandard,
+  LLMPolicyStandard,
+  ObservabilitySloStandard,
+  PlatformTenantContractStandard,
+  QualityRubricDimensionsStandard,
+  ResourceNamingStandard,
+  ResourceTaggingStandard,
+  SeoBaselineStandard,
+  Standard,
+  StandardName,
+  Standards,
+  TelemetryPipelineStandard,
+  TestingRubricStandard,
+  VersionCurrencyStandard,
+} from "./types.js";
 
 const ALL_STANDARDS: StandardName[] = [
   "language-toolchain",
@@ -14,6 +30,7 @@ const ALL_STANDARDS: StandardName[] = [
   "observability-slo",
   "telemetry-pipeline",
   "seo-baseline",
+  "documentation-voice",
 ];
 
 /** The canonical list of published standards file names. */
@@ -36,6 +53,7 @@ const EXPECTED_KIND: Record<StandardName, Standard["kind"]> = {
   "observability-slo": "nanohype/standards/observability-slo",
   "telemetry-pipeline": "nanohype/standards/telemetry-pipeline",
   "seo-baseline": "nanohype/standards/seo-baseline",
+  "documentation-voice": "nanohype/standards/documentation-voice",
 };
 
 /**
@@ -65,26 +83,32 @@ export async function loadStandard(source: CatalogSource, name: StandardName): P
  * than scanning the union).
  */
 export async function loadStandards(source: CatalogSource): Promise<Standards> {
-  // Keyed by name rather than destructured by position. A positional bundle
-  // makes ALL_STANDARDS and this function two lists that must agree, and they
-  // disagree silently in both directions: a name appended without a binding is
-  // fetched and dropped, and a name inserted in the middle shifts every later
-  // binding one standard to the left. Neither is a type error unless the
-  // shifted types happen to differ, so the failure is a bundle that loads,
-  // validates and returns the wrong standard under a right-looking key.
-  //
-  // Built this way, ALL_STANDARDS is the only list. Adding a standard needs no
-  // edit here at all.
-  const loaded = await Promise.all(
-    ALL_STANDARDS.map(async (name) => [name, await loadStandard(source, name)] as const),
-  );
-  // Narrowed in one step rather than eleven. `loadStandard` has already checked
-  // each value's `kind` against EXPECTED_KIND for its name, so every key holds
-  // the standard its slot declares — the guarantee the per-field casts asserted
-  // individually and could not enforce. The intermediate `Record` keeps the key
-  // type honest: `Object.fromEntries` erases it to `string`, and a cast straight
-  // to `Standards` from there would assert over a shape TypeScript can no longer
-  // see the keys of.
-  const byName = Object.fromEntries(loaded) as Record<StandardName, Standard>;
-  return byName as Standards;
+  const [
+    toolchain,
+    currency,
+    contract,
+    llm,
+    rubric,
+    testing,
+    tagging,
+    naming,
+    observability,
+    telemetry,
+    seo,
+    docVoice,
+  ] = await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
+  return {
+    "language-toolchain": toolchain as LanguageToolchainStandard,
+    "version-currency": currency as VersionCurrencyStandard,
+    "platform-tenant-contract": contract as PlatformTenantContractStandard,
+    "llm-policy": llm as LLMPolicyStandard,
+    "quality-rubric-dimensions": rubric as QualityRubricDimensionsStandard,
+    "testing-rubric": testing as TestingRubricStandard,
+    "resource-tagging": tagging as ResourceTaggingStandard,
+    "resource-naming": naming as ResourceNamingStandard,
+    "observability-slo": observability as ObservabilitySloStandard,
+    "telemetry-pipeline": telemetry as TelemetryPipelineStandard,
+    "seo-baseline": seo as SeoBaselineStandard,
+    "documentation-voice": docVoice as DocumentationVoiceStandard,
+  };
 }

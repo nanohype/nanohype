@@ -1,0 +1,129 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/documentation-voice",
+  "version": "1",
+  "title": "Documentation voice",
+  "summary": "How prose is written across the stack — in markdown, in code comments, in schema field descriptions, in CLI help and in error strings. Editorial style is delegated to the Google developer documentation style guide; structured provenance is delegated to Google Cloud's Open Knowledge Format. This standard adds the four rules neither covers, which are the rules that follow from shipping a greenfield template rather than an application.",
+  "content": {
+    "scope": {
+      "applies_to": "Every prose surface, not only .md files. A surface counts if a human reads it: markdown, code comments, package and doc comments, CRD and XRD field descriptions, JSON Schema description keys, OpenTofu variable and output descriptions, Helm Chart.yaml descriptions and NOTES.txt, CLI command help and flag descriptions, error and log messages, Taskfile desc fields, CI step names, and test names.",
+      "excluded": [
+        "Generated artifacts. A finding against generated prose routes to the source that generates it; editing the artifact is reverted by the next regeneration and reads as an unexplained regression.",
+        "Vendored upstream text. A provider CHANGELOG or a third-party chart's own documentation is not this org's prose.",
+        "Release notes and log.md entries, which are the surfaces where temporal language is correct."
+      ]
+    },
+    "normative_references": [
+      {
+        "id": "google-devdocs-style",
+        "title": "Google developer documentation style guide",
+        "resource": "https://developers.google.com/style",
+        "adopted_for": "Editorial style: present tense, active voice, second person, word choice, and the treatment of time. The Timeless documentation page (https://developers.google.com/style/timeless-documentation) is normative for temporal language and names the word list directly: currently, now, new, soon, as of this writing, eventually, latest, older. Its escape hatch is also adopted — where historical context is genuinely necessary, give a reference point such as a date or a version."
+      },
+      {
+        "id": "okf",
+        "title": "Open Knowledge Format v0.2",
+        "resource": "https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf",
+        "license": "Apache-2.0",
+        "adopted_for": "The vocabulary for structured provenance. Where a claim about how prose was produced or verified needs to survive, it is a frontmatter field, not a sentence: sources, generated {by, at}, verified [{by, at}], status (draft | stable | deprecated), stale_after. Chronological history belongs in the reserved log.md. Full bundle conformance is a separate decision from adopting the vocabulary."
+      },
+      {
+        "id": "diataxis",
+        "title": "Diataxis",
+        "resource": "https://diataxis.fr/",
+        "adopted_for": "Which document a given piece of content belongs in. Already the canonical lens for the documentation dimension of the quality rubric. Orthogonal to this standard, which governs how any of those documents is written."
+      }
+    ],
+    "the_test": "For each sentence: does it tell the reader something they need in order to change this code correctly, or does it tell them something about the process that produced it? Only the first earns its place.",
+    "why_it_is_hard": "An author writes the reason they were convinced instead of the reason the constraint holds. While the work is fresh those are the same sentence, which is why review does not catch it. Afterwards they are permanently different, and only one of them still helps. Violation density therefore tracks the recency of the prose, not the file type or the author.",
+    "rules": [
+      {
+        "id": "timeless-scope",
+        "refines": "google-devdocs-style",
+        "rule": "The prohibition on temporal language governs the repository's own history, not state transitions in the running system.",
+        "tell": "Does the sentence assert a change relative to an UNSTATED past? If yes it drifts and is a defect. If the operands are printed, it is a measurement and is correct.",
+        "correct": [
+          "a series that stops updating means the objective is no longer being met",
+          "the repo has moved since 7e35ba55, but nothing that changes this schema",
+          "chart 1.4.2 resolves to sha256:abcd..."
+        ],
+        "defect": [
+          "main now derives x, not y",
+          "the CI step now catches this",
+          "these new subcommands let you interact with load balancing"
+        ],
+        "identifiers_as_operands": "A commit SHA, version or date cited as PROVENANCE for a decision is banned — it points at internal history the reader cannot follow, and it is doing the work a stated reason should do. The same identifier used as an OPERAND the reader can run a command against is correct, because it prints its own reference point and the claim can be checked rather than believed. Banned: 'fixed in abc1234', 'this changed in v2.3'. Correct: 'diverged from abc1234', 'requires the provider at 5.2 or later'. The test is whether removing the identifier destroys a verifiable claim or merely removes an excuse.",
+        "runtime_state_exemption": "The exemption turns on who the sentence is about, not which word it uses. A comment saying \"main no longer derives X\" is a defect: the past it compares against is unstated and the reader cannot recover it. An operator-facing error saying \"no longer describes the shared estate\" is correct: it describes the reader's own account changing under them, which is the message's entire job, and stripping the temporal word makes it worse. Ask whether the change being asserted happened in this repository or in the world the reader is standing in."
+      },
+      {
+        "id": "provenance-is-a-field",
+        "refines": "okf",
+        "rule": "A claim about how something was produced, verified, counted or decided does not go in the prose body. It goes in structured metadata, or in log.md, or it is converted into the invariant it was evidence for.",
+        "rationale": "A docstring has no slot for provenance, so incident history and design constraint are forced to share one paragraph. Given a slot, the author does not have to choose.",
+        "conversions": [
+          "verified with a positive control, not inferred from a quiet grep -> verified: [{by, at}]",
+          "456 findings on an unchanged tree, against 0 under v2.11.4 -> log.md, and the surviving prose states why occurrence count is the wrong proxy",
+          "iam.go had five silent drops alongside eight warnf calls -> the invariant: every drop site announces itself through warnf",
+          "the shared home for all of it is a reusable workflow in nanohype/.github -> status: draft"
+        ],
+        "precedence": "Three destinations, in order. First, the invariant the measurement was evidence for, wherever a gate already enforces it — an invariant cannot go stale because the gate fails when it stops holding. Second, structured frontmatter, when the claim is about how the prose itself was produced or verified. Third, a reference point (a date or a version) in log.md, which is for history nothing enforces. An accurate-as-of count left in the body stays true and stays useless: the reader must re-measure to learn anything."
+      },
+      {
+        "id": "rationale-survives",
+        "origin": "nanohype",
+        "rule": "Rationale stays; narration goes. When both are braided into one paragraph, rewrite the paragraph. Deleting is the cheap move and it takes the half that mattered.",
+        "test": "Would this sentence still be worth reading if the repository had always been this way? If yes it is rationale. If it only makes sense as an account of a change, it is narration.",
+        "protected": "Prose answering why this and not the obvious alternative, where the alternative is genuinely tempting and the reason is a real constraint. Load-bearing invariants a future edit would silently break. Citations of external behavior — an upstream bug, a cloud API quirk, an RFC, a chart's contract. A cleanup that produces cleaner prose and a reintroduced defect has failed."
+      },
+      {
+        "id": "no-self-defense",
+        "origin": "nanohype",
+        "rule": "Do not argue with an imagined reviewer. State the constraint; the constraint is the argument.",
+        "defect": [
+          "this is not untidy",
+          "yes, this is intentional",
+          "no literal fallback on purpose",
+          "so create-mode subnets are passed through and correctly dropped",
+          "stated as steps rather than as configuration already in place, because"
+        ],
+        "hazard": "The sentence written to replace a defensive one tends to restate what the defense was defending, because the author is still thinking about the objection. Re-read the paragraph after converting, not only the line changed. Converting a block can also orphan the sentence after it, leaving a reference whose antecedent is gone.",
+        "worked_example": "Instead of 'no literal fallback on purpose', write what breaks: 'a missing value must fail the composition rather than silently resolve — a literal fallback here is an estate value by another name, and it would be reachable exactly when the schema's required guarantee is absent.'",
+        "test": "Self-defense stops at the assertion. A constraint follows it with the reason. \"This is deliberate\" asserts and stops, so it is defensive and goes. \"Deliberately a one-element list — the SCP denies everything else, and CloudFront requires us-east-1 regardless\" asserts and then says why, so it is the constraint and stays. The word is not the tell; whether a reason follows it is."
+      },
+      {
+        "id": "product-voice",
+        "origin": "nanohype",
+        "rule": "This stack is a template deployed into accounts its authors will never see. A value from the author's own estate presented as the product's shape is a defect, in prose exactly as in code.",
+        "rationale": "Prose is where an estate constraint hides from the gates that check code. A field description, a comment, a CLI help string and an error message can each assert a value with none of the machinery that would flag it in a default, a variable, or a literal. Removing an estate value from a schema default and restating it in the adjacent description is the same defect one layer over.",
+        "propagation": "A description is not a comment; it compiles. Schema field descriptions render in kubectl explain, ship in generated CRDs, and are vendored verbatim into consumer repositories where an integrity check then pins them in place. A consumer that edits what it vendored stops being a consumer, so the fix can only originate at the source.",
+        "note": "In an instance repository — a private GitOps tree describing one real estate — real identifiers are correct data and are not scrubbed. The other rules apply unchanged."
+      },
+      {
+        "id": "named-things-resolve",
+        "origin": "nanohype",
+        "rule": "Every path, flag, command, script, file, field and endpoint named in prose must resolve. Prose that names a thing is a claim about the world; verify it rather than assuming it.",
+        "includes": "A measurement stated as documentation is the same defect with a delay. 'returns an empty list', 'four hits', 'all 34' are true when written, have no mechanism keeping them true, and become confident false statements at the first unrelated edit. State the requirement, or give the command that answers it, or carry a verified timestamp and a stale_after.",
+        "most_common_shape": "The most frequent violation is not narration — it is sound rationale carrying a perishable number. \"Reports one finding as a symlink and two as a real directory\", \"renders '1 problem' and '3 problems' identically\", \"went 40 days stale across a week the site changed eight times\": each is a reason the reader needs, wrapped around a measurement with nothing keeping it true. Neither deleting the paragraph nor leaving it is right. State the requirement the number was evidence for, or give the command that answers the question."
+      }
+    ],
+    "method": {
+      "summary": "This standard is largely unenforceable by pattern matching, and a gate claiming coverage it does not have is itself the failure mode the stack is built to avoid.",
+      "hazards": [
+        "A regex matches the shape of the thing rather than the thing. Measured false positives: 'no longer' on runtime predicates, 'before' used non-temporally, '#\\d+' matching PKCS#12.",
+        "A clean scan and a broken scan look identical when the errors are hidden. Quote variables, keep stderr visible, and run a positive control before believing a negative. A uniform confident negative across every item is the signature of a broken probe, not of a clean tree.",
+        "Print the denominator. Count first, then window, and let the count contradict you — an audit that reads most of a file and reports as if it read all of it produces a confident number with no tell.",
+        "A check hardened against the mechanism its author had in mind stays blind to every other route to the same nothing.",
+        "A check and the population it guards must agree on what they are measuring, or the check reports on a different set than the one under test.",
+        "Print what you examined, not only what failed. A resolver that cannot find its input reports the same thing as a resolver that found everything — measured: one checker produced a vacuous pass, then a false-alarm storm, then the truth, from three attempts at the same question, and the vacuous pass was indistinguishable from the correct answer.",
+        "Converting a block can orphan the sentence after it, leaving a reference whose antecedent is gone. No pattern match sees this; it needs a reader following sense across the paragraph.",
+        "A pattern-driven prose audit is bounded by the auditor's own vocabulary — it finds only the violations it already has words for. Measured: a verification tally survived two readings by its author because no trigger pattern named it, and became visible only once the standard named tallies as a category."
+      ],
+      "enforceable": "The subset a gate can hold: verification tallies, prose addressed to an agent, bare TODO or FIXME with no owner, and internal issue or PR references outside a maintained exclusion list. Everything else is review. The worst instances contain none of the marker words.",
+      "recommended_gate": "Diff-scoped and advisory: surface the prose lines a change ADDS, alongside these rules, for the author to re-read. It asserts nothing, so it cannot false-positive, and it targets where violations actually concentrate.",
+      "who_audits": "The finding list is authored somewhere other than the tab that wrote the prose. A repository whose prose is mostly recent and single-authored is the WORST case for this standard, not the best: there is no second reader and no aging to expose the drift, and the author is grading the sentence at the moment its two readings still coincide. A low finding count from a self-audit is evidence about the auditor, not the tree.",
+      "conformance_is_read": "Conformance is read, not matched. A grep finds the phrasing its author already thought of, which is the wrong instrument for \"does this sentence describe process or constraint\" — the same violation arrives in as many wordings as there are authors. Measured on a conforming pass: a pattern over \"used to\" and \"Regression:\" surfaced six files, and reading the remaining prose surfaced five more saying the same thing in words the pattern did not contain.",
+      "scope_of_precedence": "The precedence rule (prefer the invariant over the tally) governs SHIPPED prose — comments, docs, help text, descriptions. It does not govern the argument for a change. In a pull request description arguing that a specific change is safe, the measurement IS the argument and belongs there; the same figure carried into a comment or a README becomes an accurate-as-of claim with nothing keeping it true.",
+      "relay_resolution": "A finding travels between codebases only at the resolution of its mechanism. Measured: a repository found its own exposed direction because the relay named the mechanism precisely enough to execute — the shell option, the literal expansion, the specific assertion that hid it. Relayed instead as 'another repo found a vacuous pass in its fixture suite, check yours', the same team would have checked the direction the other repo had broken, found it correctly guarded, and reported clean. At that resolution the finding is not merely useless, it is actively misleading: it produces a confident negative. State the mechanism, not the category."
+    }
+  }
+}

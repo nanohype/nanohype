@@ -177,7 +177,8 @@ export type StandardName =
   | "resource-naming"
   | "observability-slo"
   | "telemetry-pipeline"
-  | "seo-baseline";
+  | "seo-baseline"
+  | "documentation-voice";
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -547,6 +548,70 @@ export interface TelemetryPipelineStandard {
 }
 
 /** Union of every published standard. Discriminated by `kind`. */
+/**
+ * Standards file: the prose form of the greenfield doctrine. Governs every
+ * surface a human reads — not only markdown — and grades a sentence on whether
+ * it helps the reader change the code or only records how the code came to be.
+ * Editorial style and structured provenance are delegated to external
+ * authorities named in `delegated`; `requirements` carries what neither covers.
+ */
+export interface DocumentationVoiceStandard {
+  kind: "nanohype/standards/documentation-voice";
+  version: string;
+  title: string;
+  summary: string;
+  content: {
+    scope: { applies_to: string; excluded?: string[] };
+    normative_references: {
+      id: string;
+      title: string;
+      resource: string;
+      license?: string;
+      adopted_for: string;
+    }[];
+    the_test: string;
+    why_it_is_hard?: string;
+    /**
+     * Rule bodies are heterogeneous by design. A rule refining a cited
+     * standard carries `refines` and worked correct/defect pairs; a rule
+     * original to this org carries `origin` and the hazards found applying
+     * it. Only `id` and `rule` are common to every entry.
+     */
+    rules: {
+      id: string;
+      rule: string;
+      refines?: string;
+      origin?: string;
+      tell?: string;
+      test?: string;
+      rationale?: string;
+      correct?: string[];
+      defect?: string[];
+      conversions?: string[];
+      identifiers_as_operands?: string;
+      precedence?: string;
+      protected?: string;
+      hazard?: string;
+      worked_example?: string;
+      propagation?: string;
+      note?: string;
+      includes?: string;
+      runtime_state_exemption?: string;
+      most_common_shape?: string;
+    }[];
+    method: {
+      summary: string;
+      hazards?: string[];
+      enforceable?: string;
+      recommended_gate?: string;
+      who_audits?: string;
+      conformance_is_read?: string;
+      scope_of_precedence?: string;
+      relay_resolution?: string;
+    };
+  };
+}
+
 export type Standard =
   | LanguageToolchainStandard
   | VersionCurrencyStandard
@@ -558,7 +623,8 @@ export type Standard =
   | ResourceNamingStandard
   | ObservabilitySloStandard
   | TelemetryPipelineStandard
-  | SeoBaselineStandard;
+  | SeoBaselineStandard
+  | DocumentationVoiceStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
@@ -577,6 +643,7 @@ export interface Standards {
   "observability-slo": ObservabilitySloStandard;
   "telemetry-pipeline": TelemetryPipelineStandard;
   "seo-baseline": SeoBaselineStandard;
+  "documentation-voice": DocumentationVoiceStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */
