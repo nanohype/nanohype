@@ -121,20 +121,23 @@ describe("loadStandard", () => {
 describe("loadStandards (bundle)", () => {
   const source = new LocalSource({ rootDir: CATALOG_ROOT });
 
-  it("returns every standard under its canonical name slot", async () => {
+  // Derived from STANDARD_NAMES rather than written out. The hand-listed
+  // version asserted eight of the eleven slots, so three standards could have
+  // gone missing from the bundle without a red test — a suite enumerating the
+  // thing it guards inherits the drift it exists to catch.
+  it("returns one slot per published name, each holding its own standard", async () => {
     const bundle: Standards = await loadStandards(source);
-    expect(bundle["language-toolchain"].kind).toBe("nanohype/standards/language-toolchain");
-    expect(bundle["version-currency"].kind).toBe("nanohype/standards/version-currency");
-    expect(bundle["platform-tenant-contract"].kind).toBe(
-      "nanohype/standards/platform-tenant-contract",
-    );
-    expect(bundle["llm-policy"].kind).toBe("nanohype/standards/llm-policy");
-    expect(bundle["quality-rubric-dimensions"].kind).toBe(
-      "nanohype/standards/quality-rubric-dimensions",
-    );
-    expect(bundle["testing-rubric"].kind).toBe("nanohype/standards/testing-rubric");
-    expect(bundle["observability-slo"].kind).toBe("nanohype/standards/observability-slo");
-    expect(bundle["seo-baseline"].kind).toBe("nanohype/standards/seo-baseline");
+
+    // Catches a name fetched but never placed: the key is simply absent.
+    expect(Object.keys(bundle).sort()).toEqual([...STANDARD_NAMES].sort());
+
+    // Catches a misplacement: every value must be the standard its key names,
+    // not merely some standard. A bundle built by position puts the wrong one
+    // under a right-looking key when the list and the bindings fall out of
+    // step, and that reads as correct at every call site.
+    for (const name of STANDARD_NAMES) {
+      expect(bundle[name].kind).toBe(`nanohype/standards/${name}`);
+    }
   });
 });
 
