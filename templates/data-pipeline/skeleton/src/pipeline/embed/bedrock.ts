@@ -22,7 +22,7 @@ class BedrockEmbedder implements EmbeddingProvider {
   readonly name = "bedrock";
 
   private readonly client = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION ?? "us-west-2",
+    region: process.env.AWS_REGION ?? "us-east-1",
   });
   private readonly cb = createCircuitBreaker();
   private readonly model: string;

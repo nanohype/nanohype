@@ -65,5 +65,5 @@ Inherited from landing-zone's CLAUDE.md:
 2. Add resources to `main.tf` per the component's purpose
 3. Validate: `cd components/aws/__COMPONENT_NAME__ && tofu init -backend=false && tofu validate`
 4. Lint: `task lint CLOUD=aws`
-5. Plan: `make plan CLOUD=aws ACCOUNT=workload-development REGION=us-west-2 ENVIRONMENT=development COMPONENT=__COMPONENT_NAME__`
+5. Plan: `make plan CLOUD=aws ACCOUNT=workload-development REGION=us-east-1 ENVIRONMENT=development COMPONENT=__COMPONENT_NAME__`
 6. Open a PR; the landing-zone CI matrix runs `validate`, `lint`, `checkov`, and `plan` automatically

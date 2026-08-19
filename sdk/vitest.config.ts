@@ -20,10 +20,10 @@ export default defineConfig({
       // new untested module dragging the denominator down — without flaking
       // on minor fluctuation. Run via `npm run test:coverage`.
       thresholds: {
-        lines: 90, // measured 92.32
-        functions: 96, // measured 98.68
-        branches: 77, // measured 79.50
-        statements: 88, // measured 90.38
+        lines: 90, // measured 93.97
+        functions: 96, // measured 98.78
+        branches: 80, // measured 84.21
+        statements: 88, // measured 92.10
       },
     },
   },

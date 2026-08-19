@@ -69,7 +69,7 @@ OTel resource attributes every pod must emit: `agents.tenant`, `agents.platform`
 
 Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (Pod Identity on EKS, task role on ECS, execution role on Lambda) — never API keys.
 
-Every current Claude model is invoked through a **cross-region inference-profile ID**, never the bare foundation-model ID. Bedrock reports `inferenceTypesSupported: [INFERENCE_PROFILE]` for the whole family — there is no on-demand path — so `anthropic.claude-sonnet-5` is refused with a `ValidationException` while `us.anthropic.claude-sonnet-5` works. The geo prefix tracks the deploy region (`us.`, `eu.`); prefer it over `global.` so routing stays inside the intended jurisdiction.
+Every current Claude model is invoked through a **cross-region inference-profile ID**, never the bare foundation-model ID. Bedrock reports `inferenceTypesSupported: [INFERENCE_PROFILE]` for the whole family — there is no on-demand path — so `anthropic.claude-sonnet-5` is refused with a `ValidationException` while `us.anthropic.claude-sonnet-5` works. The geo prefix tracks the deploy region — `us.` for the `us-east-1` deployments this catalog targets; prefer it over `global.` so routing stays inside the intended jurisdiction.
 
 Models (from `llm-policy.json`):
 
@@ -77,7 +77,7 @@ Models (from `llm-policy.json`):
 - **Escalation**: `us.anthropic.claude-opus-5` — complex reasoning, architecture decisions
 - **Light**: `us.anthropic.claude-haiku-4-5-20251001-v1:0` — classification, routing, filter steps
 
-Regions in order of preference: `us-west-2`, `us-east-1`, `eu-central-1`. Verify the model's inference profile is `ACTIVE` in the deploy region before committing IaC — `aws bedrock list-inference-profiles` — not merely that the foundation model is listed.
+The deploy region is `us-east-1`, and it is the only one — a service-control policy denies every non-global action outside it in each venture account, and CloudFront requires its ACM certificates there regardless. Verify the model's inference profile is `ACTIVE` in the deploy region before committing IaC — `aws bedrock list-inference-profiles` — not merely that the foundation model is listed.
 
 Prompt caching is mandatory — use Bedrock `cachePoint` markers on the system prompt and any stable context prefix; measure cache-hit ratio and surface it in the architecture artifact.
 

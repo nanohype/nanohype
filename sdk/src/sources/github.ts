@@ -23,6 +23,59 @@ interface CacheEntry<T> {
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 
+// A single timeout is enough to fail a whole scaffold, and the failure is
+// usually the network rather than the repo — raw.githubusercontent.com dropping
+// one request out of a few hundred is routine. Three attempts turns that from a
+// hard failure into a pause.
+const DEFAULT_MAX_ATTEMPTS = 3;
+const BACKOFF_BASE_MS = 250;
+// Ceiling on backoff we invent ourselves. Low, because these are our own
+// retries and a scaffold should not stall on them.
+const MAX_BACKOFF_MS = 5_000;
+// Retry-After gets its own, much larger ceiling. GitHub's secondary rate limit
+// sends tens of seconds, so clamping it to MAX_BACKOFF_MS would retry *before*
+// the window elapsed — spending the attempt budget on requests the server has
+// already refused, and extending the limit that caused it. Past this ceiling
+// waiting is worse than failing, so get() stops retrying rather than retrying
+// early: a caller who wants to wait two minutes can do it with better context
+// than this layer has.
+const MAX_RETRY_AFTER_MS = 60_000;
+
+/**
+ * Whether a response status is worth another attempt. 429 and 5xx are the
+ * server saying "later"; every other status is an answer. 404 in particular
+ * must fall through — listCatalog reads it as "this directory is not a
+ * template", so retrying it would turn a control-flow signal into three
+ * requests and a delay.
+ */
+const isTransient = (status: number): boolean => status === 429 || status >= 500;
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Exponential backoff with full jitter (AWS's "Exponential Backoff and Jitter").
+ * Jitter is not decoration: a scaffold fans out FETCH_CONCURRENCY requests at
+ * once, so an undithered delay would retry all of them on the same tick and
+ * rebuild the burst that triggered the rate limit.
+ */
+function backoffMs(attempt: number, res?: Response): number {
+  const explicit = res ? retryAfterMs(res) : 0;
+  if (explicit) return explicit;
+  const ceiling = Math.min(BACKOFF_BASE_MS * 2 ** (attempt - 1), MAX_BACKOFF_MS);
+  return Math.random() * ceiling;
+}
+
+/**
+ * The server's own Retry-After in milliseconds, or 0 when absent or
+ * unparseable. GitHub sends seconds; the HTTP-date form parses as NaN and falls
+ * through to jittered backoff, which is the right default for a header we
+ * cannot read.
+ */
+function retryAfterMs(res: Response): number {
+  const seconds = Number(res.headers.get("retry-after"));
+  return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 0;
+}
+
 // Manifest and skeleton-file fetches fan out per entry; a bounded pool keeps
 // large catalogs fast without hammering the GitHub API into secondary rate
 // limits the way an unbounded Promise.all would.
@@ -58,6 +111,7 @@ export class GitHubSource implements CatalogSource {
   private readonly token?: string;
   private readonly cacheTtl: number;
   private readonly requestTimeout: number;
+  private readonly maxAttempts: number;
 
   private catalogCache: CacheEntry<CatalogEntry[]> | null = null;
   private compositeCatalogCache: CacheEntry<CompositeCatalogEntry[]> | null = null;
@@ -70,6 +124,7 @@ export class GitHubSource implements CatalogSource {
     this.token = options.token ?? process.env.GITHUB_TOKEN;
     this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1000;
     this.requestTimeout = options.requestTimeout ?? DEFAULT_REQUEST_TIMEOUT_MS;
+    this.maxAttempts = Math.max(1, options.maxAttempts ?? DEFAULT_MAX_ATTEMPTS);
   }
 
   private headers(): Record<string, string> {
@@ -80,7 +135,12 @@ export class GitHubSource implements CatalogSource {
     return h;
   }
 
-  private async get(url: string): Promise<Response> {
+  /**
+   * One attempt. A fresh AbortSignal per call — a timeout signal is consumed
+   * once, so reusing it across retries would abort every attempt after the
+   * first instantly.
+   */
+  private async attempt(url: string): Promise<Response> {
     try {
       return await fetch(url, {
         headers: this.headers(),
@@ -92,6 +152,34 @@ export class GitHubSource implements CatalogSource {
       }
       throw err;
     }
+  }
+
+  private async get(url: string): Promise<Response> {
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= this.maxAttempts; attempt++) {
+      let res: Response | undefined;
+      try {
+        res = await this.attempt(url);
+      } catch (err) {
+        lastError = err;
+      }
+
+      if (res && !isTransient(res.status)) return res;
+      if (attempt === this.maxAttempts) {
+        if (res) return res; // out of attempts — hand the caller the real status
+        throw lastError;
+      }
+      // The server asked for longer than we will hold a scaffold. Retrying
+      // inside its window is guaranteed to be refused, so surface the response
+      // now rather than burn the remaining attempts proving that.
+      if (res && retryAfterMs(res) > MAX_RETRY_AFTER_MS) return res;
+
+      await sleep(backoffMs(attempt, res));
+    }
+
+    /* c8 ignore next -- the loop either returns or throws on its last attempt */
+    throw lastError;
   }
 
   private raw(path: string): string {

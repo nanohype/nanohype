@@ -49,7 +49,12 @@ describe("loadStandard", () => {
     for (const id of Object.values(s.content.models)) {
       expect(id).toMatch(/^(?:us|eu|jp|ap|apac|global)\.anthropic\./);
     }
-    expect(s.content.regions_preferred).toContain("us-west-2");
+    // Exactly one region, not merely "contains the right one". A venture
+    // account's SCP denies every non-global action outside us-east-1, so a
+    // second entry would name a region nothing can deploy to — and a
+    // `toContain` assertion is what let the list keep us-west-2 in first
+    // place while every skeleton default quietly followed it there.
+    expect(s.content.regions_preferred).toEqual(["us-east-1"]);
   });
 
   it("loads quality-rubric-dimensions with ten named dimensions", async () => {

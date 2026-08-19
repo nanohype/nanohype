@@ -21,7 +21,7 @@ const configSchema = z.object({
 
   // Region where the Bedrock model is enabled. Bedrock auth is the AWS
   // credential chain (IRSA on-cluster) — no API keys.
-  AWS_REGION: z.string().default("us-west-2"),
+  AWS_REGION: z.string().default("us-east-1"),
 
   // Per-call LLM request timeout (ms) — a hung upstream trips the breaker.
   LLM_REQUEST_TIMEOUT_MS: z

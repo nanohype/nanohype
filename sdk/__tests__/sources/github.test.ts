@@ -119,7 +119,10 @@ describe("GitHubSource", () => {
       mockFetch
         .mockResolvedValueOnce(jsonResponse([{ name: "go-cli", type: "dir" }]))
         .mockResolvedValueOnce(textResponse("rate limited", 429));
-      const rateLimited = new GitHubSource({ cacheTtl: 0 });
+      // maxAttempts: 1 because this asserts how a 429 surfaces, not how it is
+      // retried. On the default policy the retry consumes the queued mocks and
+      // the assertion stops describing the first response.
+      const rateLimited = new GitHubSource({ cacheTtl: 0, maxAttempts: 1 });
       await expect(rateLimited.listTemplates()).rejects.toThrow(
         "Failed to fetch manifest for template 'go-cli': 429",
       );
@@ -263,7 +266,9 @@ describe("GitHubSource", () => {
         .mockResolvedValueOnce(textResponse("package main"))
         .mockResolvedValueOnce(textResponse("Server error", 500));
 
-      const source = new GitHubSource();
+      // maxAttempts: 1 — see the 429 case above. This asserts which error a 500
+      // on a skeleton file produces, not the retry policy around it.
+      const source = new GitHubSource({ maxAttempts: 1 });
       await expect(source.fetchTemplate("go-cli")).rejects.toThrow(
         "Failed to fetch skeleton file 'templates/go-cli/skeleton/pkg/util.go' for template 'go-cli': 500",
       );
@@ -348,6 +353,93 @@ describe("GitHubSource", () => {
         source.fetchContract("nanohype/main/evil" as Parameters<typeof source.fetchContract>[0]),
       ).rejects.toThrow("Unknown contract repo");
       expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
+  // A single dropped request against raw.githubusercontent.com is enough to
+  // fail a whole scaffold, and it happens. These pin which failures are worth
+  // another attempt and — more importantly — which are not.
+  describe("retry", () => {
+    it("retries a 5xx and succeeds on a later attempt", async () => {
+      mockFetch
+        .mockResolvedValueOnce(textResponse("upstream boom", 503))
+        .mockResolvedValueOnce(jsonResponse([]));
+      const source = new GitHubSource({ maxAttempts: 2 });
+      await expect(source.listTemplates()).resolves.toEqual([]);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("retries a timeout", async () => {
+      const timeout = Object.assign(new Error("timed out"), { name: "TimeoutError" });
+      mockFetch.mockRejectedValueOnce(timeout).mockResolvedValueOnce(jsonResponse([]));
+      const source = new GitHubSource({ maxAttempts: 2 });
+      await expect(source.listTemplates()).resolves.toEqual([]);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not retry a 404 — listTemplates reads it as 'not a template'", async () => {
+      mockFetch
+        .mockResolvedValueOnce(jsonResponse([{ name: "ghost", type: "dir" }]))
+        .mockResolvedValueOnce(textResponse("Not Found", 404));
+      const source = new GitHubSource({ maxAttempts: 3 });
+      await expect(source.listTemplates()).resolves.toEqual([]);
+      // One listing + exactly one manifest attempt. A retried 404 would be 4.
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("gives up after maxAttempts and surfaces the real status", async () => {
+      mockFetch.mockResolvedValue(textResponse("still broken", 500));
+      const source = new GitHubSource({ maxAttempts: 2 });
+      await expect(source.listTemplates()).rejects.toThrow("Failed to list catalog: 500");
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("surfaces the error when every attempt throws", async () => {
+      const timeout = Object.assign(new Error("timed out"), { name: "TimeoutError" });
+      mockFetch.mockRejectedValue(timeout);
+      const source = new GitHubSource({ maxAttempts: 2 });
+      await expect(source.listTemplates()).rejects.toThrow("GitHub request timed out");
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("waits the server's Retry-After, not its own backoff", async () => {
+      // 300ms is chosen to exceed the jitter ceiling for attempt 1
+      // (BACKOFF_BASE_MS 250, full jitter, so at most 250ms). If the header
+      // were ignored the wait could not reach 300ms — which is what makes this
+      // an assertion about Retry-After rather than merely about retrying.
+      mockFetch
+        .mockResolvedValueOnce(
+          new Response("rate limited", { status: 429, headers: { "retry-after": "0.3" } }),
+        )
+        .mockResolvedValueOnce(jsonResponse([]));
+      const source = new GitHubSource({ maxAttempts: 2 });
+
+      const started = performance.now();
+      await expect(source.listTemplates()).resolves.toEqual([]);
+      const waited = performance.now() - started;
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      // Timer slack: assert the floor the header implies, not an exact value.
+      expect(waited).toBeGreaterThanOrEqual(280);
+    });
+
+    it("stops retrying when Retry-After exceeds what it will wait", async () => {
+      // GitHub's secondary rate limit sends tens of seconds. Retrying inside
+      // that window is refused by definition, so the response comes back on the
+      // first attempt rather than after sleeping or burning the budget.
+      mockFetch.mockResolvedValue(
+        new Response("rate limited", { status: 429, headers: { "retry-after": "120" } }),
+      );
+      const source = new GitHubSource({ maxAttempts: 3 });
+      await expect(source.listTemplates()).rejects.toThrow("Failed to list catalog: 429");
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("maxAttempts: 1 disables retry", async () => {
+      mockFetch.mockResolvedValue(textResponse("boom", 500));
+      const source = new GitHubSource({ maxAttempts: 1 });
+      await expect(source.listTemplates()).rejects.toThrow("Failed to list catalog: 500");
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 });
