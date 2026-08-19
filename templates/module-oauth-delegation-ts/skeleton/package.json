@@ -45,7 +45,7 @@
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.1030.0",
     "@aws-sdk/client-kms": "^3.1030.0",
-    "@biomejs/biome": "2.5.6",
+    "@biomejs/biome": "2.5.8",
     "@smithy/node-http-handler": "^4.0.0",
     "@types/node": "^24.12.2",
     "@vitest/coverage-v8": "^4.1.4",

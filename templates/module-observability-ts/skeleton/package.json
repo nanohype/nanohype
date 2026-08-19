@@ -34,7 +34,7 @@
     "@opentelemetry/semantic-conventions": "^1.41.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.6",
+    "@biomejs/biome": "2.5.8",
     "@opentelemetry/context-async-hooks": "^2.8.0",
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "^4.0.0",
