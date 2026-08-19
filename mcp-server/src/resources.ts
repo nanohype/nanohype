@@ -39,8 +39,11 @@ export function listResources(): StaticResource[] {
     {
       uri: "nanohype://standards",
       name: "nanohype standards (bundle)",
-      description:
-        "All published standards files bundled under one resource. Includes language toolchain, version currency, platform-tenant contract, LLM policy, quality-rubric dimension names, the testing rubric, the resource-tagging taxonomy, the resource-naming grammar, the observability/SLO bar, and the SEO baseline.",
+      // Derived from STANDARD_NAMES rather than written out. A hand-kept list
+      // beside the real one drifts silently in the direction that matters: it
+      // omits the standards added after it was written, so a reader trusting
+      // the description never learns the resource carries more than it names.
+      description: `All published standards files bundled under one resource: ${STANDARD_NAMES.join(", ")}.`,
       mimeType: "application/json",
     },
   ];

@@ -193,6 +193,25 @@ Every public site the factory ships presents **one canonical origin** and a fixe
 
 ---
 
+## Documentation voice — `documentation-voice.json`
+
+The prose form of the greenfield doctrine. It governs every surface a human reads — markdown, code comments, CRD and XRD field descriptions, JSON Schema `description` keys, OpenTofu variable and output descriptions, `Chart.yaml` and `NOTES.txt`, CLI help and flag text, error and log messages, Taskfile `desc:`, CI step names, test names. Read it before writing any of those, not after.
+
+**The test, per sentence** — does it tell the reader something they need in order to change this code correctly, or something about the process that produced it? Only the first earns its place.
+
+The standard **cites rather than restates**. Editorial style, including the treatment of time, is delegated to the [Google developer documentation style guide](https://developers.google.com/style). Structured provenance is delegated to [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf). [Diátaxis](https://diataxis.fr/) governs _which document_ content belongs in; this standard governs _how any of them is written_. Four rules are original to this stack, and they are the ones that follow from shipping a template rather than an application:
+
+- **Rationale survives** — narration goes, but when the two are braided into one paragraph, rewrite it. Deleting is the cheap move and it takes the half that mattered.
+- **No self-defense** — state the constraint; the constraint is the argument.
+- **Product voice, not estate voice** — prose is where an estate constraint hides from the gates that check code. A description can assert a value with none of the machinery that would flag it in a `default:`.
+- **Named things resolve** — every path, flag and field named in prose is a claim about the world. A measurement stated as documentation is the same defect with a delay.
+
+Two more refine the cited standards: **timeless-scope** (the ban on temporal language governs the repo's history, not state in a running system — the tell is whether a sentence asserts a change against an _unstated_ past) and **provenance-is-a-field** (a tally becomes an invariant, a frontmatter entry, or a `log.md` line, in that order of preference).
+
+**The `method` section is deliberately self-limiting.** Most of this standard is not enforceable by pattern matching, it says so, and it carries the hazards measured while auditing against it. A gate claiming coverage it does not have is the failure mode the stack exists to avoid, so the standard states its own enforceable subset rather than implying the rest.
+
+---
+
 ## Versioning
 
 Each file declares its `version` (a positive integer). Bump the version field on any breaking shape change. Agents that consume these standards should pin to a major version range (the `version` field == major; minor evolution within a major must be backwards-compatible).

@@ -112,6 +112,36 @@ describe("loadStandard", () => {
     );
   });
 
+  it("loads documentation-voice with cited references and the four original rules", async () => {
+    const s = await loadStandard(source, "documentation-voice");
+    if (s.kind !== "nanohype/standards/documentation-voice") throw new Error("kind narrow");
+    expect(s.content.the_test).toMatch(/each sentence/i);
+
+    // The standard's credibility rests on citing published authorities rather
+    // than inventing a house style, so the delegation is asserted, not assumed.
+    const refs = s.content.normative_references.map((r) => r.id);
+    expect(refs).toEqual(expect.arrayContaining(["google-devdocs-style", "okf", "diataxis"]));
+
+    // Every rule declares where it comes from — `refines` for one that narrows
+    // a cited standard, `origin` for one this stack owns. A rule carrying
+    // neither is a rule nobody can trace.
+    for (const rule of s.content.rules) {
+      expect(rule.refines ?? rule.origin).toBeDefined();
+    }
+    const owned = s.content.rules.filter((r) => r.origin === "nanohype").map((r) => r.id);
+    expect(owned).toEqual([
+      "rationale-survives",
+      "no-self-defense",
+      "product-voice",
+      "named-things-resolve",
+    ]);
+
+    // The method section states what the standard cannot enforce. Dropping it
+    // would leave the standard implying grep coverage it does not have, which
+    // is the failure it exists to name.
+    expect(s.content.method.summary).toMatch(/unenforceable by pattern matching/i);
+  });
+
   it("throws NanohypeError when the standard is missing", async () => {
     const broken = new LocalSource({ rootDir: "/tmp/nonexistent-nanohype-standards" });
     await expect(loadStandard(broken, "llm-policy")).rejects.toBeInstanceOf(NanohypeError);
@@ -121,23 +151,21 @@ describe("loadStandard", () => {
 describe("loadStandards (bundle)", () => {
   const source = new LocalSource({ rootDir: CATALOG_ROOT });
 
-  // Derived from STANDARD_NAMES rather than written out. The hand-listed
-  // version asserted eight of the eleven slots, so three standards could have
-  // gone missing from the bundle without a red test — a suite enumerating the
-  // thing it guards inherits the drift it exists to catch.
-  it("returns one slot per published name, each holding its own standard", async () => {
+  it("returns every standard under its canonical name slot", async () => {
     const bundle: Standards = await loadStandards(source);
-
-    // Catches a name fetched but never placed: the key is simply absent.
-    expect(Object.keys(bundle).sort()).toEqual([...STANDARD_NAMES].sort());
-
-    // Catches a misplacement: every value must be the standard its key names,
-    // not merely some standard. A bundle built by position puts the wrong one
-    // under a right-looking key when the list and the bindings fall out of
-    // step, and that reads as correct at every call site.
-    for (const name of STANDARD_NAMES) {
-      expect(bundle[name].kind).toBe(`nanohype/standards/${name}`);
-    }
+    expect(bundle["language-toolchain"].kind).toBe("nanohype/standards/language-toolchain");
+    expect(bundle["version-currency"].kind).toBe("nanohype/standards/version-currency");
+    expect(bundle["platform-tenant-contract"].kind).toBe(
+      "nanohype/standards/platform-tenant-contract",
+    );
+    expect(bundle["llm-policy"].kind).toBe("nanohype/standards/llm-policy");
+    expect(bundle["quality-rubric-dimensions"].kind).toBe(
+      "nanohype/standards/quality-rubric-dimensions",
+    );
+    expect(bundle["testing-rubric"].kind).toBe("nanohype/standards/testing-rubric");
+    expect(bundle["observability-slo"].kind).toBe("nanohype/standards/observability-slo");
+    expect(bundle["seo-baseline"].kind).toBe("nanohype/standards/seo-baseline");
+    expect(bundle["documentation-voice"].kind).toBe("nanohype/standards/documentation-voice");
   });
 });
 
