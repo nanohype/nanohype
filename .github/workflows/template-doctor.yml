@@ -50,7 +50,7 @@ jobs:
 
       - name: audit (osv-scanner)
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
         with:
           scan-args: |-
             --no-resolve
@@ -109,7 +109,7 @@ jobs:
 
       - name: Set up JDK
         if: steps.scope.outputs.relevant == 'true'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
           distribution: 'temurin'
           java-version: '25'
@@ -203,7 +203,7 @@ jobs:
     needs: [audit, doctor]
     if: always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')
     steps:
-      - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
+      - uses: nanohype/.github/actions/merge-gate@90af851a854ca24dd6626ccc660b0b1b245c406a # main
         with:
           needs: ${{ toJSON(needs) }}
           gate-job-id: merge-gate
