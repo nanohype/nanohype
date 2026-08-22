@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: audit (osv-scanner)
-        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
         with:
           scan-args: |-
             --no-resolve
@@ -100,7 +100,7 @@ jobs:
         run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@v4.53.2
+        uses: mikefarah/yq@ce7026e3195aceac6b6a56a6b81fca4e8e466e36 # v4.53.4
 
       - name: Find and validate templates
         run: |
@@ -148,7 +148,7 @@ jobs:
         run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@v4.53.2
+        uses: mikefarah/yq@ce7026e3195aceac6b6a56a6b81fca4e8e466e36 # v4.53.4
 
       # This repository's own source — the SDK, the MCP server, the shared
       # library, and every script under scripts/. `lint:skeletons` below covers
@@ -320,7 +320,7 @@ jobs:
     # indefinitely.
     if: always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')
     steps:
-      - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
+      - uses: nanohype/.github/actions/merge-gate@90af851a854ca24dd6626ccc660b0b1b245c406a # main
         with:
           needs: ${{ toJSON(needs) }}
           gate-job-id: merge-gate
