@@ -24,7 +24,7 @@
 // Usage: node scripts/check-model-ids.mjs [root]
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 
 const root = resolve(process.argv[2] ?? ".");
 const STANDARD = resolve(root, "standards/llm-policy.json");
@@ -112,6 +112,26 @@ function walk(dir, out = []) {
 const files = walk(root)
   .map((p) => relative(root, p))
   .filter((p) => (EXTENSIONS.test(p) || /(?:^|[/\\])\.env/.test(p)) && !SKIP.test(p));
+
+// Every sibling gate refuses an empty corpus by name, and a comment in
+// validate-templates.yml says so on behalf of all of them. This one did not,
+// so it printed "every Claude model ID in the catalog is one the LLM policy
+// names" over a tree holding no catalog at all.
+//
+// The floor counts files under templates/ rather than files in total. A total
+// is never zero: this gate reads standards/llm-policy.json to build its allowed
+// set, and the walk then scans that same file, so a root holding the standard
+// and nothing else still has a corpus of one. A guard at zero could not fire on
+// the case it exists for. The success line says "in the catalog", so the
+// catalog is what has to be non-empty.
+const catalogFiles = files.filter((p) => p === "templates" || p.startsWith(`templates${sep}`));
+if (catalogFiles.length === 0) {
+  console.error(
+    "check-model-ids: no readable source under templates/ — the walk matched no\n" +
+      "catalog file, so this check is asserting nothing about the catalog.",
+  );
+  process.exit(2);
+}
 
 const unknown = [];
 const bareInvoke = [];
