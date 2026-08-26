@@ -103,10 +103,24 @@ _cross_composite_refs() {
 # this; we re-run it per template and surface any miss as an error so
 # it shows up in the doctor report alongside the rest.
 _cross_placeholder_dangling() {
-  local tmpl name result
+  local tmpl name result status
   while IFS= read -r tmpl; do
     name="$(template_name "$tmpl")"
-    result="$("${ROOT}/scripts/validate.sh" "$tmpl" 2>&1 || true)"
+    result="$("${ROOT}/scripts/validate.sh" "$tmpl" 2>&1)" && status=0 || status=$?
+
+    # A finding here is the absence of a string in another script's output, so
+    # a run that never reached the placeholder section produces the same
+    # silence as a clean template. validate.sh exits 1 when it cannot read the
+    # manifest at all — without yq, say — and that has to be a finding rather
+    # than a quiet pass, or this check reports clean for every template at
+    # once.
+    if printf '%s' "$result" | grep -q "could not be read" ||
+      { [ "$status" -ne 0 ] && ! printf '%s' "$result" | grep -q "check(s) failed"; }; then
+      finding "error" "cross" "$name" "validate-unavailable" \
+        "scripts/validate.sh could not examine this template (exit ${status}); its placeholder and conditional checks did not run"
+      continue
+    fi
+
     if printf '%s' "$result" | grep -q "FAIL placeholder not found"; then
       printf '%s\n' "$result" \
         | awk '/FAIL placeholder not found/ {

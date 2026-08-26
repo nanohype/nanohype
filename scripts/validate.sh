@@ -32,6 +32,21 @@ if [ ! -d "$TEMPLATE_DIR" ]; then
   exit 1
 fi
 
+# The conditional-path and placeholder sections below are the only checks in
+# this script that read the manifest's structure, and yq is what reads it.
+# Without it they have nothing to iterate, and a section that iterates nothing
+# prints no failures — so a template with a dangling conditional and unused
+# placeholders reported "all checks passed". Refusing to run is the only
+# honest answer: a partial pass and a full pass were indistinguishable from
+# the exit code, which is what CI and the doctor both read.
+if ! command -v yq >/dev/null 2>&1; then
+  echo -e "${RED}Error:${RESET} yq is required and was not found on PATH."
+  echo "  This script reads template.yaml with yq. Without it the conditional-path"
+  echo "  and placeholder checks would examine nothing and still report success."
+  echo "  Install it from https://github.com/mikefarah/yq (brew install yq)."
+  exit 1
+fi
+
 TEMPLATE_NAME=$(basename "$TEMPLATE_DIR")
 echo -e "${BOLD}Validating template: ${TEMPLATE_NAME}${RESET}"
 echo ""
@@ -47,7 +62,15 @@ fi
 
 # skeleton/ directory exists and is non-empty
 if [ -d "$TEMPLATE_DIR/skeleton" ]; then
-  file_count=$(find "$TEMPLATE_DIR/skeleton" -mindepth 1 -not -path '*/node_modules/*' -not -path '*/.git/*' | head -1)
+  # `-print -quit` rather than `| head -1`. Under this script's `set -euo
+  # pipefail`, `head` closing the pipe kills `find` with SIGPIPE, pipefail
+  # promotes 141 to the pipeline's status, and `set -e` aborts the whole script
+  # here — before the schema, conditional and placeholder sections have run and
+  # before the summary line prints. Whether it triggers depends on how much
+  # `find` still has to write once `head` has exited, so it fires on some
+  # templates and not others and on a loaded runner more than a quiet one.
+  # `-quit` makes find stop on its own, so there is no pipe to break.
+  file_count=$(find "$TEMPLATE_DIR/skeleton" -mindepth 1 -not -path '*/node_modules/*' -not -path '*/.git/*' -print -quit)
   if [ -n "$file_count" ]; then
     pass "skeleton/ directory exists and is non-empty"
   else
@@ -78,20 +101,6 @@ if [ -f "$TEMPLATE_DIR/template.yaml" ]; then
   fi
 fi
 
-# ─── YAML field extraction ───
-# Prefer yq, fall back to grep/sed
-extract_yaml_list() {
-  local file="$1"
-  local field="$2"
-
-  if command -v yq &>/dev/null; then
-    yq -r "$field" "$file" 2>/dev/null || true
-  else
-    # Fallback: not used if yq is present
-    echo ""
-  fi
-}
-
 # ─── Conditional path checks ───
 if [ -f "$TEMPLATE_DIR/template.yaml" ]; then
   echo ""
@@ -99,11 +108,12 @@ if [ -f "$TEMPLATE_DIR/template.yaml" ]; then
 
   has_conditionals=false
 
-  if command -v yq &>/dev/null; then
-    paths=$(yq '.conditionals[].path' "$TEMPLATE_DIR/template.yaml" 2>/dev/null || true)
-  else
-    # Fallback: extract paths after "path:" lines within conditionals block
-    paths=$(sed -n '/^conditionals:/,/^[^ ]/{ /^  *- *path:/s/.*path: *//p; /^  *path:/s/.*path: *//p }' "$TEMPLATE_DIR/template.yaml" 2>/dev/null | tr -d '"' | tr -d "'" || true)
+  # yq separates "the key is absent" (exit 0, no output) from "the manifest
+  # could not be read" (exit 1). Collapsing the two is what made an unreadable
+  # manifest look like a template with nothing to check.
+  if ! paths=$(yq '.conditionals[].path' "$TEMPLATE_DIR/template.yaml"); then
+    fail "template.yaml could not be read for conditional paths"
+    paths=""
   fi
 
   if [ -n "$paths" ]; then
@@ -130,13 +140,19 @@ if [ -f "$TEMPLATE_DIR/template.yaml" ] && [ -d "$TEMPLATE_DIR/skeleton" ]; then
 
   has_placeholders=false
 
-  # Get bool variable names (used for conditionals, not content substitution)
-  if command -v yq &>/dev/null; then
-    bool_placeholders=$(yq '.variables[] | select(.type == "bool") | .placeholder' "$TEMPLATE_DIR/template.yaml" 2>/dev/null || true)
-    placeholders=$(yq '.variables[].placeholder' "$TEMPLATE_DIR/template.yaml" 2>/dev/null || true)
-  else
+  # Bool variables name a conditional rather than a content substitution, so
+  # their placeholders are exempt from the content check below.
+  read_failed=false
+  if ! bool_placeholders=$(yq '.variables[] | select(.type == "bool") | .placeholder' "$TEMPLATE_DIR/template.yaml"); then
+    read_failed=true
+  fi
+  if ! placeholders=$(yq '.variables[].placeholder' "$TEMPLATE_DIR/template.yaml"); then
+    read_failed=true
+  fi
+  if [ "$read_failed" = true ]; then
+    fail "template.yaml could not be read for placeholders"
     bool_placeholders=""
-    placeholders=$(sed -n '/^variables:/,/^[^ ]/{ /placeholder:/s/.*placeholder: *//p }' "$TEMPLATE_DIR/template.yaml" 2>/dev/null | tr -d '"' | tr -d "'" || true)
+    placeholders=""
   fi
 
   if [ -n "$placeholders" ]; then
