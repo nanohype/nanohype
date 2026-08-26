@@ -191,6 +191,18 @@ jobs:
       - name: Validate standards manifests
         run: npm run validate:standards
 
+      # A composite is a manifest kind like a template is, and it had no schema.
+      # Consumers filter on `kind`: generate-catalog.mjs and the SDK's
+      # LocalSource both skip an entry whose kind is not exactly "composite"
+      # rather than rejecting it. So one mistyped character removed a composite
+      # from catalog.json, from the render gate's corpus, and from the
+      # cross-reference check at once, and every gate stayed green — the
+      # regenerated catalog agrees with its own generator, so the drift check
+      # sees nothing either. Pinning `kind` in a schema turns the silent skip
+      # into a failure at the file that is wrong.
+      - name: Validate composite manifests
+        run: npm run validate:composites
+
       # A model ID is a plain string, so no compiler, linter or type checker has
       # an opinion about it — a scaffold born on a retired or never-existent ID
       # fails only at the first invocation, in the consumer's project. This
