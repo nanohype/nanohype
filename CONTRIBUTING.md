@@ -73,6 +73,11 @@ values — not stubs filled with TODOs. Concretely:
 
 ### 4. Validate locally
 
+`./scripts/validate.sh` reads `template.yaml` with [yq](https://github.com/mikefarah/yq)
+(`brew install yq`). It refuses to run without it: the conditional-path and
+placeholder checks are the parts that read the manifest's structure, so without
+a parser they would examine nothing and still report success.
+
 ```bash
 npm run validate:schema                  # JSON Schema, all templates
 ./scripts/validate.sh templates/<name>   # full validation, single template
