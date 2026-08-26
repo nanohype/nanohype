@@ -102,18 +102,44 @@ jobs:
       - name: Install yq
         uses: mikefarah/yq@v4.53.2
 
+      # The corpus is asserted against the thing it enumerates rather than
+      # against a number. Every directory under templates/ is a template, so
+      # "one template.yaml per directory" is an invariant that cannot go stale;
+      # a count written here would stay accurate and stay useless, because a
+      # corpus that moved out of the depth window would still satisfy it.
+      # Every gate under scripts/ refuses an empty corpus by name — this job
+      # and the skeleton suites below are inline shell and were the exception,
+      # so both reported success over nothing.
       - name: Find and validate templates
         run: |
           failed=0
-          templates=$(find templates -name "template.yaml" -mindepth 2 -maxdepth 2 2>/dev/null | sort)
+          dirs=0
+          missing=0
 
-          if [ -z "$templates" ]; then
-            echo "No templates found — skipping validation"
-            exit 0
+          for dir in templates/*/; do
+            dir="${dir%/}"
+            if [ ! -d "$dir" ]; then
+              echo "templates/ holds no directories — the enumeration matched nothing,"
+              echo "so this job is asserting nothing."
+              exit 1
+            fi
+            dirs=$((dirs + 1))
+            if [ ! -f "$dir/template.yaml" ]; then
+              echo "  no template.yaml: $dir"
+              missing=$((missing + 1))
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "$missing of $dirs template directories carry no template.yaml."
+            echo "Each one is a template this job cannot validate at all."
+            exit 1
           fi
 
-          for yaml in $templates; do
-            dir=$(dirname "$yaml")
+          echo "validating $dirs template(s)"
+
+          for dir in templates/*/; do
+            dir="${dir%/}"
             echo "──────────────────────────────────────"
             echo "Validating: $dir"
             echo "──────────────────────────────────────"
@@ -258,18 +284,36 @@ jobs:
         run: |
           failed=0
           tested=0
+          found=0
+          skipped=0
 
           # Every package.json under a skeleton, not just the one at its root.
           # A skeleton whose code lives a directory deeper (prompt-library/sdk,
           # monorepo/packages/*) was invisible to a `templates/*/skeleton/`
           # glob, so its suite never ran here — which is how prompt-library
-          # shipped a test suite that had been failing outright.
+          # shipped a test suite that had been failing outright. Deepening the
+          # glob fixed that instance and left the class open: the loop reports
+          # success over whatever it happens to find, so the next corpus that
+          # moves goes quiet the same way. The three counters below close it —
+          # every manifest discovered is accounted for as tested or skipped,
+          # and a discovery of nothing is a failure rather than a clean run.
           while IFS= read -r pkg; do
             [ -f "$pkg" ] || continue
             dir=$(dirname "$pkg")
+            found=$((found + 1))
 
-            # Skip if no test script defined
-            if ! node -e "const p = require('./$pkg'); if (!p.scripts || !p.scripts.test) process.exit(1);" 2>/dev/null; then
+            # A manifest that cannot be parsed is a broken skeleton, not a
+            # skeleton without tests. Reading the two as the same thing is how
+            # a suite leaves the run without anything saying so.
+            if ! node -e "JSON.parse(require('node:fs').readFileSync('$pkg','utf8'))" 2>/dev/null; then
+              echo "FAIL: $pkg is not readable JSON"
+              failed=1
+              continue
+            fi
+
+            if ! node -e "const p = require('./$pkg'); if (!p.scripts || !p.scripts.test) process.exit(1);"; then
+              echo "no test script, skipping: $dir"
+              skipped=$((skipped + 1))
               continue
             fi
 
@@ -287,8 +331,28 @@ jobs:
           done < <(find templates -mindepth 3 -name package.json -not -path '*/node_modules/*' | sort)
 
           echo "──────────────────────────────────────"
-          echo "Templates tested: $tested"
+          echo "Manifests found: $found — tested: $tested, skipped: $skipped"
           echo "──────────────────────────────────────"
+
+          if [ "$found" -eq 0 ]; then
+            echo "found no package.json under templates/ — the discovery matched"
+            echo "nothing, so this job is asserting nothing."
+            exit 1
+          fi
+
+          if [ "$((tested + skipped))" -ne "$found" ]; then
+            echo "$found manifests were discovered but only $tested + $skipped are"
+            echo "accounted for. A manifest that left the run unexplained is a suite"
+            echo "nothing ran and nothing reported."
+            exit 1
+          fi
+
+          if [ "$tested" -eq 0 ]; then
+            echo "every discovered manifest declared no test script. The catalog ships"
+            echo "JavaScript skeletons with suites, so this is the discovery breaking,"
+            echo "not the catalog losing its tests."
+            exit 1
+          fi
 
           if [ "$failed" -ne 0 ]; then
             echo "One or more template tests failed"
