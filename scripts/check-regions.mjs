@@ -34,8 +34,8 @@
 //
 // Usage: node scripts/check-regions.mjs [root]
 
-import { globSync, readFileSync } from "node:fs";
-import { relative, resolve } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 const root = resolve(process.argv[2] ?? ".");
 const STANDARD = resolve(root, "standards/llm-policy.json");
@@ -77,7 +77,6 @@ const PRUNE = new Set([
   "__pycache__",
 ]);
 const SKIP = /scripts[/\\]check-regions\.mjs$/;
-const exclude = (p) => PRUNE.has(typeof p === "string" ? p : p.name);
 
 // Everything that is not demonstrably binary, rather than an allowlist of
 // extensions. The allowlist is how a gate goes blind to the surface it claims to
@@ -89,10 +88,28 @@ const exclude = (p) => PRUNE.has(typeof p === "string" ? p : p.name);
 const BINARY =
   /\.(?:png|jpe?g|gif|webp|avif|ico|pdf|zip|gz|tgz|bz2|xz|woff2?|ttf|eot|otf|mp4|webm|wasm|pyc|so|dylib|dll|exe|bin)$/i;
 
+// Enumerated by walking the directory tree rather than by matching a glob.
+// `*` does not match a leading dot at any path segment, and `node:fs`'s
+// globSync has no option that changes it, so a glob-based scan cannot open
+// `.env.example` — the file standards/llm-policy.json names as one this gate
+// reads — nor descend into a skeleton's `.github/workflows/`. Both are places
+// a region is configured. A walk has no naming convention to be blind to: it
+// yields whatever is on disk, which is the surface the success line claims.
 const SCOPES = ["templates", "standards"];
-const files = SCOPES.flatMap((scope) => globSync(`${scope}/**/*`, { cwd: root, exclude })).filter(
-  (p) => !BINARY.test(p) && !SKIP.test(p),
-);
+
+function walk(dir, out = []) {
+  for (const entry of readdirSync(dir)) {
+    if (PRUNE.has(entry)) continue;
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) walk(path, out);
+    else out.push(path);
+  }
+  return out;
+}
+
+const files = SCOPES.flatMap((scope) => walk(resolve(root, scope)))
+  .map((p) => relative(root, p))
+  .filter((p) => !BINARY.test(p) && !SKIP.test(p));
 
 const offenders = [];
 let scanned = 0;
@@ -138,5 +155,6 @@ if (offenders.length) {
 console.log(
   `check-regions: ${scanned} file(s) under ${SCOPES.map((s) => `${s}/`).join(" and ")} name ` +
     `no AWS region outside the LLM policy's list (${[...allowed].sort().join(", ")}). ` +
-    `Scope excludes test suites and the rest of the repository.`,
+    `Scope excludes test suites, ${[...PRUNE].sort().join("/")}, binary suffixes, ` +
+    `and the rest of the repository.`,
 );
