@@ -23,8 +23,8 @@
 //
 // Usage: node scripts/check-model-ids.mjs [root]
 
-import { globSync, readFileSync } from "node:fs";
-import { relative, resolve } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 
 const root = resolve(process.argv[2] ?? ".");
 const STANDARD = resolve(root, "standards/llm-policy.json");
@@ -90,13 +90,28 @@ const INVOKE_CONTEXT = /(?:model|modelId|LLM_MODEL|DEFAULT_MODEL|ModelId)\s*[:=]
 // its job.
 const SKIP =
   /(?:^|[/\\])(?:node_modules|dist|\.git|\.turbo)[/\\]|scripts[/\\]check-model-ids\.mjs$/;
-// The dotfile pattern is separate because `*` does not match a leading dot, and
-// `.env.example` is exactly where a scaffold's model ID is configured — the most
-// important file to scan was the one a single glob silently skipped.
-const files = [
-  ...globSync("**/*.{ts,tsx,js,jsx,mjs,cjs,py,go,json,yaml,yml,md,example}", { cwd: root }),
-  ...globSync("**/.env*", { cwd: root }),
-].filter((p) => !SKIP.test(p));
+// Enumerated by walking the tree rather than by matching a glob. `*` does not
+// match a leading dot at any path segment, and `node:fs`'s globSync has no
+// option that changes it, so the scan was blind to the dotfiles a scaffold
+// configures a model ID in. A second `**/.env*` pattern covered the leaf case
+// and could not cover the other half: a dot *directory* stays unreachable
+// however many leaf patterns are added, and every skeleton's CI lives in
+// `.github/workflows/`. A walk has no naming convention to be blind to.
+const EXTENSIONS = /\.(?:ts|tsx|js|jsx|mjs|cjs|py|go|json|yaml|yml|md|example)$/;
+
+function walk(dir, out = []) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (SKIP.test(`${path}/`)) continue;
+    if (statSync(path).isDirectory()) walk(path, out);
+    else out.push(path);
+  }
+  return out;
+}
+
+const files = walk(root)
+  .map((p) => relative(root, p))
+  .filter((p) => (EXTENSIONS.test(p) || /(?:^|[/\\])\.env/.test(p)) && !SKIP.test(p));
 
 const unknown = [];
 const bareInvoke = [];
