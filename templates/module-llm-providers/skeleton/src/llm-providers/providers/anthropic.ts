@@ -45,7 +45,14 @@ function createAnthropicProvider(): LlmProvider {
     async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<LlmResponse> {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      const temperature = opts?.temperature ?? 1;
+      // Sampling parameters are omitted unless the caller sets one. Claude
+      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
+      // `top_p` and `top_k` outright — the default value included — so a
+      // request that always carries one cannot reach the two models
+      // standards/llm-policy.json names as the default and the escalation
+      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
+      // caller keeps the option rather than losing it.
+      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
 
       const systemParts = messages.filter((m) => m.role === "system");
       const conversationParts = messages.filter((m) => m.role !== "system");
@@ -57,7 +64,7 @@ function createAnthropicProvider(): LlmProvider {
         getClient().messages.create({
           model,
           max_tokens: maxTokens,
-          temperature,
+          ...sampling,
           system: systemPrompt || undefined,
           messages: conversationParts.map((m) => ({
             role: m.role as "user" | "assistant",
@@ -90,7 +97,14 @@ function createAnthropicProvider(): LlmProvider {
     streamChat(messages: ChatMessage[], opts?: ChatOptions): StreamResponse {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      const temperature = opts?.temperature ?? 1;
+      // Sampling parameters are omitted unless the caller sets one. Claude
+      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
+      // `top_p` and `top_k` outright — the default value included — so a
+      // request that always carries one cannot reach the two models
+      // standards/llm-policy.json names as the default and the escalation
+      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
+      // caller keeps the option rather than losing it.
+      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
 
       const systemParts = messages.filter((m) => m.role === "system");
       const conversationParts = messages.filter((m) => m.role !== "system");
@@ -108,7 +122,7 @@ function createAnthropicProvider(): LlmProvider {
         const stream = getClient().messages.stream({
           model,
           max_tokens: maxTokens,
-          temperature,
+          ...sampling,
           system: systemPrompt || undefined,
           messages: conversationParts.map((m) => ({
             role: m.role as "user" | "assistant",

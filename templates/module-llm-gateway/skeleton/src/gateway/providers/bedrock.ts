@@ -42,7 +42,14 @@ const bedrockProvider: GatewayProvider = {
   async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<GatewayResponse> {
     const model = opts?.model ?? DEFAULT_MODEL;
     const maxTokens = opts?.maxTokens ?? 4096;
-    const temperature = opts?.temperature ?? 1;
+    // Sampling parameters are omitted unless the caller sets one. Claude
+    // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
+    // `top_p` and `top_k` outright — the default value included — so a
+    // request that always carries one cannot reach the two models
+    // standards/llm-policy.json names as the default and the escalation
+    // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
+    // caller keeps the option rather than losing it.
+    const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
 
     // Separate system messages from the conversation — Bedrock takes the
     // system prompt as its own field, with the cachePoint right after it.
@@ -63,7 +70,7 @@ const bedrockProvider: GatewayProvider = {
             role: m.role as "user" | "assistant",
             content: [{ text: m.content }],
           })),
-          inferenceConfig: { temperature, maxTokens },
+          inferenceConfig: { maxTokens, ...sampling },
         }),
         // Per-request timeout — a hung Bedrock socket trips the breaker
         // instead of hanging forever.

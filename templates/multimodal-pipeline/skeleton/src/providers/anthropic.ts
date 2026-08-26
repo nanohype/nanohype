@@ -32,7 +32,7 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     input: ProcessedInput,
     systemPrompt: string,
     model: string,
-    temperature: number,
+    _temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
     const content: Anthropic.MessageParam["content"] = [];
@@ -63,7 +63,6 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
         max_tokens: maxTokens,
         system: systemPrompt,
         messages: [{ role: "user", content }],
-        temperature,
       }),
     );
 
@@ -85,7 +84,7 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     frames: string[],
     systemPrompt: string,
     model: string,
-    temperature: number,
+    _temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
     const content: Anthropic.MessageParam["content"] = [];
@@ -116,7 +115,6 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
         max_tokens: maxTokens,
         system: systemPrompt,
         messages: [{ role: "user", content }],
-        temperature,
       }),
     );
 

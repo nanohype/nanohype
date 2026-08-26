@@ -29,7 +29,7 @@ class AnthropicLlm implements LlmProvider {
     systemPrompt: string,
     userMessage: string,
     model: string,
-    temperature: number,
+    _temperature: number,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
     const response = await this.cb.execute(() =>
@@ -38,7 +38,6 @@ class AnthropicLlm implements LlmProvider {
         max_tokens: maxTokens,
         system: systemPrompt,
         messages: [{ role: "user", content: userMessage }],
-        temperature,
       }),
     );
 
