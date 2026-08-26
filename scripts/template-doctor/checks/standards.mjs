@@ -47,7 +47,15 @@ const FLOOR = JSON.parse(readFileSync(join(ROOT, "standards", "testing-rubric.js
  * become a permanent allowlist — an exception that outlives its reason reads as
  * a standard with a carve-out rather than a standard.
  */
-const BELOW_FLOOR = {};
+const BELOW_FLOOR = {
+  "api-gateway": {
+    lines: 53,
+    functions: 56,
+    statements: 52,
+    branches: 51,
+    why: "the four middleware modules, the health checker and the canary splitter carry no tests; the router and circuit breaker are covered. auth.ts additionally owes the security-critical-100 override, so closing this needs tests written rather than a number raised",
+  },
+};
 
 /**
  * Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way.
@@ -84,8 +92,80 @@ const templates = readdirSync(TEMPLATES).filter((t) =>
 
 // --- TypeScript ---------------------------------------------------------------
 
+// Enumerated from package.json, not from the config file. The Go half below
+// starts at go.mod and the Python half at pyproject.toml — each begins at the
+// marker that says "this is a project of that language", so each can report a
+// project that gates nothing. This half began at `vitest.config.ts` and then
+// looped over what it found, so a skeleton with no config produced an empty
+// loop and no finding. testing-rubric.json's `enforce-floor-in-config` is
+// severity `reject` and names that exact case: "A project that ships no
+// thresholds at all is the anti-pattern this prevents." The detector for it
+// could not express it.
+//
+// The extension list is not decoration. `vitest.config.mts` holds the same
+// config and was invisible to an exact-filename match, and jest keeps its
+// thresholds in package.json under `coverageThreshold` — the rubric names both
+// runners.
+const TS_CONFIG = /^(?:vitest|jest)\.config\.(?:ts|mts|cts|js|mjs|cjs)$/;
+
+/** Every file under dir whose basename matches a pattern, skipping node_modules. */
+function findMatching(dir, pattern, acc = []) {
+  if (!existsSync(dir)) return acc;
+  for (const entry of readdirSync(dir)) {
+    if (entry === "node_modules") continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) findMatching(full, pattern, acc);
+    else if (pattern.test(entry)) acc.push(full);
+  }
+  return acc;
+}
+
+let jsSkeletons = 0;
+let jsGated = 0;
+let jsExempt = 0;
+let jsUngated = 0;
+
 for (const template of templates) {
-  const configs = findFiles(join(TEMPLATES, template, "skeleton"), "vitest.config.ts");
+  const skeleton = join(TEMPLATES, template, "skeleton");
+  const manifests = findFiles(skeleton, "package.json");
+  if (manifests.length === 0) continue;
+  jsSkeletons++;
+
+  const configs = findMatching(skeleton, TS_CONFIG);
+
+  // A manifest with no `test` script is not gating anything to begin with —
+  // an end-to-end harness driven by `test:e2e`, for instance. Exempt, but
+  // counted, so the exemption is a number in the output rather than a
+  // skeleton that silently never appeared.
+  const runsTests = manifests.some((m) => {
+    try {
+      return Boolean(JSON.parse(readFileSync(m, "utf-8")).scripts?.test);
+    } catch {
+      return false;
+    }
+  });
+
+  if (!runsTests) {
+    jsExempt++;
+    continue;
+  }
+
+  if (configs.length === 0) {
+    const jest = manifests.find((m) => /"coverageThreshold"/.test(readFileSync(m, "utf-8")));
+    if (!jest) {
+      jsUngated++;
+      report(
+        "error",
+        "coverage-config",
+        template,
+        `declares a \`test\` script and ships no vitest or jest config anywhere under skeleton/, so no coverage floor is encoded; a project that ships no thresholds at all is the anti-pattern testing-rubric.json names at severity reject`,
+      );
+      continue;
+    }
+  }
+
+  jsGated++;
+
   for (const config of configs) {
     const where = relative(ROOT, config);
     const source = readFileSync(config, "utf-8");
@@ -285,6 +365,31 @@ for (const template of Object.keys(GO_BELOW_FLOOR)) {
       `GO_BELOW_FLOOR names a template that no longer exists — drop the entry`,
     );
   }
+}
+
+// The corpus this run actually examined, on stderr so the TSV contract with
+// standards.sh is unchanged. A gate that reports clean without saying what it
+// looked at cannot be told apart from one that looked at nothing.
+process.stderr.write(
+  `standards: ${jsSkeletons} JS/TS skeleton(s) — ${jsGated} gated, ${jsExempt} with no \`test\` script, ` +
+    `${jsUngated} declaring tests with no runner config\n`,
+);
+
+// Every skeleton leaves the loop through exactly one of the three counters.
+// A gap means a path out of the loop that emits nothing and is counted as
+// nothing, which is the shape this whole check was rewritten to remove.
+if (jsGated + jsExempt + jsUngated !== jsSkeletons) {
+  process.stderr.write(
+    `standards: ${jsSkeletons} skeleton(s) went in and ${jsGated + jsExempt + jsUngated} came out accounted for\n`,
+  );
+  process.exit(2);
+}
+
+if (jsSkeletons === 0) {
+  process.stderr.write(
+    "standards: found no package.json under templates/ — the scan is broken, not the catalog\n",
+  );
+  process.exit(2);
 }
 
 process.stdout.write(findings.length ? `${findings.join("\n")}\n` : "");
