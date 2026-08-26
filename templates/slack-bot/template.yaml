@@ -57,6 +57,8 @@ variables:
 conditionals:
   - path: 'src/commands/ask.ts'
     when: IncludeSlashCommands
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__/message.test.ts'
     when: IncludeTests
 

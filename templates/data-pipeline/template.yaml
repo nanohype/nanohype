@@ -58,6 +58,8 @@ variables:
     default: true
 
 conditionals:
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/pipeline/__tests__/orchestrator.test.ts'
     when: IncludeTests
   - path: 'src/pipeline/__tests__/recursive.test.ts'

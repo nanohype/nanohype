@@ -73,6 +73,8 @@ variables:
     default: true
 
 conditionals:
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__/chunking.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/retrieval.test.ts'

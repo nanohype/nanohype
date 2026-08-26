@@ -61,6 +61,8 @@ conditionals:
     when: IncludeEval
   - path: 'src/eval/metrics.ts'
     when: IncludeEval
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__/dataset.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/validate.test.ts'
