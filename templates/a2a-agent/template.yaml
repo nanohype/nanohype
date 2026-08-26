@@ -69,6 +69,8 @@ conditionals:
     when: IncludeDiscovery
   - path: 'src/discovery/card.ts'
     when: IncludeDiscovery
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__/skills.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/protocol.test.ts'

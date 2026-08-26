@@ -48,6 +48,8 @@ variables:
     default: true
 
 conditionals:
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/orchestrator/__tests__/orchestrator.test.ts'
     when: IncludeTests
   - path: 'src/orchestrator/__tests__/routing.test.ts'

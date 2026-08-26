@@ -59,6 +59,8 @@ conditionals:
     when: IncludeApi
   - path: 'src/cli'
     when: IncludeCli
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__'
     when: IncludeTests
 hooks:

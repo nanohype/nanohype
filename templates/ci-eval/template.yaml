@@ -61,6 +61,8 @@ variables:
     default: true
 
 conditionals:
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/__tests__/baseline.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/reporter.test.ts'

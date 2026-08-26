@@ -47,6 +47,8 @@ variables:
     default: true
 
 conditionals:
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/feature-flags/__tests__/evaluator.test.ts'
     when: IncludeTests
   - path: 'src/feature-flags/__tests__/store-registry.test.ts'

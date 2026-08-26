@@ -61,6 +61,8 @@ conditionals:
     when: IncludeCron
   - path: 'src/worker/scheduler/jobs/example.ts'
     when: IncludeCron
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/worker/__tests__/scheduler.test.ts'
     when: IncludeTests
   - path: 'src/worker/__tests__/consumer.test.ts'

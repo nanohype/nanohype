@@ -57,6 +57,8 @@ conditionals:
     when: IncludePii
   - path: 'src/guardrails/filters/content-policy.ts'
     when: IncludeContentPolicy
+  - path: 'vitest.config.ts'
+    when: IncludeTests
   - path: 'src/guardrails/filters/__tests__/pipeline.test.ts'
     when: IncludeTests
   - path: 'src/guardrails/filters/__tests__/prompt-injection.test.ts'
