@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nanohype.dev/schemas/composite.schema.json",
+  "title": "nanohype composite manifest",
+  "description": "Validates a composite under nanohype/composites/. A composite names a set of templates, the path each renders into, and the variables threaded between them. The 90 templates carry a schema and the composites did not, so a manifest the SDK could not recognise left the catalog rather than failing: generate-catalog.mjs and the SDK's LocalSource both skip an entry whose kind is not 'composite', so one mistyped character dropped a composite from catalog.json, from the render gate, and from the cross-reference check, with every gate green.",
+  "type": "object",
+  "required": [
+    "apiVersion",
+    "kind",
+    "name",
+    "displayName",
+    "description",
+    "version",
+    "tags",
+    "variables",
+    "templates"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "const": "nanohype/v1"
+    },
+    "kind": {
+      "const": "composite",
+      "description": "The discriminator every consumer filters on. An entry that is not exactly 'composite' is skipped rather than rejected, which is why it is pinned here."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Catalog name, kebab-case. Matches the filename stem."
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/variable"
+      },
+      "description": "Composite-level variables, threaded into member templates by ${Name} reference. Same shape as a template's."
+    },
+    "templates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "description": "The member templates, in render order."
+    }
+  },
+  "$defs": {
+    "variable": {
+      "type": "object",
+      "required": ["name", "type", "placeholder", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$",
+          "description": "PascalCase variable name."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["string", "bool", "enum", "int"]
+        },
+        "placeholder": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "default": {},
+        "required": {
+          "type": "boolean"
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pattern": {
+              "type": "string",
+              "description": "Regular expression for value validation."
+            },
+            "message": {
+              "type": "string",
+              "description": "Error message shown when validation fails."
+            }
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "enum"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["options"]
+      },
+      "else": {
+        "not": {
+          "required": ["options"]
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": ["template"],
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Name of a template under templates/."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory the member renders into, relative to the output root."
+        },
+        "root": {
+          "const": true,
+          "description": "This member renders at the output root. Mutually exclusive with path."
+        },
+        "variables": {
+          "type": "object",
+          "description": "Values passed to the member. A ${Name} string references a composite-level variable.",
+          "additionalProperties": {
+            "type": ["string", "boolean", "number"]
+          }
+        },
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Composite variable name gating this member's inclusion."
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["path"],
+          "not": {
+            "required": ["root"]
+          }
+        },
+        {
+          "required": ["root"],
+          "not": {
+            "required": ["path"]
+          }
+        }
+      ]
+    }
+  }
+}
