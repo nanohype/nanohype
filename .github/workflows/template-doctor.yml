@@ -84,7 +84,30 @@ jobs:
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if git diff --name-only "$BASE_SHA"...HEAD | grep -qE \
+          # A base git cannot resolve and a base whose diff is genuinely empty
+          # reach grep as the same empty input, and the default shell is
+          # `bash -e` with no pipefail, so the pipeline's status is grep's
+          # alone. Read as one thing, a force-pushed or collected base commit
+          # became "no catalog paths changed" — and every step below is
+          # conditioned on this output, so the job reported success having read
+          # nothing. An empty BASE_SHA is the sharpest case: git parses
+          # `...HEAD` as `HEAD...HEAD`, succeeds, and prints nothing.
+          #
+          # Deciding scope is an optimisation. The pass is the thing that
+          # examines the catalog, so an unusable base runs it.
+          if [ -z "$BASE_SHA" ] || ! git rev-parse --verify --quiet "$BASE_SHA^{commit}" >/dev/null; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "base commit '$BASE_SHA' does not resolve — running the full doctor pass"
+            exit 0
+          fi
+
+          if ! changed=$(git diff --name-only "$BASE_SHA"...HEAD); then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            echo "cannot diff against '$BASE_SHA' — running the full doctor pass"
+            exit 0
+          fi
+
+          if printf '%s\n' "$changed" | grep -qE \
             '^(templates/|composites/|standards/|scripts/template-doctor/|\.github/workflows/template-doctor\.yml$)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             echo "catalog paths changed — running the full doctor pass"
