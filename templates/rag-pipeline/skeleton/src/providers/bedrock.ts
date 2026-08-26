@@ -33,7 +33,7 @@ class BedrockLlm implements LlmProvider {
     systemPrompt: string,
     userMessage: string,
     model: string,
-    temperature: number,
+    _temperature: number,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
     const response = await this.cb.execute(() =>
@@ -44,7 +44,7 @@ class BedrockLlm implements LlmProvider {
           // prompt-caching pattern; cache tokens are reported in usage.
           system: [{ text: systemPrompt }, { cachePoint: { type: "default" } }],
           messages: [{ role: "user", content: [{ text: userMessage }] }],
-          inferenceConfig: { temperature, maxTokens },
+          inferenceConfig: { maxTokens },
         }),
         { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
       ),
