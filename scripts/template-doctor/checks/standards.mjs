@@ -42,10 +42,10 @@ const FLOOR = JSON.parse(readFileSync(join(ROOT, "standards", "testing-rubric.js
  * gate back to decorative, which is the exact failure this check exists to
  * prevent.
  *
- * Empty: every TypeScript skeleton now meets the published floor. The check
- * below reports a stale entry as an error precisely so this does not quietly
+ * The check below reports a stale entry as an error precisely so this does not
  * become a permanent allowlist — an exception that outlives its reason reads as
- * a standard with a carve-out rather than a standard.
+ * a standard with a carve-out rather than a standard. An entry leaves when its
+ * skeleton reaches the floor, which is the only way it should leave.
  */
 const BELOW_FLOOR = {
   "api-gateway": {

@@ -72,7 +72,7 @@ If you're writing a client (not just consuming):
 
 1. Create `composites/<name>.yaml`. Use `kind: composite`, `apiVersion: nanohype/v1`.
 2. Reference templates by name; declare entry conditions and variable overrides.
-3. Validate against `schemas/template.schema.json` — templates and composites share one schema.
+3. Validate against [`schemas/composite.schema.json`](schemas/composite.schema.json) (`npm run validate:composites`). Composites have their own schema; a composite does not satisfy the template schema.
 4. Re-generate the catalog (`npm run generate:catalog`).
 
 ## Add a new standard
