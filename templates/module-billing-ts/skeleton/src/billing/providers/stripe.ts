@@ -57,10 +57,15 @@ function createStripeProvider(): PaymentProvider {
       webhookSecret = config.stripe?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null;
 
       // Lazy load the Stripe SDK
+      //
+      // No `apiVersion` is passed. `Stripe.LatestApiVersion` is `typeof
+      // ApiVersion` — the single version string the installed SDK was generated
+      // against — and the constructor option is typed as exactly that, so the
+      // only value that compiles is the one the client already falls back to.
+      // Writing it out cannot change which `Stripe-Version` is sent; it can only
+      // stop compiling on the next SDK release, on a tree nobody edited.
       const { default: Stripe } = await import("stripe");
-      client = new Stripe(secretKey, {
-        apiVersion: "2026-07-29.dahlia",
-      });
+      client = new Stripe(secretKey);
 
       logger.info("Stripe provider initialized");
     },
