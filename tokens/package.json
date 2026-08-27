@@ -40,7 +40,7 @@
     "nanohype"
   ],
   "devDependencies": {
-    "@biomejs/biome": "2.5.8",
+    "@biomejs/biome": "2.5.10",
     "@types/node": "^25.8.0",
     "typescript": "^7.0.0",
     "vitest": "^4.1.6"

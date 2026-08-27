@@ -49,7 +49,7 @@
     "validate:sli-metric-names": "node scripts/check-sli-metric-names.mjs"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.8",
+    "@biomejs/biome": "2.5.10",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "editorconfig-checker": "6.1.1",

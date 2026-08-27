@@ -3,9 +3,9 @@ module __GO_MODULE__
 go 1.26
 
 require (
-	github.com/go-chi/chi/v5 v5.3.1
+	github.com/go-chi/chi/v5 v5.3.2
 	github.com/jackc/pgx/v5 v5.10.0
-	github.com/mattn/go-sqlite3 v1.14.49
+	github.com/mattn/go-sqlite3 v1.14.50
 	github.com/spf13/viper v1.21.0
 	go.opentelemetry.io/otel v1.45.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.45.0
