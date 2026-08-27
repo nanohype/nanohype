@@ -34,7 +34,7 @@
     "pg": "^8.13.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.8",
+    "@biomejs/biome": "2.5.10",
     "@types/better-sqlite3": "^9.0.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.11.0",
