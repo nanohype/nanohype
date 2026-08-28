@@ -203,6 +203,16 @@ jobs:
       - name: Validate composite manifests
         run: npm run validate:composites
 
+      # Both checks above read composites/*.yaml, and so does every consumer:
+      # generate-catalog.mjs, the SDK's LocalSource and its GitHubSource each
+      # list the directory one level deep and keep the .yaml entries. A file
+      # outside that set is therefore invisible twice — a .yml manifest, or a
+      # .yaml one a directory deeper, is a complete composite that no consumer
+      # lists, no schema validates and no gate mentions. This asserts the
+      # enumeration is total, so writing one is an error rather than a no-op.
+      - name: Verify composites/ holds only manifests consumers read
+        run: npm run validate:composite-files
+
       # The schema above reads one manifest on its own, which is all a JSON
       # Schema can do — it has no vocabulary for the other file in the directory,
       # for the filename its subject sits in, or for whether an identifier
