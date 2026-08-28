@@ -203,6 +203,20 @@ jobs:
       - name: Validate composite manifests
         run: npm run validate:composites
 
+      # The schema above reads one manifest on its own, which is all a JSON
+      # Schema can do — it has no vocabulary for the other file in the directory,
+      # for the filename its subject sits in, or for whether an identifier
+      # written in one field is declared in another. Every silent case left after
+      # `kind` was pinned lives on that side: an entry `condition` naming an
+      # undeclared variable is never true, so the member is dropped exactly as a
+      # deliberately-false one is; a `${Name}` that resolves to nothing expands
+      # to the empty string and reaches the child template as a falsy value; two
+      # manifests may claim one name, and fetch resolves by filename, so one
+      # row's content is unreachable. All of them validate, appear in the
+      # catalog, and render without throwing.
+      - name: Verify composite references resolve
+        run: npm run validate:composite-refs
+
       # A model ID is a plain string, so no compiler, linter or type checker has
       # an opinion about it — a scaffold born on a retired or never-existent ID
       # fails only at the first invocation, in the consumer's project. This
