@@ -33,6 +33,7 @@
     "validate:model-ids": "node scripts/check-model-ids.mjs",
     "validate:regions": "node scripts/check-regions.mjs",
     "validate:composites": "node scripts/validate-schema.mjs --schema schemas/composite.schema.json --data 'composites/*.yaml'",
+    "validate:composite-refs": "node scripts/check-composite-references.mjs",
     "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
     "validate:doc-commands": "node scripts/check-doc-commands.mjs",
     "validate:publishable-deps": "node scripts/check-publishable-deps.mjs",
