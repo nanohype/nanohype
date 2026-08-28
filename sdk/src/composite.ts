@@ -15,7 +15,8 @@ import { validateCompositeManifest } from "./validator.js";
  * to the nanohype composite contract (v1):
  *   1. Validate composite manifest
  *   2. Resolve composite-level variables
- *   3. Evaluate entry conditions — skip entries whose bool variable is false
+ *   3. Evaluate entry conditions — skip entries whose bool variable is false,
+ *      and reject a condition naming a variable the composite does not declare
  *   4. For each entry: resolve variables, fetch + render template, prefix paths
  *   5. Merge file trees (root entry at /, others at entry.path/)
  */
@@ -51,9 +52,26 @@ export async function renderComposite(
   }
   const resolved = resolveVariables(manifest.variables, values);
 
-  // Evaluate conditions and order entries (root first)
+  // `resolved` is keyed by exactly the names this composite declares, so
+  // membership in it is the test for whether an entry names something real.
+  const declares = (ref: string) => ref in resolved;
+
+  // Evaluate conditions and order entries (root first).
+  //
+  // An undeclared condition name reads as `undefined !== "true"`, which excludes
+  // the entry — the same outcome, and the same silence, as a condition that is
+  // deliberately false. Left to that, a composite loses a member to a typo,
+  // renders successfully, and scaffolds a project missing whatever that member
+  // provided. Nothing downstream can tell the two apart, so the difference has
+  // to be made here.
   const activeEntries = manifest.templates.filter((entry) => {
     if (!entry.condition) return true;
+    if (!declares(entry.condition)) {
+      throw new VariableResolutionError(
+        `Entry '${entry.template}' has condition '${entry.condition}', ` +
+          "which this composite does not declare",
+      );
+    }
     return resolved[entry.condition] === "true";
   });
 
@@ -68,7 +86,21 @@ export async function renderComposite(
     if (entry.variables) {
       for (const [key, val] of Object.entries(entry.variables)) {
         if (typeof val === "string") {
-          entryValues[key] = val.replace(/\$\{(\w+)\}/g, (_, ref: string) => resolved[ref] ?? "");
+          // An unresolvable reference expanded to the empty string reaches the
+          // child template as a falsy value, which makes a mistyped variable
+          // name indistinguishable from asking for that feature to be off — the
+          // files it gates simply leave the output. `resolveVariables` already
+          // rejects the same `${Name}` syntax in a composite-level default, so
+          // the two layers of one manifest must agree about it.
+          entryValues[key] = val.replace(/\$\{(\w+)\}/g, (_, ref: string) => {
+            if (!declares(ref)) {
+              throw new VariableResolutionError(
+                `Entry '${entry.template}' sets '${key}' from \${${ref}}, ` +
+                  "which this composite does not declare",
+              );
+            }
+            return resolved[ref];
+          });
         } else {
           entryValues[key] = val;
         }

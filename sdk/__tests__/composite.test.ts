@@ -212,6 +212,75 @@ describe("renderComposite", () => {
     expect(result.files[0].content).toBe("# my-project");
   });
 
+  it("rejects a condition naming a variable the composite does not declare", async () => {
+    // Excluding the entry instead would be indistinguishable from a condition
+    // that is deliberately false, so a typo would silently drop a member.
+    const source = mockSource({
+      always: mockTemplate("always", [], [{ path: "a.txt", content: "a" }]),
+      optional: mockTemplate("optional", [], [{ path: "b.txt", content: "b" }]),
+    });
+    const manifest: CompositeManifest = {
+      apiVersion: "nanohype/v1",
+      kind: "composite",
+      name: "test",
+      displayName: "Test",
+      description: "Test",
+      version: "0.1.0",
+      tags: ["test"],
+      variables: [
+        {
+          name: "IncludeOptional",
+          type: "bool",
+          placeholder: "__INCLUDE__",
+          description: "Include",
+        },
+      ],
+      templates: [
+        { template: "always" },
+        { template: "optional", path: "opt", condition: "IncludeOptinal" },
+      ],
+    };
+
+    await expect(renderComposite(manifest, { IncludeOptional: true }, source)).rejects.toThrow(
+      /condition 'IncludeOptinal', which this composite does not declare/,
+    );
+  });
+
+  it("rejects an entry variable referencing a variable the composite does not declare", async () => {
+    // Expanding to the empty string instead would reach the child template as a
+    // falsy value, so a typo would read as asking for the feature to be off.
+    // resolveVariables already rejects this syntax in a composite-level default.
+    const source = mockSource({
+      tmpl: mockTemplate(
+        "tmpl",
+        [
+          {
+            name: "ProjectName",
+            type: "string",
+            placeholder: "__PROJECT_NAME__",
+            description: "Name",
+          },
+        ],
+        [{ path: "README.md", content: "# __PROJECT_NAME__" }],
+      ),
+    });
+    const manifest: CompositeManifest = {
+      apiVersion: "nanohype/v1",
+      kind: "composite",
+      name: "test",
+      displayName: "Test",
+      description: "Test",
+      version: "0.1.0",
+      tags: ["test"],
+      variables: [{ name: "Name", type: "string", placeholder: "__NAME__", description: "Name" }],
+      templates: [{ template: "tmpl", root: true, variables: { ProjectName: "${Nmae}" } }],
+    };
+
+    await expect(renderComposite(manifest, { Name: "my-project" }, source)).rejects.toThrow(
+      /sets 'ProjectName' from \$\{Nmae\}, which this composite does not declare/,
+    );
+  });
+
   it("warns on file collisions (last-writer-wins)", async () => {
     const source = mockSource({
       first: mockTemplate("first", [], [{ path: "README.md", content: "first" }]),
