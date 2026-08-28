@@ -189,6 +189,27 @@ describe("validateManifest", () => {
     ).toThrow("is type int but default is 'abc'");
   });
 
+  it("accepts an int variable whose default is written as a numeric string", () => {
+    // YAML quotes a default that shares a key's style with its neighbours, so an
+    // int arrives as "8080" as readily as 8080. Refusing the quoted form would
+    // reject a manifest that is correct in every way a consumer can observe.
+    expect(() =>
+      validateManifest(
+        minimalManifest({
+          variables: [
+            {
+              name: "Port",
+              type: "int",
+              placeholder: "__PORT__",
+              description: "Port",
+              default: "8080",
+            },
+          ],
+        }),
+      ),
+    ).not.toThrow();
+  });
+
   it("rejects enum variable with default not in options", () => {
     expect(() =>
       validateManifest(
