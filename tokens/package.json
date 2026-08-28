@@ -1,7 +1,7 @@
 {
   "name": "@nanohype/tokens",
   "version": "0.2.0",
-  "description": "Design tokens for nanohype interfaces \u2014 Tailwind v4 theme plus a typed mirror, held together by a parity test.",
+  "description": "Design tokens for nanohype interfaces — Tailwind v4 theme plus a typed mirror, held together by a parity test.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -24,7 +24,8 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test:coverage": "vitest run --coverage"
   },
   "publishConfig": {
     "access": "public"
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
     "@types/node": "^25.8.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "typescript": "^7.0.0",
     "vitest": "^4.1.6"
   }

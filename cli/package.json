@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "version": "0.1.2",
-  "description": "The nanohype CLI \u2014 scaffold templates and composites from the nanohype catalog. Thin entry point over @nanohype/sdk.",
+  "description": "The nanohype CLI — scaffold templates and composites from the nanohype catalog. Thin entry point over @nanohype/sdk.",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
@@ -23,7 +23,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@nanohype/sdk": "^0.2.1"
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
     "@types/node": "^25.8.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "typescript": "^7.0.0",
     "vitest": "^4.1.6"
   },
