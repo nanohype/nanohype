@@ -116,12 +116,11 @@ jobs:
       # reference implementation of the rendering contract, so a release that
       # skipped the template and catalog validation would be the least
       # trustworthy artifact in the org.
-      # Deliberately not `npm run lint` (root `biome check .`). That script is
-      # not gated by any workflow and does not currently pass — the package
-      # suites below run biome inside sdk/ and mcp-server/, which is what CI
-      # actually enforces. Adding a failing gate here would make releases
-      # impossible; fixing the root formatting is its own change, not a rider on
-      # a release.
+      # Deliberately not `npm run lint` (root `biome check .`). Every pull
+      # request already runs it, unfiltered, in validate-templates.yml, so a
+      # release cannot be the first thing to discover a lint failure — and the
+      # package suites below run biome inside sdk/ and mcp-server/ against the
+      # code actually being published.
       # `validate:publishable-deps` is the one that has to run here rather than
       # only on PRs. A release is a tag push, so it can reach this workflow
       # without the catalog gate having run on that exact tree — and a local-path

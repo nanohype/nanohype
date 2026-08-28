@@ -1,7 +1,12 @@
 // Package providers defines the pluggable provider contract for the
-// auth module. Each implementation in this package self-registers at
-// package init time. Consumers select a provider by name via
-// auth.Config.Provider.
+// auth module. Consumers select a provider by name via auth.Config.Provider
+// and call RegisterBuiltins with it.
+//
+// Registration is on demand rather than at package init: every constructor
+// reads required environment configuration and returns an error when it is
+// missing, and an init function has no way to report that — it can only
+// panic. Constructing the one provider that was asked for lets a
+// misconfiguration surface to operators at startup as a returned error.
 package providers
 
 import (

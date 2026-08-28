@@ -4,7 +4,7 @@ You're an AI client (or the author of one). This file gets you running in five m
 
 ## What this repo gives you
 
-- **Templates** (`templates/<name>/`) — 94 scaffolds for AI systems, applications, infrastructure, modules, and non-engineering deliverables.
+- **Templates** (`templates/<name>/`) — one scaffold per directory, for AI systems, applications, infrastructure, modules, and non-engineering deliverables. `catalog.json` enumerates them.
 - **Composites** (`composites/*.yaml`) — 25 pre-baked multi-template stacks for common engagements (ai-chatbot, agent-team, enterprise-ai, etc.).
 - **Catalog** ([`catalog.json`](catalog.json)) — single machine-readable index of all templates + composites. Stable URL at `https://raw.githubusercontent.com/nanohype/nanohype/main/catalog.json`.
 - **Standards** ([`standards/`](standards/)) — the production bar every nanohype-stack build meets. One JSON file per guardrail, plus a human-readable README.
