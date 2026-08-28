@@ -38,8 +38,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Test
-        run: npm test
+      # `npm run test:coverage`, not `npm test`: vitest only evaluates
+      # `coverage.thresholds` when coverage is on, so the 100% floor in
+      # vitest.config.ts is inert under a plain test run. Enforcing it here is
+      # what makes it a floor rather than a note.
+      - name: Test with coverage floors
+        run: npm run test:coverage
 
       - name: Build
         run: npm run build

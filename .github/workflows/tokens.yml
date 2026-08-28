@@ -41,5 +41,10 @@ jobs:
       # The parity gate: tokens.css and tokens.ts are two copies of the same
       # values, and this is what stops them drifting. A token added to one and
       # not the other fails here rather than reaching a consumer as `undefined`.
-      - name: Parity between the stylesheet and the typed mirror
-        run: npm test
+      # `npm run test:coverage`, not `npm test`: vitest only evaluates
+      # `coverage.thresholds` when coverage is on, so the 100% floor in
+      # vitest.config.ts is inert under a plain test run. Both files under src/
+      # are in the coverage `include`, so a token module added without a test
+      # drags the floor down here rather than shipping unread.
+      - name: Parity between the stylesheet and the typed mirror, with coverage floors
+        run: npm run test:coverage
