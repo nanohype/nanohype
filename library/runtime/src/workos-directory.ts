@@ -12,9 +12,14 @@
  * The `/directory_users` endpoint does NOT support server-side filtering
  * by email or custom attribute (documented params: `directory`, `group`,
  * `limit`, `before`, `after`, `order`), so the finders paginate with
- * `limit=100` via the `after` cursor and scan client-side. Pagination is
- * bounded at `maxPages` (default 50 → 5000 users) so a misbehaving API
- * can never produce a runaway loop. Callers own caching — every fleet
+ * `limit=100` via the `after` cursor and scan client-side.
+ *
+ * A lookup is bounded on both axes, and it takes both to be bounded at all.
+ * `maxPages` (default 50 → 5000 users) caps how many round-trips a call makes;
+ * `timeoutMs` caps how long any one of them may hang. A page cap alone bounds
+ * the count of requests and nothing about the wall clock — one socket that
+ * never answers stalls the whole walk for as long as the peer keeps it open,
+ * which is the failure a page cap reads as impossible. Callers own caching — every fleet
  * consumer fronts this client with its own cache (DDB, in-memory TTL),
  * so the client stays stateless.
  *
@@ -60,6 +65,14 @@ export interface WorkOsDirectoryConfig {
   pageSize?: number;
   /** Upper bound on pages walked per call. Default: 50. */
   maxPages?: number;
+  /**
+   * Deadline for a single request, in ms. Default: 10000.
+   *
+   * Per request rather than per call: the walk makes up to `maxPages` of them,
+   * and a shared deadline would make the last page's budget depend on how slow
+   * the earlier ones were.
+   */
+  timeoutMs?: number;
 }
 
 interface RawDirectoryUser {
@@ -114,6 +127,7 @@ export function createWorkOsDirectoryClient(config: WorkOsDirectoryConfig): Work
   const baseUrl = (config.baseUrl ?? "https://api.workos.com").replace(/\/$/, "");
   const pageSize = config.pageSize ?? 100;
   const maxPages = config.maxPages ?? 50;
+  const timeoutMs = config.timeoutMs ?? 10_000;
   const headers = {
     Authorization: `Bearer ${config.apiKey}`,
     Accept: "application/json",
@@ -128,7 +142,13 @@ export function createWorkOsDirectoryClient(config: WorkOsDirectoryConfig): Work
       if (params.group) url.searchParams.set("group", params.group);
       if (after) url.searchParams.set("after", after);
 
-      const response = await fetchImpl(url.toString(), { headers });
+      // `AbortSignal.timeout` rather than racing a timer: racing settles the
+      // caller's promise and leaves the request in flight, so the socket and
+      // the response body are still held. Aborting releases both.
+      const response = await fetchImpl(url.toString(), {
+        headers,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
       if (!response.ok) {
         throw new Error(`WorkOS directory list failed (${response.status} ${response.statusText})`);
       }

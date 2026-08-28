@@ -150,6 +150,47 @@ describe("createWorkOsDirectoryClient", () => {
     );
   });
 
+  it("carries an abort signal on every request", async () => {
+    // The page cap bounds how many requests a walk makes and says nothing about
+    // how long one may hang. Without a signal a single unanswered socket stalls
+    // the whole lookup for as long as the peer holds it open.
+    const { client, fetchImpl } = makeClient([page([bob], "cursor-2"), page([alice])]);
+
+    await client.findByEmail("alice@example.com");
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    for (const call of fetchImpl.mock.calls) {
+      const [, init] = call as unknown as [string, RequestInit];
+      expect(init.signal).toBeInstanceOf(AbortSignal);
+    }
+  });
+
+  it("gives each request its own deadline rather than sharing one across the walk", async () => {
+    // A shared deadline would make the last page's budget depend on how slow the
+    // earlier ones were, so a walk near the cap would fail on its own pagination.
+    const { client, fetchImpl } = makeClient([page([bob], "cursor-2"), page([alice])]);
+
+    await client.findByEmail("alice@example.com");
+
+    const signals = fetchImpl.mock.calls.map(
+      (c) => (c as unknown as [string, RequestInit])[1].signal,
+    );
+    expect(signals[0]).not.toBe(signals[1]);
+  });
+
+  it("surfaces an aborted request rather than treating it as an empty page", async () => {
+    const fetchImpl = vi.fn(async () => {
+      throw Object.assign(new Error("The operation was aborted"), { name: "TimeoutError" });
+    });
+    const client = createWorkOsDirectoryClient({
+      apiKey: "sk_test",
+      directoryId: "directory_01",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await expect(client.findByEmail("alice@example.com")).rejects.toThrow(/aborted/);
+  });
+
   it("bounds pagination at maxPages so a misbehaving API cannot loop forever", async () => {
     const fetchImpl = vi.fn(async () => jsonResponse(page([bob], "always-more")));
     const client = createWorkOsDirectoryClient({
