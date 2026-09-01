@@ -1,7 +1,12 @@
 // Package providers defines the pluggable provider contract for the
-// auth module. Each implementation in this package self-registers at
-// package init time. Consumers select a provider by name via
-// auth.Config.Provider.
+// auth module. Consumers select a provider by name via auth.Config.Provider
+// and call RegisterBuiltins with it.
+//
+// Registration is on demand rather than at package init: every constructor
+// reads required environment configuration and returns an error when it is
+// missing, and an init function has no way to report that — it can only
+// panic. Constructing the one provider that was asked for lets a
+// misconfiguration surface to operators at startup as a returned error.
 package providers
 
 import (
@@ -25,9 +30,12 @@ var (
 	registry = map[string]Provider{}
 )
 
-// Register adds p to the global registry. It panics if a provider with
-// the same name is already registered — init-time collisions indicate
-// a wiring bug, not a recoverable condition.
+// Register adds p to the global registry. It panics if a provider with the
+// same name is already registered: two providers answering to one
+// auth.Config.Provider value leaves the selection ambiguous, and nothing the
+// caller does afterwards resolves it. A duplicate name is a wiring bug
+// wherever registration is reached from, so it fails loudly rather than
+// returning an error a caller can swallow.
 func Register(p Provider) {
 	mu.Lock()
 	defer mu.Unlock()

@@ -141,15 +141,18 @@ contract is the
 `library/runtime/` is `@nanohype/runtime` — zero-dependency TypeScript
 primitives (circuit breaker, retry/timeout, provider registry, WorkOS
 Directory client, PII redaction) maintained here as the single source of
-truth and **vendored** into consumers as byte-identical copies. Its README
-documents the model; the short version:
+truth, for consumers that vendor a module rather than depend on it. Its
+README documents the model; the short version:
 
 1. Behavior changes land in `library/runtime/src/` first, with tests.
-2. Vendored copies never drift — a copy that differs from its source module
-   is the defect. `npm run verify:library` (CI-enforced) checks the vendored
-   chart copies today and extends to runtime modules as templates adopt them;
-   `npm run sync:library` re-syncs.
-3. Never fix a bug in a vendored copy — fix it at the source and re-copy.
+2. Never fix a bug in a copy — fix it at the source and re-copy. A copy that
+   differs from its source module is the defect.
+3. What enforces that, and what does not: `npm run verify:library`
+   (CI-enforced, `npm run sync:library` re-syncs) compares the vendored
+   `tenant-chart-base` chart copies. It reads no TypeScript. So rule 2 holds
+   for the chart by gate and for the runtime modules by review only — and a
+   skeleton under `templates/` is an implementation of the same shape, not a
+   copy of one of these files, so it is not what rule 2 is about.
 
 ```bash
 cd library/runtime
