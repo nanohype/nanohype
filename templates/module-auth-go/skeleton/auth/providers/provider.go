@@ -30,9 +30,12 @@ var (
 	registry = map[string]Provider{}
 )
 
-// Register adds p to the global registry. It panics if a provider with
-// the same name is already registered — init-time collisions indicate
-// a wiring bug, not a recoverable condition.
+// Register adds p to the global registry. It panics if a provider with the
+// same name is already registered: two providers answering to one
+// auth.Config.Provider value leaves the selection ambiguous, and nothing the
+// caller does afterwards resolves it. A duplicate name is a wiring bug
+// wherever registration is reached from, so it fails loudly rather than
+// returning an error a caller can swallow.
 func Register(p Provider) {
 	mu.Lock()
 	defer mu.Unlock()
