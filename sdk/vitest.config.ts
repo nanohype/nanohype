@@ -42,6 +42,19 @@ export default defineConfig({
           statements: 100,
         },
 
+        // paths.ts holds both containment decisions — `resolveWithin` for a
+        // name resolved against a directory this process owns, and
+        // `assertDescendingPath` for a rendered path handed to a caller who
+        // supplies the directory later. It is the only thing standing between
+        // a substituted variable value and a write outside the output tree, so
+        // every refusal branch is exercised rather than merely present.
+        "src/paths.ts": {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+          statements: 100,
+        },
+
         // validator.ts holds `isCatalogName`, the same boundary reached the
         // other way: GitHubSource interpolates a name into a request path, so
         // the pattern is what stops a name reshaping the URL.

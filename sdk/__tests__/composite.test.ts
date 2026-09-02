@@ -328,3 +328,91 @@ describe("renderComposite", () => {
     expect(result.warnings.some((w) => w.includes("Failed to render entry 'missing'"))).toBe(true);
   });
 });
+
+describe("renderComposite path containment", () => {
+  function compositeWith(templates: CompositeManifest["templates"]): CompositeManifest {
+    return {
+      apiVersion: "nanohype/v1",
+      kind: "composite",
+      name: "test",
+      displayName: "Test",
+      description: "Test",
+      version: "0.1.0",
+      tags: ["test"],
+      variables: [],
+      templates,
+    };
+  }
+
+  it("refuses an entry path that prefixes files out of the output tree", async () => {
+    // `entry.path` is manifest data, not a variable, so the per-template check
+    // cannot see it — it runs before the prefix is applied.
+    const source = mockSource({
+      root: mockTemplate("root", [], [{ path: "package.json", content: "{}" }]),
+      child: mockTemplate("child", [], [{ path: "index.ts", content: "main" }]),
+    });
+    const manifest = compositeWith([
+      { template: "root", root: true },
+      { template: "child", path: "../../escaped" },
+    ]);
+
+    await expect(renderComposite(manifest, {}, source)).rejects.toThrow(/escapes the render root/);
+  });
+
+  it("does not downgrade a refused path to a warning", async () => {
+    // The per-entry catch exists so one unreachable template does not lose the
+    // whole scaffold. That trade is only sound while the failure stays inside
+    // its entry, so a refused path has to propagate instead of joining
+    // `warnings` and letting the caller report success.
+    const source = mockSource({
+      root: mockTemplate("root", [], [{ path: "package.json", content: "{}" }]),
+      child: mockTemplate("child", [], [{ path: "index.ts", content: "main" }]),
+    });
+    const manifest = compositeWith([
+      { template: "root", root: true },
+      { template: "child", path: "../escaped" },
+    ]);
+
+    const result = await renderComposite(manifest, {}, source).catch((err: unknown) => err);
+    expect(result).toBeInstanceOf(Error);
+    expect((result as Error).message).toMatch(/escapes the render root/);
+  });
+
+  it("still folds an ordinary entry failure into warnings", async () => {
+    // The guard above must not have turned every per-entry failure into a
+    // throw — a template that cannot be fetched is still one entry's problem.
+    const source = mockSource({
+      root: mockTemplate("root", [], [{ path: "package.json", content: "{}" }]),
+    });
+    const manifest = compositeWith([
+      { template: "root", root: true },
+      { template: "absent", path: "child" },
+    ]);
+
+    const result = await renderComposite(manifest, {}, source);
+    expect(result.warnings.some((w) => w.includes("Failed to render entry 'absent'"))).toBe(true);
+    expect(result.files).toHaveLength(1);
+  });
+
+  it("refuses a variable value that escapes through a member template's path", async () => {
+    const source = mockSource({
+      child: mockTemplate(
+        "child",
+        [
+          {
+            name: "Category",
+            type: "string",
+            placeholder: "__CATEGORY__",
+            description: "Category",
+          },
+        ],
+        [{ path: "addons/__CATEGORY__/values.yaml", content: "x" }],
+      ),
+    });
+    const manifest = compositeWith([
+      { template: "child", root: true, variables: { Category: "../../escaped" } },
+    ]);
+
+    await expect(renderComposite(manifest, {}, source)).rejects.toThrow(/escapes the render root/);
+  });
+});

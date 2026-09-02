@@ -1,4 +1,5 @@
 import { VariableResolutionError } from "./errors.js";
+import { assertDescendingPath, PathContainmentError } from "./paths.js";
 import { renderTemplate } from "./renderer.js";
 import { resolveVariables } from "./resolver.js";
 import type { CatalogSource } from "./source.js";
@@ -111,10 +112,16 @@ export async function renderComposite(
       const { manifest: tmplManifest, files } = await source.fetchTemplate(entry.template);
       const result = renderTemplate(tmplManifest, files, entryValues);
 
-      // Prefix paths for non-root entries
+      // Prefix paths for non-root entries. `entry.path` comes from the
+      // composite manifest, which the schema types as a plain string, so the
+      // prefix is a second way a path can leave the output directory — one the
+      // per-template check cannot see, because it runs before the prefix is
+      // applied. The prefixed result is what gets written, so that is what is
+      // checked.
       const prefix = entry.root ? "" : entry.path ? entry.path + "/" : "";
       for (const file of result.files) {
         const prefixedPath = prefix + file.path;
+        assertDescendingPath(prefixedPath, `Composed path for entry '${entry.template}'`);
         // Last-writer-wins on path collisions
         const existingIdx = allFiles.findIndex((f) => f.path === prefixedPath);
         if (existingIdx !== -1) {
@@ -131,6 +138,12 @@ export async function renderComposite(
 
       entries.push({ template: entry.template, path: entry.path, fileCount: result.files.length });
     } catch (err) {
+      // A path that escapes is not a per-entry failure to carry on from. The
+      // rest of this catch exists so one unreachable template does not lose the
+      // whole scaffold, and that trade is only sound while the failure is
+      // confined to the entry that caused it. A refused path is a claim about
+      // where files land, so it propagates to the caller instead.
+      if (err instanceof PathContainmentError) throw err;
       warnings.push(
         `Failed to render entry '${entry.template}': ${err instanceof Error ? err.message : String(err)}`,
       );

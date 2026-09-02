@@ -1,4 +1,5 @@
 import { applyContentConditionals, evalCondition } from "./conditions.js";
+import { assertDescendingPath } from "./paths.js";
 import { resolveVariables } from "./resolver.js";
 import type { RenderResult, SkeletonFile, TemplateHook, TemplateManifest } from "./types.js";
 import { validateManifest } from "./validator.js";
@@ -63,11 +64,18 @@ export function renderTemplate(
     );
     if (isExcluded) continue;
 
-    // Replace placeholders in path
+    // Replace placeholders in path. A variable value is caller-supplied and a
+    // `string` variable that declares no `validation.pattern` constrains
+    // nothing, so substitution is where a relative skeleton path can become
+    // one that leaves the output directory. The result is refused here, at the
+    // step that produced it, rather than at whichever write consumes it — the
+    // returned `files` are a contract with every caller of this function, not
+    // only with the bundled CLI.
     let renderedPath = file.path;
     for (const v of manifest.variables) {
       renderedPath = renderedPath.replaceAll(v.placeholder, resolved[v.name]);
     }
+    assertDescendingPath(renderedPath, `Rendered path for '${file.path}'`);
 
     // Strip inline #if/#endif blocks first, then replace placeholders in the
     // surviving content.

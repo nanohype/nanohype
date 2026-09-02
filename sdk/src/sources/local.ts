@@ -1,7 +1,8 @@
 import { readdir, readFile, stat } from "node:fs/promises";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import * as yaml from "js-yaml";
 import { NanohypeError } from "../errors.js";
+import { resolveWithin } from "../paths.js";
 import type { CatalogSource, LocalSourceOptions } from "../source.js";
 import type {
   Catalog,
@@ -25,26 +26,6 @@ export class LocalSource implements CatalogSource {
 
   constructor(options: LocalSourceOptions) {
     this.rootDir = options.rootDir;
-  }
-
-  /**
-   * Resolve caller-influenced path segments against a base directory and
-   * assert the result stays inside it. Names ultimately arrive from LLM
-   * tool arguments, so a crafted `../`, absolute, or null-byte segment
-   * must never resolve to a file outside the catalog tree.
-   */
-  private resolveWithin(baseDir: string, ...segments: string[]): string {
-    for (const segment of segments) {
-      if (segment.includes("\0")) {
-        throw new NanohypeError(`Invalid path segment: contains a null byte`);
-      }
-    }
-    const base = resolve(baseDir);
-    const resolved = resolve(base, ...segments);
-    if (resolved !== base && !resolved.startsWith(base + sep)) {
-      throw new NanohypeError(`Path '${segments.join("/")}' escapes '${base}'`);
-    }
-    return resolved;
   }
 
   async listTemplates(): Promise<CatalogEntry[]> {
@@ -83,7 +64,7 @@ export class LocalSource implements CatalogSource {
   async fetchTemplate(
     name: string,
   ): Promise<{ manifest: TemplateManifest; files: SkeletonFile[] }> {
-    const templateDir = this.resolveWithin(join(this.rootDir, "templates"), name);
+    const templateDir = resolveWithin(join(this.rootDir, "templates"), name);
     const manifestPath = join(templateDir, "template.yaml");
 
     let manifestText: string;
@@ -137,7 +118,7 @@ export class LocalSource implements CatalogSource {
   }
 
   async fetchComposite(name: string): Promise<CompositeManifest> {
-    const compositePath = this.resolveWithin(join(this.rootDir, "composites"), `${name}.yaml`);
+    const compositePath = resolveWithin(join(this.rootDir, "composites"), `${name}.yaml`);
 
     let text: string;
     try {
@@ -169,7 +150,7 @@ export class LocalSource implements CatalogSource {
   }
 
   async fetchStandard(name: StandardName): Promise<Standard> {
-    const path = this.resolveWithin(join(this.rootDir, "standards"), `${name}.json`);
+    const path = resolveWithin(join(this.rootDir, "standards"), `${name}.json`);
     let text: string;
     try {
       text = await readFile(path, "utf-8");
@@ -188,7 +169,7 @@ export class LocalSource implements CatalogSource {
     const path =
       repo === "nanohype"
         ? join(this.rootDir, "AGENTS.md")
-        : this.resolveWithin(dirname(resolve(this.rootDir)), repo, "AGENTS.md");
+        : resolveWithin(dirname(resolve(this.rootDir)), repo, "AGENTS.md");
     try {
       return await readFile(path, "utf-8");
     } catch {

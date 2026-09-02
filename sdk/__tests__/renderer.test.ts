@@ -198,3 +198,59 @@ describe("renderTemplate", () => {
     expect(neither.files.map((f) => f.path)).not.toContain("lib/vpc.ts");
   });
 });
+
+describe("renderTemplate path containment", () => {
+  // A `string` variable that declares no `validation.pattern` constrains
+  // nothing, so the value below is one a manifest in the shipped catalog
+  // accepts. `templates/eks-addon` is the live example: its `Category`
+  // variable has no pattern and its placeholder is a directory name.
+  const manifestWithPathVariable = minimalManifest({
+    variables: [
+      {
+        name: "Category",
+        type: "string",
+        placeholder: "__CATEGORY__",
+        description: "Addon category",
+      },
+    ],
+  });
+  const files: SkeletonFile[] = [
+    { path: "addons/__CATEGORY__/values.yaml", content: "category: __CATEGORY__" },
+  ];
+
+  it("refuses a variable value that walks the rendered path out of the tree", () => {
+    expect(() =>
+      renderTemplate(manifestWithPathVariable, files, { Category: "../../escaped" }),
+    ).toThrow(/escapes the render root/);
+  });
+
+  it("refuses an absolute variable value where the placeholder leads the path", () => {
+    // Mid-path an absolute value is harmless — `addons//etc/x` normalizes back
+    // inside. It is a leading placeholder that turns the whole path absolute,
+    // so that is the shape the check has to catch.
+    const leading: SkeletonFile[] = [{ path: "__CATEGORY__/values.yaml", content: "x" }];
+    expect(() => renderTemplate(manifestWithPathVariable, leading, { Category: "/etc" })).toThrow(
+      /is absolute/,
+    );
+  });
+
+  it("names the skeleton path that lost, not just the rendered one", () => {
+    expect(() => renderTemplate(manifestWithPathVariable, files, { Category: "../x" })).toThrow(
+      /Rendered path for 'addons\/__CATEGORY__\/values\.yaml'/,
+    );
+  });
+
+  it("refuses before returning any file, so a caller cannot write a partial escape", () => {
+    const twoFiles: SkeletonFile[] = [{ path: "README.md", content: "safe" }, ...files];
+    expect(() =>
+      renderTemplate(manifestWithPathVariable, twoFiles, { Category: "../../escaped" }),
+    ).toThrow(/escapes the render root/);
+  });
+
+  it("still renders an ordinary value into the same path", () => {
+    const result = renderTemplate(manifestWithPathVariable, files, {
+      Category: "observability",
+    });
+    expect(result.files[0].path).toBe("addons/observability/values.yaml");
+  });
+});
