@@ -12,6 +12,7 @@ export {
 } from "./contracts.js";
 // Errors
 export { ManifestValidationError, NanohypeError, VariableResolutionError } from "./errors.js";
+export { assertDescendingPath, PathContainmentError, resolveWithin } from "./paths.js";
 export { renderTemplate } from "./renderer.js";
 export { resolveVariables } from "./resolver.js";
 export type { CatalogSource, GitHubSourceOptions, LocalSourceOptions } from "./source.js";

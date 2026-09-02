@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import * as yaml from "js-yaml";
 import { renderComposite } from "../composite.js";
+import { resolveWithin } from "../paths.js";
 import { renderTemplate } from "../renderer.js";
 import type { CatalogSource } from "../source.js";
 import { GitHubSource } from "../sources/github.js";
@@ -199,7 +200,11 @@ async function scaffold(args: ParsedArgs): Promise<void> {
     const outDir = resolve(args.output || `./${name}`);
 
     for (const file of result.files) {
-      const dest = join(outDir, file.path);
+      // The renderer already refuses a path that leaves the render root. This
+      // is the same question asked against the directory the user actually
+      // named, which is the only place it can be answered for certain — and it
+      // is the last step before a name reaches the disk.
+      const dest = resolveWithin(outDir, file.path);
       await mkdir(dirname(dest), { recursive: true });
       await writeFile(dest, file.content, "utf-8");
     }
@@ -237,7 +242,11 @@ async function scaffold(args: ParsedArgs): Promise<void> {
     const outDir = resolve(args.output || `./${defaultDir}`);
 
     for (const file of result.files) {
-      const dest = join(outDir, file.path);
+      // The renderer already refuses a path that leaves the render root. This
+      // is the same question asked against the directory the user actually
+      // named, which is the only place it can be answered for certain — and it
+      // is the last step before a name reaches the disk.
+      const dest = resolveWithin(outDir, file.path);
       await mkdir(dirname(dest), { recursive: true });
       await writeFile(dest, file.content, "utf-8");
     }
