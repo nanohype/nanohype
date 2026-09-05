@@ -86,7 +86,7 @@ background (service worker)
 
 ### New permissions
 
-Add permissions to `public/manifest.json` under the `permissions` array. See the [Chrome extension permissions reference](https://developer.chrome.com/docs/extensions/reference/permissions-list).
+Add permissions to the `permissions` array in the `manifest-from-bundle` plugin in `vite.config.ts`. The manifest is emitted from the build so it cannot name a file the build did not produce. See the [Chrome extension permissions reference](https://developer.chrome.com/docs/extensions/reference/permissions-list).
 
 ## Publishing
 

@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import { type ChatHandler, handleWebviewMessage, type OutboundMessage } from "./protocol";
 
 export class WebviewPanel {
   public static currentPanel: WebviewPanel | undefined;
@@ -10,7 +11,7 @@ export class WebviewPanel {
   private readonly extensionUri: vscode.Uri;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(extensionUri: vscode.Uri): void {
+  public static createOrShow(extensionUri: vscode.Uri, chat: ChatHandler): void {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -31,10 +32,10 @@ export class WebviewPanel {
       },
     );
 
-    WebviewPanel.currentPanel = new WebviewPanel(panel, extensionUri);
+    WebviewPanel.currentPanel = new WebviewPanel(panel, extensionUri, chat);
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, chat: ChatHandler) {
     this.panel = panel;
     this.extensionUri = extensionUri;
 
@@ -44,14 +45,18 @@ export class WebviewPanel {
 
     this.panel.webview.onDidReceiveMessage(
       (message: { type: string; payload?: unknown }) => {
-        switch (message.type) {
-          case "info":
-            vscode.window.showInformationMessage(String(message.payload ?? ""));
-            break;
-          case "error":
-            vscode.window.showErrorMessage(String(message.payload ?? ""));
-            break;
-        }
+        void handleWebviewMessage(message, {
+          chat,
+          post: (out: OutboundMessage) => {
+            void this.panel.webview.postMessage(out);
+          },
+          showInformationMessage: (text) => {
+            void vscode.window.showInformationMessage(text);
+          },
+          showErrorMessage: (text) => {
+            void vscode.window.showErrorMessage(text);
+          },
+        });
       },
       null,
       this.disposables,

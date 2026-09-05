@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { assistantTurnFor } from "../protocol";
 
 // Acquire the VS Code API for communicating with the extension host
 const vscode = acquireVsCodeApi();
@@ -8,23 +9,43 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  /** A reply that reports a failed turn, styled as one rather than as an answer. */
+  failed?: boolean;
 }
 
 export function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [pending, setPending] = useState(false);
+
+  // The host answers every chat turn with `reply` or `chatError`. Without this
+  // listener the turn has nowhere to land: the message would be sent, the host
+  // would answer, and the panel would sit on the user's own bubble.
+  useEffect(() => {
+    function onHostMessage(event: MessageEvent<unknown>) {
+      const turn = assistantTurnFor(event.data);
+      if (!turn) return;
+
+      setPending(false);
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", ...turn }]);
+    }
+
+    window.addEventListener("message", onHostMessage);
+    return () => window.removeEventListener("message", onHostMessage);
+  }, []);
 
   const sendMessage = useCallback(() => {
     const text = input.trim();
-    if (!text) return;
+    if (!text || pending) return;
 
     const userMessage: Message = { id: crypto.randomUUID(), role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setPending(true);
 
     // Send to the extension host via postMessage
     vscode.postMessage({ type: "chat", payload: text });
-  }, [input]);
+  }, [input, pending]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -62,8 +83,9 @@ export function App() {
               marginBottom: "8px",
               padding: "6px 10px",
               borderRadius: "4px",
-              backgroundColor:
-                msg.role === "user"
+              backgroundColor: msg.failed
+                ? "var(--vscode-inputValidation-errorBackground)"
+                : msg.role === "user"
                   ? "var(--vscode-inputValidation-infoBackground)"
                   : "var(--vscode-editor-background)",
             }}
@@ -72,6 +94,17 @@ export function App() {
             {msg.content}
           </div>
         ))}
+        {/* An answer takes longer than the second past which a wait needs
+            feedback, so the turn says it is in flight rather than looking
+            like nothing happened. */}
+        {pending && (
+          <div
+            aria-live="polite"
+            style={{ padding: "6px 10px", color: "var(--vscode-descriptionForeground)" }}
+          >
+            Waiting for a reply...
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: "8px" }}>
@@ -80,6 +113,7 @@ export function App() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={pending}
           placeholder="Type a message..."
           style={{
             flex: 1,
@@ -94,13 +128,15 @@ export function App() {
         <button
           type="button"
           onClick={sendMessage}
+          disabled={pending}
           style={{
             padding: "6px 16px",
             backgroundColor: "var(--vscode-button-background)",
             color: "var(--vscode-button-foreground)",
             border: "none",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: pending ? "default" : "pointer",
+            opacity: pending ? 0.6 : 1,
           }}
         >
           Send

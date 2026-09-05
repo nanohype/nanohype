@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "private": true,
-  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
+  "description": "Template catalog for AI-focused projects \u2014 MCP servers, agentic loops, RAG pipelines, and more",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -38,6 +38,10 @@
     "validate:composite-refs": "node scripts/check-composite-references.mjs",
     "validate:manifest": "node scripts/validate-schema.mjs --schema schemas/catalog.schema.json --data catalog.json",
     "validate:doc-commands": "node scripts/check-doc-commands.mjs",
+    "validate:conditional-renders": "node scripts/check-conditional-renders.mjs",
+    "validate:manifest-declarations": "node scripts/check-manifest-declarations.mjs",
+    "validate:manifest-assets": "node scripts/check-manifest-assets.mjs",
+    "test:scripts": "node --test 'scripts/__tests__/*.test.mjs'",
     "validate:publishable-deps": "node scripts/check-publishable-deps.mjs",
     "validate:skeleton-toolchain": "node scripts/check-skeleton-toolchain.mjs",
     "lint:skeletons": "node scripts/lint-skeletons.mjs",
@@ -57,7 +61,8 @@
     "ajv-formats": "^3.0.1",
     "editorconfig-checker": "6.1.1",
     "js-yaml": "^5.2.1",
-    "markdownlint-cli2": "^0.23.0"
+    "markdownlint-cli2": "^0.23.0",
+    "typescript": "5.9.3"
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",

@@ -25,7 +25,22 @@
         "command": "__PROJECT_NAME__.openWebview",
         "title": "__EXTENSION_NAME__: Open Webview Panel"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "__EXTENSION_NAME__",
+      "properties": {
+        "__PROJECT_NAME__.provider": {
+          "type": "string",
+          "default": "anthropic",
+          "description": "AI provider the webview chat sends turns to, when the webview and AI features are included. Any name the provider registry holds is accepted."
+        },
+        "__PROJECT_NAME__.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model id the webview chat sends, when the webview and AI features are included. Empty uses the provider's default model."
+        }
+      }
+    }
   },
   "scripts": {
     "build": "node esbuild.config.js",
@@ -48,12 +63,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/vscode": "^1.96.0",
     "@vitest/coverage-v8": "^4.0.0",
     "esbuild": "^0.28.0",
+    "jsdom": "^30.0.1",
     "typescript": "^7.0.0",
     "vitest": "^4.0.0"
   }
