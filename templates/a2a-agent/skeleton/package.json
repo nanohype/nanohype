@@ -8,6 +8,7 @@
     "start": "node --import tsx src/agent.ts",
     "dev": "node --import tsx --watch src/agent.ts",
     "build": "tsc",
+    "eval": "node --import tsx src/eval/runner.ts",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",

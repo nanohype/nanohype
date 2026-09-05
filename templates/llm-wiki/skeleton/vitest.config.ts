@@ -9,25 +9,31 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate operations, schema parsing, wiki search/link-graph/page logic,
-      // the registries, and the circuit breaker. Out of the denominator: the
-      // HTTP API and the CLI; `config.ts`, which reads the environment; the
-      // adapters that reach a real system — `llm/anthropic.ts` the Messages
-      // API, `sources/local.ts` a source tree on disk, `storage/git.ts` a
-      // checkout; `tenant/auth.ts` and `wiki/index-manager.ts`; and the
-      // barrels and type-only modules.
+      // the registries, the circuit breaker, and the eval corpus loader. Out of
+      // the denominator: the HTTP API and the CLI; `config.ts`, which reads the
+      // environment; the adapters that reach a real system — `llm/anthropic.ts`
+      // the Messages API, `sources/local.ts` a source tree on disk,
+      // `storage/git.ts` a checkout; `tenant/auth.ts` and
+      // `wiki/index-manager.ts`; and the barrels and type-only modules.
       //
-      // The `mock.ts` providers are measured. They ship, a project selects
-      // them through WIKI_LLM_PROVIDER, WIKI_SOURCE_PROVIDER and
+      // The eval runner and the fixture wiki it seeds reach a live model, so
+      // they run on demand. The loader's refusal to report a pass over an empty
+      // corpus is held by the unit suite, which needs no model.
+      //
+      // The `mock.ts` providers are measured. They ship, a project selects them
+      // through WIKI_LLM_PROVIDER, WIKI_SOURCE_PROVIDER and
       // WIKI_STORAGE_PROVIDER, and they carry the branches a project runs on
       // before it configures a backend — a keyword dispatch, a missing-page
-      // refusal, a prefix-narrowed listing, and the per-tenant partition that
-      // is the whole of the isolation between tenants in the in-memory store.
+      // refusal, a prefix-narrowed listing, and the per-tenant partition that is
+      // the whole of the isolation between tenants in the in-memory store.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/config.ts",
         "src/api/**",
         "src/cli/**",
+        "src/eval/fixture-storage.ts",
+        "src/eval/runner.ts",
         "src/llm/anthropic.ts",
         "src/sources/local.ts",
         "src/storage/git.ts",

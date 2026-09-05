@@ -22,6 +22,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "cli": "tsx src/cli/index.ts",
+    "eval": "tsx src/eval/runner.ts",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {

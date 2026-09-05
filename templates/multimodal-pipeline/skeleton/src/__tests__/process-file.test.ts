@@ -52,9 +52,9 @@ afterAll(async () => {
 /**
  * Config pointed at the mock provider.
  *
- * The skeleton's default is the unrendered `__LLM_PROVIDER__` placeholder, which
- * a scaffolded project replaces — so a test must name a provider explicitly
- * rather than rely on the default, and `mock` is the one that needs no API key.
+ * The configured default is `__LLM_PROVIDER__` — so a test must name a provider
+ * explicitly rather than rely on a default that can change under it, and `mock`
+ * is the one that reaches no network and needs no API key.
  */
 function config() {
   process.env.LLM_PROVIDER = "mock";

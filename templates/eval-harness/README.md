@@ -5,6 +5,8 @@ Standalone TypeScript evaluation framework for testing LLM outputs. Define eval 
 ## What you get
 
 - Core eval runner with YAML-based suite definitions
+- Corpus loader that refuses an empty or one-sided corpus, so a run with nothing to run cannot report a pass
+- Golden and adversarial starter suites: format and grounding cases, plus planted instructions, credential probing, contradictory instructions, and a truncated record
 - Composable assertion library: string matching, regex, JSON Schema, token limits, custom predicates
 - Console reporter (color-coded) and JSON reporter (CI-friendly)
 - Anthropic and OpenAI provider wrappers
@@ -25,6 +27,7 @@ Standalone TypeScript evaluation framework for testing LLM outputs. Define eval 
 ```text
 <ProjectName>/
   src/
+    corpus.ts              # Suite discovery; refuses an empty corpus
     runner.ts              # Core eval orchestrator
     suite.ts               # EvalSuite class (loads from YAML)
     case.ts                # EvalCase with Zod schemas
@@ -37,7 +40,8 @@ Standalone TypeScript evaluation framework for testing LLM outputs. Define eval 
       openai.ts            # OpenAI wrapper
       index.ts             # Provider factory
   suites/
-    example.yaml           # Example eval suite
+    example.yaml           # Golden cases
+    adversarial.yaml       # Adversarial cases
   bin/
     run-evals.ts           # CLI entrypoint
 ```

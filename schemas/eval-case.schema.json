@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nanohype.dev/schemas/eval-case.schema.json",
+  "title": "nanohype eval case",
+  "description": "One case in a template's eval suite. A case is data, not code: the runner loads every case it finds, sends the input to the model, and checks the assertions against what comes back. What this fixes is the shape of the case, not the vocabulary of the runner \u2014 `kind` so adversarial coverage is a claim about the case rather than about a filename, and a non-empty assertion list so a case cannot pass having checked nothing.",
+  "type": "object",
+  "required": ["name", "kind", "input", "assertions"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What this case establishes, in the words of the behaviour rather than the fixture."
+    },
+    "kind": {
+      "enum": ["golden", "adversarial"],
+      "description": "golden: the behaviour the surface exists to deliver. adversarial: input that tries to make it do something else \u2014 injection, refusal-bait, contradictory instructions, oversized or malformed content."
+    },
+    "input": {
+      "description": "What is sent to the model. A list is a multi-turn case, sent in order.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      ]
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "What must hold of the output. An empty list would let a case pass having checked nothing, so at least one is required here rather than left to each runner.",
+      "items": {
+        "type": "object",
+        "required": ["type", "value"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The assertion the runner should apply. Each runner defines its own vocabulary; naming a closed set here would be a second source of truth that drifts from the runners it claims to describe."
+          },
+          "value": {
+            "description": "What the assertion compares against; the assertion type decides its shape. Required, and required to be something: an assertion with no value checks the output against nothing and reports it as checked. Null and the empty string are the same hole \u2014 a containment check against the empty string holds for every output.",
+            "not": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "const": ""
+                }
+              ]
+            }
+          },
+          "why": {
+            "type": "string",
+            "description": "Why this must hold. Load-bearing on an adversarial case, where the assertion is often a refusal and the reason is not obvious from the value."
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Context a reader needs to judge the case that does not belong in the name."
+    },
+    "expected": {
+      "type": "string",
+      "description": "The answer a reviewer would accept, for assertions that compare against it and for reading the case."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Labels a runner can filter on."
+    },
+    "timeout": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Milliseconds this case may take before the runner gives up on it."
+    }
+  }
+}

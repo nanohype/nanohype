@@ -1,0 +1,17 @@
+{
+  "name": "routes a repeat-back task to the skill whose description covers it",
+  "kind": "golden",
+  "input": "Repeat this back to me word for word: the shipment arrives on Tuesday.",
+  "assertions": [
+    {
+      "type": "routes_to",
+      "value": "echo",
+      "why": "the registry holds one skill that returns its input; a task asking for exactly that has one route"
+    },
+    {
+      "type": "reasoning_matches",
+      "value": "[Ee]cho",
+      "why": "the decision has to name the capability it matched, since the rationale is what a reviewer reads when a route is questioned"
+    }
+  ]
+}

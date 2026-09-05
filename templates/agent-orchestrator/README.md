@@ -11,6 +11,7 @@ Multi-agent orchestrator with task decomposition, capability-based routing, and 
 - **Handoff protocol**: records agent-to-agent transitions with metadata (fromAgent, toAgent, reason) creating an audit trail.
 - **LLM provider abstraction**: swap between Anthropic and OpenAI with a single config value.
 - **Circuit breaker**: resilient external API access with sliding-window failure detection.
+- **Eval suite** (`npm run eval`): golden and adversarial cases over the planner's decomposition, with a corpus loader that fails rather than reporting a pass over nothing.
 
 ## Variables
 
@@ -58,10 +59,16 @@ Multi-agent orchestrator with task decomposition, capability-based routing, and 
         circuit-breaker.ts
         __tests__/
           circuit-breaker.test.ts
+      eval/
+        runner.ts             # Runs the corpus against the orchestrator
+        cases.ts              # Corpus loader, refuses an empty corpus
+        assertions.ts         # Plan size, ordering and content checks
+        cases/                # Golden and adversarial cases, one per file
       __tests__/
         orchestrator.test.ts
         routing.test.ts
         context.test.ts
+        eval-cases.test.ts
   package.json
   tsconfig.json
 ```

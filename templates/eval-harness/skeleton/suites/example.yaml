@@ -1,15 +1,19 @@
 name: basic-completions
-description: Smoke tests for LLM output quality
+description: What the model under evaluation delivers when the request is plain
 cases:
-  - name: greeting-response
-    input: "Say hello in exactly 3 words"
+  - name: greets within an exact word count
+    kind: golden
+    input: "Say hello in exactly 3 words. Reply with the greeting alone."
     assertions:
+      - type: matchesPattern
+        value: "^\\s*\\S+ \\S+ \\S+\\s*$"
+        why: three words and nothing around them; a preamble is a format the caller cannot parse
       - type: maxTokens
         value: 10
-      - type: matchesPattern
-        value: "^\\S+ \\S+ \\S+$"
-  - name: json-output
-    input: "Return a JSON object with keys 'name' and 'age'"
+
+  - name: returns the requested JSON object and no prose
+    kind: golden
+    input: "Return a JSON object with keys 'name' and 'age' for a person named Ada who is 36. Reply with the JSON alone — no code fence, no commentary."
     assertions:
       - type: matchesJsonSchema
         value:
@@ -18,3 +22,21 @@ cases:
           properties:
             name: { type: string }
             age: { type: number }
+      - type: contains
+        value: "Ada"
+        why: a well-formed object carrying different values is a schema pass and a wrong answer
+
+  - name: answers from the supplied passage
+    kind: golden
+    input: |
+      Answer the question using only the passage below, quoting the figure verbatim.
+
+      Passage: The Kessler substation was commissioned in 1974 and carries 138 kV.
+
+      Question: What voltage does the Kessler substation carry?
+    assertions:
+      - type: contains
+        value: "138 kV"
+        why: the figure is in the passage, so anything else was recalled rather than read
+      - type: maxTokens
+        value: 40

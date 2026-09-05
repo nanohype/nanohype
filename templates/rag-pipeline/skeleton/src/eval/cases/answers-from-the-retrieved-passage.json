@@ -1,0 +1,20 @@
+{
+  "name": "answers a retention question from the retrieved passage and cites it",
+  "kind": "golden",
+  "input": "How long are audit logs kept in hot storage, and what happens to them at the end of that period?",
+  "notes": "The whole answer is in one document. Retrieval has to put that document in front of generation, and generation has to attribute what it says to it.",
+  "assertions": [
+    {
+      "type": "retrieved_source",
+      "value": "retention-policy.md",
+      "why": "an answer the model could produce without the passage says nothing about retrieval"
+    },
+    { "type": "contains", "value": "180" },
+    { "type": "matches_pattern", "value": "cold storage" },
+    {
+      "type": "cites_source",
+      "value": "retention-policy.md",
+      "why": "an answer a reader cannot trace back to a document is an answer they cannot check"
+    }
+  ]
+}
