@@ -60,10 +60,16 @@ export class EvalSuite {
   static async fromFile(filePath: string): Promise<EvalSuite> {
     const content = await readFile(filePath, "utf-8");
     const raw = parseYaml(content);
-    const parsed = EvalSuiteFileSchema.parse(raw);
+    const parsed = EvalSuiteFileSchema.safeParse(raw);
 
-    const cases = parsed.cases.map((c) => new EvalCase(c));
-    return new EvalSuite(parsed.name, cases, parsed.description);
+    // A suite file that does not parse is refused rather than skipped. Skipping
+    // it would drop its cases from the run while the run still reported a pass.
+    if (!parsed.success) {
+      throw new Error(`${filePath} is not an eval suite: ${z.prettifyError(parsed.error)}`);
+    }
+
+    const cases = parsed.data.cases.map((c) => new EvalCase(c));
+    return new EvalSuite(parsed.data.name, cases, parsed.data.description);
   }
 
   /**
@@ -101,7 +107,13 @@ export class EvalSuite {
         for (const assertionConfig of evalCase.assertions) {
           const assertionFn = resolveAssertion(assertionConfig.type, assertionConfig.value);
           const result = await assertionFn(output);
-          assertionResults.push(result);
+          // A failing assertion reports the reason it was written down, which is
+          // what makes a refusal readable as a refusal rather than a mismatch.
+          assertionResults.push(
+            result.pass || !assertionConfig.why
+              ? result
+              : { ...result, message: `${result.message} \u2014 ${assertionConfig.why}` },
+          );
         }
 
         const allPass = assertionResults.every((r) => r.pass);

@@ -289,6 +289,40 @@ jobs:
       - name: Verify model IDs match the LLM policy
         run: npm run validate:model-ids
 
+      # An AI surface with no eval suite is the AI-native form of shipping
+      # with no tests: the code around the model is covered and what the model
+      # does is not. This also refuses a suite that holds no cases, because a
+      # runner that loads nothing and exits 0 reports what a passing run
+      # reports.
+      # Scope for the eval requirement is decided by the provider SDKs a
+      # skeleton declares. That decision is a claim about the packages this
+      # catalog uses to reach a model, so it is pinned against them here — a
+      # provider package the classifier does not recognise fails this rather
+      # than putting a template quietly outside the rule.
+      - name: Test the eval gate's scope against the packages the catalog declares
+        run: npm run test:scripts
+
+      - name: Verify every AI surface carries an eval suite
+        run: npm run validate:eval-suites
+
+      # A case file is JSON, so a skeleton's assertion union constrains what
+      # its loader accepts and nothing else. A type outside it reaches the
+      # dispatch, and a dispatch that drops it produces no result — a case's
+      # verdict is `every` over its results, and `every` over an empty list is
+      # true. A suite that ran and checked nothing then reports the same green
+      # as one that checked everything. The gate calls each dispatch with such
+      # a type rather than reading its source for a default arm: a refusal on a
+      # path nothing takes reads the same as one that runs.
+      - name: Call every assertion dispatch with a type it does not implement
+        run: npm run validate:assertion-dispatch
+
+      # A script that imports an undeclared package runs for whoever already
+      # has it installed and dies on a clean `npm ci`. Its own tests import the
+      # same package and fail the same way, so a green local run says the
+      # machine has it, not the manifest.
+      - name: Verify every package a script imports is declared
+        run: npm run validate:script-deps
+
       # Same failure shape as a model ID, one field over: a region is a plain
       # string too. A service-control policy denies every non-global action
       # outside the deploy region, so a skeleton defaulting elsewhere fails on

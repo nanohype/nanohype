@@ -7,7 +7,7 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
 - CLI with `prepare`, `train`, and `eval` commands
 - Dataset preparation: JSONL formatting, schema validation, configurable train/val/test splitting
 - Training provider registry with OpenAI fine-tuning API built in
-- Post-training evaluation comparing base model vs fine-tuned model outputs
+- Eval corpus of golden and adversarial cases, run against the fine-tuned model with the base model alongside for comparison
 - Structured JSON logging and Zod-validated configuration
 
 ## Variables
@@ -17,7 +17,7 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
 | `ProjectName`  | string | `my-fine-tune`             | Kebab-case project name                     |
 | `Description`  | string | `LLM fine-tuning pipeline` | Project description                         |
 | `Provider`     | string | `openai`                   | Default training provider: openai or custom |
-| `IncludeEval`  | bool   | `true`                     | Include post-training eval module           |
+| `IncludeEval`  | bool   | `true`                     | Include the eval runner and its metrics     |
 | `IncludeTests` | bool   | `true`                     | Include vitest test suite                   |
 
 ## Project layout
@@ -40,7 +40,10 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
       openai.ts            # OpenAI fine-tuning provider (self-registers)
       index.ts             # Barrel — triggers registration, re-exports API
     eval/
-      compare.ts           # Side-by-side base vs fine-tuned comparison
+      cases.ts             # Corpus loader — refuses an empty or malformed corpus
+      cases/               # One JSON case per file, golden and adversarial
+      assertions.ts        # Assertion vocabulary the runner implements
+      compare.ts           # Runs the corpus against base and fine-tuned models
       metrics.ts           # Accuracy, consistency, and quality metrics
   data/
     examples/

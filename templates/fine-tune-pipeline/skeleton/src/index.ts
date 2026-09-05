@@ -6,13 +6,14 @@
  *   train                 Submit a fine-tuning job to the training provider
  *   train:status <id>     Check the status of a fine-tuning job
  *   train:list            List recent fine-tuning jobs
- *   eval                  Compare base model vs fine-tuned model outputs
+ *   eval                  Run the eval corpus against the fine-tuned model
  */
 
 import { join } from "node:path";
 import { validateBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
 import { prepareDataset } from "./dataset/prepare.js";
+import { EmptyCorpusError } from "./eval/cases.js";
 import { logger } from "./logger.js";
 import { DEFAULT_PROVIDER, getProvider } from "./training/index.js";
 
@@ -30,7 +31,7 @@ async function main(): Promise<void> {
     console.error("  tsx src/index.ts train                   Submit a fine-tuning job");
     console.error("  tsx src/index.ts train:status <job-id>   Check job status");
     console.error("  tsx src/index.ts train:list              List recent jobs");
-    console.error("  tsx src/index.ts eval                    Compare base vs fine-tuned model");
+    console.error("  tsx src/index.ts eval                    Run the eval corpus");
     process.exit(1);
   }
 
@@ -122,35 +123,37 @@ async function main(): Promise<void> {
   }
 
   if (command === "eval") {
-    if (!config.eval.fineTunedModel) {
-      console.error("Error: FINE_TUNED_MODEL environment variable is required for eval.");
-      console.error("Set it to the model ID from a completed fine-tuning job.");
-      process.exit(1);
-    }
-
     // Dynamic import — eval module is conditional
-    const { runEvalComparison } = await import("./eval/compare.js");
+    const { casePassed, runEvalComparison } = await import("./eval/compare.js");
 
-    const provider = getProvider(config.training.provider ?? DEFAULT_PROVIDER);
-    const testFile = join(config.dataset.outputDir, "test.jsonl");
-
-    logger.info("Starting evaluation", {
-      baseModel: config.training.baseModel,
-      fineTunedModel: config.eval.fineTunedModel,
-      sampleSize: config.eval.sampleSize,
-    });
-
+    // The provider goes in as a factory, so no client is constructed until
+    // the corpus has been read. A run with nothing to run reports an empty
+    // corpus rather than a missing credential.
     const report = await runEvalComparison(
       {
-        testFile,
+        casesDir: join(import.meta.dirname, "eval", "cases"),
         baseModel: config.training.baseModel,
         fineTunedModel: config.eval.fineTunedModel,
-        sampleSize: config.eval.sampleSize,
       },
-      provider,
+      () => getProvider(config.training.provider ?? DEFAULT_PROVIDER),
     );
 
-    console.log("\nEvaluation complete:");
+    console.log("\nCases:");
+    for (const outcome of report.outcomes) {
+      const status = outcome.error ? "ERROR" : casePassed(outcome) ? "PASS" : "FAIL";
+      console.log(`  [${outcome.evalCase.kind}] ${outcome.evalCase.name} ... ${status}`);
+
+      if (outcome.error) {
+        console.log(`    ${outcome.error}`);
+      }
+      for (const assertion of outcome.assertions) {
+        if (!assertion.pass) {
+          console.log(`    ${assertion.message}`);
+        }
+      }
+    }
+
+    console.log("\nBase vs fine-tuned:");
     console.log(`  Comparisons:       ${report.aggregate.totalComparisons}`);
     console.log(`  Exact match rate:  ${(report.aggregate.exactMatchRate * 100).toFixed(1)}%`);
     console.log(`  Avg overlap score: ${report.aggregate.averageOverlapScore.toFixed(3)}`);
@@ -159,15 +162,19 @@ async function main(): Promise<void> {
     console.log(`  Avg FT length:     ${report.aggregate.averageFineTunedLength.toFixed(0)} chars`);
     console.log(`  Duration:          ${(report.durationMs / 1000).toFixed(1)}s`);
 
-    // Print individual comparisons in debug mode
+    // Print the outputs themselves in debug mode
     if (process.env.LOG_LEVEL === "debug") {
-      console.log("\nDetailed comparisons:");
-      for (const comp of report.comparisons) {
-        console.log(`\n  Prompt: ${comp.prompt.slice(0, 80)}...`);
-        console.log(`  Base:   ${comp.baseOutput.slice(0, 120)}...`);
-        console.log(`  FT:     ${comp.fineTunedOutput.slice(0, 120)}...`);
-        console.log(`  Overlap: ${comp.metrics.overlapScore.toFixed(3)}`);
+      for (const outcome of report.outcomes) {
+        if (!outcome.comparison) continue;
+        console.log(`\n  Case:  ${outcome.evalCase.name}`);
+        console.log(`  Base:  ${outcome.comparison.baseOutput.slice(0, 120)}...`);
+        console.log(`  FT:    ${outcome.comparison.fineTunedOutput.slice(0, 120)}...`);
+        console.log(`  Overlap: ${outcome.comparison.metrics.overlapScore.toFixed(3)}`);
       }
+    }
+
+    if (!report.passed) {
+      process.exit(1);
     }
   }
 }
@@ -182,7 +189,13 @@ const shutdown = (signal: string) => {
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
-main().catch((err) => {
+main().catch((err: unknown) => {
+  // An empty corpus is a result, not a crash: it is the one failure a reader
+  // would otherwise mistake for a pass, so it is reported in its own words.
+  if (err instanceof EmptyCorpusError) {
+    console.error(err.message);
+    process.exit(1);
+  }
   logger.error("Fatal error", { error: String(err) });
   process.exit(1);
 });

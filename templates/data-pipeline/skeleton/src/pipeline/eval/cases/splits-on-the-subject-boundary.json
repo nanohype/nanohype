@@ -1,0 +1,36 @@
+{
+  "name": "splits a two-subject document on the boundary between the subjects",
+  "kind": "golden",
+  "input": "A sourdough starter is a stable culture of wild yeast and lactic acid bacteria living in a flour and water medium. Bakers feed it on a fixed schedule so the population stays in the phase where it produces gas quickly and predictably. A starter that has gone too long between feedings turns sharply acidic, the gluten in the dough it leavens degrades, and the loaf spreads sideways in the oven instead of rising. Temperature matters as much as the feeding interval, because the bacteria outpace the yeast in a warm kitchen and the culture drifts sour. Most bakers keep a small amount of starter and discard the rest at each feeding, which keeps the ratio of fresh flour to mature culture high enough that the yeast stays vigorous. A refrigerated starter can go a week between feedings, but it needs two or three warm feedings to come back to full strength before it can leaven a loaf on schedule. Judging readiness by the clock is unreliable, so bakers watch for the culture to double in volume and dome across the top before it collapses back on itself. A starter kept at a stiff hydration ferments more slowly and tastes milder than the same culture kept slack, which is why bakers who want a mild crumb thicken the feed rather than shorten the interval.\n\nCertificate rotation replaces a service's TLS key pair and the certificate that binds it before the existing certificate expires. The rotation window has to be long enough that every client has fetched the new chain before the old one stops validating, which means the two overlap in production rather than swapping at an instant. A service that rotates without overlap drops connections from clients holding a cached chain, and those failures land on the clients rather than in the rotating service's own error budget. Automation issues the replacement from the certificate authority, installs it on every listener, and reloads the server without dropping connections that are already in flight. The private key never leaves the host it was generated on, so a rotation moves a certificate signing request outward and a signed certificate back, never the key itself. Expiry monitoring runs against the certificate the listener is actually serving rather than the one on disk, because a reload that silently failed leaves the old certificate in memory while the file system looks correct. A rotation that is only exercised at expiry is a rotation nobody has tested, so the schedule is set well inside the certificate lifetime and the automation runs whether or not the current certificate is close to expiring.",
+  "notes": "A document that changes subject once, at the paragraph break. The split a consumer indexes is the product here: a chunk that spans the boundary embeds to a vector between the two subjects and retrieves well for neither, and a chunk that ends mid-subject drops the sentences that made the first one answerable.",
+  "assertions": [
+    {
+      "type": "split_between",
+      "value": ["sourdough starter", "Certificate rotation"],
+      "why": "the two subjects share no vocabulary and no reader wants them in one result; a chunk holding both embeds to a point between them"
+    },
+    {
+      "type": "kept_together",
+      "value": ["wild yeast", "spreads sideways"],
+      "why": "the cause and its consequence are three sentences apart in one subject; splitting between them leaves a chunk that states a symptom with nothing that explains it"
+    },
+    {
+      "type": "chunk_count_between",
+      "value": [2, 8],
+      "why": "one chunk means no boundary was placed at all; many means the split ignored the subject and cut on size"
+    },
+    {
+      "type": "nearest_chunk",
+      "value": [
+        "Which organisms live in a sourdough starter and what do they do?",
+        "lactic acid bacteria"
+      ],
+      "why": "the vectors have to place a question about the culture nearest the chunk that describes it, which is the retrieval the corpus exists to serve"
+    },
+    {
+      "type": "every_chunk_embedded",
+      "value": true,
+      "why": "a chunk that reached the index without a usable vector is content the consumer believes is searchable and is not"
+    }
+  ]
+}

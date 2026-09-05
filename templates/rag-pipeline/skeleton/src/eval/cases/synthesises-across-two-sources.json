@@ -1,0 +1,20 @@
+{
+  "name": "joins the retention window to the investigation procedure across two documents",
+  "kind": "golden",
+  "input": "An investigation needs audit logs from eight months ago. Are they still held, and what does the investigator have to do to read them?",
+  "notes": "Eight months is past hot storage and short of the purge. Neither document answers this alone: one carries the storage tiers, the other carries what an investigator does when the range predates hot storage.",
+  "assertions": [
+    {
+      "type": "retrieved_source",
+      "value": "retention-policy.md",
+      "why": "the storage tiers that decide whether the range still exists come from this document"
+    },
+    {
+      "type": "retrieved_source",
+      "value": "incident-response.md",
+      "why": "the procedure half of the answer comes from this one, and a single-document answer is incomplete rather than wrong"
+    },
+    { "type": "matches_pattern", "value": "cold storage" },
+    { "type": "matches_pattern", "value": "access request" }
+  ]
+}

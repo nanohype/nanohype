@@ -1,53 +1,22 @@
 // ── Runner ──────────────────────────────────────────────────────────
 //
 // Factory-based eval runner. createEvalRunner() returns an object with
-// a single `run()` method that discovers YAML suites, executes each
-// against the configured LLM provider, and collects suite-level
+// a single `run()` method that loads the YAML corpus, executes each
+// suite against the configured LLM provider, and collects suite-level
 // scores. No module-level mutable state — all state lives inside
 // the factory closure.
 //
+// What the corpus does when it is empty belongs to `cases.ts`; what
+// happens here is that nothing reaches a provider until it has loaded.
+//
 
-import { glob, readFile } from "node:fs/promises";
-import { basename, resolve } from "node:path";
-import { parse as parseYaml } from "yaml";
-import { z } from "zod";
 import { evaluateAssertion } from "./assertions.js";
+import type { EvalCase, LoadedSuite } from "./cases.js";
+import { coversBothKinds, loadSuites } from "./cases.js";
 import type { Config } from "./config.js";
 import type { Logger } from "./logger.js";
 import type { LlmProvider } from "./providers/index.js";
-import { getProvider } from "./providers/index.js";
 import type { EvalResult, SuiteScore } from "./types.js";
-
-// ── Suite file schema ───────────────────────────────────────────────
-
-const AssertionSchema = z.object({
-  type: z.string(),
-  value: z.unknown(),
-});
-
-const CaseSchema = z.object({
-  name: z.string(),
-  input: z.string(),
-  expected: z.string().optional(),
-  assertions: z.array(AssertionSchema).optional().default([]),
-  tags: z.array(z.string()).optional(),
-  timeout: z.number().optional().default(30_000),
-});
-
-const SuiteFileSchema = z.object({
-  // Optional, because `runSuite` already falls back to the file's basename —
-  // and while this was required, that fallback was unreachable: Zod rejected a
-  // nameless suite before the runner ever got to default it. A filename is a
-  // fine suite name, so the field earns its keep only when you want a different
-  // one.
-  name: z.string().optional(),
-  description: z.string().optional(),
-  model: z.string().optional(),
-  cases: z.array(CaseSchema),
-});
-
-type SuiteFile = z.infer<typeof SuiteFileSchema>;
-type CaseSpec = z.infer<typeof CaseSchema>;
 
 // ── Runner factory ──────────────────────────────────────────────────
 
@@ -56,27 +25,11 @@ export interface EvalRunner {
 }
 
 /**
- * Create an eval runner that discovers YAML suites, runs each against
+ * Create an eval runner that loads the YAML corpus, runs each suite against
  * the configured LLM provider, and returns suite-level scores.
  */
 export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
-  async function discoverSuites(): Promise<string[]> {
-    const pattern = `${config.evalPath}/**/*.{yaml,yml}`;
-    const paths: string[] = [];
-    for await (const entry of glob(pattern)) {
-      paths.push(resolve(String(entry)));
-    }
-    paths.sort();
-    return paths;
-  }
-
-  async function loadSuite(filePath: string): Promise<SuiteFile> {
-    const content = await readFile(filePath, "utf-8");
-    const raw = parseYaml(content);
-    return SuiteFileSchema.parse(raw);
-  }
-
-  async function runCase(provider: LlmProvider, caseSpec: CaseSpec): Promise<EvalResult> {
+  async function runCase(provider: LlmProvider, caseSpec: EvalCase): Promise<EvalResult> {
     const start = Date.now();
     try {
       const output = await provider.complete(caseSpec.input);
@@ -85,16 +38,16 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
         evaluateAssertion(a.type, a.value, output),
       );
 
-      const allPass = assertionResults.length === 0 || assertionResults.every((r) => r.pass);
-      const score =
-        assertionResults.length > 0
-          ? assertionResults.filter((r) => r.pass).length / assertionResults.length
-          : 1;
+      // A case that checked nothing fails. The loader refuses an empty
+      // assertion list, and the two layers agree so that neither one is the
+      // only thing standing between "checked" and "reported as checked".
+      const passed = assertionResults.filter((r) => r.pass).length;
+      const total = assertionResults.length;
 
       return {
         name: caseSpec.name,
-        pass: allPass,
-        score,
+        pass: total > 0 && passed === total,
+        score: total > 0 ? passed / total : 0,
         output,
         durationMs: Date.now() - start,
       };
@@ -110,13 +63,8 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
     }
   }
 
-  async function runSuite(
-    provider: LlmProvider,
-    suite: SuiteFile,
-    filePath: string,
-  ): Promise<SuiteScore> {
-    const suiteName = suite.name || basename(filePath, ".yaml");
-    logger.info(`Running suite: ${suiteName}`, { cases: suite.cases.length });
+  async function runSuite(provider: LlmProvider, suite: LoadedSuite): Promise<SuiteScore> {
+    logger.info(`Running suite: ${suite.name}`, { cases: suite.cases.length });
 
     const suiteStart = Date.now();
     const results: EvalResult[] = [];
@@ -153,11 +101,14 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0);
 
     return {
-      suite: suiteName,
+      suite: suite.name,
       passed,
       total: results.length,
-      passRate: results.length > 0 ? passed / results.length : 1,
-      averageScore: results.length > 0 ? totalScore / results.length : 1,
+      // A suite with no result scores zero, not one: the baseline stores
+      // these numbers, and a suite that ran nothing must not raise the bar
+      // every later run is compared against.
+      passRate: results.length > 0 ? passed / results.length : 0,
+      averageScore: results.length > 0 ? totalScore / results.length : 0,
       durationMs: Date.now() - suiteStart,
       cases: results,
     };
@@ -165,20 +116,26 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
 
   return {
     async run(): Promise<SuiteScore[]> {
-      const suitePaths = await discoverSuites();
-      if (suitePaths.length === 0) {
-        logger.warn("No eval suites found", { pattern: config.evalPath });
-        return [];
+      // The corpus is read first. Provider modules build a client that needs
+      // a key, so a run with nothing to run says that, rather than failing
+      // earlier with a vendor SDK error about credentials.
+      const suites = await loadSuites(config.evalPath);
+
+      if (!coversBothKinds(suites)) {
+        throw new Error(
+          "The corpus covers one kind of case. Golden cases say what the surface does when " +
+            "asked nicely; adversarial cases are the ones that find out what it does otherwise.",
+        );
       }
 
-      logger.info(`Discovered ${suitePaths.length} suite(s)`);
+      logger.info(`Discovered ${suites.length} suite(s)`);
 
+      const { getProvider } = await import("./providers/index.js");
       const provider = getProvider(config.llmProvider);
       const scores: SuiteScore[] = [];
 
-      for (const filePath of suitePaths) {
-        const suite = await loadSuite(filePath);
-        const score = await runSuite(provider, suite, filePath);
+      for (const suite of suites) {
+        const score = await runSuite(provider, suite);
         scores.push(score);
 
         logger.info(`Suite complete: ${score.suite}`, {

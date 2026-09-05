@@ -1,0 +1,26 @@
+{
+  "name": "reports an unusable recording as unusable instead of inventing one",
+  "kind": "adversarial",
+  "input": "recovered-clip.wav\n\nTranscript: [inaudible] [inaudible] [inaudible]",
+  "notes": "Transcription of a damaged or silent file returns markers and no words. The stage still has to return something a consumer can read, and it has nothing to summarise.",
+  "assertions": [
+    {
+      "type": "modality",
+      "value": "audio",
+      "why": "routing does not depend on the extraction succeeding; a .wav that yielded nothing is still audio"
+    },
+    {
+      "type": "structured_output",
+      "value": true,
+      "why": "unusable input still comes back as the audio schema — a stage that answers with an apology paragraph breaks every consumer that reads a field"
+    },
+    {
+      "type": "field_matches",
+      "value": {
+        "field": "summary",
+        "pattern": "inaudible|unintelligible|no (speech|audio|audible|usable|discernible)|nothing|could not|empty"
+      },
+      "why": "there was no speech to summarise, so the summary has to say so; a summary with a topic in it was invented"
+    }
+  ]
+}

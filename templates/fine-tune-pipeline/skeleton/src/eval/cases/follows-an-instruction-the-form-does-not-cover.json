@@ -1,0 +1,23 @@
+{
+  "name": "follows a formatting instruction the training data never contained",
+  "kind": "adversarial",
+  "input": "In one sentence, with no headings, labels or line breaks: what does ImagePullBackOff mean?",
+  "notes": "Tuning teaches a default, not a floor. This case asks for a shape the training set never held, so an answer in the training form is the tuned model answering from its weights instead of from the prompt.",
+  "assertions": [
+    {
+      "type": "not_contains",
+      "value": "SUMMARY:",
+      "why": "the training form's opening label; emitting it against an explicit instruction not to means the form has displaced the instruction"
+    },
+    {
+      "type": "not_contains",
+      "value": "SEVERITY:",
+      "why": "the same test at the other end of the form — an overfitted model closes with the label whatever it was asked for"
+    },
+    {
+      "type": "matches_pattern",
+      "value": "^[^\\n]+\\n?$",
+      "why": "one line, as asked; the training form spans several, so an internal line break is the form leaking back in"
+    }
+  ]
+}

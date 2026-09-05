@@ -27,6 +27,7 @@ npm run process -- ./samples/
 | `npm run lint` | Lint with Biome |
 | `npm run format` | Format with Biome |
 | `npm run test` | Run tests |
+| `npm run eval` | Run the eval suite against a live provider |
 
 ## Architecture
 
@@ -51,6 +52,21 @@ Processors and providers are registered via self-registering registry patterns:
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema with sensible defaults. Missing or invalid values throw immediately.
 - **Frame-based video analysis** -- video is decomposed into JPEG frames at configurable intervals rather than sent as a stream, making it compatible with any vision LLM.
 
+### Evals
+
+`npm run eval` drives the analysis stage over the corpus in `src/eval/cases/`:
+golden cases for the routing and summarisation the pipeline exists to do,
+adversarial cases for media whose extracted text is trying to redirect it. A
+case carries extracted content rather than a media file, so it runs without a
+transcription or frame-extraction round trip.
+
+The corpus loader refuses an empty corpus, and refuses a case file it cannot
+parse or cannot recognise rather than skipping it — a runner that finds nothing
+and exits 0 reports what a passing eval reports. Those refusals are covered by
+`npm test`. The eval itself calls a live provider and needs credentials, so it
+is a command you run against real credentials rather than one that runs
+unattended on every commit.
+
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
@@ -61,6 +77,7 @@ Processors and providers are registered via self-registering registry patterns:
 - [ ] Monitor LLM API costs -- image tokens are expensive
 - [ ] Install ffmpeg on the system PATH if using video processing
 - [ ] Set up alerting on processing failures and latency
+- [ ] Run `npm run eval` against the configured provider before shipping a prompt change
 
 ## Configuration
 

@@ -15,6 +15,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { compareBaseline, loadBaseline, saveBaseline } from "./baseline.js";
 import { validateBootstrap } from "./bootstrap.js";
+import { EmptyCorpusError } from "./cases.js";
 import { loadConfig } from "./config.js";
 import { createLogger } from "./logger.js";
 import { formatMarkdownReport } from "./reporter.js";
@@ -131,6 +132,13 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
+  // An empty corpus is a result, not a crash: the message is the whole
+  // report, and it exits non-zero so the gate blocks rather than passing
+  // a pull request nothing was run against.
+  if (err instanceof EmptyCorpusError) {
+    console.error(err.message);
+    process.exit(1);
+  }
   console.error("Fatal:", err instanceof Error ? err.message : err);
   process.exit(1);
 });

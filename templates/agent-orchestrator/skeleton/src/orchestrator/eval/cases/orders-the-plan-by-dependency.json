@@ -1,0 +1,29 @@
+{
+  "name": "decomposes a two-phase goal into steps that run in a workable order",
+  "kind": "golden",
+  "input": "Benchmark two candidate vector databases against our nightly query log, then recommend one for production and state the measurement that decided it.",
+  "notes": "The recommendation is downstream of the benchmark: it cannot be made before the numbers exist. A plan that lists both steps without declaring that edge lets the orchestrator run them in either order.",
+  "assertions": [
+    {
+      "type": "min_subtasks",
+      "value": 2,
+      "why": "benchmarking and recommending are separate pieces of work; a single subtask restates the goal instead of decomposing it"
+    },
+    {
+      "type": "max_subtasks",
+      "value": 6,
+      "why": "a two-phase goal that produces more than a handful of steps is padding the plan rather than dividing the work"
+    },
+    {
+      "type": "has_dependency_edge",
+      "value": true,
+      "why": "the ordering has to be declared, not implied by list position — the orchestrator sorts on dependsOn and nothing else"
+    },
+    { "type": "dependencies_resolvable", "value": true },
+    {
+      "type": "plan_contains",
+      "value": "benchmark",
+      "why": "the plan has to keep the measurement the recommendation rests on, rather than recommending straight from the goal text"
+    }
+  ]
+}

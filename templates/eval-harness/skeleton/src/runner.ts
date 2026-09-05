@@ -1,16 +1,17 @@
-import { glob } from "node:fs/promises";
-import { resolve } from "node:path";
 import { DEFAULT_PROVIDER, getProvider, type LlmProvider } from "./providers/index.js";
 import { ConsoleReporter } from "./reporters/console.js";
 import { JsonReporter } from "./reporters/json.js";
-import { EvalSuite, type SuiteResult } from "./suite.js";
+import type { EvalSuite, SuiteResult } from "./suite.js";
 
 /**
  * Configuration for the eval runner.
  */
 export interface RunnerConfig {
-  /** Glob pattern for suite YAML files */
-  suiteGlob: string;
+  /**
+   * Suites to run, already loaded. Discovery lives in `corpus.ts` so that the
+   * caller reads the corpus before this module pulls in the provider registry.
+   */
+  suites: EvalSuite[];
   /** Reporter type: "console" or "json" */
   reporter: "console" | "json";
   /** Optional provider override (defaults to template-configured provider) */
@@ -22,31 +23,11 @@ export interface RunnerConfig {
 }
 
 /**
- * Core eval runner. Discovers suite files, loads them, runs all cases
- * against the configured LLM provider, and delegates to the chosen
- * reporter for output.
+ * Core eval runner. Runs every case in the given suites against the configured
+ * LLM provider and delegates to the chosen reporter for output.
  */
 export async function runEvals(config: RunnerConfig): Promise<SuiteResult[]> {
-  const { suiteGlob, reporter: reporterType, provider: providerOverride, concurrency = 5 } = config;
-
-  // Discover suite files
-  const suitePaths: string[] = [];
-  for await (const entry of glob(suiteGlob)) {
-    suitePaths.push(resolve(entry));
-  }
-  suitePaths.sort();
-
-  if (suitePaths.length === 0) {
-    console.warn(`No suite files found matching: ${suiteGlob}`);
-    return [];
-  }
-
-  // Load suites
-  const suites: EvalSuite[] = [];
-  for (const suitePath of suitePaths) {
-    const suite = await EvalSuite.fromFile(suitePath);
-    suites.push(suite);
-  }
+  const { suites, reporter: reporterType, provider: providerOverride, concurrency = 5 } = config;
 
   // Create LLM provider
   const provider: LlmProvider = getProvider(providerOverride ?? DEFAULT_PROVIDER);

@@ -28,9 +28,10 @@ const trainingSchema = z.object({
   openaiApiKey: z.string().default(""),
 });
 
+// No sample size: the eval runs every case in the corpus. A run that
+// sampled could drop the adversarial half and still report a pass.
 const evalSchema = z.object({
   fineTunedModel: z.string().optional(),
-  sampleSize: z.coerce.number().int().positive().default(20),
 });
 
 const configSchema = z.object({
@@ -51,7 +52,7 @@ export type Config = z.infer<typeof configSchema>;
  * - DATA_INPUT_PATH, DATA_OUTPUT_DIR
  * - SPLIT_TRAIN_RATIO, SPLIT_VAL_RATIO, SPLIT_TEST_RATIO
  * - BASE_MODEL, TRAINING_EPOCHS, LEARNING_RATE_MULTIPLIER, BATCH_SIZE, TRAINING_SUFFIX
- * - FINE_TUNED_MODEL, EVAL_SAMPLE_SIZE
+ * - FINE_TUNED_MODEL
  * - OPENAI_API_KEY
  */
 export function loadConfig(): Config {
@@ -76,7 +77,6 @@ export function loadConfig(): Config {
     },
     eval: {
       fineTunedModel: env.FINE_TUNED_MODEL || undefined,
-      sampleSize: env.EVAL_SAMPLE_SIZE,
     },
   });
 }

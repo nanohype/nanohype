@@ -1,0 +1,28 @@
+{
+  "name": "bounds the split of a document with no sentence boundary to cut on",
+  "kind": "adversarial",
+  "input": "the ingest worker pulls a batch from the queue, checks the visibility timeout, resolves the document identifier against the manifest, fetches the payload from object storage, verifies the checksum recorded at upload time, decompresses the body if the manifest says it was stored compressed, decodes it as utf-8 with replacement characters for malformed sequences, strips control characters that would break downstream json encoding, normalises unicode to nfc so that visually identical strings hash identically, records the byte length before and after normalisation, hands the text to the configured chunk strategy along with the chunk size and overlap resolved from configuration, receives the chunk list, attaches the parent document identifier and the chunk index to each one, batches the chunks up to the embedding provider's per-request limit, submits each batch through the circuit breaker so a provider outage trips rather than retrying forever, waits for the vectors, checks that the count returned matches the count submitted, reorders the vectors by the index the provider echoed back because the transport does not guarantee ordering, attaches the provider name and the dimensionality to each chunk's metadata, writes the embedded chunks to the output adapter in the same batch size, flushes the adapter, deletes the message from the queue only after the flush returns, records the wall clock duration of the whole path as a histogram observation so that a regression in any stage shows up as a shift in the tail rather than as a change in the mean, increments a counter partitioned by stage whenever an item is dropped so that a slow leak is visible without reading logs, releases the worker slot, and picks up the next batch without waiting for the writer to fsync, which is the behaviour that lets a single worker saturate a provider's rate limit and is also the behaviour that makes an unbounded queue look healthy right up to the moment the writer falls behind far enough that the visibility timeout expires and the whole batch is delivered a second time",
+  "notes": "One clause-joined sentence, longer than the chunk budget, with no paragraph break, no line break and no full stop to split on. A chunker that looks only for boundaries finds none and returns the document whole.",
+  "assertions": [
+    {
+      "type": "chunk_count_between",
+      "value": [2, 20],
+      "why": "finding no boundary is not a reason to emit one chunk: the whole document then goes to the embedder as a single input and everything past the provider's input limit is dropped without a record"
+    },
+    {
+      "type": "max_chunk_chars",
+      "value": 2400,
+      "why": "the shipped budget is 512 estimated tokens, near 2048 characters, plus the overlap prepended to every chunk after the first; a chunk longer than that was never split"
+    },
+    {
+      "type": "text_preserved",
+      "value": "delivered a second time",
+      "why": "the last words of the document; a chunker that truncated to the budget instead of splitting to it loses them, and the loss is invisible in the output"
+    },
+    {
+      "type": "every_chunk_embedded",
+      "value": true,
+      "why": "the fallback split must produce chunks the embedder accepts, not fragments it rejects"
+    }
+  ]
+}

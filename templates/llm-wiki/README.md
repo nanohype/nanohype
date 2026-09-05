@@ -16,6 +16,7 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
 - CLI for all operations: tenant management, ingest, query, lint, schema validation
 - Token-based search with stop-word filtering and relevance scoring
 - Discovery pages: queries can file structural insights back into the wiki
+- Eval suite over a fixture wiki: golden cases for the answer a query exists to give, adversarial cases for page content and questions trying to redirect it — the corpus loader refuses an empty corpus rather than reporting a pass over one
 
 ## Variables
 
@@ -72,6 +73,12 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
       ingest.ts                 # source → LLM → wiki pages
       query.ts                  # search → synthesize → cite
       lint.ts                   # consistency health checks
+    eval/
+      cases.ts                  # corpus loader; refuses an empty or malformed corpus
+      fixture-storage.ts        # storage provider backed by the fixture pages
+      runner.ts                 # asks every case of the fixture wiki
+      cases/                    # one golden or adversarial case per file
+      fixtures/                 # the wiki pages the cases are answered from
     api/                        # (conditional: IncludeApi)
       server.ts                 # Hono HTTP server
       routes/                   # tenant, source, wiki, admin routes
@@ -80,6 +87,7 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
       index.ts                  # Commander entry point
       commands/                 # tenant, ingest, query, lint, schema
     __tests__/                  # (conditional: IncludeTests)
+      eval-cases.test.ts
       ingest.test.ts
       query.test.ts
       lint.test.ts
@@ -99,6 +107,10 @@ npm run cli -- tenant create my-project --name "My Project" --schema src/schema/
 npm run cli -- ingest my-project ./docs/architecture.md
 npm run cli -- query my-project "How does authentication work?"
 npm run cli -- lint my-project
+
+# Ask the eval cases of the fixture wiki. This reaches the configured model,
+# so it runs on demand rather than in CI.
+npm run eval
 ```
 
 ## Pairs with

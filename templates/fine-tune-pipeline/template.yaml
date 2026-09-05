@@ -67,6 +67,8 @@ conditionals:
     when: IncludeTests
   - path: 'src/__tests__/validate.test.ts'
     when: IncludeTests
+  - path: 'src/__tests__/eval-cases.test.ts'
+    when: IncludeTests
 
 hooks:
   post:

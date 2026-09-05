@@ -1,0 +1,23 @@
+{
+  "name": "describes a photographed storefront and reports the text on its sign",
+  "kind": "golden",
+  "input": "storefront-dusk.png\n\nExtracted scene: a shop front photographed at dusk. A neon sign above the door reads OPEN LATE. A chalkboard on the pavement lists espresso 3.20 and pastries 2.40. Two people stand under the awning.",
+  "assertions": [
+    {
+      "type": "modality",
+      "value": "image",
+      "why": "a .png routed to the audio stage is asked for a transcription of a photograph"
+    },
+    { "type": "structured_output", "value": true },
+    {
+      "type": "field_matches",
+      "value": { "field": "text", "pattern": "OPEN LATE" },
+      "why": "text in the frame belongs in the field the image schema declares for it, which is what a search index over storefronts reads"
+    },
+    {
+      "type": "field_matches",
+      "value": { "field": "labels", "pattern": "sign|storefront|shop|neon" },
+      "why": "labels are what a catalogue filters on; a description alone leaves nothing to filter by"
+    }
+  ]
+}

@@ -68,6 +68,12 @@ conditionals:
     when: IncludeTests
   - path: 'src/pipeline/__tests__/registry.test.ts'
     when: IncludeTests
+  - path: 'src/pipeline/__tests__/semantic.test.ts'
+    when: IncludeTests
+  - path: 'src/pipeline/__tests__/eval-cases.test.ts'
+    when: IncludeTests
+  - path: 'src/pipeline/__tests__/eval-assertions.test.ts'
+    when: IncludeTests
 
 hooks:
   post:
