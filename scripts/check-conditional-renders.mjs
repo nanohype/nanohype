@@ -22,7 +22,7 @@
 // Usage: node scripts/check-conditional-renders.mjs [root]
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, posix, resolve } from "node:path";
+import { join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as yaml from "js-yaml";
 import _ts from "typescript";

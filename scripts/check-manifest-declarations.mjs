@@ -17,7 +17,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, posix, relative } from "node:path";
+import { dirname, join, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 import _ts from "typescript";
 
@@ -123,9 +123,11 @@ function loadRendered(entry, files, registered, configReads, cache = new Map()) 
   };
 
   const module = { exports };
-  // biome-ignore lint/security/noGlobalEval: the input is this repository's own
-  // rendered skeletons, transpiled here, and the module graph it can reach is
-  // the rendered file map plus the stubs above.
+  // The input is this repository's own rendered skeletons, transpiled here, and
+  // the module graph this can reach is the rendered file map plus the stubs
+  // above. Running the build is the point: what a manifest declares has to be
+  // checked against what `activate` does, and reading the source answers what
+  // its author intended instead.
   new Function("exports", "require", "module", "__filename", "__dirname", transpiled)(
     exports,
     require_,

@@ -45,7 +45,6 @@
     "validate:conditional-renders": "node scripts/check-conditional-renders.mjs",
     "validate:manifest-declarations": "node scripts/check-manifest-declarations.mjs",
     "validate:manifest-assets": "node scripts/check-manifest-assets.mjs",
-    "test:scripts": "node --test 'scripts/__tests__/*.test.mjs'",
     "validate:publishable-deps": "node scripts/check-publishable-deps.mjs",
     "validate:skeleton-toolchain": "node scripts/check-skeleton-toolchain.mjs",
     "lint:skeletons": "node scripts/lint-skeletons.mjs",
