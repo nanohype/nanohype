@@ -66,12 +66,14 @@ export default defineConfig({
         // Access control decides what a tenant's users can read and write, so
         // the standard holds it to every branch rather than the floor.
         "src/tenant/auth.ts": { lines: 100, functions: 100, statements: 100, branches: 100 },
+        // #if IncludeApi
         "src/api/middleware/auth.ts": {
           lines: 100,
           functions: 100,
           statements: 100,
           branches: 100,
         },
+        // #endif
         // The three in-memory providers are held to every line and every
         // branch, above the floor, because they are the whole of what a
         // project runs on until it configures a backend. Pinned rather than
