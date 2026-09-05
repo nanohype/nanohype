@@ -16,6 +16,7 @@ const extensionConfig = {
   minify: false,
 };
 
+// #if IncludeWebview && IncludeAi
 /** Webview bundle — runs in browser, React app */
 const webviewConfig = {
   entryPoints: [path.resolve(__dirname, "src/webview/app/index.tsx")],
@@ -31,16 +32,23 @@ const webviewConfig = {
     "process.env.NODE_ENV": '"development"',
   },
 };
+// #endif
 
 async function build() {
   try {
+    // The webview bundle is built only when this project includes the React
+    // panel; the extension host bundle is always built.
+    const configs = [extensionConfig];
+    // #if IncludeWebview && IncludeAi
+    configs.push(webviewConfig);
+    // #endif
+
     if (isWatch) {
-      const extCtx = await esbuild.context(extensionConfig);
-      const webCtx = await esbuild.context(webviewConfig);
-      await Promise.all([extCtx.watch(), webCtx.watch()]);
+      const contexts = await Promise.all(configs.map((c) => esbuild.context(c)));
+      await Promise.all(contexts.map((c) => c.watch()));
       console.log("[esbuild] watching for changes...");
     } else {
-      await Promise.all([esbuild.build(extensionConfig), esbuild.build(webviewConfig)]);
+      await Promise.all(configs.map((c) => esbuild.build(c)));
       console.log("[esbuild] build complete");
     }
   } catch (err) {

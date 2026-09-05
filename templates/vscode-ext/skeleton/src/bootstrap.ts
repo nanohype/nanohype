@@ -8,9 +8,9 @@
 const PLACEHOLDER_RE = /__[A-Z][A-Z0-9_]*__/;
 
 export function validateBootstrap(): void {
-  // Vitest runs tests against the raw, unrendered skeleton — placeholder
-  // substitution only happens at scaffold time — so skip the check when
-  // the vitest env flag is present.
+  // The suite runs against the project as checked in, where a placeholder that
+  // was never substituted would fail every case rather than the one that
+  // checks for it.
   if (process.env.VITEST) return;
 
   const checks: Record<string, string | undefined> = {

@@ -62,7 +62,7 @@ variables:
   - name: IncludeWebview
     type: bool
     placeholder: '__INCLUDE_WEBVIEW__'
-    description: 'Include a React-based webview panel'
+    description: 'Include a React-based webview chat panel. Requires IncludeAi, which supplies the client that answers a turn.'
     prompt: 'Include webview panel?'
     default: true
 
@@ -74,14 +74,32 @@ variables:
     default: true
 
 conditionals:
+  # The panel is a chat surface and nothing else, so it needs a client to
+  # answer a turn. One condition covers the whole webview — the panel, the
+  # React app, the message protocol between them, the command that opens it,
+  # the session that resolves the key, and their suites — because a file here
+  # importing one gated on a weaker condition renders a scaffold that cannot
+  # build.
   - path: 'src/webview/panel.ts'
-    when: IncludeWebview
+    when: IncludeWebview && IncludeAi
+  - path: 'src/webview/protocol.ts'
+    when: IncludeWebview && IncludeAi
+  - path: 'src/commands/webview.ts'
+    when: IncludeWebview && IncludeAi
+  - path: 'src/ai/chat-session.ts'
+    when: IncludeWebview && IncludeAi
+  - path: 'src/__tests__/webview.test.ts'
+    when: IncludeWebview && IncludeAi
+  - path: 'src/__tests__/webview-command.test.ts'
+    when: IncludeWebview && IncludeAi
+  - path: 'src/__tests__/webview-app.test.tsx'
+    when: IncludeWebview && IncludeAi
   - path: 'src/webview/app/index.html'
-    when: IncludeWebview
+    when: IncludeWebview && IncludeAi
   - path: 'src/webview/app/index.tsx'
-    when: IncludeWebview
+    when: IncludeWebview && IncludeAi
   - path: 'src/webview/app/App.tsx'
-    when: IncludeWebview
+    when: IncludeWebview && IncludeAi
   - path: 'src/ai/providers/types.ts'
     when: IncludeAi
   - path: 'src/ai/providers/registry.ts'
@@ -93,6 +111,11 @@ conditionals:
   - path: 'src/ai/providers/index.ts'
     when: IncludeAi
   - path: 'src/ai/client.ts'
+    when: IncludeAi
+  # The provider suite imports the registry and the provider types, so it
+  # leaves with them. Left behind it is a test file whose imports resolve to
+  # nothing, and the scaffold fails `tsc` on its first commit.
+  - path: 'src/__tests__/providers.test.ts'
     when: IncludeAi
 
 hooks:

@@ -19,16 +19,52 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import _ts from "typescript";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+// TypeScript ships CommonJS; the ESM shim exposes the API as the default.
+const ts = _ts.default ?? _ts;
 
 const BUILTIN = new Set([...builtinModules, ...builtinModules.map((m) => `node:${m}`)]);
 
 const SCRIPT_FILE = /\.mjs$/;
 
-/** Bare specifiers in static and dynamic imports, and in `export … from`. */
-const SPECIFIER =
-  /(?:^|[\s;{}()])(?:import|export)\s[\s\S]*?from\s*["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|^\s*import\s*["']([^"']+)["']/gm;
+/**
+ * Bare specifiers in static and dynamic imports, and in `export … from`, read
+ * from the parse.
+ *
+ * A regex over the source finds import syntax wherever it appears, including
+ * inside a string — and a script whose subject is imports writes them as
+ * fixtures. `'import a from "vscode";'` is a test's input, not this
+ * repository's dependency, and a gate that cannot tell the two apart reports a
+ * package nobody imports while a real import written across a line break goes
+ * unseen.
+ */
+function specifiersOf(source, fileName) {
+  const parsed = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true);
+  const found = [];
+  const visit = (node) => {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteralLike(node.moduleSpecifier)
+    ) {
+      found.push(node.moduleSpecifier.text);
+    }
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments[0] &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      found.push(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return found;
+}
 
 /** The package a specifier names: `@scope/name/sub` → `@scope/name`. */
 export function packageOf(specifier) {
@@ -48,8 +84,7 @@ export function importedPackages(dir) {
       if (statSync(path).isDirectory()) walk(path);
       else if (SCRIPT_FILE.test(entry)) {
         const source = readFileSync(path, "utf-8");
-        for (const match of source.matchAll(SPECIFIER)) {
-          const specifier = match[1] ?? match[2] ?? match[3];
+        for (const specifier of specifiersOf(source, path)) {
           const pkg = packageOf(specifier);
           if (!pkg) continue;
           if (!found.has(pkg)) found.set(pkg, []);

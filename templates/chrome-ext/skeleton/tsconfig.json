@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
-    "types": ["chrome", "node"],
+    "types": ["chrome", "node", "vite/client"],
     "jsx": "react-jsx",
     "outDir": "dist",
     "rootDir": "src",

@@ -403,6 +403,43 @@ jobs:
       # scaffolds it, which is what shipped once: a skeleton that could not
       # render at all, and every composite including it went down with it. This
       # is the only check that runs the thing the repository sells.
+      # `check-catalog-renders.mjs` probes each template once, skipping any
+      # variable that carries a default, so a bool conditional defaulting to
+      # true is only ever rendered true. This renders the rest of the
+      # combinations and resolves the imports in each, which is where a file
+      # gated on one condition importing one gated on two shows up.
+      # The gate reads each rendered file for the modules it imports. That
+      # decision is a claim about the import shapes the catalog writes, so it
+      # is pinned against those shapes here — an extractor blind to one fails
+      # this rather than leaving a broken render unlisted.
+      - name: Test the gate's import extractor against the shapes the catalog ships
+        run: npm run test:scripts
+
+      - name: Check every relative import resolves in every conditional render
+        run: npm run validate:conditional-renders
+
+      # A manifest is JSON and carries no conditional, so everything it
+      # declares is declared in every build. A skeleton is checked in with both
+      # arms of each conditional block present, so its own suite sees a command
+      # registered even where the arm a build keeps does not register it — a
+      # state no consumer receives. This renders each combination and calls
+      # `activate` under a stubbed editor, so what it reports is what the build
+      # does.
+      - name: Check every rendered build answers what its manifest declares
+        run: npm run validate:manifest-declarations
+
+      # The same class one platform over, where the answer is a file rather
+      # than a registration. A manifest that names an options page or a content
+      # script a conditional dropped installs without complaint and that part
+      # of the extension never runs. Which files a bundler emits is the
+      # bundler's decision — its conditional entries, its output naming, the
+      # assets an entry pulls in — so this builds each render and compares.
+      - name: Install extension skeleton dependencies
+        run: npm --prefix templates/chrome-ext/skeleton install --ignore-scripts
+
+      - name: Check every file a built manifest names was emitted by that build
+        run: npm run validate:manifest-assets
+
       - name: Verify every template and composite renders
         run: node scripts/check-catalog-renders.mjs
 
