@@ -9,8 +9,10 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the ingest adapter, mock provider, registry, and circuit breaker.
-      // SDK-backed providers (notion/confluence/coda/google-docs) and wiring
-      // are integration-exercised.
+      // Excluded: barrels, type and schema declarations, the startup check that
+      // exits the process, logger and OTel shims, and the vendor providers
+      // (notion/confluence/coda/google-docs), each of which requires a service
+      // token and a reachable API.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

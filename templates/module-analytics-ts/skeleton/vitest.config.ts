@@ -9,8 +9,9 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the event buffer, middleware, mock provider, registry, and circuit
-      // breaker. SDK-backed providers (amplitude/mixpanel/posthog/segment) and
-      // wiring are integration-exercised.
+      // breaker. Out: bootstrap, config, logger and metrics — the startup guard,
+      // the config schema, and the log and OTel sinks; and the amplitude,
+      // mixpanel, posthog and segment providers, which each need a vendor key.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

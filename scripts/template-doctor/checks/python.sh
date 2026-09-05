@@ -47,7 +47,25 @@ _check_python_template() {
 _py_compile() {
   local skeleton="$1" name="$2"
   # Skip files with templated dir segments like __PKG__.
-  local output error_count
+  local output error_count requires have oldest
+
+  # A skeleton declares the interpreter it is written for. Compiling it with an
+  # older one reports its newer syntax as a syntax error — a `match` statement
+  # under 3.9 is the case that shipped — which is a fact about the machine
+  # running this and not about the skeleton. Reported as the gap it is, so a
+  # run on an old interpreter does not read as a broken template.
+  requires="$(sed -n 's/^requires-python[[:space:]]*=[[:space:]]*"*>=\([0-9.]*\).*/\1/p' \
+    "${skeleton}/pyproject.toml" 2>/dev/null | head -1)"
+  have="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null || echo 0)"
+  if [ -n "$requires" ]; then
+    oldest="$(printf '%s\n%s\n' "$requires" "$have" | sort -V | head -1)"
+    if [ "$oldest" != "$requires" ]; then
+      finding "warn" "python" "$name" "interpreter" \
+        "python3 is ${have}, under the ${requires} this skeleton declares in requires-python; its syntax was not checked here"
+      return
+    fi
+  fi
+
   output="$(python3 -m compileall -q "$skeleton" 2>&1 || true)"
   error_count=$(printf '%s' "$output" | grep -cE "SyntaxError|IndentationError" || true)
   # if/fi, not `[ ] && finding`: under `set -e` the latter returns non-zero on a

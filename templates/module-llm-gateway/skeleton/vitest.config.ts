@@ -11,10 +11,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the pure logic: routing strategies, caching strategies, the cost
-      // tracker/anomaly/pricing, the registries, and the token counter. The
-      // SDK-backed provider adapters (bedrock/anthropic/openai/groq, plus the
-      // mock), the index barrels, bootstrap, and the OTel metrics shim are
-      // exercised by the gateway integration test / live SDKs, not unit-covered.
+      // tracker/anomaly/pricing, the registries, and the token counter.
+      // Excluded: the vendor adapters (bedrock/anthropic/openai/groq) each
+      // build an SDK client from ambient credentials, the mock provider is
+      // fixture data, metrics declares OTel instruments, bootstrap exits the
+      // process, and the barrels and facade wire the registries gated above.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

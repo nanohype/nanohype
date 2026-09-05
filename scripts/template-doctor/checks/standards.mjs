@@ -45,17 +45,13 @@ const FLOOR = JSON.parse(readFileSync(join(ROOT, "standards", "testing-rubric.js
  * The check below reports a stale entry as an error precisely so this does not
  * become a permanent allowlist — an exception that outlives its reason reads as
  * a standard with a carve-out rather than a standard. An entry leaves when its
- * skeleton reaches the floor, which is the only way it should leave.
+ * skeleton reaches the floor, which is the only way it should leave: raising a
+ * number here without writing the tests puts the gate back to decorative.
+ *
+ * Empty is the state this is aimed at, not a sign the check has nothing to do —
+ * a skeleton dropping under the floor is reported against no entry at all.
  */
-const BELOW_FLOOR = {
-  "api-gateway": {
-    lines: 53,
-    functions: 56,
-    statements: 52,
-    branches: 51,
-    why: "the four middleware modules, the health checker and the canary splitter carry no tests; the router and circuit breaker are covered. auth.ts additionally owes the security-critical-100 override, so closing this needs tests written rather than a number raised",
-  },
-};
+const BELOW_FLOOR = {};
 
 /**
  * Go skeletons gate through a Makefile COVERAGE_MIN, pinned the same way.
@@ -69,6 +65,49 @@ const GO_BELOW_FLOOR = {
     why: "the PostgreSQL repository's CRUD needs a live server; it is not excluded from the profile, so it counts against the number rather than being hidden from it",
   },
 };
+
+/**
+ * The text inside `thresholds: { ... }`, found by balancing braces.
+ *
+ * A non-greedy match to the first line ending in a brace stops at the first
+ * nested object instead, and a per-file override written across several lines
+ * is one — so the block would end before the metrics that follow it.
+ */
+function thresholdsBlock(source) {
+  const start = source.search(/\bthresholds:\s*\{/);
+  if (start === -1) return null;
+  const open = source.indexOf("{", start);
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === "{") depth++;
+    else if (source[i] === "}") {
+      depth--;
+      if (depth === 0) return source.slice(open + 1, i);
+    }
+  }
+  return null;
+}
+
+/**
+ * The same text with every nested object removed.
+ *
+ * `coverage.thresholds` holds the global floor and, beside it, per-file
+ * overrides keyed by path. Both spell the same four metric names, so a scan
+ * over the whole block reads whichever came last — an override of 100 on one
+ * file reported as the threshold for the skeleton. The global floor is what
+ * this check is about; an override is a different claim about a different
+ * surface.
+ */
+function withoutNestedObjects(block) {
+  let out = "";
+  let depth = 0;
+  for (const ch of block) {
+    if (ch === "{") depth++;
+    else if (ch === "}") depth--;
+    else if (depth === 0) out += ch;
+  }
+  return out;
+}
 
 const findings = [];
 const report = (severity, category, template, message) =>
@@ -192,14 +231,14 @@ for (const template of templates) {
       );
     }
 
-    const block = source.match(/thresholds:\s*\{(.*?)\n\s*\}/s);
-    if (!block) {
+    const block = thresholdsBlock(source);
+    if (block === null) {
       report("error", "coverage-config", template, `${where} declares no thresholds`);
       continue;
     }
 
     const declared = {};
-    for (const [, key, value] of block[1].matchAll(
+    for (const [, key, value] of withoutNestedObjects(block).matchAll(
       /\b(lines|functions|statements|branches):\s*(\d+)/g,
     )) {
       declared[key] = Number(value);

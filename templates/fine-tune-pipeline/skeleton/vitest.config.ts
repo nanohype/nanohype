@@ -9,9 +9,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the dataset split/validate logic. IO-bound prepare, eval
-      // comparison, SDK-backed training, the resilience layer, and wiring are
-      // integration-exercised.
+      // The denominator is the dataset split/validate logic. Out: bootstrap,
+      // config and logger, which read the environment at process start; prepare,
+      // eval and training, built around disk IO and a fine-tuning API; the
+      // timer-driven circuit breaker; barrels and type declarations.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

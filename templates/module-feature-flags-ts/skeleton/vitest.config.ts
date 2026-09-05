@@ -8,9 +8,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the evaluator, tracker, store registry, and circuit breaker. The
-      // stores (memory/json-file/redis/mock) and wiring are
-      // integration-exercised — ratchet them in as unit suites land.
+      // Gate the evaluator, tracker, store registry, and circuit breaker.
+      // Excluded: barrels, type and schema declarations, the startup check that
+      // exits the process, logger and OTel shims, and the store bodies — redis
+      // needs a live server, json-file the disk, and the memory and mock stores
+      // are Map wrappers with no branching.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

@@ -11,7 +11,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the consumer handler, scheduler cron logic, and circuit breaker.
-      // Example jobs, the health server, and wiring are integration-exercised.
+      // The exclusions: index.ts starts the consumer and health server at
+      // import and bootstrap.ts returns early under VITEST; config, logger and
+      // metrics are process.env, stdout and OTel sinks; health/server.ts binds
+      // a port through @hono/node-server; the example jobs are placeholders a
+      // consumer replaces; the types.ts files declare types only.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

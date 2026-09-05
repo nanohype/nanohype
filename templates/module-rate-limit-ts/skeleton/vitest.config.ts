@@ -8,9 +8,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the token-bucket algorithm, memory store, and the registries. The
-      // fixed/sliding-window algorithms, redis store, middleware, and wiring
-      // are integration-exercised — ratchet them in as unit suites land.
+      // Gate the token-bucket algorithm, memory store, and the registries.
+      // Excluded: bootstrap.ts exits the process on an unresolved placeholder,
+      // middleware.ts adapts a Hono or Express request object, and the redis
+      // store needs a live server. The fixed and sliding window algorithms run
+      // against the store interface alone — cover them and ratchet them back in.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

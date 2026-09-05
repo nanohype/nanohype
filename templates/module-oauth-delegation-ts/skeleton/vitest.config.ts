@@ -14,7 +14,7 @@ export default defineConfig({
         branches: 60,
       },
       include: ["src/**/*.ts"],
-      exclude: ["dist/**", "**/__tests__/**", "**/*.config.ts", "src/oauth/index.ts"],
+      exclude: ["**/__tests__/**", "**/*.config.ts", "src/oauth/index.ts"],
     },
   },
 });

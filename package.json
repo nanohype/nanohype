@@ -35,7 +35,6 @@
     "validate:eval-suites": "node scripts/check-eval-suites.mjs",
     "validate:assertion-dispatch": "node scripts/check-assertion-dispatch.mjs",
     "validate:script-deps": "node scripts/check-script-dependencies.mjs",
-    "test:scripts": "node --test 'scripts/__tests__/*.test.mjs'",
     "validate:regions": "node scripts/check-regions.mjs",
     "validate:composites": "node scripts/validate-schema.mjs --schema schemas/composite.schema.json --data 'composites/*.yaml'",
     "validate:composite-files": "node scripts/check-composite-files.mjs",
@@ -44,6 +43,9 @@
     "validate:doc-commands": "node scripts/check-doc-commands.mjs",
     "validate:publishable-deps": "node scripts/check-publishable-deps.mjs",
     "validate:skeleton-toolchain": "node scripts/check-skeleton-toolchain.mjs",
+    "validate:coverage-exclusions": "node scripts/check-coverage-exclusions.mjs",
+    "validate:cited-suites": "node scripts/check-cited-suites.mjs",
+    "test:scripts": "node scripts/run-script-tests.mjs",
     "lint:skeletons": "node scripts/lint-skeletons.mjs",
     "generate:catalog": "node scripts/generate-catalog.mjs",
     "verify:catalog": "node scripts/generate-catalog.mjs && git diff --exit-code -I generated_at catalog.json",
@@ -57,12 +59,14 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
+    "@vitest/coverage-v8": "^5.0.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "editorconfig-checker": "6.1.1",
     "js-yaml": "^5.2.1",
     "markdownlint-cli2": "^0.23.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^5.0.0"
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",

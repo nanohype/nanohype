@@ -8,9 +8,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the mock provider, registry, and circuit breaker. SDK-backed
-      // providers (jira/linear/asana/shortcut) and wiring are
-      // integration-exercised.
+      // Gate the mock provider, registry, and circuit breaker. Excluded:
+      // bootstrap.ts exits the process on an unresolved placeholder, config.ts
+      // is a Zod schema, logger.ts and metrics.ts are console and OTel sinks,
+      // and the vendor providers reach a live API under a host token.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

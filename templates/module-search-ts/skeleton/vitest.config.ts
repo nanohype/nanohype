@@ -9,8 +9,9 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the hybrid combiner, mock provider, registry, and circuit breaker.
-      // SDK-backed providers (algolia/meilisearch/typesense) and wiring are
-      // integration-exercised.
+      // The algolia/meilisearch/typesense providers need a live service and its
+      // credentials; bootstrap exits on an unresolved placeholder; config,
+      // logger, and metrics declare a schema, a log sink, and OTel instruments.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

@@ -10,10 +10,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the pure logic (provider registry, circuit breaker). The SDK
-      // adapters (providers/bedrock|anthropic|openai|mock), Bolt handlers
-      // (events, commands), metrics, logger, and bootstrap are exercised by
-      // live SDKs / integration, not unit-covered.
+      // Gate the pure logic (provider registry, circuit breaker). The
+      // exclusions: index.ts starts Bolt at import and bootstrap.ts returns
+      // early under VITEST; config, logger and metrics are process.env,
+      // console and OTel sinks; the bedrock/anthropic/openai adapters need
+      // SDK credentials; mock.ts answers from a canned keyword table; events/
+      // and commands/ hand callbacks to Bolt's dispatcher.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

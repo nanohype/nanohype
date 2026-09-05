@@ -10,29 +10,28 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Pure logic carries the floor. The SDK-backed provider adapters
-      // (dynamodb/sqs/postgres), the bootstrap, the OTel metrics shim, and the
-      // barrels are exercised by integration tests / live SDKs, not unit-covered.
-      exclude: [
-        "src/**/*.test.ts",
-        "src/audit/index.ts",
-        "src/audit/bootstrap.ts",
-        "src/audit/metrics.ts",
-        "src/audit/providers/index.ts",
-        "src/audit/providers/dynamodb.ts",
-        "src/audit/providers/sqs.ts",
-        "src/audit/providers/postgres.ts",
-      ],
-      // testing-rubric: enforce-floor-in-config. This is a security-critical
-      // audit ledger, so the idempotency key derivation (event-id) is held to
-      // 100% per the rubric's security-critical-100 rule; everything else to the
-      // standard module floor.
+      exclude: ["src/**/*.test.ts"],
+      // testing-rubric: enforce-floor-in-config, security-critical-100. The
+      // module floor is the baseline; the rubric names audit ledgers, so every
+      // module that carries behaviour on the append or query path is pinned at
+      // 100% branch/line/function above it. The adapters are pinned through the
+      // client or pool their config accepts, so the pin holds without a live
+      // backend. The type-only modules (types.ts) declare no behaviour to pin.
       thresholds: {
         lines: 75,
         functions: 75,
         statements: 75,
         branches: 60,
-        "**/event-id.ts": { lines: 100, functions: 100, statements: 100, branches: 100 },
+        "src/audit/index.ts": { 100: true },
+        "src/audit/bootstrap.ts": { 100: true },
+        "src/audit/event-id.ts": { 100: true },
+        "src/audit/metrics.ts": { 100: true },
+        "src/audit/providers/index.ts": { 100: true },
+        "src/audit/providers/registry.ts": { 100: true },
+        "src/audit/providers/memory.ts": { 100: true },
+        "src/audit/providers/dynamodb.ts": { 100: true },
+        "src/audit/providers/postgres.ts": { 100: true },
+        "src/audit/providers/sqs.ts": { 100: true },
       },
     },
   },

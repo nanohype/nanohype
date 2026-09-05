@@ -22,8 +22,15 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the chat API route, streaming helpers, and provider registry.
-      // React components/pages, SDK providers, auth/db config, and wiring are
-      // exercised by e2e, not unit coverage.
+      // Out of the denominator: the React components and pages, which need a
+      // DOM and a Next runtime; the SDK providers, which need a vendor key;
+      // the Drizzle schema and client, which describe a database rather than
+      // behaving; and the layout and wiring modules.
+      //
+      // Nothing under `lib/auth/` is among them. `options.ts` holds the
+      // `authorized` callback every protected route rests on, and `config.ts`
+      // is the construction that wires it into NextAuth. Both are measured and
+      // pinned below.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -32,7 +39,6 @@ export default defineConfig({
         "src/app/api/readyz/**",
         "src/lib/ai/providers/anthropic.ts",
         "src/lib/ai/providers/openai.ts",
-        "src/lib/auth/**",
         "src/lib/db/**",
         "src/**/index.ts",
         "src/**/types.ts",
@@ -45,6 +51,20 @@ export default defineConfig({
         functions: 75,
         statements: 75,
         branches: 60,
+        // The authorization callback decides what a signed-out visitor
+        // reaches, so the standard holds it to every branch, not the floor.
+        "src/lib/auth/config.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
+        "src/lib/auth/options.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
       },
     },
   },

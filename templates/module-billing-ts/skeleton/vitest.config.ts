@@ -8,9 +8,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate invoicing, metering, the webhook handler, registry, and circuit
-      // breaker. The Stripe provider, the mock, and wiring are
-      // integration-exercised.
+      // Gate invoicing, metering, the webhook handler, registry, the circuit
+      // breaker, and the Stripe provider. Out: bootstrap and config, which
+      // guard startup; logger and metrics, the log and OTel sinks; the mock
+      // provider, an in-memory stand-in.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -18,7 +19,6 @@ export default defineConfig({
         "src/billing/config.ts",
         "src/billing/logger.ts",
         "src/billing/metrics.ts",
-        "src/billing/providers/stripe.ts",
         "src/billing/providers/mock.ts",
         "src/**/index.ts",
         "src/**/types.ts",
@@ -31,6 +31,17 @@ export default defineConfig({
         functions: 75,
         statements: 75,
         branches: 60,
+        // The Stripe provider hands the account's secret key to the SDK
+        // client and decides, per request, whether an inbound webhook really
+        // came from Stripe. The standard's 'security-critical-100' rule holds
+        // an authentication path to every branch: an unexercised branch here
+        // is a signature check nothing proves runs.
+        "src/billing/providers/stripe.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
       },
     },
   },

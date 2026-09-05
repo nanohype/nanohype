@@ -20,7 +20,6 @@ export default defineConfig({
         "src/logger.ts",
         "src/transports/**",
         "src/**/index.ts",
-        "src/**/types.ts",
         // The `example.*` tool and resource are demo handlers a consumer
         // deletes on first use — the same exclusion ts-service makes, for the
         // same reason. Gating them would hold the scaffold to coverage of code

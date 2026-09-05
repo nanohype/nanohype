@@ -10,8 +10,9 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the baseline store, reporter, runner, assertions, and provider
-      // registry. SDK providers and wiring (bootstrap, config, logger, barrels,
-      // type-only modules) are integration-exercised.
+      // registry. Out of the denominator: bootstrap.ts exits the process; the
+      // anthropic/openai providers need an API key; and the Zod config schema,
+      // the stderr logger, the barrels and the type-only modules are wiring.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

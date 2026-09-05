@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
@@ -11,6 +10,7 @@ import type {
   UploadOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import { signImgixPath } from "./signatures.js";
 import type { MediaProvider } from "./types.js";
 
 // ── imgix Provider ───────────────────────────────────────────────
@@ -39,37 +39,8 @@ const FIT_MAP: Record<string, string> = {
 /** Default responsive widths for srcset generation. */
 const DEFAULT_SRCSET_WIDTHS = [320, 640, 960, 1280, 1920];
 
-/**
- * imgix secure-URL signature: a plain MD5 of the token concatenated with the
- * path and, when present, the query string including its leading `?`.
- *
- * Not an HMAC. imgix keys nothing — the token is a prefix of the hashed string,
- * so `md5(token + path + query)` and `hmac_md5(token, path + query)` are
- * different digests and imgix rejects the second one. The token still has to
- * stay secret, but that is because it is unguessable, not because of any MAC
- * construction.
- *
- * `pathWithQuery` must carry its leading slash and keep any percent-encoding
- * intact, and `s` must be the last query parameter in the emitted URL.
- *
- * Module-scoped because both the provider's `buildUrl` and the exported
- * `getResponsiveSrcSet` sign URLs, and a second inline copy is how the two
- * drifted apart.
- *
- * MD5 is not a choice here — imgix validates this exact construction and no
- * other, so a stronger hash produces a signature the CDN rejects. What the
- * signature protects against is a third party minting transform URLs against
- * your source, and the guarantee comes from the token being secret and
- * unguessable rather than from the hash's collision resistance: forging a URL
- * requires the token, not a collision. Treat the token as a credential.
- *
- * https://github.com/imgix/imgix-blueprint#securing-urls
- */
-function signUrl(pathWithQuery: string, token: string): string {
-  return createHash("md5")
-    .update(token + pathWithQuery)
-    .digest("hex");
-}
+/** Signing lives in `./signatures.js`, where it is measured whole. */
+const signUrl = signImgixPath;
 
 function createImgixProvider(): MediaProvider {
   let config: ImgixConfig | null = null;

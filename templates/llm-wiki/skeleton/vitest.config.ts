@@ -8,36 +8,49 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate operations, schema parsing, wiki search/link-graph/page logic,
-      // the registries, the circuit breaker, and the eval corpus loader. Out of
-      // the denominator: the HTTP API and the CLI; `config.ts`, which reads the
-      // environment; the adapters that reach a real system — `llm/anthropic.ts`
-      // the Messages API, `sources/local.ts` a source tree on disk,
-      // `storage/git.ts` a checkout; `tenant/auth.ts` and
-      // `wiki/index-manager.ts`; and the barrels and type-only modules.
+      // What stays out of the denominator, and why: the test files themselves;
+      // the `types.ts` modules, which declare interfaces and hold no runtime
+      // statement; the `index.ts` barrels, which re-export and pull in the
+      // provider modules for their registration side effect; the route
+      // modules, which are Hono handlers over the operations covered here, and
+      // `server.ts`, which mounts them and bridges Node's http server to the
+      // app; `src/cli/`, whose entry parses argv and dispatches at import and
+      // whose commands wrap the library for a terminal; `config.ts`, which
+      // reads the environment; `wiki/index-manager.ts`; and the adapters that
+      // reach a real system — `llm/anthropic.ts` calls the Messages API,
+      // `sources/local.ts` reads a source tree on disk, and `storage/git.ts`
+      // commits to a checkout.
       //
-      // The eval runner and the fixture wiki it seeds reach a live model, so
-      // they run on demand. The loader's refusal to report a pass over an empty
-      // corpus is held by the unit suite, which needs no model.
+      // Three kinds of file are deliberately not among them.
       //
-      // The `mock.ts` providers are measured. They ship, a project selects them
-      // through WIKI_LLM_PROVIDER, WIKI_SOURCE_PROVIDER and
-      // WIKI_STORAGE_PROVIDER, and they carry the branches a project runs on
-      // before it configures a backend — a keyword dispatch, a missing-page
-      // refusal, a prefix-narrowed listing, and the per-tenant partition that is
-      // the whole of the isolation between tenants in the in-memory store.
+      // The eval corpus loader is measured. The eval runner and the fixture
+      // wiki it seeds reach a live model, so those run on demand; the loader's
+      // refusal to report a pass over an empty corpus needs no model and is
+      // held by the unit suite.
+      //
+      // The `mock.ts` providers ship. A project selects them through
+      // WIKI_LLM_PROVIDER, WIKI_SOURCE_PROVIDER and WIKI_STORAGE_PROVIDER, and
+      // they carry the branches it runs on before it configures a backend — a
+      // keyword dispatch, a missing-page refusal, a prefix-narrowed listing,
+      // and the per-tenant partition that is the whole of the isolation
+      // between tenants in the in-memory store. They are not doubles the suite
+      // reaches for: the doubles are objects declared in the test files and
+      // installed with `vi.mock` over the barrels.
+      //
+      // `tenant/auth.ts` and `api/middleware/auth.ts` decide which requests
+      // reach any of it, and what a tenant's users may read and write.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
-        "src/config.ts",
-        "src/api/**",
+        "src/api/server.ts",
+        "src/api/routes/**",
         "src/cli/**",
+        "src/config.ts",
         "src/eval/fixture-storage.ts",
         "src/eval/runner.ts",
         "src/llm/anthropic.ts",
         "src/sources/local.ts",
         "src/storage/git.ts",
-        "src/tenant/auth.ts",
         "src/wiki/index-manager.ts",
         "src/**/index.ts",
         "src/**/types.ts",
@@ -50,6 +63,15 @@ export default defineConfig({
         functions: 75,
         statements: 75,
         branches: 60,
+        // Access control decides what a tenant's users can read and write, so
+        // the standard holds it to every branch rather than the floor.
+        "src/tenant/auth.ts": { lines: 100, functions: 100, statements: 100, branches: 100 },
+        "src/api/middleware/auth.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
         // The three in-memory providers are held to every line and every
         // branch, above the floor, because they are the whole of what a
         // project runs on until it configures a backend. Pinned rather than

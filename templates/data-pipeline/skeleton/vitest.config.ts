@@ -10,11 +10,16 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the pure transform algorithms, the eval corpus loader and the
-      // checks its cases are written against, and the registries (focused unit
-      // tests). SDK-backed embedders, IO ingest/output adapters, the
-      // orchestrator glue, bootstrap and the eval runner reach a provider or a
-      // filesystem, so they are exercised live rather than unit-covered.
+      // Gate the chunk strategies, the eval corpus loader and the checks its
+      // cases are written against, the registries, the orchestrator and the
+      // circuit breaker. Out of the denominator: index.ts calls main() at
+      // import, so loading it starts the CLI and exits the process;
+      // bootstrap.ts returns ahead of its checks under VITEST; logger.ts
+      // writes JSON lines to the console, and metrics.ts builds OTel
+      // instruments that no-op unless a consumer initializes an SDK; the eval
+      // runner reaches a provider. Each excluded ingest, embed and output
+      // module is the one performing that stage's I/O — filesystem, fetch, DNS
+      // resolution, stdout or a vendor SDK; the registries beside them stay in.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -22,10 +27,13 @@ export default defineConfig({
         "src/pipeline/bootstrap.ts",
         "src/pipeline/logger.ts",
         "src/pipeline/metrics.ts",
-        "src/pipeline/orchestrator.ts",
-        "src/pipeline/ingest/**",
-        "src/pipeline/embed/**",
-        "src/pipeline/output/**",
+        "src/pipeline/ingest/file.ts",
+        "src/pipeline/ingest/web.ts",
+        "src/pipeline/ingest/url-guard.ts",
+        "src/pipeline/embed/bedrock.ts",
+        "src/pipeline/embed/openai.ts",
+        "src/pipeline/output/console.ts",
+        "src/pipeline/output/json-file.ts",
         "src/pipeline/eval/runner.ts",
       ],
       thresholds: {

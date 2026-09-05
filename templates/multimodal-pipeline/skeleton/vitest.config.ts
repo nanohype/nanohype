@@ -9,11 +9,13 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the pipeline, processors, mock provider, registries, the eval
-      // corpus loader, and circuit breaker. SDK-backed providers
-      // (anthropic/openai/whisper), the output formatter, and wiring are
-      // integration-exercised. The eval runner calls a live provider, so it is
-      // a command a consumer runs rather than a CI step — the loader it
-      // depends on for its empty-corpus refusal is covered here instead.
+      // corpus loader, and circuit breaker. The anthropic/openai/whisper
+      // providers need an API key and a hosted endpoint; bootstrap exits on an
+      // unresolved placeholder; config and logger read the environment; the
+      // formatter runs under processFile; and the eval runner calls a live
+      // provider, so it is a command a consumer runs rather than a CI step —
+      // the loader it depends on for its empty-corpus refusal is covered here
+      // instead.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

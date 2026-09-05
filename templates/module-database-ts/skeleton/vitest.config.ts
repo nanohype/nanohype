@@ -8,9 +8,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the client facade and driver registry. Live-database drivers
-      // (postgres/sqlite/turso), migrations, the schema, and wiring are
-      // integration-exercised.
+      // Gate the client facade and driver registry. Out: bootstrap, the startup
+      // guard; migrate, which applies migrations to a live database; schema,
+      // table declarations; and the postgres, sqlite and turso drivers, which
+      // each open a real connection.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
