@@ -52,35 +52,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: package.json
-          cache: npm
-
-      - run: npm ci
-
-      # editorconfig-checker ships a Node wrapper around a Go binary it fetches
-      # from GitHub releases on first run. Unauthenticated, that request is rate
-      # limited per runner IP, which GitHub's shared pool exhausts routinely — so
-      # the gate fails with "API rate limit exceeded" on a change it never read.
-      # A gate that goes red without looking at the diff teaches people to re-run
-      # it rather than read it.
+      # The org's gate, which reads `.editorconfig` and the files `git ls-files`
+      # names. It opens no socket and installs nothing.
       #
-      # GITHUB_TOKEN is the job's own automatic token; it raises the limit and
-      # costs no secret to manage.
+      # The `editorconfig-checker` npm package is a wrapper around a Go binary it
+      # resolves through the GitHub release API and downloads when the check runs.
+      # That made the verdict on a merge depend on a third party answering, and it
+      # failed in more than one way: an unauthenticated runner hitting the rate
+      # limit its shared egress IP had already spent, and an asset glob matching no
+      # published name — `ec-darwin-amd64*` is the miss on a developer's machine,
+      # so the local command has never run at all. Every one of those printed as a
+      # failing format check on a tree carrying no formatting defect.
       #
-      # EC_VERSION pins the binary. The npm devDependency pins the wrapper, not
-      # the binary — those are separately versioned, and without this the
-      # wrapper asks the release API for "latest", so what the gate enforces can
-      # change with no commit here. The org preset's customManager tracks this
-      # line, so the pin is upgraded like any other dependency rather than
-      # quietly going stale.
-      - run: npm run editorconfig
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # renovate: datasource=github-releases depName=editorconfig-checker/editorconfig-checker
-          EC_VERSION: v3.11.1
+      # The two non-zero verdicts stay apart. A malformed file and a checker that
+      # could not run are both red, and a reader can act on neither until told
+      # which. The action turns the exit code into an annotation that says
+      # NOTHING WAS CHECKED where that is what happened — which a downloading
+      # checker cannot report at all, because the download is what failed.
+      - uses: nanohype/.github/actions/editorconfig-gate@b2eada74413fcc9f3042f22126ee5b350a2b846e
 
   validate:
     name: Validate template catalog
