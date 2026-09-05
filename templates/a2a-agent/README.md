@@ -10,6 +10,8 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
 - **Transport registry** (`src/protocol/transport/`): pluggable transports (HTTP, WebSocket) with a registry for runtime selection.
 - **Agent discovery** (`src/discovery/`, optional): agent directory for discovering peers and an Agent Card served at `/.well-known/agent.json`.
 - **Provider abstraction** (`src/providers/`): swap between Anthropic and OpenAI with a single config value.
+- **Routing** (`src/routing.ts`): turns a task into a decision — a registered skill name or none — validating the model's reply so a name the registry cannot run never becomes a route.
+- **Eval suite** (`src/eval/`): golden and adversarial cases for the routing decision, and a runner that refuses an empty corpus rather than reporting a pass over one.
 
 ## Variables
 
@@ -33,6 +35,8 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
       transport/                 # Pluggable transports (HTTP, WebSocket)
     discovery/                   # Agent directory and Agent Card (conditional)
     providers/                   # LLM provider abstraction (Anthropic / OpenAI)
+    routing.ts                   # Task -> skill decision, validated before it is one
+    eval/                        # Eval runner, assertion helpers, and the case corpus
     logger.ts                    # Structured JSON logger
     __tests__/                   # Vitest test suite (conditional)
   package.json

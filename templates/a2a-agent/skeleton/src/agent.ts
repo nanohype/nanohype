@@ -3,9 +3,7 @@ import { logger } from "./logger.js";
 import { fetchAgentCard, sendTask } from "./protocol/client.js";
 import { getAvailableSkills, handleTask } from "./protocol/server.js";
 import type { TaskRequest } from "./protocol/types.js";
-import { getProvider } from "./providers/index.js";
-import type { Message } from "./providers/types.js";
-import { getSkill, listSkills } from "./skills/index.js";
+import { PROVIDER_NAME, routeTask } from "./routing.js";
 
 // Ensure transports are registered
 import "./protocol/transport/index.js";
@@ -22,66 +20,17 @@ import "./protocol/transport/index.js";
  * __TRANSPORT__ transport for A2A communication.
  */
 
-const PROVIDER_NAME = "__LLM_PROVIDER__";
-
-const SYSTEM_PROMPT = `You are an A2A protocol agent named "__PROJECT_NAME__".
-Your role is to analyze incoming requests and decide which skill to use.
-
-Available skills:
-{{SKILLS}}
-
-Given a user request, respond with a JSON object:
-{
-  "skill": "<skill-name>",
-  "reasoning": "<why this skill was chosen>"
-}
-
-If no skill matches, respond with:
-{
-  "skill": null,
-  "reasoning": "<explanation>"
-}`;
-
-/** Use the LLM to select the best skill for a given input. */
-async function selectSkill(input: string): Promise<string | null> {
-  const provider = getProvider(PROVIDER_NAME);
-
-  const skills = listSkills();
-  const skillDescriptions = skills
-    .map((name) => {
-      const skill = getSkill(name);
-      return `- ${skill.name}: ${skill.description}`;
-    })
-    .join("\n");
-
-  const prompt = SYSTEM_PROMPT.replace("{{SKILLS}}", skillDescriptions);
-
-  const messages: Message[] = [{ role: "user", content: input }];
-  const response = await provider.sendMessage(prompt, messages);
-
-  try {
-    const parsed = JSON.parse(response.content) as { skill: string | null; reasoning: string };
-    logger.info("Skill selected", { skill: parsed.skill, reasoning: parsed.reasoning });
-    return parsed.skill;
-  } catch {
-    logger.warn("Failed to parse LLM skill selection, falling back to first skill", {
-      response: response.content,
-    });
-    return skills[0] ?? null;
-  }
-}
-
 /** Process an incoming request using LLM-guided skill selection. */
 export async function processRequest(input: string): Promise<string> {
   logger.info("Processing request", { inputLength: input.length });
 
-  const skillName = await selectSkill(input);
-  if (!skillName) {
-    return "No matching skill found for this request.";
+  const decision = await routeTask(input);
+  if (!decision.skill) {
+    return `No matching skill found for this request. ${decision.reasoning}`;
   }
 
   const request: TaskRequest = {
-    skill: skillName,
+    skill: decision.skill,
     input: { content: input },
   };
 

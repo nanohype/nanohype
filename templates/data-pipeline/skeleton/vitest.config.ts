@@ -10,10 +10,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the pure transform algorithms + registries (focused unit tests).
-      // SDK-backed embedders, IO ingest/output adapters, the orchestrator glue,
-      // bootstrap, and the semantic chunker are exercised by integration / live
-      // SDKs, not unit-covered.
+      // Gate the pure transform algorithms, the eval corpus loader and the
+      // checks its cases are written against, and the registries (focused unit
+      // tests). SDK-backed embedders, IO ingest/output adapters, the
+      // orchestrator glue, bootstrap and the eval runner reach a provider or a
+      // filesystem, so they are exercised live rather than unit-covered.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -25,7 +26,7 @@ export default defineConfig({
         "src/pipeline/ingest/**",
         "src/pipeline/embed/**",
         "src/pipeline/output/**",
-        "src/pipeline/transform/semantic.ts",
+        "src/pipeline/eval/runner.ts",
       ],
       thresholds: {
         lines: 75,

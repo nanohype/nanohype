@@ -6,6 +6,7 @@
   "main": "dist/pipeline/index.js",
   "scripts": {
     "run": "tsx src/pipeline/index.ts",
+    "eval": "tsx src/pipeline/eval/runner.ts",
     "build": "tsc",
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",

@@ -1,6 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { runAgent } from "../agent.js";
+import { resolve } from "node:path";
 import type { AssertionResult } from "./assertions.js";
 import {
   completedWithinIterations,
@@ -8,26 +6,7 @@ import {
   matchesPattern,
   toolWasCalled,
 } from "./assertions.js";
-
-/**
- * A test fixture defines an input to the agent and a set of
- * assertions to check against the output.
- */
-interface Fixture {
-  /** Display name for the test case. */
-  name: string;
-
-  /** User input to send to the agent. */
-  input: string;
-
-  /** Assertions to evaluate. */
-  assertions: FixtureAssertion[];
-}
-
-interface FixtureAssertion {
-  type: "contains" | "matches_pattern" | "tool_was_called" | "max_iterations";
-  value: string | number;
-}
+import { coversBothKinds, EmptyCorpusError, type EvalCase, loadCases } from "./cases.js";
 
 interface TestResult {
   fixture: string;
@@ -36,27 +15,10 @@ interface TestResult {
 }
 
 /**
- * Load all fixture files from the fixtures directory. Each fixture
- * is a JSON file with { name, input, assertions } structure.
- */
-async function loadFixtures(fixturesDir: string): Promise<Fixture[]> {
-  const entries = await readdir(fixturesDir);
-  const jsonFiles = entries.filter((f) => f.endsWith(".json"));
-
-  const fixtures: Fixture[] = [];
-  for (const file of jsonFiles) {
-    const raw = await readFile(join(fixturesDir, file), "utf-8");
-    fixtures.push(JSON.parse(raw) as Fixture);
-  }
-
-  return fixtures;
-}
-
-/**
  * Run assertions for a single fixture against the agent output.
  */
-function checkAssertions(
-  fixture: Fixture,
+export function checkAssertions(
+  fixture: EvalCase,
   response: string,
   toolCallLog: string[],
   iterations: number,
@@ -71,11 +33,32 @@ function checkAssertions(
       case "matches_pattern":
         results.push(matchesPattern(response, new RegExp(String(assertion.value))));
         break;
+      case "not_contains": {
+        const hit = contains(response, String(assertion.value));
+        results.push({
+          pass: !hit.pass,
+          message: hit.pass
+            ? `Expected response not to contain "${assertion.value}"${assertion.why ? ` — ${assertion.why}` : ""}`
+            : `Does not contain "${assertion.value}"`,
+        });
+        break;
+      }
       case "tool_was_called":
         results.push(toolWasCalled(toolCallLog, String(assertion.value)));
         break;
       case "max_iterations":
         results.push(completedWithinIterations(iterations, Number(assertion.value)));
+        break;
+
+      default:
+        // A case file is JSON and JSON does not honour a union, so a type outside
+        // the declared set arrives here at run time. Without this arm it produces
+        // no result, and `every` over an empty list is true — the case passes
+        // having checked nothing.
+        results.push({
+          pass: false,
+          message: `Unknown assertion type "${assertion.type}" — nothing checks it`,
+        });
         break;
     }
   }
@@ -88,39 +71,32 @@ function checkAssertions(
  * evaluates assertions, and prints a summary.
  */
 async function main(): Promise<void> {
-  const fixturesDir = resolve(
-    import.meta.dirname ?? new URL(".", import.meta.url).pathname,
-    "fixtures",
-  );
+  const casesDir = resolve(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "cases");
 
-  const fixtures = await loadFixtures(fixturesDir);
+  // `loadCases` throws on an empty corpus rather than returning one, so an
+  // eval that has nothing to run cannot report the same thing as an eval that
+  // ran everything and passed.
+  const fixtures = await loadCases(casesDir);
 
-  if (fixtures.length === 0) {
-    console.log("No fixtures found in", fixturesDir);
-    console.log("Add .json fixture files to get started. Example:");
-    console.log(
-      JSON.stringify(
-        {
-          name: "basic math",
-          input: "What is 2 + 2?",
-          assertions: [
-            { type: "contains", value: "4" },
-            { type: "tool_was_called", value: "calculator" },
-          ],
-        },
-        null,
-        2,
-      ),
+  // The agent module builds a provider client at import, which needs a key.
+  // Importing it after the corpus is read means a run with nothing to run says
+  // so, instead of failing earlier with a vendor SDK error about credentials.
+  const { runAgent } = await import("../agent.js");
+
+  if (!coversBothKinds(fixtures)) {
+    console.error(
+      "The corpus covers only one kind of case. Golden cases say what the agent does when " +
+        "asked nicely; adversarial cases are the ones that find out what it does otherwise.",
     );
-    return;
+    process.exit(1);
   }
 
-  console.log(`Running ${fixtures.length} fixture(s)...\n`);
+  console.log(`Running ${fixtures.length} case(s)...\n`);
 
   const results: TestResult[] = [];
 
   for (const fixture of fixtures) {
-    process.stdout.write(`  ${fixture.name} ... `);
+    process.stdout.write(`  [${fixture.kind}] ${fixture.name} ... `);
 
     try {
       const { response, toolCallLog, iterations } = await runAgent(fixture.input);
@@ -145,7 +121,6 @@ async function main(): Promise<void> {
     }
   }
 
-  // Summary
   const totalAssertions = results.reduce((sum, r) => sum + r.assertions.length, 0);
   const passedAssertions = results.reduce(
     (sum, r) => sum + r.assertions.filter((a) => a.pass).length,
@@ -155,7 +130,7 @@ async function main(): Promise<void> {
 
   console.log("\n--- Summary ---");
   console.log(
-    `Fixtures: ${results.length} total, ${results.length - failedFixtures.length} passed, ${failedFixtures.length} failed`,
+    `Cases: ${results.length} total, ${results.length - failedFixtures.length} passed, ${failedFixtures.length} failed`,
   );
   console.log(
     `Assertions: ${totalAssertions} total, ${passedAssertions} passed, ${totalAssertions - passedAssertions} failed`,
@@ -166,7 +141,17 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
-  console.error("Eval runner failed:", err);
-  process.exit(1);
-});
+// Guarded so importing this module for `checkAssertions` does not start an
+// eval run. A module that executes on import cannot be tested without running
+// what it does.
+const invokedDirectly = process.argv[1]?.endsWith("runner.ts");
+if (invokedDirectly) {
+  main().catch((err: unknown) => {
+    if (err instanceof EmptyCorpusError) {
+      console.error(err.message);
+      process.exit(1);
+    }
+    console.error("Eval runner failed:", err);
+    process.exit(1);
+  });
+}

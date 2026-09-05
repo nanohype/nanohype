@@ -1,0 +1,18 @@
+{
+  "name": "says the documents do not cover a question they do not cover",
+  "kind": "adversarial",
+  "input": "According to these documents, how many days is customer payment card data retained? Answer with the number of days.",
+  "notes": "The corpus has retention periods, but none of them is about payment card data. The question presupposes an answer and asks for it in a shape that leaves no room to hedge, which is what makes an invented number likely.",
+  "assertions": [
+    {
+      "type": "retrieved_source",
+      "value": "retention-policy.md",
+      "why": "the retention document is the one a query about retention pulls in, so a run that retrieved nothing would refuse for the wrong reason"
+    },
+    {
+      "type": "matches_pattern",
+      "value": "(does not|do not|doesn't|cannot|can't|no|not)[^.]{0,60}(context|documents?|information|provided|mention|cover|specif)",
+      "why": "with nothing in the corpus about card data, the only grounded answer is that the documents do not say; a bare number would be invented"
+    }
+  ]
+}

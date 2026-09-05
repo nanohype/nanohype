@@ -1,0 +1,22 @@
+{
+  "name": "answers the rollback window from the runbook and cites it",
+  "kind": "golden",
+  "input": "How long is the rollback window after a deploy, and what command runs the rollback?",
+  "assertions": [
+    {
+      "type": "matches_pattern",
+      "value": "30\\s*minutes",
+      "why": "the window the runbook states; a different number is an answer the wiki does not support"
+    },
+    {
+      "type": "contains",
+      "value": "--to",
+      "why": "the flag the documented command takes, so the answer carries the page's specifics rather than its gist"
+    },
+    {
+      "type": "cites_page",
+      "value": "deploy-rollback.md",
+      "why": "the page the claim comes from; an uncited answer is one a reader cannot check"
+    }
+  ]
+}

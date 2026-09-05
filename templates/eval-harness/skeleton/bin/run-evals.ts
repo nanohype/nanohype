@@ -2,7 +2,7 @@
 
 import { resolve } from "node:path";
 import { validateBootstrap } from "../src/bootstrap.js";
-import { runEvals } from "../src/runner.js";
+import { coversBothKinds, EmptyCorpusError, loadCorpus } from "../src/corpus.js";
 
 /**
  * CLI entrypoint for running eval suites.
@@ -66,8 +66,25 @@ async function main(): Promise<void> {
 
   const args = parseArgs(process.argv.slice(2));
 
+  // `loadCorpus` throws on an empty corpus rather than returning one, so a run
+  // with nothing to run cannot report what a run of the whole corpus reports.
+  const suites = await loadCorpus(resolve(args.suites));
+
+  if (!coversBothKinds(suites)) {
+    console.error(
+      "The corpus covers only one kind of case. Golden cases say what the model does when " +
+        "asked plainly; adversarial cases are the ones that find out what it does otherwise.",
+    );
+    process.exit(1);
+  }
+
+  // The runner pulls in the provider registry, whose modules construct a vendor
+  // client. Importing it after the corpus is read means a run with nothing to
+  // run says so, instead of failing first on missing credentials.
+  const { runEvals } = await import("../src/runner.js");
+
   const results = await runEvals({
-    suiteGlob: resolve(args.suites),
+    suites,
     reporter: args.reporter,
     provider: args.provider,
     concurrency: args.concurrency,
@@ -82,7 +99,11 @@ async function main(): Promise<void> {
   }
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
+  if (err instanceof EmptyCorpusError) {
+    console.error(err.message);
+    process.exit(1);
+  }
   console.error("Fatal error:", err);
   process.exit(2);
 });

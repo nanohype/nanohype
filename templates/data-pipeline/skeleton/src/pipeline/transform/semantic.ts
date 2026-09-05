@@ -3,9 +3,10 @@
  *
  * Uses a sliding-window approach over sentences: computes Jaccard
  * similarity (word overlap) between adjacent sentence groups and
- * inserts chunk boundaries where similarity drops below a threshold.
- * This is a heuristic approximation that detects topic shifts without
- * requiring an external embedding API.
+ * inserts chunk boundaries where similarity drops below a threshold,
+ * once enough material has accumulated behind the boundary to be worth
+ * retrieving on its own. This is a heuristic approximation that detects
+ * topic shifts without requiring an external embedding API.
  *
  * Falls back to recursive splitting for oversized groups and single-
  * sentence documents.
@@ -63,6 +64,16 @@ class SemanticStrategy implements ChunkStrategy {
   private readonly similarityThreshold = 0.3;
   private readonly windowSize = 2;
 
+  /**
+   * A boundary is taken only once the material behind it fills this fraction
+   * of the chunk budget. Adjacent sentences that share few words score below
+   * the similarity threshold routinely, so a document of short, varied
+   * sentences scores a boundary almost everywhere; grouping on similarity
+   * alone then returns one chunk per sentence, and a vector over a fragment
+   * that short is close to every query and answers none of them.
+   */
+  private readonly minChunkFraction = 4;
+
   chunk(document: Document, opts: ChunkOptions = {}): Chunk[] {
     const chunkSize = opts.chunkSize ?? 512;
     const overlap = opts.overlap ?? 64;
@@ -93,7 +104,8 @@ class SemanticStrategy implements ChunkStrategy {
     const boundaries = this.findBoundaries(sentences);
 
     // Group sentences between boundaries into raw chunks
-    const rawChunks = this.groupByBoundaries(sentences, boundaries);
+    const minChunkTokens = Math.max(1, Math.floor(chunkSize / this.minChunkFraction));
+    const rawChunks = this.groupByBoundaries(sentences, boundaries, minChunkTokens);
 
     // Enforce max chunk size
     const sizedChunks = this.enforceSize(rawChunks, chunkSize);
@@ -128,13 +140,21 @@ class SemanticStrategy implements ChunkStrategy {
     return boundaries;
   }
 
-  private groupByBoundaries(sentences: string[], boundaries: number[]): string[] {
+  private groupByBoundaries(
+    sentences: string[],
+    boundaries: number[],
+    minChunkTokens: number,
+  ): string[] {
     const groups: string[] = [];
     let start = 0;
 
     for (const boundary of boundaries) {
       const group = sentences.slice(start, boundary).join(" ").trim();
-      if (group) groups.push(group);
+      // Passing over a boundary carries its sentences into the next group, so
+      // the boundary that is finally taken is the first one with enough
+      // material behind it rather than the strongest one seen.
+      if (!group || estimateTokens(group) < minChunkTokens) continue;
+      groups.push(group);
       start = boundary;
     }
 

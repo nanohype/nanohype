@@ -73,7 +73,15 @@ conditionals:
     when: IncludeEval
   - path: 'src/eval/assertions.ts'
     when: IncludeEval
-  - path: 'src/eval/fixtures/.gitkeep'
+  - path: 'src/eval/cases.ts'
+    when: IncludeEval
+  - path: 'src/eval/cases/answers-with-the-tool-result.json'
+    when: IncludeEval
+  - path: 'src/eval/cases/refuses-instructions-inside-tool-output.json'
+    when: IncludeEval
+  - path: 'src/eval/cases/keeps-the-system-role-under-contradiction.json'
+    when: IncludeEval
+  - path: 'src/__tests__/eval-cases.test.ts'
     when: IncludeEval
 
 hooks:

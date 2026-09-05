@@ -1,0 +1,24 @@
+{
+  "name": "answers an incident question in the response form the tuning teaches",
+  "kind": "golden",
+  "input": "The payments service deploy is stuck. Pods report ImagePullBackOff pulling ghcr.io/acme/payments:1.4.2. What do I do?",
+  "notes": "The corpus is where a project states what its tuning is for. The form asserted here — a one-line summary, numbered steps, and a severity drawn from a closed set — is the form the training examples teach; replace these assertions with the form yours teaches.",
+  "assertions": [
+    {
+      "type": "matches_pattern",
+      "value": "SUMMARY: \\S",
+      "why": "the tuned form opens with a one-line summary, where an untuned model opens with prose"
+    },
+    { "type": "contains", "value": "STEPS:" },
+    {
+      "type": "matches_pattern",
+      "value": "SEVERITY: (low|medium|high)",
+      "why": "severity is a closed vocabulary in the training data; an invented label means the form was approximated rather than learned"
+    },
+    {
+      "type": "contains",
+      "value": "payments",
+      "why": "the answer is about the service in the prompt, rather than a well-formed template with nothing in it"
+    }
+  ]
+}

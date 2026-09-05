@@ -7,6 +7,7 @@
   "scripts": {
     "ingest": "tsx src/index.ts ingest",
     "query": "tsx src/index.ts query",
+    "eval": "tsx src/eval/runner.ts",
     "build": "tsc",
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",

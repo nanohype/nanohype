@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { EmptyCorpusError, loadSuites } from "../ci-eval/cases.js";
 import type { Config } from "../ci-eval/config.js";
 import { createLogger } from "../ci-eval/logger.js";
 import { registerProvider } from "../ci-eval/providers/registry.js";
@@ -9,9 +10,9 @@ import { createEvalRunner } from "../ci-eval/runner.js";
 
 // ── Runner execution tests ────────────────────────────────────────
 //
-// The sibling runner test covers suite discovery. This covers what happens
-// once a suite is found: scoring, the per-case failure path, and bounded
-// concurrency.
+// The sibling runner test covers which corpora are accepted. This covers
+// what happens once one is: scoring, the per-case failure path, and
+// bounded concurrency.
 //
 // A fake provider registered by name is the seam — the registry exists for
 // exactly this, so no module mocking is needed and the real scoring,
@@ -56,11 +57,13 @@ describe("running a discovered suite", () => {
         "name: echo-suite",
         "cases:",
         "  - name: passing",
+        "    kind: golden",
         "    input: hello world",
         "    assertions:",
         "      - type: contains",
         "        value: hello",
         "  - name: failing",
+        "    kind: adversarial",
         "    input: hello world",
         "    assertions:",
         "      - type: contains",
@@ -95,11 +98,17 @@ describe("running a discovered suite", () => {
         "name: error-suite",
         "cases:",
         "  - name: first",
+        "    kind: golden",
         "    input: a",
-        "    assertions: []",
+        "    assertions:",
+        "      - type: contains",
+        "        value: a",
         "  - name: second",
+        "    kind: adversarial",
         "    input: b",
-        "    assertions: []",
+        "    assertions:",
+        "      - type: not-contains",
+        "        value: b",
       ].join("\n"),
     );
 
@@ -113,7 +122,7 @@ describe("running a discovered suite", () => {
     expect(score.cases.every((c) => c.score === 0)).toBe(true);
   });
 
-  it("treats a case with no assertions as a pass", async () => {
+  it("refuses a case with no assertions rather than scoring it a pass", async () => {
     registerProvider("quiet", () => ({
       name: "quiet",
       async complete() {
@@ -123,16 +132,50 @@ describe("running a discovered suite", () => {
 
     await writeFile(
       join(dir, "suite.yaml"),
-      ["cases:", "  - name: smoke", "    input: a", "    assertions: []"].join("\n"),
+      ["cases:", "  - name: smoke", "    kind: golden", "    input: a", "    assertions: []"].join(
+        "\n",
+      ),
+    );
+
+    // `every` on an empty array is true, so a case with nothing to check is
+    // one line away from reporting what a case that checked everything
+    // reports. It never reaches the scoring code.
+    await expect(createEvalRunner(makeConfig(dir, "quiet"), logger).run()).rejects.toThrow(
+      /needs an assertion/,
+    );
+  });
+
+  it("names a suite after its file when the file does not name it", async () => {
+    registerProvider("quiet", () => ({
+      name: "quiet",
+      async complete() {
+        return "anything";
+      },
+    }));
+
+    await writeFile(
+      join(dir, "suite.yaml"),
+      [
+        "cases:",
+        "  - name: smoke",
+        "    kind: golden",
+        "    input: a",
+        "    assertions:",
+        "      - type: contains",
+        "        value: any",
+        "  - name: probe",
+        "    kind: adversarial",
+        "    input: b",
+        "    assertions:",
+        "      - type: not-contains",
+        "        value: nothing",
+      ].join("\n"),
     );
 
     const [score] = await createEvalRunner(makeConfig(dir, "quiet"), logger).run();
-    // `every` on an empty array is true, so this would pass by accident even
-    // if the intent were the opposite — pinned so the intent is recorded.
-    expect(score.passed).toBe(1);
-    expect(score.cases[0]?.score).toBe(1);
-    // No `name:` in the file, so the suite name falls back to the basename.
+
     expect(score.suite).toBe("suite");
+    expect(score.passed).toBe(2);
   });
 
   it("never exceeds the configured concurrency", async () => {
@@ -150,7 +193,14 @@ describe("running a discovered suite", () => {
     }));
 
     const cases = Array.from({ length: 8 }, (_, i) =>
-      [`  - name: case-${i}`, "    input: x", "    assertions: []"].join("\n"),
+      [
+        `  - name: case-${i}`,
+        `    kind: ${i % 2 === 0 ? "golden" : "adversarial"}`,
+        "    input: x",
+        "    assertions:",
+        "      - type: contains",
+        "        value: x",
+      ].join("\n"),
     );
     await writeFile(join(dir, "suite.yaml"), ["cases:", ...cases].join("\n"));
 
@@ -163,8 +213,55 @@ describe("running a discovered suite", () => {
     expect(peak).toBeLessThanOrEqual(2);
   });
 
-  it("returns no scores when the eval path holds no suites", async () => {
-    const scores = await createEvalRunner(makeConfig(dir, "echo"), logger).run();
-    expect(scores).toEqual([]);
+  it("refuses an eval path holding no suites rather than scoring nothing", async () => {
+    await expect(createEvalRunner(makeConfig(dir, "echo"), logger).run()).rejects.toBeInstanceOf(
+      EmptyCorpusError,
+    );
+  });
+});
+
+describe("assertion values", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = join(tmpdir(), `ci-eval-values-${process.hrtime.bigint()}`);
+    await mkdir(dir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  /** A suite whose single case carries the given assertion, as YAML. */
+  async function suiteWith(assertion: string): Promise<void> {
+    await writeFile(
+      join(dir, "suite.yaml"),
+      `name: s\ncases:\n  - name: c\n    kind: golden\n    input: hello\n    assertions:\n      - ${assertion}\n`,
+      "utf-8",
+    );
+  }
+
+  it("refuses an assertion with no value", async () => {
+    await suiteWith("type: contains");
+
+    await expect(loadSuites(dir)).rejects.toThrow(/needs a value/);
+  });
+
+  it("refuses a null assertion value", async () => {
+    await suiteWith("{ type: contains, value: null }");
+
+    await expect(loadSuites(dir)).rejects.toThrow(/needs a value/);
+  });
+
+  it("refuses an empty-string assertion value, which every output contains", async () => {
+    await suiteWith('{ type: contains, value: "" }');
+
+    await expect(loadSuites(dir)).rejects.toThrow(/cannot be empty/);
+  });
+
+  it("accepts a value that is something", async () => {
+    await suiteWith('{ type: contains, value: "hi" }');
+
+    await expect(loadSuites(dir)).resolves.toHaveLength(1);
   });
 });

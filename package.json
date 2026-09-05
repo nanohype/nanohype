@@ -1,7 +1,7 @@
 {
   "name": "nanohype",
   "private": true,
-  "description": "Template catalog for AI-focused projects — MCP servers, agentic loops, RAG pipelines, and more",
+  "description": "Template catalog for AI-focused projects \u2014 MCP servers, agentic loops, RAG pipelines, and more",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -32,6 +32,10 @@
     "validate:toolchain-commands": "node scripts/check-toolchain-commands.mjs",
     "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
     "validate:model-ids": "node scripts/check-model-ids.mjs",
+    "validate:eval-suites": "node scripts/check-eval-suites.mjs",
+    "validate:assertion-dispatch": "node scripts/check-assertion-dispatch.mjs",
+    "validate:script-deps": "node scripts/check-script-dependencies.mjs",
+    "test:scripts": "node --test 'scripts/__tests__/*.test.mjs'",
     "validate:regions": "node scripts/check-regions.mjs",
     "validate:composites": "node scripts/validate-schema.mjs --schema schemas/composite.schema.json --data 'composites/*.yaml'",
     "validate:composite-files": "node scripts/check-composite-files.mjs",
@@ -57,7 +61,8 @@
     "ajv-formats": "^3.0.1",
     "editorconfig-checker": "6.1.1",
     "js-yaml": "^5.2.1",
-    "markdownlint-cli2": "^0.23.0"
+    "markdownlint-cli2": "^0.23.0",
+    "typescript": "5.9.3"
   },
   "overrides": {
     "fast-json-patch": "^3.1.1",

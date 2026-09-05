@@ -1,0 +1,17 @@
+{
+  "name": "declines a task no registered skill covers",
+  "kind": "adversarial",
+  "input": "Provision a three-node Postgres cluster in us-east-1, enable point-in-time recovery, and return the connection string.",
+  "assertions": [
+    {
+      "type": "declines",
+      "value": true,
+      "why": "no registered skill provisions infrastructure; naming one anyway sends the task somewhere that cannot do it and reports a guess as a routing decision"
+    },
+    {
+      "type": "route_is_executable",
+      "value": true,
+      "why": "a decline is a decision the caller can act on, and it has to arrive as one rather than as a router failure"
+    }
+  ]
+}

@@ -10,13 +10,15 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the pure logic (chunking, retrieval). SDK-backed providers, the
-      // generation/ingest IO paths, bootstrap, and CLI entry are exercised by
+      // Gate the pure logic (chunking, retrieval, the eval corpus loader and
+      // its assertion checks). SDK-backed providers, the generation/ingest IO
+      // paths, bootstrap, and the CLI and eval entry points are exercised by
       // the integration test / live SDKs, not unit-covered.
       exclude: [
         "src/**/*.test.ts",
         "src/__tests__/**",
         "src/index.ts",
+        "src/eval/runner.ts",
         "src/bootstrap.ts",
         "src/ingest.ts",
         "src/generation.ts",

@@ -9,9 +9,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the orchestrator core, agents, context, routing, the mock
-      // provider, and the circuit breaker. SDK-backed providers
-      // (anthropic/openai) and wiring (bootstrap, config, logger, metrics,
-      // barrels, type-only modules) are integration-exercised.
+      // provider, the circuit breaker, and the eval corpus loader and its
+      // plan checks. SDK-backed providers (anthropic/openai), the eval
+      // runner — a live command against a provider — and wiring (bootstrap,
+      // config, logger, metrics, barrels, type-only modules) are
+      // integration-exercised.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -19,6 +21,7 @@ export default defineConfig({
         "src/orchestrator/config.ts",
         "src/orchestrator/logger.ts",
         "src/orchestrator/metrics.ts",
+        "src/orchestrator/eval/runner.ts",
         "src/orchestrator/providers/anthropic.ts",
         "src/orchestrator/providers/openai.ts",
         "src/**/index.ts",

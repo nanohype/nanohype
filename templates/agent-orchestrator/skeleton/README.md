@@ -70,6 +70,7 @@ The orchestrator automatically discovers registered agents and makes them availa
 - [ ] Monitor orchestration metrics via OTel (task count, agent latency, handoff count)
 - [ ] Add retry logic for transient agent failures
 - [ ] Validate planner output against your domain constraints
+- [ ] Run the eval suite (`npm run eval`) against the configured provider before deploy, and add cases for the goals your domain actually sends
 
 ## Usage
 
@@ -85,6 +86,9 @@ npm run build
 
 # Run tests
 npm test
+
+# Run the eval suite against the configured provider
+npm run eval
 ```
 
 ```typescript
@@ -137,4 +141,28 @@ src/
       mock.ts             Deterministic mock provider
     resilience/
       circuit-breaker.ts  Sliding-window failure detection
+    eval/
+      runner.ts           Sends each case through the orchestrator, checks the plan
+      cases.ts            Corpus loader — refuses an empty or malformed corpus
+      assertions.ts       Checks a plan for size, ordering and content
+      cases/              One case per file, golden and adversarial
 ```
+
+### Evals
+
+`npm run eval` is a live run against the configured provider, so it costs
+tokens and needs a key — a command you choose to run. `npm test` reaches no
+provider. Cases are JSON, one per file under `src/orchestrator/eval/cases/`,
+and each declares a `kind`:
+
+- **golden** — the decomposition the orchestrator exists to produce, asserted
+  specifically: how many steps, whether the order is declared, what the plan
+  has to mention.
+- **adversarial** — goal text trying to make it do something else: arguing the
+  subtask cap upward, or demanding the planner drop its instructions and
+  answer in prose.
+
+The loader refuses a corpus with nothing in it and refuses a case it cannot
+read, because an eval that runs nothing exits the same way as an eval that ran
+everything and passed. Set `EVAL_PROVIDER` to run against a provider other
+than the configured one.

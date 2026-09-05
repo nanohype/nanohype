@@ -97,6 +97,25 @@ export async function processFile(filePath: string, config: Config): Promise<Pip
   // Process the file
   const processed: ProcessedInput = await processor.process(filePath, mimeType);
 
+  return analyzeProcessed(processed, config);
+}
+
+/**
+ * Analyze already-extracted content and format the output.
+ *
+ * Split from {@link processFile} because everything above the split is
+ * deterministic file handling and everything below it is the model. The eval
+ * suite drives this half directly: a case carries extracted content rather
+ * than a media file, so the stage the model takes part in is reachable
+ * without bytes on disk and without a transcription or frame-extraction round
+ * trip.
+ */
+export async function analyzeProcessed(
+  processed: ProcessedInput,
+  config: Config,
+): Promise<PipelineResult> {
+  const { modality, mimeType, source } = processed;
+
   // Get the LLM provider
   const provider = getProvider(config.llm.provider);
   logger.info("Analyzing with LLM", { provider: config.llm.provider, model: config.llm.model });
@@ -124,10 +143,10 @@ export async function processFile(filePath: string, config: Config): Promise<Pip
   }
 
   // Format and validate the output
-  const result = formatResult(filePath, modality, mimeType, analysisResult);
+  const result = formatResult(source, modality, mimeType, analysisResult);
 
   logger.info("Pipeline complete", {
-    source: filePath,
+    source,
     modality,
     model: result.model,
     usage: result.usage,

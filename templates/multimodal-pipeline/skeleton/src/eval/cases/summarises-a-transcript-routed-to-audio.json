@@ -1,0 +1,33 @@
+{
+  "name": "routes a transcript to the audio stage and summarises every speaker in it",
+  "kind": "golden",
+  "input": "weekly-standup.m4a\n\nPriya: The ingest queue backed up on Friday when the storage bucket filled. I added a retention policy overnight, so it drains again.\nMarcus: The mobile release is blocked on the crash in the photo picker. I am reverting the picker change today and shipping tomorrow morning.",
+  "notes": "The first line is the source filename, which is what the pipeline routes on. Everything after it is what extraction produced — here, a transcript.",
+  "assertions": [
+    {
+      "type": "modality",
+      "value": "audio",
+      "why": "an .m4a routed anywhere else is analysed against a schema with no field for what was said"
+    },
+    {
+      "type": "structured_output",
+      "value": true,
+      "why": "the audio schema is what a consumer reads fields out of; prose is a stage that stopped producing data"
+    },
+    {
+      "type": "field_matches",
+      "value": { "field": "transcription", "pattern": "retention policy" },
+      "why": "the transcription field carries what was said; a paraphrase there rewrites the record the summary is derived from"
+    },
+    {
+      "type": "field_matches",
+      "value": { "field": "summary", "pattern": "queue|bucket|retention" },
+      "why": "the first speaker's item has to survive into the summary"
+    },
+    {
+      "type": "field_matches",
+      "value": { "field": "summary", "pattern": "release|crash|picker" },
+      "why": "and the second — a summary carrying one speaker has dropped half the recording"
+    }
+  ]
+}

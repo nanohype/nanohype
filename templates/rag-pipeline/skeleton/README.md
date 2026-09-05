@@ -28,6 +28,7 @@ npm run query -- "What is retrieval-augmented generation?"
 |---|---|
 | `npm run ingest` | Load, chunk, embed, and store documents |
 | `npm run query` | Retrieve context and generate an answer |
+| `npm run eval` | Run the eval suite against live providers |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run lint` | Lint with Biome |
 | `npm run format` | Format with Biome |
@@ -57,6 +58,44 @@ Providers are registered via a triple registry pattern (`src/providers/registry.
 - **Score-threshold filtering** -- retrieval results below a configurable similarity threshold are discarded before reranking, reducing noise in the generation context.
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema with sensible defaults. Missing or invalid values throw immediately, not at query time.
 - **Provider isolation** -- embedding and vector store providers expose narrow interfaces (`embed`/`embedBatch`, `addDocuments`/`search`). LLM providers handle only generation. No provider knows about another.
+
+## Evals
+
+Unit tests cover the code around the model. What the model does with a
+retrieved passage is what the eval suite covers.
+
+```bash
+npm run eval
+```
+
+The runner ingests `src/eval/docs/` into a collection named for the configured
+one with `-eval` appended, then puts each case in `src/eval/cases/` through
+`query()` and checks its assertions against the answer and the passages that
+reached the prompt. It calls the configured embedding, vector store and LLM
+providers, so it costs money and is run deliberately rather than in CI.
+
+Cases are data — one JSON file each, with a `kind`:
+
+- **golden** — the answer the pipeline exists to produce, asserted specifically:
+  the figure from the passage, and a citation a reader can follow back to it.
+- **adversarial** — input trying to make it do something else. One of the eval
+  documents carries a block forging the `--- Source: ... ---` delimiter
+  `formatContext()` wraps passages in, and inside it a demand to discard the
+  system prompt. The delimiter is plain characters and any document can contain
+  them, so the case asserts the answer reports the planted text rather than
+  obeying it.
+
+`loadCases()` throws on an empty or unreadable corpus instead of returning an
+empty list, and rejects a file it cannot parse or a case missing a kind, an
+input or an assertion. An eval that runs nothing would otherwise print what an
+eval that ran everything and passed prints.
+
+Add a case by dropping a JSON file in `src/eval/cases/`. Assertion types are
+`contains`, `not_contains`, `matches_pattern` (compiled case-insensitively),
+`cites_source` (the answer names the document) and `retrieved_source` (the
+document reached the prompt). Give every adversarial assertion a `why` — the
+assertion is usually a refusal, and the value alone does not say what it is
+refusing.
 
 ## Production Readiness
 

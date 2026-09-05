@@ -26,6 +26,7 @@ name: my-suite
 description: Tests for my use case
 cases:
   - name: test-case-name
+    kind: golden
     input: "Your prompt to the LLM"
     assertions:
       - type: contains
@@ -33,6 +34,14 @@ cases:
       - type: maxTokens
         value: 100
 ```
+
+A corpus has to cover both kinds. `golden` cases say what the model delivers when
+the request is plain; `adversarial` cases are input trying to make it do something
+else — instructions planted in content it was asked to summarise, a demand that it
+disclose configuration, contradictory instructions, a truncated record. A run whose
+corpus is one-sided, matches no suite file, or matches suites holding no case is
+refused rather than reported as a pass, because a pass over an empty corpus reads
+exactly like a pass over a full one.
 
 ### Available Assertions
 
@@ -50,11 +59,16 @@ cases:
 | Field | Required | Description |
 |-------|----------|-------------|
 | `name` | yes | Unique identifier for the case |
+| `kind` | yes | `golden` or `adversarial` |
 | `input` | yes | Prompt string or array of prompt strings |
 | `expected` | no | Expected output (for reference) |
-| `assertions` | yes | Array of assertions to evaluate |
+| `assertions` | yes | Array of assertions, at least one |
 | `tags` | no | Tags for filtering |
 | `timeout` | no | Timeout in milliseconds (default: 30000) |
+
+Each assertion takes `type`, `value`, and an optional `why` that is printed with
+the failure. On an adversarial case the assertion is often a refusal, and `why` is
+what makes the failure readable as one.
 
 ## Adding Custom Providers
 
@@ -125,9 +139,10 @@ Eval results are uploaded as build artifacts for review.
 
 ```
 src/
-  runner.ts          # Core eval runner — orchestrates suite discovery and execution
+  corpus.ts          # Suite discovery — refuses an empty corpus instead of returning one
+  runner.ts          # Core eval runner — runs loaded suites against a provider
   suite.ts           # EvalSuite class — loads YAML, runs cases, collects results
-  case.ts            # EvalCase — input, assertions, metadata
+  case.ts            # EvalCase — input, kind, assertions, metadata
   assertions.ts      # Assertion library and registry
   reporters/
     console.ts       # Color-coded terminal output
@@ -139,7 +154,8 @@ src/
     openai.ts        # OpenAI GPT provider (self-registers)
     index.ts         # Barrel — triggers registration, re-exports API
 suites/
-  example.yaml       # Example eval suite
+  example.yaml       # Golden cases — what the model is expected to deliver
+  adversarial.yaml   # Adversarial cases — input trying to make it do something else
 bin/
   run-evals.ts       # CLI entrypoint
 ```

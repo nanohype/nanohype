@@ -58,6 +58,8 @@ conditionals:
     when: IncludeTests
   - path: 'src/orchestrator/resilience/__tests__/circuit-breaker.test.ts'
     when: IncludeTests
+  - path: 'src/orchestrator/__tests__/eval-cases.test.ts'
+    when: IncludeTests
 
 hooks:
   post:
