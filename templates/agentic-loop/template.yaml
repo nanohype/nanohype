@@ -83,6 +83,8 @@ conditionals:
     when: IncludeEval
   - path: 'src/__tests__/eval-cases.test.ts'
     when: IncludeEval
+  - path: 'src/__tests__/eval-runner.test.ts'
+    when: IncludeEval
 
 hooks:
   post:

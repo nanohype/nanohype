@@ -6,6 +6,10 @@
  *   - Minimal overlay UI for displaying results
  */
 
+// The overlay's styles. Imported so the bundler emits them and the manifest
+// names the file it produced.
+import "./styles.css";
+
 let overlay: HTMLDivElement | null = null;
 
 // Listen for text selection via mouseup
