@@ -9,13 +9,19 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the queue facade, job helpers, memory provider, and registry.
-      // Live-backend providers (bullmq/sqs), the worker loop, and wiring are
-      // integration-exercised.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
+        // Built and torn down by the integration suite, which resolves a
+        // provider through them on its way to a queue.
         "src/queue/bootstrap.ts",
         "src/queue/metrics.ts",
+        // A client for a broker nothing here connects to, and a loop that runs
+        // until it is stopped. No suite covers these: the worker's dispatch is
+        // driven through the memory provider instead, and bullmq and sqs are
+        // reached only by the barrel that registers them. That makes them
+        // untested shipped code, which is what this says — naming a suite that
+        // does not enter them would be the same sentence with a false reason.
         "src/queue/worker.ts",
         "src/queue/providers/bullmq.ts",
         "src/queue/providers/sqs.ts",

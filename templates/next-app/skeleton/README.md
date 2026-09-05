@@ -50,7 +50,8 @@ src/
       schema.ts               # Drizzle schema
       client.ts               # Database client
     auth/                     # (optional) Auth
-      config.ts               # NextAuth.js configuration
+      options.ts              # Providers, pages, callbacks
+      config.ts               # NextAuth handlers and helpers
   logger.ts                   # Structured JSON logger
 ```
 
@@ -89,7 +90,11 @@ npm run db:migrate
 
 ## Auth
 
-The auth configuration lives in `src/lib/auth/config.ts`. Add providers (GitHub, Google, Credentials) to the `providers` array. Generate the auth secret:
+`src/lib/auth/options.ts` holds `authOptions` — add providers (GitHub, Google, Credentials) to its `providers` array, and set the sign-in page and callbacks alongside them. `src/lib/auth/config.ts` passes that object to `NextAuth()` and exports what it builds: `handlers`, `auth`, `signIn`, `signOut`.
+
+The split is what makes the options reachable on their own: `NextAuth()` reads the environment and constructs handlers at import, so a module that calls it cannot be loaded just to inspect a value.
+
+Generate the auth secret:
 
 ```bash
 npx auth secret

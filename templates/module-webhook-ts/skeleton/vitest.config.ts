@@ -8,26 +8,23 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the sender and the signature schemes. The receiver, event log, and
-      // wiring are integration-exercised.
-      exclude: [
-        "src/**/*.test.ts",
-        "src/**/__tests__/**",
-        "src/webhook/bootstrap.ts",
-        "src/webhook/event-log.ts",
-        "src/webhook/receiver.ts",
-        "src/**/index.ts",
-        "src/**/types.ts",
-      ],
-      // Above the floor published in nanohype/standards/testing-rubric.json
-      // (lines/functions/statements 75, branches 60). Branches sits over the
-      // published number because the gated surface is signature verification,
-      // where each rejection path is a branch that must stay covered.
+      exclude: ["src/**/*.test.ts", "src/**/__tests__/**", "src/**/index.ts", "src/**/types.ts"],
+      // Floors published in nanohype/standards/testing-rubric.json
+      // (lines/functions/statements 75, branches 60). Signature verification
+      // carries a per-file 100% override on top: every rejection path in the
+      // receiver is a branch, and a branch nothing exercises is a forgery
+      // nothing proves is refused.
       thresholds: {
         lines: 75,
         functions: 75,
         statements: 75,
         branches: 60,
+        "src/webhook/receiver.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
       },
     },
   },

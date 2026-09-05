@@ -10,10 +10,14 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       // Gate the protocol server, transport/skill registries, the example
       // skill, the circuit breaker, the router's reply parsing, and the eval
-      // corpus loader. Live transports (http/websocket), the protocol client,
-      // discovery, SDK providers, the eval runner, and wiring (agent,
-      // bootstrap, logger, barrels, type-only modules) are
-      // integration-exercised.
+      // corpus loader. Out of the denominator: agent.ts and bootstrap.ts exit
+      // the process; the client, the http/websocket transports and the agent
+      // directory need a reachable remote agent; the eval runner asks a live
+      // model; the logger, the agent-card builder, the barrels and the
+      // type-only modules are wiring; and all of src/providers — anthropic.ts
+      // and openai.ts construct their vendor client at module scope, so
+      // importing either needs a key. The directory glob also takes
+      // registry.ts, a name-to-factory Map that needs none.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

@@ -1,9 +1,11 @@
+import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getResponsiveSrcSet } from "../providers/imgix.js";
 // The barrel, for its side effect: every built-in provider self-registers on
 // import, so pulling in only imgix.js leaves `getProvider("uploadcare")` empty.
 import "../providers/index.js";
 import { getProvider } from "../providers/registry.js";
+import { signCloudinaryParams } from "../providers/signatures.js";
 
 // ── Provider signing tests ────────────────────────────────────────
 //
@@ -121,5 +123,50 @@ describe("uploadcare REST authentication", () => {
     const headers = await captureListHeaders();
     expect(headers.Date).toBeDefined();
     expect(Number.isNaN(Date.parse(headers.Date))).toBe(false);
+  });
+});
+
+describe("cloudinary parameter signing", () => {
+  // Cloudinary publishes the construction rather than a worked vector, so
+  // these pin the construction: which bytes are hashed, in what order, and
+  // that the secret is part of them. Each assertion computes the expected
+  // digest independently rather than comparing the function against itself.
+  const SECRET = "abcd1234";
+
+  it("hashes the sorted parameters with the secret appended", () => {
+    const params = { timestamp: "1700000000", public_id: "sample" };
+
+    const expected = createHash("sha256")
+      .update(`public_id=sample&timestamp=1700000000${SECRET}`)
+      .digest("hex");
+
+    expect(signCloudinaryParams(params, SECRET)).toBe(expected);
+  });
+
+  it("sorts by key, so parameter order at the call site cannot change the signature", () => {
+    const one = signCloudinaryParams({ b: "2", a: "1" }, SECRET);
+    const other = signCloudinaryParams({ a: "1", b: "2" }, SECRET);
+
+    expect(one).toBe(other);
+  });
+
+  it("changes when the secret changes, which is what makes it a signature", () => {
+    const params = { timestamp: "1700000000" };
+
+    expect(signCloudinaryParams(params, SECRET)).not.toBe(
+      signCloudinaryParams(params, "a-different-secret"),
+    );
+  });
+
+  it("changes when any signed parameter changes", () => {
+    const base = signCloudinaryParams({ timestamp: "1700000000" }, SECRET);
+
+    expect(signCloudinaryParams({ timestamp: "1700000001" }, SECRET)).not.toBe(base);
+  });
+
+  it("signs an empty parameter set as the secret alone", () => {
+    expect(signCloudinaryParams({}, SECRET)).toBe(
+      createHash("sha256").update(SECRET).digest("hex"),
+    );
   });
 });

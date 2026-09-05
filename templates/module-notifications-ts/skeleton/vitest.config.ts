@@ -9,8 +9,10 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the template renderer, channel registry, and circuit breaker.
-      // SDK-backed channels (email/push/sms) and wiring are
-      // integration-exercised.
+      // Excluded: bootstrap.ts exits the process on an unresolved
+      // placeholder, and the channel directories hold self-registering
+      // barrels, a development mock, and vendor adapters that reach a
+      // provider API under a credential.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

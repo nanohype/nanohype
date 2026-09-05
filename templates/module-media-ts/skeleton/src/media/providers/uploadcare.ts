@@ -1,4 +1,3 @@
-import { createHash, createHmac } from "node:crypto";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
@@ -11,6 +10,7 @@ import type {
   UploadOptions,
 } from "../types.js";
 import { registerProvider } from "./registry.js";
+import { signUploadcareRequest } from "./signatures.js";
 import type { MediaProvider } from "./types.js";
 
 // ── Uploadcare Provider ──────────────────────────────────────────
@@ -59,7 +59,6 @@ const REST_API_VERSION = "application/vnd.uploadcare-v0.7+json";
  * MD5 of an empty request body — the `contentMd5` component for any bodyless
  * call. Computed rather than pasted so it is verifiable at a glance.
  */
-const EMPTY_BODY_MD5 = createHash("md5").update("").digest("hex");
 
 function createUploadcareProvider(): MediaProvider {
   let config: UploadcareConfig | null = null;
@@ -102,8 +101,7 @@ function createUploadcareProvider(): MediaProvider {
     const { publicKey, secretKey } = requireConfig();
     const date = new Date().toUTCString();
     const contentType = "application/json";
-    const signString = [method, EMPTY_BODY_MD5, contentType, date, uri].join("\n");
-    const signature = createHmac("sha1", secretKey).update(signString).digest("hex");
+    const signature = signUploadcareRequest(method, uri, secretKey, date, contentType);
     return {
       "Content-Type": contentType,
       Accept: REST_API_VERSION,

@@ -374,6 +374,25 @@ jobs:
       - name: Lint every skeleton against its own config
         run: npm run lint:skeletons
 
+      # A coverage exclusion is argued for in a comment, and a comment is not a
+      # check. Two gates hold what those comments were asserting on their own:
+      # this one, that no file on a security-critical path is excluded where
+      # testing-rubric.json requires a per-file 100% override, and — in the
+      # skeleton-test job, which installs — that a suite cited as the reason a
+      # file sits outside the denominator actually enters it.
+      #
+      # The classifiers decide by reading each file: whether it carries
+      # behaviour, and whether it signs, verifies or hands a credential to a
+      # package that does. A path is the last signal consulted. All of that is
+      # a claim about the shapes the catalog contains, so it is pinned against
+      # those shapes here, together with the gate's exit codes and its refusal
+      # to report on a corpus smaller than the one that exists.
+      - name: Test the gate's classifiers against the shapes the catalog ships
+        run: npm run test:scripts
+
+      - name: Verify coverage exclusions rest on something
+        run: npm run validate:coverage-exclusions
+
       - name: Verify vendored library copies are in sync
         run: npm run verify:library
 
@@ -436,6 +455,16 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
+          cache: npm
+
+      # The repository's own dependencies, which the gate at the end of this
+      # job imports. A job that installs only what it is about inherits the
+      # rest from whatever the machine happens to carry, and a developer
+      # machine carries a root install from the last time anything was run
+      # here. The runner does not, so the gate resolved locally and threw
+      # ERR_MODULE_NOT_FOUND in CI.
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run template tests
         run: |
@@ -515,6 +544,14 @@ jobs:
             echo "One or more template tests failed"
             exit 1
           fi
+
+      # An exclusion arguing that another suite covers what it removes is
+      # making a claim about what runs, and no reading of either file settles
+      # it. This runs the cited suite with coverage pointed at exactly the
+      # files that exclusion removes. It sits in this job because it installs
+      # and executes skeletons, which is what this job already does.
+      - name: Verify a cited suite covers what its exclusion removes
+        run: npm run validate:cited-suites
 
   merge-gate:
     name: merge gate

@@ -57,6 +57,12 @@ variables:
 conditionals:
   - path: 'src/api'
     when: IncludeApi
+  # The API's own suite. `src/__tests__` is gated on IncludeTests, which drops
+  # it when there are no tests; this drops it when there is no API. A test
+  # importing a module the render left out is a scaffold that does not build on
+  # its first commit.
+  - path: 'src/__tests__/api-auth.test.ts'
+    when: IncludeApi
   - path: 'src/cli'
     when: IncludeCli
   - path: 'vitest.config.ts'

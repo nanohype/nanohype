@@ -12,10 +12,11 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       // Gate the module's pure logic: the provider registry, filter
       // compiler, similarity math, retry/batch helpers, and the circuit
-      // breaker. SDK-backed providers (pgvector/qdrant/pinecone) talk to
-      // live databases and are exercised by integration tests, not unit
-      // coverage. The mock provider, barrels, bootstrap, and type-only
-      // modules carry no logic to gate.
+      // breaker. The pgvector/qdrant/pinecone providers need a live
+      // database and its credentials; bootstrap exits on an unresolved
+      // placeholder; index.ts and providers/index.ts delegate and
+      // re-export; the type modules hold interfaces and one-line guards;
+      // the mock provider is a fixture for a consumer's own tests.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

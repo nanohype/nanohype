@@ -8,8 +8,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the logger and exporter registry. The OTel-backed tracer/metrics
-      // and exporters (console/datadog/otlp) are integration-exercised.
+      // Gate the logger and exporter registry. Excluded: bootstrap.ts exits
+      // the process on an unresolved placeholder, tracer.ts and metrics.ts
+      // delegate to the OpenTelemetry global API, and the exporters construct
+      // SDK exporter objects — the behaviour under them is the SDK's.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
