@@ -191,6 +191,59 @@ jobs:
       - name: Validate standards manifests
         run: npm run validate:standards
 
+      # The toolchain gate below runs the Go phases the standard publishes, so
+      # the runner needs Go. Without it the gate refuses to report a pass over
+      # commands it never ran, which is the behaviour that makes it worth
+      # having and the reason this step is not optional.
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          # Matches the doctor's pin: go-service's pgx and otel dependencies
+          # need 1.25, so the phases are exercised on a toolchain the
+          # skeletons actually build on.
+          go-version: '1.26'
+          cache: false
+
+      # The Java phases the standard publishes compile a project whose pom
+      # targets Java 25, so the runner needs a JDK that new. The image ships an
+      # older default, under which `mvn dependency:resolve` succeeds and
+      # `mvn compile` does not — the gate then reports a published command that
+      # cannot pass, which would be a fact about this runner rather than about
+      # the command. Pinned to the version the doctor uses.
+      - name: Setup JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      # The toolchain gate below runs the published commands against the
+      # catalog RENDERED, which it does through the SDK, so the SDK is built
+      # before it rather than further down beside the render check.
+      - name: Build the SDK the catalog renders through
+        run: npm --prefix sdk ci && npm --prefix sdk run build
+
+      # Other repositories dispatch on the command strings this standard
+      # publishes, so a command that cannot succeed is a broken phase in every
+      # repository that takes it, failing somewhere nobody is watching. The
+      # commands are read out of the standard and run against every repository
+      # the catalog renders, then run again in an empty directory — a phase
+      # that cannot fail is the same defect inverted.
+      #
+      # Rendered, not the skeletons. A skeleton carries placeholders in file
+      # content and in path segments and nobody ever runs one, so what a
+      # published command does to a skeleton turns on where those placeholders
+      # fall. Go and TypeScript survived a compiler because theirs land in a
+      # module path and inside strings; Java's are a package name and a
+      # directory segment, and mvn was always going to refuse them.
+      #
+      # This job installs Go and nothing else, so several published phases have
+      # no tool here to run them with. The gate counts coverage per language
+      # and phase and names every phase it could not run, rather than reporting
+      # a language as covered on the strength of the phases that happened to
+      # have a tool.
+      - name: Run the commands the toolchain standard publishes
+        run: npm run validate:toolchain-commands
+
       # A composite is a manifest kind like a template is, and it had no schema.
       # Consumers filter on `kind`: generate-catalog.mjs and the SDK's
       # LocalSource both skip an entry whose kind is not exactly "composite"
@@ -297,9 +350,6 @@ jobs:
       # scaffolds it, which is what shipped once: a skeleton that could not
       # render at all, and every composite including it went down with it. This
       # is the only check that runs the thing the repository sells.
-      - name: Build the SDK the catalog renders through
-        run: npm --prefix sdk ci && npm --prefix sdk run build
-
       - name: Verify every template and composite renders
         run: node scripts/check-catalog-renders.mjs
 

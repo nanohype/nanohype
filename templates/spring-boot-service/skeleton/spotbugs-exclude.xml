@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  What spotbugs is told not to report, and why.
+
+  EI_EXPOSE_REP2 fires when a constructor stores a reference to a mutable
+  object its caller also holds. That is a real defect for a value someone can
+  mutate behind your back, and it is not what constructor injection is: the
+  argument is a container-managed singleton, the container is the only caller,
+  and copying it would defeat the injection. Every Spring component that takes
+  a collaborator would report it, so leaving it on means the finding is noise
+  that trains a reader to ignore the report.
+
+  Scoped to the injected-collaborator case rather than switched off globally:
+  raising `threshold` to High would silence this and every other medium finding
+  with it.
+-->
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/etc/findbugsfilter.xsd">
+
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Method name="&lt;init&gt;"/>
+    </Match>
+</FindBugsFilter>
