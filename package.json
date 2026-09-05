@@ -29,6 +29,7 @@
     "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",
     "validate:schema": "node scripts/validate-schema.mjs --schema schemas/template.schema.json --data 'templates/*/template.yaml'",
     "validate:catalog": "./scripts/validate-catalog.sh",
+    "validate:toolchain-commands": "node scripts/check-toolchain-commands.mjs",
     "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
     "validate:model-ids": "node scripts/check-model-ids.mjs",
     "validate:regions": "node scripts/check-regions.mjs",

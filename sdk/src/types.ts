@@ -201,6 +201,13 @@ export interface LanguageToolchainStandard {
   title: string;
   summary: string;
   content: {
+    /**
+     * The keys of a `Toolchain` that hold a runnable command, in the order a
+     * repository runs them. A consumer dispatching phases reads this rather
+     * than carrying its own list, so a phase published here reaches every
+     * consumer and one retired here leaves them all.
+     */
+    phases: string[];
     toolchains: Record<string, Toolchain>;
   };
 }

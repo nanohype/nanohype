@@ -25,6 +25,9 @@
         <opentelemetry.version>1.65.0</opentelemetry.version>
         <logstash-logback.version>9.0</logstash-logback.version>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
+        <checkstyle.version>14.1.0</checkstyle.version>
+        <spotbugs-plugin.version>4.10.4.1</spotbugs-plugin.version>
     </properties>
 
     <dependencies>
@@ -149,6 +152,55 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!--
+              The lint phase nanohype/standards/language-toolchain.json publishes
+              for Java is `mvn checkstyle:check spotbugs:check`, so a project on
+              this stack has to declare both. Neither is declared by
+              spring-boot-starter-parent, and spotbugs' groupId is not among the
+              prefixes Maven resolves by default, so without these the published
+              command cannot run at all.
+
+              google_checks.xml is carried inside the checkstyle plugin, so the
+              ruleset needs no file in the scaffold and nothing for a consumer to
+              maintain. Swap configLocation for a path of your own to use a
+              different one.
+
+              Declared and configured, not bound to a lifecycle phase. The
+              standard invokes the goals directly, and binding them to `validate`
+              would make `mvn test` and `mvn javadoc:javadoc` run the linters too
+              — so a style finding would fail the test phase, and one command's
+              verdict would depend on another's.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${checkstyle.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <configLocation>google_checks.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <violationSeverity>warning</violationSeverity>
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs-plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>

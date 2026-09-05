@@ -51,6 +51,12 @@ tmp/
 **/skeleton/**/package-lock.json
 **/skeleton/package-lock.json
 
+# Generated API documentation in template skeletons. The toolchain standard's
+# TypeScript docs phase writes here, so running it over the catalog leaves an
+# artifact in every skeleton it touched.
+**/skeleton/**/docs/api/
+**/skeleton/docs/api/
+
 # Template doctor report artifact
 scripts/template-doctor/.report.tsv
 
