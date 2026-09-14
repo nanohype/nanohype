@@ -60,7 +60,7 @@
     "validate:sli-metric-names": "node scripts/check-sli-metric-names.mjs"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.10",
+    "@biomejs/biome": "2.5.13",
     "@vitest/coverage-v8": "^5.0.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
