@@ -4,6 +4,8 @@
   "version": "1",
   "title": "Documentation voice",
   "summary": "How prose is written across the stack — in markdown, in code comments, in schema field descriptions, in CLI help and in error strings. Editorial style is delegated to the Google developer documentation style guide; structured provenance is delegated to Google Cloud's Open Knowledge Format. This standard adds the four rules neither covers, which are the rules that follow from shipping a greenfield template rather than an application.",
+  "applies_to": "Every build, on every prose surface content.scope.applies_to names, except the surfaces content.scope.excluded lists.",
+  "grades": ["documentation"],
   "content": {
     "scope": {
       "applies_to": "Every prose surface, not only .md files. A surface counts if a human reads it: markdown, code comments, package and doc comments, CRD and XRD field descriptions, JSON Schema description keys, OpenTofu variable and output descriptions, Helm Chart.yaml descriptions and NOTES.txt, CLI command help and flag descriptions, error and log messages, Taskfile desc fields, CI step names, and test names.",
@@ -39,6 +41,7 @@
     "rules": [
       {
         "id": "timeless-scope",
+        "severity": "warn",
         "refines": "google-devdocs-style",
         "rule": "The prohibition on temporal language governs the repository's own history, not state transitions in the running system.",
         "tell": "Does the sentence assert a change relative to an UNSTATED past? If yes it drifts and is a defect. If the operands are printed, it is a measurement and is correct.",
@@ -57,6 +60,7 @@
       },
       {
         "id": "provenance-is-a-field",
+        "severity": "warn",
         "refines": "okf",
         "rule": "A claim about how something was produced, verified, counted or decided does not go in the prose body. It goes in structured metadata, or in log.md, or it is converted into the invariant it was evidence for.",
         "rationale": "A docstring has no slot for provenance, so incident history and design constraint are forced to share one paragraph. Given a slot, the author does not have to choose.",
@@ -70,6 +74,7 @@
       },
       {
         "id": "rationale-survives",
+        "severity": "warn",
         "origin": "nanohype",
         "rule": "Rationale stays; narration goes. When both are braided into one paragraph, rewrite the paragraph. Deleting is the cheap move and it takes the half that mattered.",
         "test": "Would this sentence still be worth reading if the repository had always been this way? If yes it is rationale. If it only makes sense as an account of a change, it is narration.",
@@ -77,6 +82,7 @@
       },
       {
         "id": "no-self-defense",
+        "severity": "warn",
         "origin": "nanohype",
         "rule": "Do not argue with an imagined reviewer. State the constraint; the constraint is the argument.",
         "defect": [
@@ -92,6 +98,7 @@
       },
       {
         "id": "product-voice",
+        "severity": "warn",
         "origin": "nanohype",
         "rule": "This stack is a template deployed into accounts its authors will never see. A value from the author's own estate presented as the product's shape is a defect, in prose exactly as in code.",
         "rationale": "Prose is where an estate constraint hides from the gates that check code. A field description, a comment, a CLI help string and an error message can each assert a value with none of the machinery that would flag it in a default, a variable, or a literal. Removing an estate value from a schema default and restating it in the adjacent description is the same defect one layer over.",
@@ -100,6 +107,7 @@
       },
       {
         "id": "named-things-resolve",
+        "severity": "warn",
         "origin": "nanohype",
         "rule": "Every path, flag, command, script, file, field and endpoint named in prose must resolve. Prose that names a thing is a claim about the world; verify it rather than assuming it.",
         "includes": "A measurement stated as documentation is the same defect with a delay. 'returns an empty list', 'four hits', 'all 34' are true when written, have no mechanism keeping them true, and become confident false statements at the first unrelated edit. State the requirement, or give the command that answers it, or carry a verified timestamp and a stale_after.",

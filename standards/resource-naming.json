@@ -4,6 +4,8 @@
   "version": "1",
   "title": "Resource naming standard",
   "summary": "The canonical grammar for naming cloud and k8s resources on the nanohype stack. Defines the domain split between env-first cloud-substrate names and environment-token-free k8s-facing names, the cluster-identity model that supports co-located sibling clusters, the reserved environment values, the per-surface delimiter transforms, and the collision + length guards every name-constructing component enforces. landing-zone / eks-agent-platform / eks-fleet build names from it; portal validates vend input against it; cloudgov gates CI against it.",
+  "applies_to": "IaC that builds cloud or k8s resource names. bucket-global-uniqueness, length-validated and single-delimiter-style apply to any AWS IaC. The domain split, the cluster-identity model, no-doubled-env, cluster-name-required-unique and k8s-no-env-token apply only on the nanohype substrate and are N/A for any other.",
+  "grades": ["consistency"],
   "content": {
     "environments": ["development", "staging", "production", "hub", "org"],
     "domains": [

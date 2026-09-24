@@ -19,8 +19,17 @@ export type { CatalogSource, GitHubSourceOptions, LocalSourceOptions } from "./s
 // Sources
 export { GitHubSource } from "./sources/github.js";
 export { LocalSource } from "./sources/local.js";
-export { isStandardName, loadStandard, loadStandards, STANDARD_NAMES } from "./standards.js";
+export {
+  isStandardName,
+  loadStandard,
+  loadStandards,
+  QUALITY_DIMENSIONS,
+  STANDARD_NAMES,
+} from "./standards.js";
 export type {
+  AgentAccessStandard,
+  AgentFetcher,
+  AgentFetcherClass,
   // Platform Reference types
   Catalog,
   CatalogComposite,
@@ -33,21 +42,32 @@ export type {
   Contract,
   ContractRepo,
   ContractRepoInfo,
+  DocumentationVoiceStandard,
   LanguageToolchainStandard,
   LLMPolicyStandard,
+  ObservabilitySloStandard,
   PlatformTenantContractStandard,
+  QualityDimension,
   QualityRubricDimensionsStandard,
   RenderResult,
   RepoVisibility,
+  ResourceNamingStandard,
+  ResourceTaggingStandard,
+  SeoBaselineStandard,
+  Severity,
   SkeletonFile,
   Standard,
+  StandardEnvelope,
   StandardName,
+  StandardRule,
   Standards,
+  TelemetryPipelineStandard,
   TemplateConditional,
   TemplateHook,
   TemplateManifest,
   TemplatePrerequisite,
   TemplateVariable,
+  TestingRubricStandard,
   Toolchain,
   VersionCurrencyStandard,
 } from "./types.js";

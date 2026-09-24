@@ -4,6 +4,8 @@
   "version": "1",
   "title": "Resource tagging and labeling standard",
   "summary": "The canonical org-wide tag/label taxonomy every cloud resource and k8s object on the nanohype stack carries. Defines vendor-neutral dimensions, their per-surface rendering (AWS tag keys, k8s labels, OTel attributes), the deterministic casing transforms, the reserved namespaces, which dimensions are required, and conditional requirements — tags required only on certain resource kinds, such as BackupPolicy on backup-eligible kinds, without which a resource is silently unprotected. cloudgov reads the required-tier keys from this file to gate CI; landing-zone and the eks-agent-platform operator inject them; tenant charts label workloads from it.",
+  "applies_to": "Cloud resources and k8s objects provisioned through the nanohype substrate: landing-zone, the eks-agent-platform operator and tenant charts. Outside the substrate the stack values and reserved prefixes are N/A, and what applies is that every resource carries one consistent required-tier tag set.",
+  "grades": ["consistency", "systems"],
   "content": {
     "transforms": {
       "aws": "Render the canonical kebab-case id as PascalCase (split on '-', capitalize each part, join). cost-center -> CostCenter.",

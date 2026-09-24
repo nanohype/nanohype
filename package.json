@@ -30,7 +30,7 @@
     "validate:schema": "node scripts/validate-schema.mjs --schema schemas/template.schema.json --data 'templates/*/template.yaml'",
     "validate:catalog": "./scripts/validate-catalog.sh",
     "validate:toolchain-commands": "node scripts/check-toolchain-commands.mjs",
-    "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs",
+    "validate:standards": "node scripts/validate-schema.mjs --schema schemas/standards.schema.json --data 'standards/*.json' && node scripts/check-tagging-standard.mjs && node scripts/check-standards-applicability.mjs",
     "validate:model-ids": "node scripts/check-model-ids.mjs",
     "validate:eval-suites": "node scripts/check-eval-suites.mjs",
     "validate:assertion-dispatch": "node scripts/check-assertion-dispatch.mjs",
@@ -75,7 +75,8 @@
     "linkify-it": "^6.0.0",
     "markdownlint-cli2": {
       "js-yaml": "^5.3.0",
-      "markdown-it": "^14.2.0"
+      "markdown-it": "^14.2.0",
+      "smol-toml": "^1.7.1"
     }
   }
 }

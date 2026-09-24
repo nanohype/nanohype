@@ -1,9 +1,11 @@
 {
   "$schema": "../schemas/standards.schema.json",
   "kind": "nanohype/standards/platform-tenant-contract",
-  "version": "1",
+  "version": "2",
   "title": "Platform tenant contract",
-  "summary": "Every k8s-native deliverable on the nanohype stack ships as a Platform tenant — a self-contained unit the eks-agent-platform operator can scaffold, suspend (via kill-switch), and tear down via CR reconciliation. This contract names the artifacts a chart must produce, the minimum Platform CR shape, the OTel resource attributes the operator expects, and the things you must NOT do inside a chart.",
+  "summary": "Every k8s-native deliverable on the nanohype stack ships as a Platform tenant — a self-contained unit the eks-agent-platform operator can scaffold, suspend (via kill-switch), and tear down via CR reconciliation. This contract names the artifacts a chart must produce, the minimum Platform CR shape, the OTel resource attributes the operator expects, and the rules a chart follows, each with its severity.",
+  "applies_to": "A k8s deliverable shipped as a Platform tenant on the nanohype substrate, where the eks-agent-platform operator reconciles its Platform CR. N/A for a k8s deliverable deployed without that operator.",
+  "grades": ["architecture", "systems"],
   "content": {
     "required_artifacts": [
       {
@@ -28,7 +30,7 @@
       },
       {
         "path": "<app>/chart/templates/serviceaccount.yaml",
-        "description": "ServiceAccount used by the pod. It carries no role-arn annotation: the eks-agent-platform operator creates an EKS Pod Identity association binding the tenant ServiceAccount to the per-Platform IAM role, whose scoped datastore-access policy the operator generates from Platform.spec.datastores. `serviceAccount.name` must match the tenant-runtime ServiceAccount the association targets."
+        "description": "References the operator-owned tenant-runtime ServiceAccount (`serviceAccount.create: false`, `serviceAccount.name: tenant-runtime`) rather than creating one. The eks-agent-platform operator creates that ServiceAccount in the workload namespace and an EKS Pod Identity association binding it to the per-Platform IAM role, whose scoped datastore-access policy the operator generates from Platform.spec.datastores. It carries no role-arn annotation."
       },
       {
         "path": "<app>/chart/templates/networkpolicy.yaml",
@@ -126,14 +128,52 @@
         "description": "AI workloads only. The full Bedrock model ID being invoked."
       }
     ],
-    "do_not": [
-      "Do NOT scaffold IAM roles inside the chart, and do NOT annotate the ServiceAccount with a role ARN. The eks-agent-platform operator provisions the per-Platform IAM role — with a datastore-access policy generated from spec.datastores — and creates the EKS Pod Identity association that binds the tenant ServiceAccount to it. The chart carries no role ARN.",
-      "Do NOT hand-write a per-app landing-zone component for the tenant's databases, buckets, queues, caches, or streams. Declare them in Platform.spec.datastores — the generic tenant-substrate module provisions them and the operator generates the scoped IAM. Cloud-substrate GAPS the datastore vocabulary does not cover (a shared VPC, base IAM, a KMS key, a new addon) still land in `nanohype/landing-zone` or `nanohype/eks-gitops`, never in-app tofu.",
-      "Do NOT reference a hand-written managed policy through extraPolicyArns for SES or EventBridge Scheduler. Declare them in Platform.spec.identity.capabilities — the operator generates the scoped grants (and mints the scheduler-invoke role). extraPolicyArns stays the escape hatch only for grants outside both the datastore and capability vocabularies.",
-      "Do NOT rely on a broad Secrets Manager grant for the tenant role. Secrets projected into the pod by the chart's ExternalSecret need no grant at all (the External Secrets controller reads them under its own identity); for the few a pod reads itself via the SDK, list them in Platform.spec.identity.directSecretReads so the operator grants read on exactly those.",
-      "Do NOT add cluster-level addons in the chart (ingress controller, cert-manager, External Secrets, observability stack). Those are gitops-repo concerns in `nanohype/eks-gitops`.",
-      "Do NOT skip per-env `values-{dev,staging,production}.yaml` — every chart has three deltas even if some are empty.",
-      "Do NOT hardcode AWS account IDs, region names, or KMS key ARNs in chart values. Per-env values plumb them in from landing-zone outputs at deploy time."
+    "rules": [
+      {
+        "id": "no-chart-iam-role",
+        "summary": "The chart scaffolds no IAM role or policy. The eks-agent-platform operator provisions the per-Platform IAM role, with a datastore-access policy generated from spec.datastores; a role the chart creates is one no Pod Identity association binds.",
+        "severity": "reject"
+      },
+      {
+        "id": "no-chart-serviceaccount",
+        "summary": "The chart creates no ServiceAccount of its own. It references the operator-owned tenant-runtime ServiceAccount (serviceAccount.create: false, name: tenant-runtime), which is the one the operator's Pod Identity association targets; a chart-created ServiceAccount gets no association and its pods get no AWS credentials.",
+        "severity": "reject"
+      },
+      {
+        "id": "no-role-arn-annotation",
+        "summary": "No ServiceAccount the chart renders or references carries an eks.amazonaws.com/role-arn annotation. Identity is EKS Pod Identity, bound by the operator; the annotation adds IRSA web-identity credentials to the pod, and the tenant role trusts only pods.eks.amazonaws.com, never sts:AssumeRoleWithWebIdentity.",
+        "severity": "reject"
+      },
+      {
+        "id": "declare-datastores",
+        "summary": "The tenant's databases, buckets, queues, caches and streams are declared in Platform.spec.datastores, never in a hand-written per-app landing-zone component. The generic tenant-substrate module provisions them and the operator generates the scoped IAM. Cloud-substrate gaps the datastore vocabulary does not cover (a shared VPC, base IAM, a KMS key, a new addon) land in `nanohype/landing-zone` or `nanohype/eks-gitops`, never in-app tofu.",
+        "severity": "warn"
+      },
+      {
+        "id": "declare-capabilities",
+        "summary": "SES send and EventBridge Scheduler are declared in Platform.spec.identity.capabilities, never granted by a hand-written managed policy referenced through extraPolicyArns. The operator generates the scoped grants and mints the scheduler-invoke role. extraPolicyArns is the escape hatch only for grants outside both the datastore and capability vocabularies.",
+        "severity": "warn"
+      },
+      {
+        "id": "scoped-secret-reads",
+        "summary": "The tenant role holds no broad Secrets Manager grant. Secrets the chart's ExternalSecret projects need no grant (the External Secrets controller reads them under its own identity); the few a pod reads itself through the SDK are listed in Platform.spec.identity.directSecretReads, and the operator grants read on exactly those.",
+        "severity": "warn"
+      },
+      {
+        "id": "no-cluster-addons",
+        "summary": "The chart adds no cluster-level addon (ingress controller, cert-manager, External Secrets, observability stack). Addons are gitops-repo concerns in `nanohype/eks-gitops`.",
+        "severity": "warn"
+      },
+      {
+        "id": "per-env-values",
+        "summary": "Every chart carries all three per-env deltas, `values-{dev,staging,production}.yaml`, even when some are empty.",
+        "severity": "warn"
+      },
+      {
+        "id": "no-hardcoded-account-values",
+        "summary": "Chart values hardcode no AWS account ID, region name or KMS key ARN. Per-env values plumb them in from landing-zone outputs at deploy time.",
+        "severity": "warn"
+      }
     ]
   }
 }

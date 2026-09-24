@@ -55,7 +55,7 @@ For an org with N repos:
 1. **Pick a stack name and a public domain** (or just use GitHub raw URLs). Decide what your equivalent of `nanohype://` URI scheme is.
 2. **Create the catalog manifest schema** (`schemas/catalog.schema.json`). Validate every catalog entry against it. Generate the catalog deterministically from source manifests with a script committed to one repo; verify no drift in CI.
 3. **Pick the standards you want to publish**. Start with whichever 3–5 are the easiest commodities and don't reveal your moat. Add more as you build confidence the cut is right.
-4. **Author each `standards/<name>.json`** with a uniform envelope (`kind`, `version`, `title`, `summary`, `content`). Schema-validate with a per-kind discriminator.
+4. **Author each `standards/<name>.json`** with a uniform envelope (`kind`, `version`, `title`, `summary`, `applies_to`, `grades`, `content`). `applies_to` says which deliverables the standard governs and `grades` which quality dimensions a violation lands on, so a grader derives applicability from the file rather than from a table kept elsewhere. Schema-validate with a per-kind discriminator.
 5. **Write the human-readable normative `standards/README.md`** — same facts, narrative voice, links to the JSON.
 6. **Author per-repo `AGENTS.md`** in each consumable repo. Same shape per file: what it gives you / contract surface / add a new X / conventions / pointers. Keep them under ~250 lines each — five-minute orientation is the bar.
 7. **Author the top-level `docs/platform-reference.md`** that points at everything. Sections: who it's for, the stack, catalog, standards, deploy contracts, reference client, "build your own client" quickstart, versioning, reusability.

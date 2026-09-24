@@ -1,6 +1,14 @@
 # nanohype standards
 
-The production bar every build on the nanohype stack meets. This directory contains the **machine-readable** form (one JSON file per standard, all validated against `schemas/standards.schema.json`). This README is the **human-readable** form — same content, normative tone.
+The production bar a build meets. This directory contains the **machine-readable** form (one JSON file per standard, all validated against `schemas/standards.schema.json`). This README is the **human-readable** form — same content, normative tone.
+
+Every standard declares where it applies and what it is graded on:
+
+- **`applies_to`** — the deliverables it governs, with any stack scoping. Several standards govern only deliverables on the nanohype substrate (a Platform tenant, a resource provisioned through landing-zone); for anything else they are N/A, and `applies_to` says which parts, if any, still apply.
+- **`grades`** — the quality dimensions from `quality-rubric-dimensions.json` a violation is graded on. A rule may carry its own `grades`, narrower than its standard's, when only some of those dimensions are its concern.
+- **`severity`** on every rule — `reject` where a violation fails the standard, `warn` where it is a finding that does not.
+
+`npm run validate:standards` holds all three to the files: the schema requires them, and `scripts/check-standards-applicability.mjs` checks every grade against the published dimensions and every standard against this README and the Platform Reference.
 
 Use these standards as:
 
@@ -8,7 +16,7 @@ Use these standards as:
 - The contract the [reference client `fab`](https://github.com/nanohype/fab) implements (and that other clients can implement against).
 - The validation surface for the SDK's `loadStandards()` helper and the `@nanohype/mcp` server's `list_standards` / `get_standard` tools.
 
-What is **not** here: the merge-gate choreography, the role weights and per-dimension assignments, the agent roster, the factory preamble prompt, and the orchestration code that produces consistent output against this bar. Those live in the reference client.
+What is **not** here: the merge-gate choreography, which reviewer grades which dimension, the agent roster, the factory preamble prompt, and the orchestration code that produces consistent output against this bar. Those live in the reference client.
 
 ---
 
@@ -50,16 +58,12 @@ The Platform CR is the declaration surface. In particular:
 - **`spec.identity.capabilities`** — managed AWS capabilities outside the datastore vocabulary (SES send, EventBridge Scheduler). The operator generates those grants.
 - **`spec.identity.directSecretReads`** — the few secret names a pod resolves itself via the AWS SDK (not ExternalSecret projection). Empty means the tenant role holds no Secrets Manager grant.
 
-The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, and the per-Platform IAM role. Identity is **EKS Pod Identity**: the operator creates a Pod Identity association binding the tenant ServiceAccount (`tenant-runtime`) to that role. The chart's ServiceAccount carries **no** `eks.amazonaws.com/role-arn` annotation.
+The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, the `tenant-runtime` ServiceAccount, and the per-Platform IAM role. Identity is **EKS Pod Identity**: the operator creates a Pod Identity association binding `tenant-runtime` to that role, and the chart references that ServiceAccount (`serviceAccount.create: false`) rather than creating its own.
 
-What you must **not** do inside a chart:
+The chart rules, by severity:
 
-- Scaffold IAM roles or annotate the ServiceAccount with a role ARN (the operator owns Pod Identity)
-- Hand-write a per-app landing-zone component for databases, buckets, queues, caches, or streams (declare `spec.datastores`)
-- Add cloud-substrate tofu for gaps the vocabulary does not cover outside `nanohype/landing-zone` / `nanohype/eks-gitops`
-- Add cluster-level addons (addons live in `nanohype/eks-gitops`)
-- Skip per-env values files (every chart has three, even if some are empty)
-- Hardcode AWS account IDs, region names, or KMS ARNs
+- **reject** — the chart scaffolds no IAM role (`no-chart-iam-role`), creates no ServiceAccount of its own (`no-chart-serviceaccount`: one the chart creates gets no Pod Identity association and no AWS credentials), and no ServiceAccount carries an `eks.amazonaws.com/role-arn` annotation (`no-role-arn-annotation`).
+- **warn** — datastores are declared in `spec.datastores`, never in a hand-written per-app landing-zone component, and substrate gaps land in `nanohype/landing-zone` / `nanohype/eks-gitops`, never in-app tofu; SES and Scheduler are declared in `spec.identity.capabilities`; secret reads are scoped through `spec.identity.directSecretReads`; no cluster-level addons in the chart; all three per-env values files exist; no hardcoded AWS account IDs, region names or KMS ARNs.
 
 OTel resource attributes every pod must emit: `agents.tenant`, `agents.platform`, plus `agents.model_family` + `agents.model_id` for AI workloads.
 
@@ -77,17 +81,19 @@ Models (from `llm-policy.json`):
 - **Escalation**: `us.anthropic.claude-opus-5` — complex reasoning, architecture decisions
 - **Light**: `us.anthropic.claude-haiku-4-5-20251001-v1:0` — classification, routing, filter steps
 
-The deploy region is `us-east-1`, and it is the only one — a service-control policy denies every non-global action outside it in each venture account, and CloudFront requires its ACM certificates there regardless. Verify the model's inference profile is `ACTIVE` in the deploy region before committing IaC — `aws bedrock list-inference-profiles` — not merely that the foundation model is listed.
+The deploy region is `us-east-1`, and it is the only one — a service-control policy denies every non-global action outside it in the accounts this catalog deploys into, and CloudFront requires its ACM certificates there regardless. `region-single` applies only to deliverables deployed on the nanohype substrate. Verify the model's inference profile is `ACTIVE` in the deploy region before committing IaC — `aws bedrock list-inference-profiles` — not merely that the foundation model is listed.
 
 Prompt caching is mandatory — use Bedrock `cachePoint` markers on the system prompt and any stable context prefix; measure cache-hit ratio and surface it in the architecture artifact.
 
 Direct Anthropic SDK is permitted only when the intake brief explicitly requires it or Bedrock lacks the model variant. OpenAI and other providers require explicit brief-level requirement — never default to GPT.
 
+`iam-role-auth` and `inference-profile-required` are `reject`: a violation breaks the deployed workload. The other requirements are `warn`.
+
 ---
 
 ## Quality rubric — `quality-rubric-dimensions.json`
 
-Ten dimensions every build is graded against. This file names them and summarizes each. The internal review process (which reviewer grades which dimension, what weights apply, the A–F rubric thresholds, and the merge-gate enforcement choreography) is intentionally **not** public.
+Ten dimensions every build is graded against. This file names them and summarizes each, and every other standard's `grades` field draws from its ids. The depth for each dimension — canonical reading, pattern maps, anti-pattern catalogs and the grade scale — lives in the reference client's bundled `quality-check` skill. Which reviewer grades which dimension, and how a merge gate enforces the grades, belong to the client.
 
 1. **Architecture & Domain Modeling** — bounded contexts, layering, model-to-code mapping
 2. **Design Patterns & Reuse** — abstraction levels, pattern justification, reuse over reinvention
@@ -98,7 +104,7 @@ Ten dimensions every build is graded against. This file names them and summarize
 7. **Code Quality & Craft** — naming, complexity, boundary error handling, explicit timeouts
 8. **Documentation & Developer Experience** — README, runbook, CLAUDE.md, regenerated API docs
 9. **Consistency & Polish** — convention inheritance, code shape, no aspirational comments
-10. **AI & Agent Systems** — eval suites for non-deterministic components, prompt discipline, model routing + fallback, token/cost metering, structured-output validation, prompt-injection defense, tool-use least privilege (N/A when there is no LLM surface)
+10. **AI & Agent Systems** — eval suites for non-deterministic components, prompt discipline, model routing + fallback, token/cost metering, structured-output validation, prompt-injection defense, tool-use least privilege, and the machine-readable surfaces agents reach and read (N/A only for a build with no LLM call, no agent-facing tool surface and no machine-readable surface)
 
 ---
 
@@ -109,8 +115,6 @@ The org's test baseline: the testing shape, the coverage floor, and the practice
 - **Shape** — Testing Trophy: a wide static-analysis base (types + lint), an integration-heavy middle that carries the bulk of confidence, and a thin e2e cap. Integration over isolated unit tests for orchestration code.
 - **Coverage floor** — branches ≥ 60; lines, functions, statements ≥ 75.
 - **Rules** — encode the floor in the runner config (not just a CI flag); 100% on security-critical files; typecheck includes test files; hermetic integration (no live network in the default run); contract tests for every external API; per-package floors allowed but never below the global floor.
-
-The deeper per-language enforcement (how each runner is configured, the REJECT criteria) lives in the reference client's bundled `quality-check` skill.
 
 ---
 
@@ -186,10 +190,10 @@ Two rules carry more weight than the rest, because both failure modes are silent
 Every public site the factory ships presents **one canonical origin** and a fixed set of discovery artifacts. Read it when building or reviewing a site's SEO surface.
 
 - **Apex is canonical** — the bare apex serves (`https://example.com/`). If `www` exists it **301-redirects to the apex**, enforced at the edge. Never redirect the apex to `www` (inverted canonical) and never serve both apex and `www` with `200` (duplicate content). HTTP 301s to HTTPS; no plaintext origin. The `rel=canonical` tag equals the served apex origin exactly (protocol + host).
-- **Four required files** — `/robots.txt` (allow all, agents welcome, points at the sitemap), `/sitemap.xml` (build-generated from the route table, never hand-maintained), `/llms.txt` (machine-readable site summary for agents, linked from the head), and `/og.png` (1200×630 Open Graph share image).
+- **Four required files** — `/robots.txt` (allow all, agents welcome, points at the sitemap; who may be blocked and how it is served are [agent access](#agent-access--agent-accessjson) rules), `/sitemap.xml` (build-generated from the route table, never hand-maintained), `/llms.txt` (machine-readable site summary for agents, linked from the head), and `/og.png` (1200×630 Open Graph share image).
 - **Required head tags** — `<title>` (unique per page), meta description, `rel=canonical`, the Open Graph set (`og:type`/`og:url`/`og:title`/`og:description`/`og:image`/`og:site_name`), the Twitter card set, and meta `robots`. The `google-site-verification` meta tag and schema.org JSON-LD are optional.
 - **One GSC property per site** — a single Google Search Console **URL-prefix** property at the apex, verified by the `google-site-verification` **meta tag** (not a per-repo HTML file), all sites under one Google account. No Domain-plus-prefix duplication and no separate `www` property.
-- **Shared implementation** — head tags come from a shared SEO component and the files from shared build-time sitemap/robots generators, consumed as a package rather than per-repo hand-rolled copies that drift (for static sites the head component renders at build time so the tags are present in the served HTML).
+- **Shared implementation** — head tags come from a shared SEO component and `sitemap.xml` from a shared build-time generator, consumed as a package rather than per-repo hand-rolled copies that drift (for static sites the head component renders at build time so the tags are present in the served HTML).
 
 ---
 
@@ -209,6 +213,26 @@ The standard **cites rather than restates**. Editorial style, including the trea
 Two more refine the cited standards: **timeless-scope** (the ban on temporal language governs the repo's history, not state in a running system — the tell is whether a sentence asserts a change against an _unstated_ past) and **provenance-is-a-field** (a tally becomes an invariant, a frontmatter entry, or a `log.md` line, in that order of preference).
 
 **The `method` section is deliberately self-limiting.** Most of this standard is not enforceable by pattern matching, it says so, and it carries the hazards measured while auditing against it. A gate claiming coverage it does not have is the failure mode the stack exists to avoid, so the standard states its own enforceable subset rather than implying the rest.
+
+---
+
+## Agent access — `agent-access.json`
+
+Every public deliverable stays reachable and readable by the agents that find content for people. Read it when writing `robots.txt`, adding a WAF, CDN or bot-management rule, or checking whether agents reach a site.
+
+The standard names the agent fetchers by user-agent token, operator and class, each linked to the operator's own documentation:
+
+- **search-index** — builds a search index that answers cite and link to (`Googlebot`, `Bingbot`, `OAI-SearchBot`, `Claude-SearchBot`, `PerplexityBot`, `meta-webindexer`, …).
+- **user-initiated** — fetches a page when a person asks an assistant about it (`ChatGPT-User`, `Claude-User`, `Perplexity-User`, `meta-externalfetcher`, `Amzn-User`). Several of these may ignore `robots.txt`, because a person made the request.
+- **training** — collects content for model training or a bulk corpus, or is a control token for that use (`GPTBot`, `ClaudeBot`, `Google-Extended`, `Applebot-Extended`, `CCBot`, …). A site may opt out of this class; it never blocks the search-index or user-initiated classes.
+- **link-preview** — renders a shared link's preview card (`facebookexternalhit`).
+
+Four rules, all `reject`:
+
+- **`robots-default-open`** — the `User-agent: *` group leaves public content open; a named group may disallow public content only for training-class tokens; no group blocks a search-index or user-initiated token. Access never depends on an agent being named. A named group replaces the `*` group for the tokens it names, so it repeats any `*` Disallow of a non-public path.
+- **`robots-served-as-text`** — `/robots.txt` answers 200 with a plain-text robots document. A host that serves no HTML pages, such as an HTTP API, may answer a 4xx other than 429 instead, which RFC 9309 reads as allow-all. It never answers 200 with an HTML body such as a single-page app's fallback route.
+- **`edge-admits-agents`** — no WAF, CDN or edge rule blocks or challenges public routes by user-agent token or bot category for search-index or user-initiated agents; rate limits apply to them as to any client. User-initiated fetchers can ignore `robots.txt`, so the edge is the effective control. Traffic that must be singled out is exempted by the operator's published IP ranges or a verified-bot signal, never by the User-Agent string alone.
+- **`agent-probe`** — reachability is checked live: `GET /` and `GET /robots.txt` with each search-index and user-initiated token in the User-Agent header, and once with a User-Agent that names no roster token. Each tokened request answers the status the untokened one gets on the same path, and never a 401, 403 or 429 or a challenge the untokened one does not get; a 200 `/robots.txt` permits `/` for the token. A block from an edge rule keyed on the operator's published IP ranges or a verified-bot signal is expected, since the probe runs from outside those ranges: confirm the rule under `edge-admits-agents` and record the result as explained, not as a violation.
 
 ---
 
