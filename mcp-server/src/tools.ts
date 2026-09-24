@@ -92,7 +92,7 @@ export function listTools(): ToolDescriptor[] {
     {
       name: "get_standard",
       description:
-        "Fetch a single standards file by name. Returns the full JSON including kind, version, title, summary, and content.",
+        "Fetch a single standards file by name. Returns the full JSON: kind, version, title, summary, applies_to (the deliverables it governs), grades (the quality dimensions a violation is graded on), and content, where every rule carries a reject or warn severity.",
       inputSchema: {
         type: "object",
         properties: {

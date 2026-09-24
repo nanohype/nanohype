@@ -1,9 +1,11 @@
 {
   "$schema": "../schemas/standards.schema.json",
   "kind": "nanohype/standards/telemetry-pipeline",
-  "version": "1",
+  "version": "2",
   "title": "Telemetry pipeline standard",
   "summary": "How telemetry moves on the nanohype stack, as three contracts. The collection contract: every workload emits OTLP to one stable in-cluster endpoint and never names a backend, so backends stay swappable without touching an application. The tier contract: a cluster declares floor or full, which changes where telemetry lands and nothing else — the endpoint, the collector and the emitting workload are identical at both. The signal contract: what the platform publishes back when it acts on telemetry, and where an agent discovers the resources to read. Companion to observability-slo, which owns what to measure and when to alert; this owns how the measurements travel and who may read them.",
+  "applies_to": "Workloads and collectors that emit telemetry on the nanohype k8s substrate, and any control loop there that acts on telemetry. N/A for a deliverable outside that substrate.",
+  "grades": ["systems"],
   "content": {
     "principles": {
       "neutral_waist": "OTLP is the contract, not the collector. A workload emits OTLP to a stable endpoint and never learns which collector implements it or which backend stores it. That is what makes a backend a deployment decision rather than an application rewrite — and it is the only reason a cluster can change tiers without a single tenant change.",
@@ -102,9 +104,21 @@
         }
       ],
       "rules": [
-        "Every event source and detail-type pair on a shared bus must be disjoint from every other, and a test must assert it. Two governance loops sharing a bus is fine; one matching the other's events is a tenant suspended for a latency regression.",
-        "Publishing an event is not the same as the action taking effect. A loop that acts on telemetry verifies the effect it intended and reports when the effect did not land — a control loop that records a false success is worse than one that never fired.",
-        "An event carries enough detail to render an audit line without re-reading cluster state."
+        {
+          "id": "disjoint-event-sources",
+          "summary": "Every event source and detail-type pair on a shared bus must be disjoint from every other, and a test must assert it. Two governance loops sharing a bus is fine; one matching the other's events is a tenant suspended for a latency regression.",
+          "severity": "reject"
+        },
+        {
+          "id": "verify-effect",
+          "summary": "Publishing an event is not the same as the action taking effect. A loop that acts on telemetry verifies the effect it intended and reports when the effect did not land — a control loop that records a false success is worse than one that never fired.",
+          "severity": "warn"
+        },
+        {
+          "id": "self-describing-events",
+          "summary": "An event carries enough detail to render an audit line without re-reading cluster state.",
+          "severity": "warn"
+        }
       ]
     },
     "discovery": {

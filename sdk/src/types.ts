@@ -1,3 +1,5 @@
+import type { QUALITY_DIMENSIONS } from "./standards.js";
+
 export interface TemplateVariable {
   name: string;
   type: "string" | "bool" | "enum" | "int";
@@ -178,7 +180,34 @@ export type StandardName =
   | "observability-slo"
   | "telemetry-pipeline"
   | "seo-baseline"
-  | "documentation-voice";
+  | "documentation-voice"
+  | "agent-access";
+
+/** A quality dimension id, as published in `standards/quality-rubric-dimensions.json`. */
+export type QualityDimension = (typeof QUALITY_DIMENSIONS)[number];
+
+/** `reject`: a violation fails the standard. `warn`: a violation is a finding that does not fail it. */
+export type Severity = "reject" | "warn";
+
+/** One rule a standard states, with the severity a violation carries. */
+export interface StandardRule {
+  id: string;
+  summary: string;
+  severity: Severity;
+  /** The dimensions this rule is graded on, when narrower than its standard's `grades`. */
+  grades?: QualityDimension[];
+}
+
+/** The fields every standards file carries beside its `kind` and `content`. */
+export interface StandardEnvelope {
+  version: string;
+  title: string;
+  summary: string;
+  /** The deliverables the standard governs, with any stack scoping. A grader reads it to decide applies or N/A. */
+  applies_to: string;
+  /** The quality dimensions a violation is graded on. Empty only for quality-rubric-dimensions. */
+  grades: QualityDimension[];
+}
 
 /** Per-language toolchain: install + four-phase commands + manifest/registry metadata. */
 export interface Toolchain {
@@ -195,11 +224,8 @@ export interface Toolchain {
 }
 
 /** Standards file: language toolchain. */
-export interface LanguageToolchainStandard {
+export interface LanguageToolchainStandard extends StandardEnvelope {
   kind: "nanohype/standards/language-toolchain";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     /**
      * The keys of a `Toolchain` that hold a runnable command, in the order a
@@ -213,24 +239,18 @@ export interface LanguageToolchainStandard {
 }
 
 /** Standards file: version currency policy. */
-export interface VersionCurrencyStandard {
+export interface VersionCurrencyStandard extends StandardEnvelope {
   kind: "nanohype/standards/version-currency";
-  version: string;
-  title: string;
-  summary: string;
   content: {
-    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
+    rules: StandardRule[];
     registries: Record<string, string>;
     accepted_pin_reasons: string[];
   };
 }
 
 /** Standards file: platform-tenant contract. */
-export interface PlatformTenantContractStandard {
+export interface PlatformTenantContractStandard extends StandardEnvelope {
   kind: "nanohype/standards/platform-tenant-contract";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     required_artifacts: { path: string; description: string }[];
     platform_cr_shape: Record<string, unknown>;
@@ -239,42 +259,34 @@ export interface PlatformTenantContractStandard {
       required: boolean;
       description: string;
     }[];
-    do_not: string[];
+    rules: StandardRule[];
   };
 }
 
 /** Standards file: LLM policy. */
-export interface LLMPolicyStandard {
+export interface LLMPolicyStandard extends StandardEnvelope {
   kind: "nanohype/standards/llm-policy";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     primary_provider: string;
     models: { default: string; escalation: string; light: string };
     regions_preferred: string[];
     sdk_by_language: Record<string, string>;
-    requirements: { id: string; summary: string }[];
+    /** A requirement that declares no severity is read as `warn`. */
+    requirements: { id: string; summary: string; severity?: Severity }[];
   };
 }
 
-/** Standards file: quality-rubric dimension names (depth — weights, assignments, REJECT criteria — stays private). */
-export interface QualityRubricDimensionsStandard {
+/** Standards file: the quality-rubric dimension names and summaries every other standard's `grades` draws from. */
+export interface QualityRubricDimensionsStandard extends StandardEnvelope {
   kind: "nanohype/standards/quality-rubric-dimensions";
-  version: string;
-  title: string;
-  summary: string;
   content: {
-    dimensions: { id: string; name: string; summary: string }[];
+    dimensions: { id: QualityDimension; name: string; summary: string }[];
   };
 }
 
 /** Standards file: testing rubric — the org test baseline (shape, coverage floor, practices). */
-export interface TestingRubricStandard {
+export interface TestingRubricStandard extends StandardEnvelope {
   kind: "nanohype/standards/testing-rubric";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     shape: string;
     coverage_floor: {
@@ -283,7 +295,7 @@ export interface TestingRubricStandard {
       functions: number;
       statements: number;
     };
-    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
+    rules: StandardRule[];
   };
 }
 
@@ -300,11 +312,8 @@ export interface TagDimension {
 }
 
 /** Standards file: resource tagging/labeling taxonomy. The single source of truth for the canonical tag set and its per-surface rendering. */
-export interface ResourceTaggingStandard {
+export interface ResourceTaggingStandard extends StandardEnvelope {
   kind: "nanohype/standards/resource-tagging";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     transforms: Record<string, string>;
     reserved_prefixes: {
@@ -352,11 +361,8 @@ export interface BurnRateWindow {
 }
 
 /** Standards file: observability + SLO bar (RED/USE, golden signals, SLO error-budget burn, dashboard requirements). */
-export interface ObservabilitySloStandard {
+export interface ObservabilitySloStandard extends StandardEnvelope {
   kind: "nanohype/standards/observability-slo";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     principles: {
       red: string;
@@ -419,11 +425,8 @@ export interface SeoHeadTag {
 }
 
 /** Standards file: SEO baseline — canonical apex host, discovery files, head tags, one GSC property per site. */
-export interface SeoBaselineStandard {
+export interface SeoBaselineStandard extends StandardEnvelope {
   kind: "nanohype/standards/seo-baseline";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     canonical_host: {
       rule: "apex" | "www";
@@ -438,7 +441,7 @@ export interface SeoBaselineStandard {
     };
     required_files: SeoRequiredFile[];
     head_tags: SeoHeadTag[];
-    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
+    rules: StandardRule[];
     implementation?: {
       pattern: string;
       summary: string;
@@ -450,11 +453,8 @@ export interface SeoBaselineStandard {
 }
 
 /** Standards file: the resource naming grammar. The single source of truth for how cloud and k8s resources are named on the stack — the env-first cloud / env-token-free k8s domain split, the co-located-sibling cluster-identity model, and the collision + length guards. */
-export interface ResourceNamingStandard {
+export interface ResourceNamingStandard extends StandardEnvelope {
   kind: "nanohype/standards/resource-naming";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     environments: string[];
     domains: {
@@ -476,7 +476,7 @@ export interface ResourceNamingStandard {
       iam_role: number;
       note?: string;
     };
-    rules: { id: string; summary: string; severity?: "reject" | "warn" }[];
+    rules: StandardRule[];
   };
 }
 
@@ -489,11 +489,8 @@ export interface ResourceNamingStandard {
  * Companion to `ObservabilitySloStandard`, which owns *what* to measure and when
  * to alert. This owns how the measurements travel and who may read them.
  */
-export interface TelemetryPipelineStandard {
+export interface TelemetryPipelineStandard extends StandardEnvelope {
   kind: "nanohype/standards/telemetry-pipeline";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     principles: {
       neutral_waist: string;
@@ -541,7 +538,7 @@ export interface TelemetryPipelineStandard {
         detail_fields: string[];
         severity: string;
       }>;
-      rules: string[];
+      rules: StandardRule[];
     };
     discovery: {
       summary: string;
@@ -554,19 +551,15 @@ export interface TelemetryPipelineStandard {
   };
 }
 
-/** Union of every published standard. Discriminated by `kind`. */
 /**
  * Standards file: the prose form of the greenfield doctrine. Governs every
  * surface a human reads — not only markdown — and grades a sentence on whether
  * it helps the reader change the code or only records how the code came to be.
- * Editorial style and structured provenance are delegated to external
- * authorities named in `delegated`; `requirements` carries what neither covers.
+ * Editorial style and structured provenance are delegated to the external
+ * authorities in `normative_references`; `rules` carries what neither covers.
  */
-export interface DocumentationVoiceStandard {
+export interface DocumentationVoiceStandard extends StandardEnvelope {
   kind: "nanohype/standards/documentation-voice";
-  version: string;
-  title: string;
-  summary: string;
   content: {
     scope: { applies_to: string; excluded?: string[] };
     normative_references: {
@@ -582,11 +575,13 @@ export interface DocumentationVoiceStandard {
      * Rule bodies are heterogeneous by design. A rule refining a cited
      * standard carries `refines` and worked correct/defect pairs; a rule
      * original to this org carries `origin` and the hazards found applying
-     * it. Only `id` and `rule` are common to every entry.
+     * it. Only `id`, `rule` and `severity` are common to every entry.
      */
     rules: {
       id: string;
       rule: string;
+      /** Conformance is read rather than matched, so every rule is `warn`. */
+      severity: "warn";
       refines?: string;
       origin?: string;
       tell?: string;
@@ -619,6 +614,45 @@ export interface DocumentationVoiceStandard {
   };
 }
 
+/** One fetcher class in the agent-access roster. */
+export type AgentFetcherClass = "search-index" | "user-initiated" | "training" | "link-preview";
+
+/** One user-agent token in the agent-access roster, as its operator documents it. */
+export interface AgentFetcher {
+  /** The product token robots.txt names and the fetcher sends; matched case-insensitively. */
+  token: string;
+  operator: string;
+  class: AgentFetcherClass;
+  /** False where the operator documents that the fetcher may ignore robots.txt. */
+  honors_robots: boolean;
+  /** The operator's page documenting the token. */
+  docs: string;
+  note?: string;
+}
+
+/**
+ * Standards file: which AI agents and search crawlers a public deliverable
+ * admits. The roster classifies each fetcher; the rules keep robots.txt and the
+ * edge open to the search-index and user-initiated classes, and `probe` is the
+ * live reachability check a client runs against a deployed site.
+ */
+export interface AgentAccessStandard extends StandardEnvelope {
+  kind: "nanohype/standards/agent-access";
+  content: {
+    classes: Record<AgentFetcherClass, string>;
+    agent_fetchers: AgentFetcher[];
+    probe: {
+      method: "GET";
+      paths: string[];
+      /** The classes whose tokens the probe sends. */
+      classes: AgentFetcherClass[];
+      expect: string;
+    };
+    rules: StandardRule[];
+  };
+}
+
+/** Union of every published standard. Discriminated by `kind`. */
 export type Standard =
   | LanguageToolchainStandard
   | VersionCurrencyStandard
@@ -631,12 +665,14 @@ export type Standard =
   | ObservabilitySloStandard
   | TelemetryPipelineStandard
   | SeoBaselineStandard
-  | DocumentationVoiceStandard;
+  | DocumentationVoiceStandard
+  | AgentAccessStandard;
 
 /**
  * Parsed bundle of every published standard. The shape an external client
- * gets from `loadStandards(source)` — one named slot per standard, all
- * already validated against the schema by the SDK.
+ * gets from `loadStandards(source)` — one named slot per standard, each
+ * checked for its `kind` on load. Schema validation of the files is this
+ * repository's CI gate (`npm run validate:standards`).
  */
 export interface Standards {
   "language-toolchain": LanguageToolchainStandard;
@@ -651,6 +687,7 @@ export interface Standards {
   "telemetry-pipeline": TelemetryPipelineStandard;
   "seo-baseline": SeoBaselineStandard;
   "documentation-voice": DocumentationVoiceStandard;
+  "agent-access": AgentAccessStandard;
 }
 
 /** The raw markdown content of a supporting repo's AGENTS.md. */

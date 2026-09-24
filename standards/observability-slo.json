@@ -4,6 +4,8 @@
   "version": "1",
   "title": "Observability and SLO standard",
   "summary": "The production bar for how every system on the nanohype stack is observed: RED for services, USE for resources, the four golden signals, and at least one SLO with a multi-window multi-burn-rate error budget. Defines the dashboard a system MUST ship to represent itself (golden-signal rows + an SLO/error-budget row keyed on the system's own nouns, never only generic node/k8s infra), the recording-rule naming convention, and the canonical burn-rate alert windows. Also defines the fleet-alerting contract — severity tiers, the standard alarm-dimension set, and per-cluster composite rollups — that the observability landing-zone component renders so a hard-down cluster pages once instead of once per alarm. tenant-chart-base renders the PrometheusRule + ServiceMonitor from this standard's shape; every tenant chart inherits it; the quality gate reads it when grading the Systems-Thinking and Observability surface.",
+  "applies_to": "Any long-running service or pipeline, on any runtime. tenant-chart-base's dashboard and PrometheusRule and the observability landing-zone component's fleet alarms are how the nanohype substrate meets it; off the substrate the same signals, SLO and burn-rate alerts are met in the deliverable's own stack.",
+  "grades": ["systems"],
   "content": {
     "principles": {
       "red": "Every request-serving service exposes Rate (requests/s), Errors (error ratio), and Duration (latency). Latency is recorded as a histogram and shown as p50/p95/p99 quantiles — never as an average or a single gauge.",

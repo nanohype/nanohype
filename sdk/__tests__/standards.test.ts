@@ -3,7 +3,13 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { NanohypeError } from "../src/errors.js";
 import { LocalSource } from "../src/sources/local.js";
-import { isStandardName, loadStandard, loadStandards, STANDARD_NAMES } from "../src/standards.js";
+import {
+  isStandardName,
+  loadStandard,
+  loadStandards,
+  QUALITY_DIMENSIONS,
+  STANDARD_NAMES,
+} from "../src/standards.js";
 import type { Standards } from "../src/types.js";
 
 const CATALOG_ROOT = resolve(import.meta.dirname, "..", "..");
@@ -28,13 +34,20 @@ describe("loadStandard", () => {
     expect(s.content.accepted_pin_reasons).toContain("security hold");
   });
 
-  it("loads platform-tenant-contract with required artifacts and do-nots", async () => {
+  it("loads platform-tenant-contract with required artifacts and severity-bearing rules", async () => {
     const s = await loadStandard(source, "platform-tenant-contract");
     if (s.kind !== "nanohype/standards/platform-tenant-contract") throw new Error("kind narrow");
     expect(s.content.required_artifacts.length).toBeGreaterThan(0);
     expect(s.content.platform_cr_shape.kind).toBe("Platform");
     expect(s.content.otel_resource_attrs.some((a) => a.name === "agents.tenant")).toBe(true);
-    expect(s.content.do_not.length).toBeGreaterThan(0);
+    // The three identity rules are the ones whose violation breaks the
+    // operator-owned identity binding, so they are the ones that reject.
+    const rejects = s.content.rules.filter((r) => r.severity === "reject").map((r) => r.id);
+    expect(rejects).toEqual([
+      "no-chart-iam-role",
+      "no-chart-serviceaccount",
+      "no-role-arn-annotation",
+    ]);
   });
 
   it("loads llm-policy with Bedrock as primary and Claude as default", async () => {
@@ -43,39 +56,27 @@ describe("loadStandard", () => {
     expect(s.content.primary_provider).toBe("AWS Bedrock");
     // Every declared tier is a cross-region inference-profile ID, geo prefix and
     // all. The current Claude family is INFERENCE_PROFILE-only on Bedrock, so a
-    // bare `anthropic.`-prefixed default would name something that cannot be
-    // invoked — which is what this policy shipped before.
+    // bare `anthropic.`-prefixed ID names a model that cannot be invoked.
     expect(s.content.models.default).toMatch(/^us\.anthropic\.claude-sonnet/);
     for (const id of Object.values(s.content.models)) {
       expect(id).toMatch(/^(?:us|eu|jp|ap|apac|global)\.anthropic\./);
     }
-    // Exactly one region, not merely "contains the right one". A venture
-    // account's SCP denies every non-global action outside us-east-1, so a
-    // second entry would name a region nothing can deploy to — and a
-    // `toContain` assertion is what let the list keep us-west-2 in first
-    // place while every skeleton default quietly followed it there.
+    // Exactly one region, not merely one that contains us-east-1. The deploy
+    // accounts' SCP denies every non-global action outside it, so a second
+    // entry names a region nothing can deploy to, and a `toContain` assertion
+    // passes with that entry listed first.
     expect(s.content.regions_preferred).toEqual(["us-east-1"]);
+    // The two requirements whose violation breaks the deployed workload reject.
+    const rejects = s.content.requirements.filter((r) => r.severity === "reject").map((r) => r.id);
+    expect(rejects).toEqual(["iam-role-auth", "inference-profile-required"]);
   });
 
   it("loads quality-rubric-dimensions with ten named dimensions", async () => {
     const s = await loadStandard(source, "quality-rubric-dimensions");
     if (s.kind !== "nanohype/standards/quality-rubric-dimensions") throw new Error("kind narrow");
-    expect(s.content.dimensions).toHaveLength(10);
-    const ids = s.content.dimensions.map((d) => d.id);
-    for (const required of [
-      "architecture",
-      "patterns",
-      "systems",
-      "testing",
-      "frontend",
-      "security",
-      "code_quality",
-      "documentation",
-      "consistency",
-      "ai_systems",
-    ]) {
-      expect(ids).toContain(required);
-    }
+    // QUALITY_DIMENSIONS is the SDK's copy of these ids, and QualityDimension is
+    // derived from it, so the copy is held to the file rather than trusted.
+    expect(s.content.dimensions.map((d) => d.id)).toEqual([...QUALITY_DIMENSIONS]);
   });
 
   it("loads testing-rubric with a coverage floor and enforcement rules", async () => {
@@ -142,6 +143,31 @@ describe("loadStandard", () => {
     expect(s.content.method.summary).toMatch(/unenforceable by pattern matching/i);
   });
 
+  it("loads agent-access with a classified roster and a probe over the classes it admits", async () => {
+    const s = await loadStandard(source, "agent-access");
+    if (s.kind !== "nanohype/standards/agent-access") throw new Error("kind narrow");
+    expect(s.grades).toEqual(["ai_systems"]);
+    const tokens = s.content.agent_fetchers.map((f) => f.token);
+    expect(tokens).toEqual(
+      expect.arrayContaining([
+        "meta-webindexer",
+        "meta-externalfetcher",
+        "OAI-SearchBot",
+        "ChatGPT-User",
+        "Claude-SearchBot",
+        "Claude-User",
+      ]),
+    );
+    // The probe sends the tokens of the classes a site must admit, and never a
+    // training token, which a site is free to block.
+    expect(s.content.probe.classes).toEqual(["search-index", "user-initiated"]);
+    expect(s.content.probe.paths).toEqual(["/", "/robots.txt"]);
+    for (const f of s.content.agent_fetchers) {
+      expect(f.docs).toMatch(/^https:\/\//);
+    }
+    expect(s.content.rules.every((r) => r.severity === "reject")).toBe(true);
+  });
+
   it("throws NanohypeError when the standard is missing", async () => {
     const broken = new LocalSource({ rootDir: "/tmp/nonexistent-nanohype-standards" });
     await expect(loadStandard(broken, "llm-policy")).rejects.toBeInstanceOf(NanohypeError);
@@ -166,6 +192,20 @@ describe("loadStandards (bundle)", () => {
     expect(bundle["observability-slo"].kind).toBe("nanohype/standards/observability-slo");
     expect(bundle["seo-baseline"].kind).toBe("nanohype/standards/seo-baseline");
     expect(bundle["documentation-voice"].kind).toBe("nanohype/standards/documentation-voice");
+    expect(bundle["agent-access"].kind).toBe("nanohype/standards/agent-access");
+  });
+
+  it("gives every standard an applies_to and grades drawn from the published dimensions", async () => {
+    const bundle: Standards = await loadStandards(source);
+    const dimensions = new Set<string>(
+      bundle["quality-rubric-dimensions"].content.dimensions.map((d) => d.id),
+    );
+    for (const [name, standard] of Object.entries(bundle)) {
+      expect(standard.applies_to.length, name).toBeGreaterThan(0);
+      for (const g of standard.grades) expect(dimensions.has(g), `${name}: ${g}`).toBe(true);
+      // The rubric defines the dimensions; every other standard lands on one.
+      expect(standard.grades.length === 0, name).toBe(name === "quality-rubric-dimensions");
+    }
   });
 });
 

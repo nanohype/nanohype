@@ -1,0 +1,207 @@
+{
+  "$schema": "../schemas/standards.schema.json",
+  "kind": "nanohype/standards/agent-access",
+  "version": "1",
+  "title": "Agent access",
+  "summary": "Every public deliverable stays reachable and readable by the AI agents and search crawlers that find content for people: search indexes, and the fetchers an assistant sends when a person asks about a page. A site may opt out of training crawlers, and never blocks the search-index or user-initiated classes. This names the agent fetchers by token, operator and class, and the robots.txt, edge and probe rules that keep search-index and user-initiated fetchers admitted. Read it when writing robots.txt, adding a WAF, CDN or bot-management rule, or checking whether agents reach a site.",
+  "applies_to": "Any public web deliverable: a site, web app or HTTP API reachable on the public internet, whatever stack serves it.",
+  "grades": ["ai_systems"],
+  "content": {
+    "classes": {
+      "search-index": "Crawls to build a search index that answers cite and link to. Blocking it removes the site from that operator's search results and AI answers.",
+      "user-initiated": "Fetches a page when a person asks an assistant about it, at the moment they ask. Several operators document that these fetchers may ignore robots.txt, because a person made the request.",
+      "training": "Collects content for model training or a bulk web corpus, or is a robots.txt control token for that use. A site may opt out of this class without leaving search indexes or agent answers.",
+      "link-preview": "Fetches a shared link's title, description and image to render a preview card."
+    },
+    "agent_fetchers": [
+      {
+        "token": "meta-webindexer",
+        "operator": "Meta",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/"
+      },
+      {
+        "token": "meta-externalfetcher",
+        "operator": "Meta",
+        "class": "user-initiated",
+        "honors_robots": false,
+        "docs": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/"
+      },
+      {
+        "token": "meta-externalagent",
+        "operator": "Meta",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/"
+      },
+      {
+        "token": "facebookexternalhit",
+        "operator": "Meta",
+        "class": "link-preview",
+        "honors_robots": false,
+        "docs": "https://developers.facebook.com/docs/sharing/webmasters/web-crawlers/",
+        "note": "May bypass robots.txt when performing security or integrity checks."
+      },
+      {
+        "token": "GPTBot",
+        "operator": "OpenAI",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://developers.openai.com/api/docs/bots"
+      },
+      {
+        "token": "OAI-SearchBot",
+        "operator": "OpenAI",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://developers.openai.com/api/docs/bots"
+      },
+      {
+        "token": "ChatGPT-User",
+        "operator": "OpenAI",
+        "class": "user-initiated",
+        "honors_robots": false,
+        "docs": "https://developers.openai.com/api/docs/bots"
+      },
+      {
+        "token": "ClaudeBot",
+        "operator": "Anthropic",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler"
+      },
+      {
+        "token": "Claude-SearchBot",
+        "operator": "Anthropic",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler"
+      },
+      {
+        "token": "Claude-User",
+        "operator": "Anthropic",
+        "class": "user-initiated",
+        "honors_robots": true,
+        "docs": "https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler"
+      },
+      {
+        "token": "PerplexityBot",
+        "operator": "Perplexity",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://docs.perplexity.ai/docs/resources/perplexity-crawlers"
+      },
+      {
+        "token": "Perplexity-User",
+        "operator": "Perplexity",
+        "class": "user-initiated",
+        "honors_robots": false,
+        "docs": "https://docs.perplexity.ai/docs/resources/perplexity-crawlers"
+      },
+      {
+        "token": "Googlebot",
+        "operator": "Google",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers"
+      },
+      {
+        "token": "Google-Extended",
+        "operator": "Google",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers",
+        "note": "A robots.txt control token only: no request carries it. Google crawls with its other user agents, and a group naming Google-Extended governs whether that content trains and grounds Gemini models. It does not affect Google Search."
+      },
+      {
+        "token": "Bingbot",
+        "operator": "Microsoft",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0"
+      },
+      {
+        "token": "Applebot",
+        "operator": "Apple",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://support.apple.com/en-us/119829",
+        "note": "Follows the Googlebot group when robots.txt names Googlebot and not Applebot."
+      },
+      {
+        "token": "Applebot-Extended",
+        "operator": "Apple",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://support.apple.com/en-us/119829",
+        "note": "A robots.txt control token only: it crawls no pages. A group naming it governs whether Applebot's crawl trains Apple's foundation models; pages it disallows can still appear in search results."
+      },
+      {
+        "token": "Amazonbot",
+        "operator": "Amazon",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://developer.amazon.com/amazonbot",
+        "note": "Amazon documents that its crawl may train Amazon AI models. Amzn-SearchBot and Amzn-User carry search and live answers and train no generative model."
+      },
+      {
+        "token": "Amzn-SearchBot",
+        "operator": "Amazon",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://developer.amazon.com/amazonbot"
+      },
+      {
+        "token": "Amzn-User",
+        "operator": "Amazon",
+        "class": "user-initiated",
+        "honors_robots": false,
+        "docs": "https://developer.amazon.com/amazonbot"
+      },
+      {
+        "token": "DuckDuckBot",
+        "operator": "DuckDuckGo",
+        "class": "search-index",
+        "honors_robots": true,
+        "docs": "https://duckduckgo.com/duckduckgo-help-pages/results/duckduckbot"
+      },
+      {
+        "token": "CCBot",
+        "operator": "Common Crawl",
+        "class": "training",
+        "honors_robots": true,
+        "docs": "https://commoncrawl.org/ccbot",
+        "note": "Builds Common Crawl's open web corpus."
+      }
+    ],
+    "probe": {
+      "method": "GET",
+      "paths": ["/", "/robots.txt"],
+      "classes": ["search-index", "user-initiated"],
+      "expect": "One request per path per token of a probed class, the token in the User-Agent header, and one baseline request per path whose User-Agent names no roster token. Each tokened request answers the status the baseline gets on the same path, and never a 401, 403 or 429 or a challenge that the baseline does not get. Where /robots.txt answers 200, the document lets each token fetch /. A tokened request the edge blocks through a rule keyed on the operator's published IP ranges or a verified-bot signal comes from outside those ranges, so the block is expected: confirm that rule under edge-admits-agents and record the result as explained, not as a violation."
+    },
+    "rules": [
+      {
+        "id": "robots-default-open",
+        "summary": "The `User-agent: *` group leaves public content open. A named group may disallow public content only for training-class tokens, and no group blocks a search-index or user-initiated token from public content, so access never depends on an agent being named. RFC 9309 applies the `*` group only to a crawler no group names, so a named group repeats any `*` Disallow of a non-public path the site relies on.",
+        "severity": "reject"
+      },
+      {
+        "id": "robots-served-as-text",
+        "summary": "/robots.txt answers 200 with Content-Type text/plain and a robots document. A host that serves no HTML pages, such as an HTTP API, may instead answer a 4xx other than 429: RFC 9309 reads an unavailable robots.txt as allow-all, while Google's crawlers read a 429 as a server error and stop crawling. It never answers 200 with an HTML body, such as a single-page app's fallback route: an HTML body carries no groups and no Sitemap line, so the file is served and says nothing.",
+        "severity": "reject"
+      },
+      {
+        "id": "edge-admits-agents",
+        "summary": "No WAF, CDN or edge rule blocks or challenges public routes by User-Agent token or bot category for search-index or user-initiated agents; rate limits apply to them as to any other client. User-initiated fetchers can ignore robots.txt, so for them the edge is the effective access control. A rule that must single out automated traffic exempts these agents by the operator's published IP ranges or a verified-bot signal, never by the User-Agent string alone.",
+        "severity": "reject"
+      },
+      {
+        "id": "agent-probe",
+        "summary": "Reachability is checked live as content.probe defines: GET / and /robots.txt once per search-index and user-initiated token in agent_fetchers with the token in the User-Agent header, and once with a User-Agent that names no roster token. Each tokened request answers the status the untokened request gets on the same path, and never a 401, 403 or 429 or a challenge that the untokened request does not get; where /robots.txt answers 200, it permits / for the token. The probe exercises edge rules keyed on the User-Agent header. Where the edge blocks a tokened request through a rule keyed on the operator's published IP ranges or a verified-bot signal, the probe's client sits outside those ranges, so confirm the rule by reading the edge configuration under edge-admits-agents and record the probe result as explained, not as a violation.",
+        "severity": "reject"
+      }
+    ]
+  }
+}

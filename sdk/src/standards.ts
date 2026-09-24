@@ -1,6 +1,7 @@
 import { NanohypeError } from "./errors.js";
 import type { CatalogSource } from "./source.js";
 import type {
+  AgentAccessStandard,
   DocumentationVoiceStandard,
   LanguageToolchainStandard,
   LLMPolicyStandard,
@@ -31,7 +32,26 @@ const ALL_STANDARDS: StandardName[] = [
   "telemetry-pipeline",
   "seo-baseline",
   "documentation-voice",
+  "agent-access",
 ];
+
+/**
+ * The quality dimension ids, in the order `standards/quality-rubric-dimensions.json`
+ * publishes them. Every standard's `grades` draws from this list; the SDK's tests
+ * hold it equal to the published file.
+ */
+export const QUALITY_DIMENSIONS = [
+  "architecture",
+  "patterns",
+  "systems",
+  "testing",
+  "frontend",
+  "security",
+  "code_quality",
+  "documentation",
+  "consistency",
+  "ai_systems",
+] as const;
 
 /** The canonical list of published standards file names. */
 export const STANDARD_NAMES: readonly StandardName[] = ALL_STANDARDS;
@@ -54,6 +74,7 @@ const EXPECTED_KIND: Record<StandardName, Standard["kind"]> = {
   "telemetry-pipeline": "nanohype/standards/telemetry-pipeline",
   "seo-baseline": "nanohype/standards/seo-baseline",
   "documentation-voice": "nanohype/standards/documentation-voice",
+  "agent-access": "nanohype/standards/agent-access",
 };
 
 /**
@@ -96,6 +117,7 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     telemetry,
     seo,
     docVoice,
+    agentAccess,
   ] = await Promise.all(ALL_STANDARDS.map((name) => loadStandard(source, name)));
   return {
     "language-toolchain": toolchain as LanguageToolchainStandard,
@@ -110,5 +132,6 @@ export async function loadStandards(source: CatalogSource): Promise<Standards> {
     "telemetry-pipeline": telemetry as TelemetryPipelineStandard,
     "seo-baseline": seo as SeoBaselineStandard,
     "documentation-voice": docVoice as DocumentationVoiceStandard,
+    "agent-access": agentAccess as AgentAccessStandard,
   };
 }

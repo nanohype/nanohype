@@ -4,6 +4,8 @@
   "version": "1",
   "title": "SEO baseline",
   "summary": "Every public site the factory ships presents one canonical origin and a fixed set of discovery artifacts. The bare apex serves; www (if it exists) 301-redirects to the apex, never the reverse and never both live. Read this when building or reviewing a site's SEO surface: it fixes the canonical-host rule, the required files (robots.txt, sitemap.xml, llms.txt, og.png), the required head tags, and the one-URL-prefix Google Search Console property per site.",
+  "applies_to": "Any public web deliverable that serves HTML pages: a site, or a web app's public pages. N/A for an API that serves no pages.",
+  "grades": ["frontend", "consistency"],
   "content": {
     "canonical_host": {
       "rule": "apex",
@@ -19,7 +21,7 @@
     "required_files": [
       {
         "path": "/robots.txt",
-        "description": "Allow all, agents welcome, points to the sitemap. Emitted by the shared build-time robots generator."
+        "description": "Allow all, agents welcome, points to the sitemap. Who may be blocked and how the file is served are the agent-access standard's rules."
       },
       {
         "path": "/sitemap.xml",
@@ -100,19 +102,19 @@
       },
       {
         "id": "shared-implementation",
-        "summary": "Head tags come from a shared SEO component and the files from shared build-time generators, provided as a consumed package rather than per-repo hand-rolled copies that drift.",
+        "summary": "Head tags come from a shared SEO component and sitemap.xml from a shared build-time generator, provided as a consumed package rather than per-repo hand-rolled copies that drift.",
         "severity": "warn"
       }
     ],
     "implementation": {
       "pattern": "shared-package",
-      "summary": "A shared SEO layer consumed as a package, not hand-rolled per repo: a head component that emits the required tags (rendered at build time for static sites so the tags are present in the served HTML) plus build-time sitemap and robots generators.",
-      "provides": ["head-component", "sitemap-generator", "robots-generator"]
+      "summary": "A shared SEO layer consumed as a package, not hand-rolled per repo: a head component that emits the required tags (rendered at build time for static sites so the tags are present in the served HTML) plus a build-time sitemap generator.",
+      "provides": ["head-component", "sitemap-generator"]
     },
     "do": [
       "Pick the bare apex as the canonical origin for every site, no exceptions.",
       "Emit head tags from the shared SEO component and pass the GSC token as one prop.",
-      "Generate sitemap.xml and robots.txt at build time from the route table.",
+      "Generate sitemap.xml at build time from the route table, and serve robots.txt under the agent-access rules.",
       "Register one URL-prefix GSC property per site under a single Google account."
     ],
     "do_not": [
