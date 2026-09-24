@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -6,6 +7,9 @@ import { describe, expect, it } from "vitest";
 import { createServer, makeSource } from "../src/index.js";
 
 const CATALOG_ROOT = resolve(import.meta.dirname, "..", "..");
+const PACKAGE_VERSION: string = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, "..", "package.json"), "utf-8"),
+).version;
 
 describe("makeSource", () => {
   it("defaults to the public catalog on GitHub", () => {
@@ -57,6 +61,11 @@ describe("createServer", () => {
     await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
 
     try {
+      expect(client.getServerVersion()).toEqual({
+        name: "@nanohype/mcp",
+        version: PACKAGE_VERSION,
+      });
+
       const tools = await client.listTools();
       expect(tools.tools.length).toBeGreaterThan(0);
 

@@ -31,11 +31,19 @@
  *   NANOHYPE_GITHUB_TOKEN=<token>    optional GitHub API token for higher rate limits
  */
 
+import { createRequire } from "node:module";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { type CatalogSource, GitHubSource, LocalSource } from "@nanohype/sdk";
 import { registerResources } from "./resources.js";
 import { registerTools } from "./tools.js";
+
+/**
+ * The version a client reads from `initialize` is the published package's.
+ * package.json sits one directory above both src/ and dist/, and npm ships it
+ * in every tarball whatever `files` lists.
+ */
+export const SERVER_VERSION: string = createRequire(import.meta.url)("../package.json").version;
 
 export function makeSource(env: NodeJS.ProcessEnv = process.env): CatalogSource {
   if (env.NANOHYPE_SOURCE === "local") {
@@ -56,7 +64,7 @@ export function makeSource(env: NodeJS.ProcessEnv = process.env): CatalogSource 
 
 export function createServer(source: CatalogSource): Server {
   const server = new Server(
-    { name: "@nanohype/mcp", version: "0.1.0" },
+    { name: "@nanohype/mcp", version: SERVER_VERSION },
     { capabilities: { resources: {}, tools: {} } },
   );
   registerResources(server, source);
