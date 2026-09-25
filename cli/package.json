@@ -30,7 +30,7 @@
     "@nanohype/sdk": "^0.3.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.10",
+    "@biomejs/biome": "2.5.14",
     "@types/node": "^25.8.0",
     "@vitest/coverage-v8": "^4.1.11",
     "typescript": "^7.0.0",
