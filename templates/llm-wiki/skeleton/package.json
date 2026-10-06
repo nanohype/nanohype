@@ -29,7 +29,7 @@
     "@anthropic-ai/sdk": "^0.120.0",
     "commander": "^15.0.0",
     "hono": "^4.7.0",
-    "simple-git": "^3.27.0",
+    "simple-git": "^4.0.1",
     "yaml": "^2.7.0",
     "zod": "^4.0.0"
   },
