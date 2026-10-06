@@ -1,0 +1,24 @@
+# Advisories with no fix reachable through the dependency that pulls them in.
+# Each entry names why it does not apply here and expires, so the scan raises it
+# again on its own: by then either a patched release exists or the entry gets
+# re-argued, not silently renewed.
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2026-12-05T00:00:00Z
+reason = """
+braces 3.0.3 (stack exhaustion on deeply nested patterns) is the newest release
+and is listed as last-affected: there is no patched version to move to. It is a
+dev dependency only, through markdownlint-cli2 -> micromatch 4.0.8, and expands
+the glob patterns this repository's own lint configuration declares.
+"""
+
+[[IgnoredVulns]]
+id = "GHSA-238p-pmpm-9mq7"
+ignoreUntil = 2026-12-05T00:00:00Z
+reason = """
+katex is fixed in 0.18.2, but its only consumer here, markdownlint-cli2 ->
+markdownlint -> micromark-extension-math 3.1.0 (the newest release), declares
+katex ^0.16.0, which cannot reach it. Dev dependency only; it renders math in
+this repository's own Markdown at lint time.
+"""
