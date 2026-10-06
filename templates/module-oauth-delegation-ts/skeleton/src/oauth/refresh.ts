@@ -80,7 +80,7 @@ export class TokenRefresher {
   ): Promise<TokenGrant | null> {
     const key = this.key(userId, provider);
     const existing = this.inflight.get(key);
-    if (existing) return existing;
+    if (existing !== undefined) return existing;
 
     const task = this.doRefresh(userId, provider, previous).finally(() => {
       this.inflight.delete(key);
