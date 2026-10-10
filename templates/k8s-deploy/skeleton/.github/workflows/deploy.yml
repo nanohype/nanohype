@@ -43,7 +43,7 @@ jobs:
             type=ref,event=branch
 
       - name: Build and push
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           push: true
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up kubectl
-        uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d # v5
+        uses: azure/setup-kubectl@bda439f5f36b99b262ebdcd3613869bddb064c8e # v5
 
       - name: Configure kubeconfig
         run: |
