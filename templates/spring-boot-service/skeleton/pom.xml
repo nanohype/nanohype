@@ -22,7 +22,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springdoc.version>3.1.1</springdoc.version>
-        <opentelemetry.version>1.66.0</opentelemetry.version>
+        <opentelemetry.version>1.67.0</opentelemetry.version>
         <logstash-logback.version>9.0</logstash-logback.version>
         <testcontainers.version>1.21.4</testcontainers.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
