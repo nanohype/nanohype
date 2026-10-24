@@ -27,7 +27,7 @@
         <testcontainers.version>1.21.4</testcontainers.version>
         <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
         <checkstyle.version>14.3.0</checkstyle.version>
-        <spotbugs-plugin.version>4.10.4.1</spotbugs-plugin.version>
+        <spotbugs-plugin.version>4.10.5.0</spotbugs-plugin.version>
     </properties>
 
     <dependencies>
