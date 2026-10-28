@@ -9,7 +9,7 @@ Usage metering, invoice generation, and payment processing with Stripe.
 - Invoice generation with line items, totals, and JSON/Markdown export, under an ID derived from the customer, billing period and sequence within it
 - Late usage billed once, under the period's next invoice ([Charges](skeleton/README.md#charges))
 - A billing service facade over customers, subscriptions, charges, invoice listing, and webhooks, all through the one provider it initialized
-- Stripe charges that resume rather than repeat when an invoice ID is charged again, and never report an invoice that bills other content as paid ([How a charge resumes](skeleton/README.md#how-a-charge-resumes))
+- Stripe charges that resume rather than repeat when an invoice ID is charged again, never report an invoice that bills other content as paid, and turn off Stripe's automatic collection on one a concurrent charge left billing what no charge was given ([How a charge resumes](skeleton/README.md#how-a-charge-resumes))
 - Typed charge results: what a paid charge collected, or a failure `code` ([Charges](skeleton/README.md#charges))
 - A charge deadline through an `AbortSignal` ([Charge deadline](skeleton/README.md#charge-deadline))
 - A circuit breaker that opens on Stripe outages and never on a declined card or other 4xx

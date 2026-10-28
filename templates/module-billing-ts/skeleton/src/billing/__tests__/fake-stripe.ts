@@ -159,7 +159,8 @@ const now = () => Math.floor(Date.now() / 1000);
 /**
  * A Stripe account holding invoices: create, list newest first with a
  * `created` lower bound, add and delete invoice items on a draft, delete a
- * draft, finalize, pay, and page through lines. A write carrying an
+ * draft, turn automatic collection on or off on a draft or open invoice,
+ * finalize, pay, and page through lines. A write carrying an
  * idempotency key Stripe has seen gets the stored answer back, marked
  * `Idempotent-Replayed: true`, without acting again, and one that carries the
  * key with other parameters or on another endpoint is refused with an
@@ -280,6 +281,15 @@ export function fakeStripeAccount(
       }
       invoices.splice(invoices.indexOf(invoice), 1);
       return { body: { id: invoice.id, object: "invoice", deleted: true } };
+    }
+    // Stripe takes `auto_advance` on a draft or open invoice only.
+    if (action === undefined && method === "POST") {
+      if (invoice.status !== "draft" && invoice.status !== "open") {
+        return stripeRefusal(400, `You can't update auto_advance on a ${invoice.status} invoice.`);
+      }
+      const autoAdvance = body.get("auto_advance");
+      if (autoAdvance !== null) invoice.autoAdvance = autoAdvance === "true";
+      return { body: invoiceObject(invoice) };
     }
     if (action === "finalize") {
       if (invoice.status !== "draft") {

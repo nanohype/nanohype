@@ -49,6 +49,11 @@ export interface PaymentProvider {
    * - An invoice the charge issues itself is checked the same way before it
    *   is paid, so a charge whose draft a concurrent charge of the ID with
    *   other content emptied reports `invoice_content_changed`, not paid.
+   *   Such an invoice bills what no charge asked for. A provider that
+   *   collects an open invoice on its own stops collecting it before it
+   *   reports the change, here or on a later charge of the ID with the
+   *   content the invoice was created for, and reports
+   *   `collection_hold_failed` when it cannot.
    *
    * `collected` is what this call's own payment request collected, so a
    * payment is counted by at most one call however many charges reach it.
@@ -65,8 +70,9 @@ export interface PaymentProvider {
    * is closed, so it reports neither.
    *
    * Once `options.signal` aborts, the charge makes no further call to the
-   * payment system and reports `aborted`. A call already in flight is not
-   * interrupted.
+   * payment system and reports `aborted`, or `collection_hold_failed` when
+   * the call it skips would have stopped collection on an invoice that bills
+   * other content. A call already in flight is not interrupted.
    *
    * Every outcome is reported as a ChargeResult. The built-in providers throw
    * only when they are not running, and the billing service passes any throw

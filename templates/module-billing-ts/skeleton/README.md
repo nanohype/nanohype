@@ -83,13 +83,15 @@ const billing = await createBillingService({
     timeoutMs: 20_000,     // per attempt
     maxNetworkRetries: 2,  // after a connection error, 409, 5xx, or Stripe-Should-Retry: true
     chargeLeadMs: 0,       // how far ahead of a period an invoice may be charged
+    lookbackMs: 0,         // how far before a period a charge looks for an earlier one
   },
 });
 ```
 
 `timeoutMs`, `maxNetworkRetries` and `chargeLeadMs` default to the
 `DEFAULT_STRIPE_*` constants in `src/billing/providers/stripe-config.ts`, which
-also holds the `StripeConfig` type and its validation.
+also holds the `StripeConfig` type and its validation. `lookbackMs` defaults to
+`chargeLeadMs`, and a config with a `lookbackMs` below `chargeLeadMs` is refused.
 
 `stripe.httpClient` replaces the SDK's transport — `Stripe.createFetchHttpClient()`
 on a runtime without `node:http`, or a client over a fake `fetch` in tests. The
@@ -97,9 +99,10 @@ SDK calls its `getClientName()` and `makeRequest()`, and the config is refused
 without both.
 
 `stripe.chargeLeadMs` is 0 for billing in arrears. A service that bills in
-advance sets it to the furthest ahead of a period it charges. Raise it freely;
-lower it only once no invoice charged under the larger lead will be charged
-again. See [Where a charge looks](#where-a-charge-looks).
+advance sets it to the furthest ahead of a period it charges. Raise it freely.
+To lower it, set `stripe.lookbackMs` to the lead it replaces in the same
+change, and lower `lookbackMs` only once no invoice charged under the larger
+lead will be charged again. See [Where a charge looks](#where-a-charge-looks).
 
 ### Mock
 
@@ -224,7 +227,8 @@ registered for its type. It never throws; it returns a `WebhookResult`:
 | `invoice_closed` | The invoice an earlier charge of this ID left is void or uncollectible | Nothing further is charged under this ID |
 | `lookup_exhausted` | A read stopped at `MAX_LISTED`. Without `externalId`, the lookup read that many of the customer's invoices in its window without finding an earlier charge of this ID, so it cannot tell whether there was one. With `externalId`, it found that Stripe invoice and could not read all of its lines to compare them. Nothing was written | Without `externalId`: search Stripe for an invoice with metadata `invoice_id` set to this ID. If there is one, reconcile it; if not, charge again with `{ assumeUncharged: true }`. With `externalId`: compare that Stripe invoice with this invoice by hand |
 | `before_charge_window` | The invoice's period starts more than `stripe.chargeLeadMs` from now. Nothing was written | Charge it once the window opens, or raise `stripe.chargeLeadMs` to how far ahead of a period you bill |
-| `invoice_content_changed` | A Stripe invoice issued under this ID bills other content; `billedAmount` is what it bills. Usually an earlier charge issued it; it can also be the invoice this charge finalized, when a charge of the ID with other content ran at the same time | Generate with `{ billed }` and charge that; see below. For two charges at once, see [Where a charge looks](#where-a-charge-looks) |
+| `invoice_content_changed` | A Stripe invoice issued under this ID bills other content; `billedAmount` is what it bills. Usually an earlier charge issued it; it can also be the invoice this charge finalized, when a charge of the ID with other content ran at the same time, and Stripe's automatic collection on that invoice is off | Generate with `{ billed }` and charge that; see below. For two charges at once, see [Where a charge looks](#where-a-charge-looks) |
+| `collection_hold_failed` | An open Stripe invoice issued under this ID for this content bills other content, as when a charge of the ID with other content ran at the same time, and turning off Stripe's automatic collection on it failed; `error` says why. Nothing was paid, and Stripe can still collect `billedAmount` | Turn off automatic collection on `externalId`, or void it, in Stripe. Charging again sends the hold again; Stripe replays a failure it stored under the hold's key while it holds the key |
 
 The invoice ID derives from the customer, the period, and the invoice's
 sequence within the period, not from what the invoice bills. Usage recorded
@@ -266,14 +270,20 @@ invoice ID wrote, then acts on what it finds:
 | Draft created for other content, or carrying a line this content does not have | Deletes its lines, creates a replacement draft, deletes the emptied draft, finishes the replacement | Paid, or the payment's failure |
 | Open, billing this content | Pays it | Paid, or the payment's failure |
 | Paid, billing this content | Nothing | Paid, `collected: 0` |
-| Open or paid, billing other content | Nothing | `invoice_content_changed` |
+| Open, created for this content and billing other content, with automatic collection on | Turns off Stripe's automatic collection on it | `invoice_content_changed`, or `collection_hold_failed` when that fails |
+| Open and created for other content, open with automatic collection off, or paid, billing other content | Nothing | `invoice_content_changed` |
 | Void or uncollectible | Nothing; its lines are not read | `invoice_closed` |
 
 A charge that finalizes an invoice, whether it created the draft or found it,
 reads the finalized invoice's lines back and compares them with the invoice it
 is charging before it pays. An invoice that bills other content is reported as
 `invoice_content_changed` with its `externalId` and `billedAmount`, and is not
-paid.
+paid. Finalizing turns Stripe's automatic collection on, so on an open one the
+charge turns it off first (`auto_advance: false`).
+
+"Created for this content" means the invoice's `invoice_content` digest is this
+invoice's. An open invoice created for other content is an earlier charge's,
+billing what that charge was given, and Stripe goes on collecting it.
 
 What a charge writes on Stripe, and reads back to decide:
 
@@ -301,6 +311,7 @@ Idempotency keys, each prefixed `billing-invoice:<invoice ID>:`:
 | Add line `n` | `<draft>:item-<n>` |
 | Finalize | `<draft>:finalize` |
 | Pay | `<invoice>:pay` |
+| Turn off automatic collection | `<invoice>:hold` |
 
 Deleting a stale draft's items and the draft itself carries no key.
 
@@ -336,16 +347,19 @@ Deleting a stale draft's items and the draft itself carries no key.
 ### Where a charge looks
 
 The lookup reads the customer's Stripe invoices created since the period's
-start, less `stripe.chargeLeadMs` and an hour for clock skew, and stops after
+start, less `stripe.lookbackMs` and an hour for clock skew, and stops after
 `MAX_LISTED` of them (`src/billing/providers/stripe.ts`). The window hangs from
 the period, not from when the invoice was generated, because a regenerated
-invoice carries a later creation time. The same lead bounds when a charge may
-run: a charge more than `chargeLeadMs` ahead of its period's start is refused
-as `before_charge_window`, so every charge of an ID lands inside the window
-every later charge of it reads, as long as the lead does not shrink. The lines
-of the earlier charge's invoice, once it is found, are read to the same
-`MAX_LISTED` bound, and an invoice with more lines than that is reported as
-`lookup_exhausted` rather than compared in part.
+invoice carries a later creation time. `stripe.chargeLeadMs` bounds when a
+charge may run: a charge more than `chargeLeadMs` ahead of its period's start
+is refused as `before_charge_window`. `lookbackMs` is never below
+`chargeLeadMs`, so every charge of an ID lands inside the window every later
+charge of it reads, as long as `lookbackMs` does not shrink. A larger
+`lookbackMs` reads more of a customer's invoices per charge, and a busy
+customer's lookup reaches `MAX_LISTED` sooner. The lines of the earlier
+charge's invoice, once it is found, are read to the same `MAX_LISTED` bound,
+and an invoice with more lines than that is reported as `lookup_exhausted`
+rather than compared in part.
 
 A charge can still be repeated in these cases:
 
@@ -355,17 +369,24 @@ A charge can still be repeated in these cases:
   That option is the caller's word that none does. It applies to the search
   alone: a read of an earlier charge's lines cut short at `MAX_LISTED` reports
   `lookup_exhausted` whatever the options.
-- **`stripe.chargeLeadMs` was lowered while an invoice charged under the larger
-  lead could still be charged again**, as a retry or as its period
-  regenerated. The window shrinks with the lead, so a charge made further
-  ahead of its period than the lowered lead lies outside it. Lower the lead
-  only once no such invoice will be charged again.
+- **`stripe.lookbackMs` was lowered while an invoice charged under a larger
+  one could still be charged again**, as a retry or as its period
+  regenerated. That includes lowering `chargeLeadMs` with no `lookbackMs`
+  set, since it then follows the lead. The window shrinks with it, so a charge
+  made further ahead of its period than the lowered value reaches lies outside
+  it. Keep `lookbackMs` at the largest lead any charge ran under until no such
+  invoice will be charged again.
 - **Two charges of one ID with different content run at once.** They are not
   reconciled against each other: one can empty a draft the other is still
-  finishing. The charge that finalizes it reads the lines back and reports
-  `invoice_content_changed` rather than paying, but an invoice left owing
-  something stays open, where Stripe's automatic collection can still collect
-  it; void or reconcile it in Stripe. Run a period's charges from one worker.
+  finishing. The charge that finalizes it reads the lines back, turns off
+  Stripe's automatic collection on an invoice left owing something, and reports
+  `invoice_content_changed` rather than paying. That invoice stays open and
+  unpaid, billing what neither charge was given, until it is voided or
+  reconciled in Stripe. When turning collection off fails, the charge reports
+  `collection_hold_failed`, and Stripe can still collect the invoice until its
+  automatic collection is turned off, in Stripe or by a later charge of the ID
+  with the content the invoice was created for. Run a period's charges from
+  one worker.
 
 ### Charge deadline
 
@@ -400,8 +421,9 @@ resumes it.
 - [ ] Persist usage records to a database (in-memory tracker is ephemeral)
 - [ ] Persist each invoice you charge: `generateInvoice(customerId, period, { billed })` takes the period's charged invoices to bill late usage
 - [ ] Handle `invoice_content_changed` by charging the invoice `{ billed }` generates, `rate_limited` by charging again after a backoff, and `lookup_exhausted` by checking Stripe before `assumeUncharged`
+- [ ] Alert on `collection_hold_failed`: Stripe can still collect the invoice it names until its automatic collection is turned off
 - [ ] Run a period's charges from one worker
-- [ ] Billing in advance: set `stripe.chargeLeadMs` to how far ahead of a period you charge, and lower it only once no invoice charged under the larger lead will be charged again
+- [ ] Billing in advance: set `stripe.chargeLeadMs` to how far ahead of a period you charge. To lower it, set `stripe.lookbackMs` to the lead it replaces, and lower that only once no invoice charged under the larger lead will be charged again
 
 ## Development
 

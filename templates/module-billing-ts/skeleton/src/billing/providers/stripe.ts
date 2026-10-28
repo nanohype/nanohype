@@ -8,6 +8,7 @@ import type {
   BillingWebhookEvent,
   ChargeContentChanged,
   ChargeFailed,
+  ChargeHoldFailed,
   ChargeOptions,
   ChargeResult,
   Customer,
@@ -43,7 +44,8 @@ import type { PaymentProvider } from "./types.js";
 //     regenerated charge resumes instead of paying twice. Where its search
 //     could miss an earlier charge, it refuses rather than charge again.
 //     What it finalizes is read back and paid only when it bills this
-//     invoice
+//     invoice; when it does not, Stripe's automatic collection on it is
+//     turned off before the charge reports it
 //   - Webhook verification via stripe.webhooks.constructEvent()
 //
 
@@ -99,7 +101,8 @@ type StripeCall = <T>(fn: () => Promise<T>) => Promise<T>;
 /**
  * The idempotency key for one step of charging the invoice `invoiceId`:
  * `create`, `create-replacing-<draft>`, or a write to one Stripe invoice,
- * `<in_...>:item-<index>`, `<in_...>:finalize` or `<in_...>:pay`.
+ * `<in_...>:item-<index>`, `<in_...>:finalize`, `<in_...>:pay` or
+ * `<in_...>:hold`.
  */
 function chargeKey(invoiceId: string, step: string): string {
   return `billing-invoice:${invoiceId}:${step}`;
@@ -127,9 +130,11 @@ function contentDigest(invoice: Invoice): string {
 
 /**
  * The earliest `created` time, in Unix seconds, the search for an earlier
- * charge of `invoice` reads from: the start of its period, less `leadMs` and
- * CLOCK_SKEW_SECONDS. chargeInvoice charges nothing before the period start
- * less `leadMs`, so every charge of the invoice's ID lands inside the window.
+ * charge of `invoice` reads from: the start of its period, less `lookbackMs`
+ * and CLOCK_SKEW_SECONDS. chargeInvoice charges nothing before the period
+ * start less the charge lead, and the config schema refuses a `lookbackMs`
+ * below the lead, so every charge of the invoice's ID lands inside the
+ * window.
  *
  * The window hangs from the period rather than from when the invoice was
  * generated. An invoice regenerated for the same period carries a later
@@ -137,10 +142,10 @@ function contentDigest(invoice: Invoice): string {
  * as one billed in advance of its period is. undefined when the period start
  * does not parse, and the search is bounded by MAX_LISTED alone.
  */
-function chargedSince(invoice: Invoice, leadMs: number): number | undefined {
+function chargedSince(invoice: Invoice, lookbackMs: number): number | undefined {
   const start = Date.parse(invoice.periodStart);
   if (Number.isNaN(start)) return undefined;
-  return Math.floor((start - leadMs) / 1000) - CLOCK_SKEW_SECONDS;
+  return Math.floor((start - lookbackMs) / 1000) - CLOCK_SKEW_SECONDS;
 }
 
 /**
@@ -211,6 +216,11 @@ function chargedContent(
   );
   if (atIndex.some((at) => at.length !== 1)) return undefined;
   return { currency: charged.currency, lineItems: atIndex.map(([line]) => lineItemOf(line!)) };
+}
+
+/** The message of an error a Stripe call threw, or the thrown value as text. */
+function messageOf(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 /** The HTTP status a failed Stripe call was answered with; undefined when none came back. */
@@ -378,6 +388,7 @@ function createStripeProvider(): PaymentProvider {
   let client: Stripe | null = null;
   let webhookSecret: string | null = null;
   let chargeLeadMs = DEFAULT_STRIPE_CHARGE_LEAD_MS;
+  let lookbackMs = DEFAULT_STRIPE_CHARGE_LEAD_MS;
 
   const breaker = new CircuitBreaker({
     failureThreshold: 5,
@@ -483,10 +494,66 @@ function createStripeProvider(): PaymentProvider {
   }
 
   /**
+   * The result a charge reports for `changed`, found on `charged`, a Stripe
+   * invoice issued under `invoice`'s ID. An open invoice created for this
+   * invoice's content that bills other content bills what no charge asked
+   * for: a charge of the ID for other content emptied its draft in part
+   * before it was finalized. Finalizing turned Stripe's automatic collection
+   * on, and Stripe would collect it, so collection is turned off before the
+   * change is reported, keyed by the invoice ID and that Stripe invoice,
+   * unless it is off already. A failure to turn it off is reported as
+   * collection_hold_failed. An invoice created for other content is an
+   * earlier charge's, billing what that charge asked for, and Stripe goes on
+   * collecting it.
+   */
+  async function heldChange(
+    stripe: Stripe,
+    invoice: Invoice,
+    charged: Stripe.Invoice,
+    changed: ChargeContentChanged,
+    call: StripeCall,
+  ): Promise<ChargeContentChanged | ChargeHoldFailed> {
+    const unasked =
+      charged.status === "open" &&
+      charged.metadata?.[CONTENT_METADATA_KEY] === contentDigest(invoice);
+    if (!unasked || charged.auto_advance === false) return changed;
+
+    try {
+      await call(() =>
+        stripe.invoices.update(
+          charged.id,
+          { auto_advance: false },
+          { idempotencyKey: chargeKey(invoice.id, `${charged.id}:hold`) },
+        ),
+      );
+    } catch (err) {
+      const error = messageOf(err);
+      logger.error("Stripe automatic collection left on for an invoice that bills other content", {
+        invoiceId: invoice.id,
+        externalId: charged.id,
+        error,
+      });
+      return {
+        ok: false,
+        code: "collection_hold_failed",
+        externalId: charged.id,
+        billedAmount: changed.billedAmount,
+        error: `${changed.error}; turning off its automatic collection failed, so Stripe can still collect it: ${error}`,
+      };
+    }
+    logger.warn("Stripe automatic collection turned off on an invoice that bills other content", {
+      invoiceId: invoice.id,
+      externalId: charged.id,
+    });
+    return changed;
+  }
+
+  /**
    * Resume from an invoice an earlier charge issued. A void or uncollectible
    * one takes no payment and is reported before any line is read. An open or
    * paid one is checked against `invoice` line for line before anything
-   * else, and one that bills other content is reported and left as it is.
+   * else, and one that bills other content is reported, with its automatic
+   * collection held where heldChange holds it, and otherwise left as it is.
    */
   async function resumeIssued(
     stripe: Stripe,
@@ -498,7 +565,7 @@ function createStripeProvider(): PaymentProvider {
 
     const lines = await comparableLines(stripe, invoice, issued, call);
     const changed = contentChanged(invoice, issued, lines);
-    if (changed !== undefined) return changed;
+    if (changed !== undefined) return heldChange(stripe, invoice, issued, changed, call);
 
     if (issued.status === "paid") return outcome(invoice, issued, 0);
     const paid = await payInvoice(stripe, invoice, issued, call);
@@ -628,6 +695,7 @@ function createStripeProvider(): PaymentProvider {
 
       webhookSecret = config.stripe?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null;
       chargeLeadMs = config.stripe?.chargeLeadMs ?? DEFAULT_STRIPE_CHARGE_LEAD_MS;
+      lookbackMs = config.stripe?.lookbackMs ?? chargeLeadMs;
 
       // Lazy load the Stripe SDK
       //
@@ -706,10 +774,12 @@ function createStripeProvider(): PaymentProvider {
       const stripe = requireClient();
       const { signal } = options;
 
-      // A charge made before the window opens would sit outside the search
-      // every later charge of this ID makes, so it is refused before anything
-      // is written. A period start that does not parse opens no window, and
-      // the search then runs back to MAX_LISTED invoices with no time bound.
+      // A charge made before the window opens could sit outside the search a
+      // later charge of this ID makes, so it is refused before anything is
+      // written. The search reaches back `lookbackMs`, which the config schema
+      // refuses below the lead. A period start that does not parse opens no
+      // window, and the search then runs back to MAX_LISTED invoices with no
+      // time bound.
       const opens = Date.parse(invoice.periodStart) - chargeLeadMs;
       if (Date.now() < opens) {
         logger.warn("Stripe charge refused before its window opens", {
@@ -741,7 +811,9 @@ function createStripeProvider(): PaymentProvider {
       // bill what this invoice bills, line for line: one that does is paid if
       // it is open and reported if it is paid, and one that does not is
       // reported as invoice_content_changed. A draft is finished when it was
-      // created for this content and replaced when it was not. A Stripe
+      // created for this content and replaced when it was not. An open invoice
+      // that bills other content than it was created for has Stripe's
+      // automatic collection turned off first (heldChange). A Stripe
       // invoice is created only when the search found no earlier charge and
       // read the whole window doing so; a search cut short at MAX_LISTED
       // reports lookup_exhausted unless the caller assumes the ID uncharged.
@@ -762,7 +834,7 @@ function createStripeProvider(): PaymentProvider {
       let externalId: string | undefined;
 
       try {
-        const since = chargedSince(invoice, chargeLeadMs);
+        const since = chargedSince(invoice, lookbackMs);
         const { earlier, exhausted } = await earlierCharge(stripe, invoice, since, step);
         if (exhausted) {
           logger.warn("Stripe invoice lookup stopped at its bound with no earlier charge found", {
@@ -802,17 +874,19 @@ function createStripeProvider(): PaymentProvider {
         // between this charge's read of them and its finalize, and Stripe then
         // finalizes what is left. A finalized invoice cannot change, so
         // its lines are read back once, and it is paid, or reported paid, only
-        // when they bill this invoice.
+        // when they bill this invoice. One left open that does not is held
+        // from Stripe's automatic collection before it is reported.
         const lines = await comparableLines(stripe, invoice, finalized, step);
         const changed = contentChanged(invoice, finalized, lines);
-        if (changed !== undefined) return changed;
+        if (changed !== undefined)
+          return await heldChange(stripe, invoice, finalized, changed, step);
         // Stripe marks an invoice that owes nothing paid when it finalizes it.
         if (finalized.status !== "open") return outcome(invoice, finalized, collectedBy(finalized));
         const paid = await payInvoice(stripe, invoice, finalized, step);
         return outcome(invoice, paid, collectedBy(paid));
       } catch (err) {
         const code = failureCode(err, signal);
-        const error = err instanceof Error ? err.message : String(err);
+        const error = messageOf(err);
         logger.error("Stripe charge failed", { invoiceId: invoice.id, externalId, code, error });
         return { ok: false, code, externalId, error };
       }

@@ -263,9 +263,12 @@ export interface ChargeOptions {
   /**
    * Stops the charge before its next payment-provider call once aborted; a
    * charge the signal stopped reports `code: "aborted"`, and charging the same
-   * invoice again resumes it. A call already in flight is not interrupted, so
-   * the charge settles when that call does, within the provider's request
-   * timeout and retry budget.
+   * invoice again resumes it. A signal that stops the call that would have
+   * held collection on an invoice billing other content reports
+   * `collection_hold_failed` instead, since the provider can still collect
+   * that invoice. A call already in flight is not interrupted, so the charge
+   * settles when that call does, within the provider's request timeout and
+   * retry budget.
    */
   signal?: AbortSignal;
 
@@ -374,7 +377,11 @@ export interface ChargeFailed {
  *
  * It can also be the invoice this charge finalized: two charges of one ID
  * with different content that run at once can empty each other's draft
- * before it is finalized. Run a period's charges from one worker.
+ * before it is finalized. Such an invoice bills what no charge asked for. A
+ * provider that collects open invoices on its own stops collecting one left
+ * owing something before reporting it, and that invoice stays open and unpaid
+ * until it is voided or reconciled in the payment system. Run a period's
+ * charges from one worker.
  */
 export interface ChargeContentChanged {
   ok: false;
@@ -391,11 +398,34 @@ export interface ChargeContentChanged {
   billedAmount: number;
 }
 
+/**
+ * An open invoice issued under this invoice ID bills other content than the
+ * content it was created for, as ChargeContentChanged describes for two
+ * charges that run at once, and stopping the provider's automatic collection
+ * on it failed. Nothing was paid, and the provider can still collect what
+ * that invoice bills: turn its automatic collection off, or void it, in the
+ * payment system. Charging the invoice again tries the hold again.
+ */
+export interface ChargeHoldFailed {
+  ok: false;
+
+  code: "collection_hold_failed";
+
+  /** Names the issued invoice and both totals, and why stopping its collection failed. */
+  error: string;
+
+  /** The provider's ID for the issued invoice the provider can still collect. */
+  externalId: string;
+
+  /** What that invoice bills, in the smallest currency unit: the sum of its lines. */
+  billedAmount: number;
+}
+
 /** Result of charging an invoice through a payment provider. */
-export type ChargeResult = ChargePaid | ChargeFailed | ChargeContentChanged;
+export type ChargeResult = ChargePaid | ChargeFailed | ChargeContentChanged | ChargeHoldFailed;
 
 /** Every code a charge that did not leave its invoice paid reports. */
-export type ChargeFailureCode = (ChargeFailed | ChargeContentChanged)["code"];
+export type ChargeFailureCode = (ChargeFailed | ChargeContentChanged | ChargeHoldFailed)["code"];
 
 /** A verified webhook event from the payment provider. */
 export interface BillingWebhookEvent {

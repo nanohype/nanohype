@@ -18,6 +18,7 @@ import {
   fakeStripeAccount,
   fakeStripeApi,
   hangingStripeApi,
+  type Intercept,
   noNetwork,
   type SentRequest,
   signedEvent,
@@ -1297,7 +1298,7 @@ describe("stripe provider chargeInvoice", () => {
       }
     });
 
-    it("searches back only as far as the lead it runs with, so a lowered lead misses a charge made further ahead", async () => {
+    it("searches back as far as the lead when lookbackMs is unset, so a lowered lead alone misses a charge made further ahead", async () => {
       // The first charge ran three days before the period started, under a
       // lead of seven days; the lead has since been lowered to one.
       const account = fakeStripeAccount();
@@ -1321,6 +1322,44 @@ describe("stripe provider chargeInvoice", () => {
         "inv-local-1",
         "inv-local-1",
       ]);
+    });
+
+    it("finds a charge made under a larger lead once the lead is lowered with lookbackMs kept at it", async () => {
+      const account = fakeStripeAccount();
+      const paid = account.seed({
+        customer: CUSTOMER,
+        currency: "eur",
+        status: "paid",
+        created: (PERIOD_START - 3 * DAY) / 1000,
+        metadata: { invoice_id: "inv-local-1" },
+        lines: chargedLines(invoiceFixture()),
+      });
+      const provider = await initialized(account.httpClient, {
+        chargeLeadMs: DAY,
+        lookbackMs: 7 * DAY,
+      });
+
+      const result = await provider.chargeInvoice(invoiceFixture());
+
+      expect(account.sent[0]?.query.get("created[gte]")).toBe(
+        String((PERIOD_START - 7 * DAY) / 1000 - 3600),
+      );
+      expect(result).toEqual({ ok: true, externalId: paid.id, collected: 0 });
+      expect(account.invoices).toHaveLength(1);
+    });
+
+    it("refuses a charge further ahead of the period than the lead however far back lookbackMs reaches", async () => {
+      const api = noNetwork();
+      const provider = await initialized(api.httpClient, {
+        chargeLeadMs: DAY,
+        lookbackMs: 7 * DAY,
+      });
+      const periodStart = new Date(Date.now() + 2 * DAY).toISOString();
+
+      const result = await provider.chargeInvoice(invoiceFixture({ periodStart }));
+
+      expect(result).toMatchObject({ ok: false, code: "before_charge_window" });
+      expect(api.sent).toEqual([]);
     });
   });
 
@@ -1668,6 +1707,10 @@ describe("stripe provider chargeInvoice", () => {
   });
 
   describe("racing a charge of the same ID with other content", () => {
+    /** The request that turns off Stripe's automatic collection on in_1. */
+    const isCollectionHold = (request: SentRequest) =>
+      request.method === "POST" && request.path === "/v1/invoices/in_1";
+
     /**
      * Charges the fixture, and once its finalize of in_1 is in flight, starts
      * a charge of the same ID for the earlier content. That charge reads in_1
@@ -1675,8 +1718,19 @@ describe("stripe provider chargeInvoice", () => {
      * request `holdAt` matches until the finalize has landed: the
      * interleaving in which the other charge empties the draft this one read
      * as its own before this one finalizes it.
+     *
+     * `answerHold` answers the fixture's charge when it turns off automatic
+     * collection on in_1. The fixture's charge runs with `signal`, and
+     * `onFinalized` runs once its finalize has landed.
      */
-    async function race(holdAt: (request: SentRequest) => boolean) {
+    async function race(
+      holdAt: (request: SentRequest) => boolean,
+      {
+        answerHold = (_request, apply) => apply(),
+        signal,
+        onFinalized = () => {},
+      }: { answerHold?: Intercept; signal?: AbortSignal; onFinalized?: () => void } = {},
+    ) {
       let reachHold = () => {};
       const held = new Promise<void>((resolve) => {
         reachHold = resolve;
@@ -1692,8 +1746,10 @@ describe("stripe provider chargeInvoice", () => {
           await held;
           const answer = apply();
           landFinalize();
+          onFinalized();
           return answer;
         }
+        if (isCollectionHold(request)) return answerHold(request, apply);
         if (holdAt(request)) {
           reachHold();
           await landed;
@@ -1702,10 +1758,21 @@ describe("stripe provider chargeInvoice", () => {
       });
       const provider = await initialized(account.httpClient);
 
-      const result = await provider.chargeInvoice(invoiceFixture());
+      const result = await provider.chargeInvoice(invoiceFixture(), { signal });
 
-      return { account, result, other: await other };
+      return { account, provider, result, other: await other };
     }
+
+    /** Holds the other charge once it has deleted in_1's first line and before it deletes its second. */
+    const emptiedInPart = (request: SentRequest) =>
+      request.method === "DELETE" && request.path === "/v1/invoiceitems/ii_5";
+
+    /** What in_1 bills once the other charge emptied it in part, against the fixture. */
+    const billsLess =
+      "Stripe invoice in_1 bills 400 eur for invoice inv-local-1, which totals 4900 eur";
+
+    /** The requests that turned off automatic collection on in_1. */
+    const collectionHolds = (account: FakeStripeAccount) => account.sent.filter(isCollectionHold);
 
     it("reports a draft the other charge emptied as content changed, though Stripe marked it paid", async () => {
       const { account, result, other } = await race(
@@ -1729,25 +1796,142 @@ describe("stripe provider chargeInvoice", () => {
         externalId: "in_6",
         error: "You can only delete draft invoices.",
       });
+      // Stripe collects nothing on a paid invoice, so there is no collection to hold.
+      expect(collectionHolds(account)).toEqual([]);
     });
 
-    it("leaves unpaid a draft the other charge had emptied in part", async () => {
-      const { account, result } = await race(
-        (request) => request.method === "DELETE" && request.path === "/v1/invoiceitems/ii_5",
-      );
+    it("turns off automatic collection on a draft the other charge had emptied in part, and leaves it unpaid", async () => {
+      const warn = vi.spyOn(logger, "warn");
+      const { account, result } = await race(emptiedInPart);
 
       expect(result).toEqual({
         ok: false,
         code: "invoice_content_changed",
         externalId: "in_1",
         billedAmount: 400,
-        error: "Stripe invoice in_1 bills 400 eur for invoice inv-local-1, which totals 4900 eur",
+        error: billsLess,
       });
+      const holds = collectionHolds(account);
+      expect(holds.map((r) => r.headers.get("idempotency-key"))).toEqual([key("in_1:hold")]);
+      expect(Object.fromEntries(holds[0]?.body ?? [])).toEqual({ auto_advance: "false" });
       expect(account.calls().filter(([, path]) => String(path).endsWith("/pay"))).toEqual([]);
       expect(account.invoices).toMatchObject([
-        { id: "in_1", status: "open", lines: [{ amount: 400 }] },
+        { id: "in_1", status: "open", autoAdvance: false, lines: [{ amount: 400 }] },
       ]);
+      expect(warn).toHaveBeenCalledWith(
+        "Stripe automatic collection turned off on an invoice that bills other content",
+        { invoiceId: "inv-local-1", externalId: "in_1" },
+      );
     });
+
+    it("reports collection_hold_failed when turning off automatic collection fails, and pays nothing", async () => {
+      const error = vi.spyOn(logger, "error");
+      const { account, result } = await race(emptiedInPart, {
+        answerHold: () => stripeRefusal(500, "An unknown error occurred.", "api_error"),
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        code: "collection_hold_failed",
+        externalId: "in_1",
+        billedAmount: 400,
+        error: `${billsLess}; turning off its automatic collection failed, so Stripe can still collect it: An unknown error occurred.`,
+      });
+      expect(account.calls().filter(([, path]) => String(path).endsWith("/pay"))).toEqual([]);
+      expect(account.invoices).toMatchObject([{ id: "in_1", status: "open", autoAdvance: true }]);
+      expect(error).toHaveBeenCalledWith(
+        "Stripe automatic collection left on for an invoice that bills other content",
+        { invoiceId: "inv-local-1", externalId: "in_1", error: "An unknown error occurred." },
+      );
+    });
+
+    it("reports a hold its signal stopped as collection_hold_failed, sending no hold", async () => {
+      const controller = new AbortController();
+      const { account, result } = await race(emptiedInPart, {
+        signal: controller.signal,
+        onFinalized: () => controller.abort(),
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        code: "collection_hold_failed",
+        externalId: "in_1",
+        billedAmount: 400,
+        error: `${billsLess}; turning off its automatic collection failed, so Stripe can still collect it: This operation was aborted`,
+      });
+      expect(collectionHolds(account)).toEqual([]);
+      expect(account.invoices).toMatchObject([{ id: "in_1", status: "open", autoAdvance: true }]);
+    });
+
+    it("turns off automatic collection when the invoice is charged again after a hold that failed", async () => {
+      let reachable = false;
+      const { account, provider, result } = await race(emptiedInPart, {
+        answerHold: (_request, apply) => {
+          if (!reachable) throw new TypeError("fetch failed");
+          return apply();
+        },
+      });
+      reachable = true;
+      account.sent.length = 0;
+
+      const retry = await provider.chargeInvoice(invoiceFixture());
+
+      expect(result).toMatchObject({
+        ok: false,
+        code: "collection_hold_failed",
+        externalId: "in_1",
+      });
+      expect(retry).toEqual({
+        ok: false,
+        code: "invoice_content_changed",
+        externalId: "in_1",
+        billedAmount: 400,
+        error: billsLess,
+      });
+      expect(account.calls()).toEqual([LOOKUP, ["POST", "/v1/invoices/in_1", key("in_1:hold")]]);
+      expect(account.invoices).toMatchObject([{ id: "in_1", status: "open", autoAdvance: false }]);
+    });
+
+    it("sends no second hold for an invoice whose automatic collection is already off", async () => {
+      const { account, provider } = await race(emptiedInPart);
+      account.forgetIdempotencyKeys();
+      account.sent.length = 0;
+
+      const again = await provider.chargeInvoice(invoiceFixture());
+
+      expect(again).toMatchObject({
+        ok: false,
+        code: "invoice_content_changed",
+        externalId: "in_1",
+      });
+      expect(account.calls()).toEqual([LOOKUP]);
+    });
+  });
+
+  it("leaves Stripe collecting an open invoice an earlier charge issued for other content", async () => {
+    let declining = true;
+    const account = fakeStripeAccount((request, apply) =>
+      declining && request.path.endsWith("/pay")
+        ? stripeRefusal(402, "Your card was declined.", "card_error")
+        : apply(),
+    );
+    const provider = await initialized(account.httpClient);
+    const first = await provider.chargeInvoice(earlierContent());
+    declining = false;
+    account.sent.length = 0;
+
+    const result = await provider.chargeInvoice(invoiceFixture());
+
+    expect(first).toMatchObject({ ok: false, code: "declined", externalId: "in_1" });
+    expect(result).toEqual({
+      ok: false,
+      code: "invoice_content_changed",
+      externalId: "in_1",
+      billedAmount: 4000,
+      error: "Stripe invoice in_1 bills 4000 eur for invoice inv-local-1, which totals 4900 eur",
+    });
+    expect(account.calls()).toEqual([LOOKUP]);
+    expect(account.invoices).toMatchObject([{ id: "in_1", status: "open", autoAdvance: true }]);
   });
 
   it("reports a payment Stripe accepted and has not settled as pending", async () => {

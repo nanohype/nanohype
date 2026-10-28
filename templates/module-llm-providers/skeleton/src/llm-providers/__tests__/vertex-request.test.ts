@@ -1,5 +1,6 @@
 import type { GoogleGenAIOptions } from "@google/genai";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { LlmProvider } from "../providers/types.js";
 import { createVertexProvider, type VertexProviderOptions } from "../providers/vertex.js";
 import { RequestTimeoutError } from "../resilience/request-timeout.js";
 import type { ChatMessage, ChatOptions, StreamResponse } from "../types.js";
@@ -16,7 +17,8 @@ import {
 // and refuses the SDK's own request timeout, whose timer outlives the
 // call. These hold the provider to the request it builds in both request
 // modes and the backend and API version it sends it to, to the usage a
-// stream reports, to authenticating through its credentials, to refusing
+// stream reports, to counting and pricing a thinking model's thoughts as
+// output in both modes, to authenticating through its credentials, to refusing
 // each client option that would send an API key or set the SDK's timeout,
 // to giving up on and aborting either mode at LLM_REQUEST_TIMEOUT_MS, and
 // to leaving no timer behind, and run it under the contract
@@ -36,6 +38,9 @@ const messages: ChatMessage[] = [
 
 const opts: ChatOptions = { model: "test-model", maxTokens: 64, temperature: 0.2, topP: 0.9 };
 
+/** A thinking model the pricing table prices. */
+const thinkingOpts: ChatOptions = { model: "gemini-2.5-pro", maxTokens: 64 };
+
 const googleAuthOptions = {
   authClient: {
     getRequestHeaders: async () => new Headers({ authorization: "Bearer test-token" }),
@@ -47,6 +52,21 @@ const client = { project: "test-project", location: "us-central1", googleAuthOpt
 const REPLY = {
   candidates: [{ content: { role: "model", parts: [{ text: "Hello." }] }, finishReason: "STOP" }],
   usageMetadata: { promptTokenCount: 12, candidatesTokenCount: 3 },
+};
+
+/**
+ * The reply from a thinking model: 40 tokens of thoughts besides the 3 of
+ * its candidate. `candidatesTokenCount` leaves the thoughts out, and Vertex
+ * AI bills them at the output rate.
+ */
+const THINKING_REPLY = {
+  ...REPLY,
+  usageMetadata: {
+    promptTokenCount: 12,
+    candidatesTokenCount: 3,
+    thoughtsTokenCount: 40,
+    totalTokenCount: 55,
+  },
 };
 
 /**
@@ -68,11 +88,11 @@ const STREAMED_REPLY = [
 ];
 
 /**
- * A `fetch` that answers as the Vertex AI API does, with `events` as
- * server-sent events for a streamed request. It keeps each request's URL,
- * headers and body.
+ * A `fetch` that answers as the Vertex AI API does: with `reply` for a
+ * request, and with `events` as server-sent events for a streamed request.
+ * It keeps each request's URL, headers and body.
  */
-function vertexApiFetch(events: object[] = [REPLY]) {
+function vertexApiFetch(events: object[] = [REPLY], reply: object = REPLY) {
   const sent: { url: string; headers: Headers; body: Record<string, unknown> }[] = [];
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
@@ -82,7 +102,7 @@ function vertexApiFetch(events: object[] = [REPLY]) {
         headers: { "content-type": "text/event-stream" },
       });
     }
-    return Response.json(REPLY);
+    return Response.json(reply);
   };
   return { sent, fetch };
 }
@@ -206,6 +226,30 @@ describe("vertex provider request", () => {
     expect(await drain(stream)).toBe("Hello.");
     expect((await stream.response).usage).toEqual({ inputTokens: 12, outputTokens: 3 });
   });
+
+  it.each([
+    ["a request", (provider: LlmProvider) => provider.chat(messages, thinkingOpts)],
+    [
+      "a stream",
+      async (provider: LlmProvider) => {
+        const stream = provider.streamChat(messages, thinkingOpts);
+        await drain(stream);
+        return stream.response;
+      },
+    ],
+  ])(
+    "counts a thinking model's thoughts as output tokens, and prices them, in %s",
+    async (_mode, call) => {
+      const { fetch } = vertexApiFetch([THINKING_REPLY], THINKING_REPLY);
+      vi.stubGlobal("fetch", fetch);
+
+      const response = await call(createVertexProvider({ client }));
+
+      expect(response.usage).toEqual({ inputTokens: 12, outputTokens: 43 });
+      // gemini-2.5-pro: $1.25 per million input tokens, $10 per million output.
+      expect(response.cost).toBeCloseTo((12 * 1.25 + 43 * 10) / 1_000_000, 12);
+    },
+  );
 
   const fromOptions = {
     source: "its options",

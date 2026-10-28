@@ -88,21 +88,32 @@ export interface StripeConfig {
    * billing in arrears; billing in advance sets it to the furthest ahead of a
    * period this service charges.
    *
-   * The lead bounds both ends of one window. A charge looks for an earlier
-   * charge of the same invoice ID among the customer's Stripe invoices
-   * created since the period start less this lead and an hour of clock skew,
-   * and chargeInvoice refuses to charge before the period start less this
-   * lead, reporting `before_charge_window`. Every charge of an ID therefore
-   * lands inside the window every later charge of it searches.
-   *
-   * That holds only while the lead does not shrink. A search uses the lead
-   * configured when it runs, so lowering the lead hides each charge made
-   * further ahead of its period than the lowered lead allows, and charging that
-   * invoice ID again creates and pays a second invoice. Raise the lead
-   * freely; lower it only once no invoice charged under the larger lead will
-   * be charged again, as a retry or as its period regenerated.
+   * chargeInvoice refuses to charge before the period start less this lead,
+   * reporting `before_charge_window`. `lookbackMs` is never less than the
+   * lead, so every charge of an ID lands inside the window every later charge
+   * of it searches. Raise the lead freely. To lower it, keep `lookbackMs` at
+   * the lead it replaces.
    */
   chargeLeadMs?: number;
+
+  /**
+   * How far before an invoice's period starts a charge searches for an
+   * earlier charge of the same invoice ID, in milliseconds: it reads the
+   * customer's Stripe invoices created since the period start less this and
+   * an hour of clock skew. Defaults to `chargeLeadMs`, and is refused below
+   * it, so the search reaches back to every charge the lead lets run.
+   *
+   * A search uses the value configured when it runs. Lowering it hides each
+   * charge made further ahead of its period than the lowered value reaches,
+   * and charging that invoice ID again creates and pays a second invoice.
+   * While this is unset, lowering `chargeLeadMs` lowers it too, so a change
+   * that lowers the lead sets this to the lead it replaces. Lower this only
+   * once no invoice charged under the larger lead will be charged again, as a
+   * retry or as its period regenerated. A larger value reads more of the
+   * customer's invoices per charge, so a busy customer's search reaches
+   * MAX_LISTED, and reports `lookup_exhausted`, sooner.
+   */
+  lookbackMs?: number;
 
   /**
    * HTTP client the SDK sends requests through. Defaults to the SDK's Node
@@ -125,22 +136,35 @@ function isHttpClient(value: unknown): boolean {
 /**
  * Refuses a key that is not a secret or restricted key, a webhook secret that
  * is not a string, a timeout that is not a positive integer, a retry count
- * outside 0-10, a lead that is negative or fractional, and an HTTP client
- * without getClientName() and makeRequest().
+ * outside 0-10, a lead or look-back that is negative or fractional, a
+ * look-back shorter than the lead, and an HTTP client without
+ * getClientName() and makeRequest().
  */
-export const StripeConfigSchema = z.object({
-  secretKey: z
-    .string()
-    .regex(
-      STRIPE_SECRET_KEY_PATTERN,
-      "secretKey must be a Stripe secret key (sk_...) or restricted key (rk_...)",
-    )
-    .optional(),
-  webhookSecret: z.string().optional(),
-  timeoutMs: z.number().int().positive().optional(),
-  maxNetworkRetries: z.number().int().min(0).max(10).optional(),
-  chargeLeadMs: z.number().int().min(0).optional(),
-  httpClient: z
-    .custom(isHttpClient, "httpClient must implement getClientName() and makeRequest()")
-    .optional(),
-});
+export const StripeConfigSchema = z
+  .object({
+    secretKey: z
+      .string()
+      .regex(
+        STRIPE_SECRET_KEY_PATTERN,
+        "secretKey must be a Stripe secret key (sk_...) or restricted key (rk_...)",
+      )
+      .optional(),
+    webhookSecret: z.string().optional(),
+    timeoutMs: z.number().int().positive().optional(),
+    maxNetworkRetries: z.number().int().min(0).max(10).optional(),
+    chargeLeadMs: z.number().int().min(0).optional(),
+    lookbackMs: z.number().int().min(0).optional(),
+    httpClient: z
+      .custom(isHttpClient, "httpClient must implement getClientName() and makeRequest()")
+      .optional(),
+  })
+  .refine(
+    (config) =>
+      config.lookbackMs === undefined ||
+      config.lookbackMs >= (config.chargeLeadMs ?? DEFAULT_STRIPE_CHARGE_LEAD_MS),
+    {
+      error:
+        "lookbackMs must be at least chargeLeadMs: a shorter search misses a charge made as far ahead of its period as the lead allows",
+      path: ["lookbackMs"],
+    },
+  );

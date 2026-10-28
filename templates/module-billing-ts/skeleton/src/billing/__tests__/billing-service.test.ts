@@ -1122,6 +1122,12 @@ describe("billing config validation", () => {
     ["more than ten retries", { provider: "mock", stripe: { maxNetworkRetries: 11 } }],
     ["a negative charge lead", { provider: "mock", stripe: { chargeLeadMs: -1 } }],
     ["a fractional charge lead", { provider: "mock", stripe: { chargeLeadMs: 0.5 } }],
+    ["a negative look-back", { provider: "mock", stripe: { lookbackMs: -1 } }],
+    ["a fractional look-back", { provider: "mock", stripe: { lookbackMs: 0.5 } }],
+    [
+      "a look-back shorter than the charge lead",
+      { provider: "mock", stripe: { chargeLeadMs: 2, lookbackMs: 1 } },
+    ],
     ["an ID generator that is not a function", { provider: "mock", idGenerator: "uuid" }],
     ["an HTTP client that is a string", { provider: "mock", stripe: { httpClient: "fetch" } }],
     ["an HTTP client that is null", { provider: "mock", stripe: { httpClient: null } }],
@@ -1164,6 +1170,27 @@ describe("billing config validation", () => {
     );
   });
 
+  it("names the charge lead a look-back has to reach", async () => {
+    const config = {
+      provider: "mock",
+      stripe: { chargeLeadMs: 86_400_000, lookbackMs: 3_600_000 },
+    };
+
+    await expect(createBillingService(config)).rejects.toThrow(
+      "Invalid billing config: stripe.lookbackMs: lookbackMs must be at least chargeLeadMs: a shorter search misses a charge made as far ahead of its period as the lead allows",
+    );
+  });
+
+  it.each([
+    ["a look-back equal to the charge lead", { chargeLeadMs: 86_400_000, lookbackMs: 86_400_000 }],
+    ["a look-back longer than the charge lead", { chargeLeadMs: 1, lookbackMs: 86_400_000 }],
+    ["a look-back with no charge lead", { lookbackMs: 86_400_000 }],
+  ])("accepts %s", async (_label, bounds) => {
+    const billing = await service(stripeConfig(noNetwork().httpClient, bounds));
+
+    expect(billing.provider).toBe("stripe");
+  });
+
   it("accepts a restricted key as the secret key", async () => {
     const billing = await service(
       stripeConfig(noNetwork().httpClient, { secretKey: "rk_test_nanohypeRestricted" }),
@@ -1184,6 +1211,7 @@ describe("billing config validation", () => {
         timeoutMs: 1,
         maxNetworkRetries: 10,
         chargeLeadMs: 0,
+        lookbackMs: 0,
       }),
     );
 

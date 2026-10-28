@@ -62,6 +62,7 @@ export type {
   ChargeContentChanged,
   ChargeFailed,
   ChargeFailureCode,
+  ChargeHoldFailed,
   ChargeOptions,
   ChargePaid,
   ChargeResult,
