@@ -141,9 +141,13 @@ export interface FakeStripeAccount extends FakeTransport {
    */
   forgetIdempotencyKeys(): void;
 
-  /** Put an invoice in the account as an earlier charge, or anyone, left it. */
+  /**
+   * Put an invoice in the account as an earlier charge, or anyone, left it,
+   * with automatic collection off unless `autoAdvance` turns it on.
+   */
   seed(
     invoice: Omit<FakeInvoice, "id" | "autoAdvance" | "created" | "lines"> & {
+      autoAdvance?: boolean;
       created?: number;
       lines?: FakeLine[];
     },
@@ -158,13 +162,15 @@ const now = () => Math.floor(Date.now() / 1000);
 
 /**
  * A Stripe account holding invoices: create, list newest first with a
- * `created` lower bound, add and delete invoice items on a draft, delete a
- * draft, finalize, pay, and page through lines. A write carrying an
- * idempotency key Stripe has seen gets the stored answer back, marked
- * `Idempotent-Replayed: true`, without acting again, and one that carries the
- * key with other parameters or on another endpoint is refused with an
- * idempotency error, until `forgetIdempotencyKeys` drops them as Stripe may
- * once they are at least 24 hours old.
+ * `created` lower bound, read one, add and delete invoice items on a draft,
+ * delete a draft, turn automatic collection on or off on a draft or open
+ * invoice, finalize, pay, and page through lines. A paid invoice has automatic
+ * collection off, as Stripe holds every paid, void or uncollectible one. A
+ * write carrying an idempotency key Stripe has seen gets the stored answer
+ * back, marked `Idempotent-Replayed: true`, without acting again, and one
+ * that carries the key with other parameters or on another endpoint is
+ * refused with an idempotency error, until `forgetIdempotencyKeys` drops
+ * them as Stripe may once they are at least 24 hours old.
  */
 export function fakeStripeAccount(
   intercept: Intercept = (_request, apply) => apply(),
@@ -274,6 +280,7 @@ export function fakeStripeAccount(
     const invoice = invoices.find((i) => i.id === id);
     if (invoice === undefined) return stripeRefusal(404, `No such invoice: '${id}'`);
     if (action === "lines") return { body: page(invoice.lines.map(lineObject), query) };
+    if (action === undefined && method === "GET") return { body: invoiceObject(invoice) };
     if (action === undefined && method === "DELETE") {
       if (invoice.status !== "draft") {
         return stripeRefusal(400, "You can only delete draft invoices.");
@@ -281,18 +288,30 @@ export function fakeStripeAccount(
       invoices.splice(invoices.indexOf(invoice), 1);
       return { body: { id: invoice.id, object: "invoice", deleted: true } };
     }
+    // Stripe documents `auto_advance` as updatable on a draft or open invoice
+    // only, and every paid, void or uncollectible one as holding it off.
+    if (action === undefined && method === "POST") {
+      if (invoice.status !== "draft" && invoice.status !== "open") {
+        return stripeRefusal(400, `auto_advance cannot be updated on a ${invoice.status} invoice.`);
+      }
+      const autoAdvance = body.get("auto_advance");
+      if (autoAdvance !== null) invoice.autoAdvance = autoAdvance === "true";
+      return { body: invoiceObject(invoice) };
+    }
     if (action === "finalize") {
       if (invoice.status !== "draft") {
         return stripeRefusal(400, `This invoice is already ${invoice.status}.`);
       }
-      invoice.autoAdvance = body.get("auto_advance") === "true";
       invoice.status = total(invoice) === 0 ? "paid" : "open";
+      invoice.autoAdvance = invoice.status === "open" && body.get("auto_advance") === "true";
       return { body: invoiceObject(invoice) };
     }
+    if (action !== "pay") throw new Error(`unexpected Stripe request: ${method} ${path}`);
     if (invoice.status !== "open") {
       return stripeRefusal(400, `Invoice is already ${invoice.status}.`);
     }
     invoice.status = "paid";
+    invoice.autoAdvance = false;
     return { body: invoiceObject(invoice) };
   }
 

@@ -208,11 +208,20 @@ function textOf(response: GenerateContentResponse): string {
   return response.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
 }
 
-/** Token usage from a reply's usage metadata, zero where it reports none. */
+/**
+ * Token usage from a reply's usage metadata, zero where it reports none.
+ *
+ * Output is the candidates' tokens plus the model's thoughts: Vertex AI bills
+ * thinking tokens at the output rate, and `candidatesTokenCount` leaves them
+ * out. `toolUsePromptTokenCount`, which `totalTokenCount` also sums, is left
+ * out of input: the requests this provider builds declare no tools, and
+ * Vertex AI does not charge for the input tokens Grounding with Google Search
+ * or Google Maps provides.
+ */
 function usageFrom(metadata: GenerateContentResponseUsageMetadata | undefined): TokenUsage {
   return {
     inputTokens: metadata?.promptTokenCount ?? 0,
-    outputTokens: metadata?.candidatesTokenCount ?? 0,
+    outputTokens: (metadata?.candidatesTokenCount ?? 0) + (metadata?.thoughtsTokenCount ?? 0),
   };
 }
 
