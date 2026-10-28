@@ -202,5 +202,4 @@ describeProviderContract("huggingface", {
     return { endpoint, provider };
   },
   ChatTimeoutError: RequestTimeoutError,
-  dropsConnection: true,
 });

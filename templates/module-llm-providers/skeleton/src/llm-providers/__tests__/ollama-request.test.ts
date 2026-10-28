@@ -203,5 +203,4 @@ describeProviderContract("ollama", {
     return { endpoint, provider: createOllamaProvider({ requestTimeoutMs: CONTRACT_TIMEOUT_MS }) };
   },
   ChatTimeoutError: RequestTimeoutError,
-  dropsConnection: true,
 });
