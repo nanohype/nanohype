@@ -5,6 +5,12 @@
 // half-open (probing — allow limited attempts). Transitions based
 // on consecutive failure counts and a reset timeout.
 //
+// Only an error that says the dependency is unavailable should count.
+// A dependency that answers "no" — a declined card, an invalid request —
+// is healthy, and opening the circuit on those answers would turn one
+// customer's bad input into an outage for every customer. `isFailure`
+// draws that line for the caller's dependency.
+//
 
 export interface CircuitBreakerConfig {
   /** Number of consecutive failures before opening the circuit. */
@@ -15,6 +21,14 @@ export interface CircuitBreakerConfig {
 
   /** Maximum attempts allowed in half-open state before re-opening. */
   halfOpenMaxAttempts: number;
+
+  /**
+   * Decides whether an error counts toward opening the circuit. An error it
+   * rejects shows the dependency answered, so it resets the failure count the
+   * way a success does; the error still propagates to the caller. When
+   * omitted, every error counts.
+   */
+  isFailure?: (err: unknown) => boolean;
 }
 
 type CircuitState = "closed" | "open" | "half-open";
@@ -56,7 +70,11 @@ export class CircuitBreaker {
       this.onSuccess();
       return result;
     } catch (err) {
-      this.onFailure();
+      if (this.config.isFailure?.(err) ?? true) {
+        this.onFailure();
+      } else {
+        this.onSuccess();
+      }
       throw err;
     }
   }

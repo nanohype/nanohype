@@ -53,8 +53,15 @@ function formatMarkdown(invoice: Invoice): string {
   return lines.join("\n");
 }
 
-function formatCurrency(amountInCents: number, currency: string): string {
-  const symbol = currency === "usd" ? "$" : currency.toUpperCase() + " ";
-  const dollars = (amountInCents / 100).toFixed(2);
-  return `${symbol}${dollars}`;
+/**
+ * Format an amount held in the currency's smallest unit. The unit is the
+ * currency's own: a cent for USD, a whole yen for JPY, a fils (1/1000) for
+ * KWD — so the amount is scaled by the fraction digits Intl reports for that
+ * currency rather than by 100. A fixed locale keeps the output stable across
+ * hosts.
+ */
+function formatCurrency(amountInMinorUnits: number, currency: string): string {
+  const format = new Intl.NumberFormat("en-US", { style: "currency", currency });
+  const fractionDigits = format.resolvedOptions().maximumFractionDigits ?? 2;
+  return format.format(amountInMinorUnits / 10 ** fractionDigits);
 }

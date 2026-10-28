@@ -1,102 +1,173 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// Import mock provider to trigger self-registration
-import "../providers/mock.js";
-import { getProvider } from "../providers/registry.js";
+import { describe, expect, it, vi } from "vitest";
+import type { PaymentProvider } from "../providers/types.js";
 import type { BillingWebhookEvent } from "../types.js";
 import { createBillingWebhookRouter } from "../webhooks/handler.js";
 
-describe("billing webhook handler", () => {
-  beforeEach(async () => {
-    const provider = getProvider("mock");
-    await provider.close();
-    await provider.init({});
+// ── Billing Webhook Router ─────────────────────────────────────────
+//
+// The router verifies with the provider instance it is given and nothing
+// else, so each test hands it a provider whose `handleWebhook` is the
+// verification outcome under test. What is asserted is the gate: a request
+// that fails verification reaches no handler, and a verified event reaches
+// exactly the handler registered for its type.
+//
+
+function event(overrides: Partial<BillingWebhookEvent> = {}): BillingWebhookEvent {
+  return {
+    id: "evt_1",
+    type: "invoice.paid",
+    payload: { id: "in_1" },
+    timestamp: "2026-01-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+/** A provider whose verification is `verify`; every other method is unused here. */
+function verifyingProvider(verify: PaymentProvider["handleWebhook"]): PaymentProvider {
+  const unused = () => Promise.reject(new Error("not used by the webhook router"));
+  return {
+    name: "fake",
+    init: unused,
+    createCustomer: unused,
+    createSubscription: unused,
+    chargeInvoice: unused,
+    handleWebhook: vi.fn(verify),
+    listInvoices: unused,
+    close: unused,
+  };
+}
+
+describe("billing webhook router", () => {
+  it("verifies with the provider it was built with, passing the raw body and signature", async () => {
+    const provider = verifyingProvider(async () => event());
+    const router = createBillingWebhookRouter(provider);
+
+    await router.handleBillingWebhook('{"raw": true}\n', "t=1,v1=abc");
+
+    expect(provider.handleWebhook).toHaveBeenCalledExactlyOnceWith('{"raw": true}\n', "t=1,v1=abc");
   });
 
-  it("verifies and dispatches a webhook event", async () => {
-    const router = createBillingWebhookRouter("mock");
-
-    const events: BillingWebhookEvent[] = [];
-    router.on("invoice.paid", async (event) => {
-      events.push(event);
+  it("dispatches a verified event to the handler registered for its type", async () => {
+    const verified = event({ id: "evt_paid", type: "invoice.paid" });
+    const router = createBillingWebhookRouter(verifyingProvider(async () => verified));
+    const seen: BillingWebhookEvent[] = [];
+    router.on("invoice.paid", async (e) => {
+      seen.push(e);
     });
 
-    const payload = JSON.stringify({
-      type: "invoice.paid",
-      data: { invoiceId: "inv-1", amount: 5000 },
-    });
+    const result = await router.handleBillingWebhook("{}", "sig");
 
-    const result = await router.handleBillingWebhook(payload, "any-signature");
-
-    expect(result.ok).toBe(true);
-    expect(result.event).toBeDefined();
-    expect(result.event!.type).toBe("invoice.paid");
-    expect(events).toHaveLength(1);
-    expect(events[0]!.type).toBe("invoice.paid");
+    expect(result).toEqual({ ok: true, event: verified });
+    expect(seen).toEqual([verified]);
   });
 
-  it("returns ok for events without a registered handler", async () => {
-    const router = createBillingWebhookRouter("mock");
+  it("acknowledges a verified event no handler is registered for", async () => {
+    const verified = event({ type: "customer.subscription.created" });
+    const router = createBillingWebhookRouter(verifyingProvider(async () => verified));
+    const other = vi.fn(async () => {});
+    router.on("invoice.paid", other);
 
-    const payload = JSON.stringify({
-      type: "subscription.created",
-      data: { subscriptionId: "sub-1" },
-    });
+    const result = await router.handleBillingWebhook("{}", "sig");
 
-    const result = await router.handleBillingWebhook(payload, "any-signature");
-
-    expect(result.ok).toBe(true);
-    expect(result.event!.type).toBe("subscription.created");
+    expect(result).toEqual({ ok: true, event: verified });
+    expect(other).not.toHaveBeenCalled();
   });
 
-  it("handles handler errors gracefully", async () => {
-    const router = createBillingWebhookRouter("mock");
+  it("dispatches each event type to its own handler", async () => {
+    const queue = [
+      event({ id: "evt_a", type: "invoice.paid" }),
+      event({ id: "evt_b", type: "invoice.payment_failed" }),
+    ];
+    const router = createBillingWebhookRouter(verifyingProvider(async () => queue.shift()!));
+    const log: string[] = [];
+    router.on("invoice.paid", async (e) => {
+      log.push(`paid:${e.id}`);
+    });
+    router.on("invoice.payment_failed", async (e) => {
+      log.push(`failed:${e.id}`);
+    });
 
-    router.on("payment_failed", async () => {
+    await router.handleBillingWebhook("{}", "sig");
+    await router.handleBillingWebhook("{}", "sig");
+
+    expect(log).toEqual(["paid:evt_a", "failed:evt_b"]);
+  });
+
+  it("rejects a request that fails verification and reaches no handler", async () => {
+    const router = createBillingWebhookRouter(
+      verifyingProvider(async () => {
+        throw new Error("No signatures found matching the expected signature for payload");
+      }),
+    );
+    const handler = vi.fn(async () => {});
+    router.on("invoice.paid", handler);
+
+    const result = await router.handleBillingWebhook('{"type":"invoice.paid"}', "forged");
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "unverified",
+      error: "No signatures found matching the expected signature for payload",
+    });
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("rejects when verification throws something that is not an Error", async () => {
+    const router = createBillingWebhookRouter(
+      verifyingProvider(async () => {
+        throw "signature_mismatch";
+      }),
+    );
+
+    const result = await router.handleBillingWebhook("{}", "forged");
+
+    expect(result).toEqual({ ok: false, reason: "unverified", error: "signature_mismatch" });
+  });
+
+  it("reports a handler failure with the verified event attached", async () => {
+    const verified = event({ type: "invoice.payment_failed" });
+    const router = createBillingWebhookRouter(verifyingProvider(async () => verified));
+    router.on("invoice.payment_failed", async () => {
       throw new Error("Handler exploded");
     });
 
-    const payload = JSON.stringify({
-      type: "payment_failed",
-      data: { reason: "card_declined" },
+    const result = await router.handleBillingWebhook("{}", "sig");
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "handler_failed",
+      event: verified,
+      error: "Handler exploded",
     });
-
-    const result = await router.handleBillingWebhook(payload, "any-signature");
-
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe("Handler exploded");
-    expect(result.event).toBeDefined();
   });
 
-  it("returns error for invalid webhook payload", async () => {
-    const router = createBillingWebhookRouter("mock");
-
-    const result = await router.handleBillingWebhook("not-json{", "sig");
-
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain("Invalid webhook payload");
-  });
-
-  it("dispatches multiple event types independently", async () => {
-    const router = createBillingWebhookRouter("mock");
-
-    const log: string[] = [];
-
+  it("reports a handler that throws something that is not an Error", async () => {
+    const verified = event();
+    const router = createBillingWebhookRouter(verifyingProvider(async () => verified));
     router.on("invoice.paid", async () => {
-      log.push("invoice.paid");
+      throw "handler_rejected";
     });
 
-    router.on("subscription.created", async () => {
-      log.push("subscription.created");
+    const result = await router.handleBillingWebhook("{}", "sig");
+
+    expect(result).toEqual({
+      ok: false,
+      reason: "handler_failed",
+      event: verified,
+      error: "handler_rejected",
     });
+  });
 
-    await router.handleBillingWebhook(JSON.stringify({ type: "invoice.paid", data: {} }), "sig");
+  it("replaces the handler for a type when one is registered again", async () => {
+    const router = createBillingWebhookRouter(verifyingProvider(async () => event()));
+    const first = vi.fn(async () => {});
+    const second = vi.fn(async () => {});
+    router.on("invoice.paid", first);
+    router.on("invoice.paid", second);
 
-    await router.handleBillingWebhook(
-      JSON.stringify({ type: "subscription.created", data: {} }),
-      "sig",
-    );
+    await router.handleBillingWebhook("{}", "sig");
 
-    expect(log).toEqual(["invoice.paid", "subscription.created"]);
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledOnce();
   });
 });
