@@ -16,9 +16,13 @@ import type { LlmProvider } from "./types.js";
 
 // ── OpenAI Provider ────────────────────────────────────────────────
 //
-// GPT-4o via the openai SDK. Each factory call returns a new instance
-// with its own lazily-initialized SDK client and circuit breaker.
-// Supports both request/response and streaming modes.
+// GPT-4o via the openai SDK. createOpenAIProvider() returns an instance
+// with its own lazily-initialized SDK client and circuit breaker; the
+// registered `openai` factory returns one such instance for the life of
+// the process. Supports both request/response and streaming modes.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: OPENAI_API_KEY environment variable (read by the SDK).
 //
@@ -150,5 +154,7 @@ function createOpenAIProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("openai", createOpenAIProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const openaiProvider = createOpenAIProvider();
+registerProvider("openai", () => openaiProvider);

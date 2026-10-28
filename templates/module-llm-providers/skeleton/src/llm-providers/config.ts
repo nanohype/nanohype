@@ -13,7 +13,11 @@ export const ProviderConfigSchema = z.object({
   models: z.record(z.string(), z.string()).optional(),
   /** Default max tokens. */
   maxTokens: z.number().int().positive().optional(),
-  /** Default temperature. */
+  /**
+   * Default temperature, applied to every request that sets none. Each
+   * provider decides whether its request carries it, as ChatOptions.temperature
+   * describes.
+   */
   temperature: z.number().min(0).max(2).optional(),
 });
 

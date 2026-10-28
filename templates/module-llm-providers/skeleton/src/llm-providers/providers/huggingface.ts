@@ -17,8 +17,12 @@ import type { LlmProvider } from "./types.js";
 // ── Hugging Face Provider ──────────────────────────────────────────
 //
 // Text generation via @huggingface/inference. Uses the Inference API
-// for hosted models. Each factory call returns a new instance with
-// its own client and circuit breaker.
+// for hosted models. createHuggingFaceProvider() returns an instance
+// with its own client and circuit breaker; the registered `huggingface`
+// factory returns one such instance for the life of the process.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: HF_TOKEN environment variable.
 //
@@ -145,5 +149,7 @@ function createHuggingFaceProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("huggingface", createHuggingFaceProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const huggingFaceProvider = createHuggingFaceProvider();
+registerProvider("huggingface", () => huggingFaceProvider);

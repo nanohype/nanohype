@@ -11,6 +11,8 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // for fault isolation. Maps OpenAI chat completion responses into
 // the unified GatewayResponse shape.
 //
+// Sends the caller's `temperature`, and 1 when the caller sets none.
+//
 
 const DEFAULT_MODEL = "gpt-4o";
 

@@ -10,12 +10,21 @@
 import "dotenv/config";
 import { z } from "zod";
 
+/** An empty environment value (`LLM_TEMPERATURE=`) reads as unset. */
+function unsetWhenEmpty(value: unknown): unknown {
+  return value === "" ? undefined : value;
+}
+
 const llmSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
   model: z.string().default("claude-sonnet-5"),
-  temperature: z.coerce.number().min(0).max(2).default(0.1),
+  // Optional, so a provider can tell a configured temperature from none; an
+  // empty LLM_TEMPERATURE is unset. The openai provider sends it, and 0.1
+  // when it is unset. The anthropic provider never sends one: the Messages
+  // API rejects sampling parameters.
+  temperature: z.preprocess(unsetWhenEmpty, z.coerce.number().min(0).max(2).optional()),
   maxTokens: z.coerce.number().int().positive().default(4096),
 });
 

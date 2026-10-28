@@ -18,7 +18,12 @@ import type { LlmProvider } from "./types.js";
 //
 // Local inference via Ollama's OpenAI-compatible API. Zero SDK
 // dependency — uses native fetch. Defaults to http://localhost:11434/v1.
-// Each factory call returns a new instance with its own circuit breaker.
+// createOllamaProvider() returns an instance with its own circuit
+// breaker; the registered `ollama` factory returns one such instance for
+// the life of the process.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: None (local server).
 //
@@ -219,5 +224,7 @@ function createOllamaProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("ollama", createOllamaProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const ollamaProvider = createOllamaProvider();
+registerProvider("ollama", () => ollamaProvider);

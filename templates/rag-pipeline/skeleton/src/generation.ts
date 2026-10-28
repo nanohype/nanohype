@@ -61,7 +61,11 @@ export async function generate(
   const providerName = config.generation.provider;
 
   const apiKey = config.generation.anthropicApiKey || config.generation.openaiApiKey;
-  const provider = getLlmProvider(providerName, apiKey);
+  // Every LLM factory takes the API key; the bedrock one also takes its
+  // options, and the others ignore them.
+  const provider = getLlmProvider(providerName, apiKey, {
+    samplingParameters: config.generation.bedrockSamplingParameters,
+  });
   const userMessage = buildUserMessage(query, context);
 
   const { answer, usage } = await provider.generate(

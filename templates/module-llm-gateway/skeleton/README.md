@@ -50,9 +50,24 @@ gateway.close();
 | `groq`      | Llama 3 70B                                      | `llama-3.3-70b-versatile`     | $0.59 / $0.79                 |
 | `mock`      | In-memory                                        | `mock-model`                  | $0 / $0                       |
 
-`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every call carries an explicit `AbortSignal.timeout` (`LLM_REQUEST_TIMEOUT_MS`, default 30s) so a hung socket trips the circuit breaker instead of hanging.
+`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. The `bedrock` and `anthropic` providers bound every call at `LLM_REQUEST_TIMEOUT_MS` (default 30s) so a hung socket trips the circuit breaker instead of hanging; a value that is not a positive whole number fails the import.
 
 Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds. If a provider call fails, the gateway falls through to the next configured provider in order before surfacing the error.
+
+### Sampling parameters
+
+Each provider decides whether its request carries the caller's `temperature`. A provider that can send something other than the caller's value declares what it sends through its `sampling(opts)` hook, and one without the hook sends the caller's value whenever it is set.
+
+| Provider | `temperature` sent |
+| -------- | ------------------ |
+| `openai`, `groq` | The caller's value, and 1 when the caller sets none |
+| `anthropic` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value |
+| `bedrock` | Per model id, under `samplingParameters` |
+| `mock` | Not read |
+
+The `bedrock` provider's `samplingParameters` takes one of three values. `auto`, the default, sends the caller's `temperature` only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id names none and is treated as Claude: an ARN of any other resource type (an application inference profile, provisioned model, imported model, custom model, custom model deployment, prompt or prompt router) or an id with no provider segment. `send` sends the caller's `temperature` to every model id, which is how an ARN serving another family receives it, and `omit` sends it to none. `BEDROCK_SAMPLING_PARAMETERS` sets it for the registered `bedrock` provider and is read when the provider's module loads, so a value other than `auto`, `send` or `omit` fails the import. `createBedrockProvider({ samplingParameters })` sets it on a provider you register yourself.
+
+A provider drops a `temperature` it does not send without logging it; the gateway carries no logger. The response cache keys on the temperature only when some candidate provider would send it, so a dropped value does not split cache entries.
 
 ## Routing Strategies
 
@@ -146,6 +161,8 @@ const myProvider: GatewayProvider = {
 
 registerProvider(myProvider);
 ```
+
+A provider that leaves `temperature` out of some or all of its requests declares what it sends with `sampling(opts)`, built from the same function as the request `chat` sends. The gateway keys its response cache on the result, so a temperature the provider drops does not split cache entries. The gateway takes a provider without `sampling` to send the caller's `temperature` whenever one is set.
 
 ## Architecture
 

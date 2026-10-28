@@ -17,8 +17,12 @@ import type { LlmProvider } from "./types.js";
 // ── Google Vertex AI Provider ──────────────────────────────────────
 //
 // Gemini models via @google-cloud/vertexai. Uses Google Application
-// Default Credentials (ADC) for auth. Each factory call returns a
-// new instance with its own client and circuit breaker.
+// Default Credentials (ADC) for auth. createVertexProvider() returns an
+// instance with its own client and circuit breaker; the registered
+// `vertex` factory returns one such instance for the life of the process.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION env vars,
 // plus ADC (gcloud auth application-default login).
@@ -196,5 +200,7 @@ function createVertexProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("vertex", createVertexProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const vertexProvider = createVertexProvider();
+registerProvider("vertex", () => vertexProvider);

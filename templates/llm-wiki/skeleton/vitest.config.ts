@@ -17,11 +17,14 @@ export default defineConfig({
       // app; `src/cli/`, whose entry parses argv and dispatches at import and
       // whose commands wrap the library for a terminal; `config.ts`, which
       // reads the environment; `wiki/index-manager.ts`; and the adapters that
-      // reach a real system — `llm/anthropic.ts` calls the Messages API,
-      // `sources/local.ts` reads a source tree on disk, and `storage/git.ts`
-      // commits to a checkout.
+      // reach a real system — `sources/local.ts` reads a source tree on disk,
+      // and `storage/git.ts` commits to a checkout.
       //
-      // Three kinds of file are deliberately not among them.
+      // Each kind of file below is measured rather than excluded.
+      //
+      // The Anthropic adapter is measured. Its request suite runs the real SDK
+      // client over an in-process `fetch`, so the body it puts on the wire and
+      // the responses it refuses are checked without a live call.
       //
       // The eval corpus loader is measured. The eval runner and the fixture
       // wiki it seeds reach a live model, so those run on demand; the loader's
@@ -48,7 +51,6 @@ export default defineConfig({
         "src/config.ts",
         "src/eval/fixture-storage.ts",
         "src/eval/runner.ts",
-        "src/llm/anthropic.ts",
         "src/sources/local.ts",
         "src/storage/git.ts",
         "src/wiki/index-manager.ts",

@@ -1,0 +1,28 @@
+// ── Request Timeout ─────────────────────────────────────────────────
+//
+// How long a provider waits for one model call before it abandons it, so
+// a hung connection fails into the provider's circuit breaker instead of
+// holding the caller. Every provider that bounds its calls reads this one
+// setting, LLM_REQUEST_TIMEOUT_MS, as this module loads, so a value it
+// refuses fails the import rather than the first request.
+//
+
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+
+/**
+ * Reads an LLM_REQUEST_TIMEOUT_MS setting: a positive whole number of
+ * milliseconds, 30000 when unset or empty.
+ */
+export function parseRequestTimeoutMs(value: string | undefined): number {
+  if (value === undefined || value === "") return DEFAULT_REQUEST_TIMEOUT_MS;
+  const ms = Number(value);
+  if (!Number.isInteger(ms) || ms <= 0) {
+    throw new Error(
+      `LLM_REQUEST_TIMEOUT_MS must be a positive whole number of milliseconds, got "${value}"`,
+    );
+  }
+  return ms;
+}
+
+/** The request timeout LLM_REQUEST_TIMEOUT_MS sets, in milliseconds. */
+export const REQUEST_TIMEOUT_MS = parseRequestTimeoutMs(process.env.LLM_REQUEST_TIMEOUT_MS);

@@ -3,12 +3,27 @@
  * embedding, and vector storage.
  */
 
+/** The values a SamplingParameters setting takes. */
+export const SAMPLING_PARAMETERS = ["auto", "send", "omit"] as const;
+
+/**
+ * Which bedrock requests carry the configured temperature: `auto` sends it to
+ * a model id that names a family other than Claude and to no other, `send`
+ * sends it to every model id, and `omit` sends it to none.
+ */
+export type SamplingParameters = (typeof SAMPLING_PARAMETERS)[number];
+
 export interface LlmProvider {
+  /**
+   * Answer `userMessage` under `systemPrompt`. `temperature` is undefined
+   * when the configuration sets none; config.ts states what each provider
+   * sends, set or unset.
+   */
   generate(
     systemPrompt: string,
     userMessage: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }>;
 }

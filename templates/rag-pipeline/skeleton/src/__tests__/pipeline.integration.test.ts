@@ -157,6 +157,7 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
       model: "test-model",
       temperature: 0,
       maxTokens: 256,
+      bedrockSamplingParameters: "auto",
     },
     retrieval: { topK: 3, scoreThreshold: 0.0 },
     docsDir: "./test-docs",

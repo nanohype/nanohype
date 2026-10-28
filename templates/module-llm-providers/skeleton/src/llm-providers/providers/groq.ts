@@ -16,9 +16,14 @@ import type { LlmProvider } from "./types.js";
 
 // ── Groq Provider ──────────────────────────────────────────────────
 //
-// Llama 3 / Mixtral via the groq-sdk. Each factory call returns a
-// new instance with its own lazily-initialized SDK client and circuit
-// breaker. Supports both request/response and streaming modes.
+// Llama 3 / Mixtral via the groq-sdk. createGroqProvider() returns an
+// instance with its own lazily-initialized SDK client and circuit
+// breaker; the registered `groq` factory returns one such instance for
+// the life of the process. Supports both request/response and streaming
+// modes.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: GROQ_API_KEY environment variable (read by the SDK).
 //
@@ -149,5 +154,7 @@ function createGroqProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("groq", createGroqProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const groqProvider = createGroqProvider();
+registerProvider("groq", () => groqProvider);

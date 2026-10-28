@@ -3,34 +3,50 @@
  *
  * Registers itself as the "openai" LLM provider and the "openai"
  * embedding provider on import.
+ *
+ * The LLM sends the configured `temperature`, and 0.1 when the
+ * configuration sets none.
  */
 
-import OpenAI from "openai";
+import OpenAI, { type ClientOptions } from "openai";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerEmbeddingProvider, registerLlmProvider } from "./registry.js";
 import type { EmbeddingProvider, LlmProvider } from "./types.js";
 
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
 
-class OpenAILlm implements LlmProvider {
+/** The temperature the LLM sends when the configuration sets none. */
+const DEFAULT_TEMPERATURE = 0.1;
+
+/**
+ * The OpenAI LLM. `clientOptions` is SDK client configuration (base URL,
+ * the `fetch` requests go through), applied under the API key, request
+ * timeout and retry count this provider sets.
+ */
+export class OpenAILlm implements LlmProvider {
   private readonly client: OpenAI;
   private readonly cb = createCircuitBreaker();
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, clientOptions: ClientOptions = {}) {
     const key = apiKey || process.env.OPENAI_API_KEY;
     if (!key) {
       throw new Error(
         "OPENAI_API_KEY environment variable is required when using the OpenAI provider",
       );
     }
-    this.client = new OpenAI({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
+    this.client = new OpenAI({
+      ...clientOptions,
+      apiKey: key,
+      timeout: REQUEST_TIMEOUT_MS,
+      maxRetries: 1,
+    });
   }
 
   async generate(
     systemPrompt: string,
     userMessage: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
     const response = await this.cb.execute(() =>
@@ -40,7 +56,7 @@ class OpenAILlm implements LlmProvider {
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
         ],
-        temperature,
+        temperature: temperature ?? DEFAULT_TEMPERATURE,
         max_tokens: maxTokens,
       }),
     );
@@ -58,19 +74,34 @@ class OpenAILlm implements LlmProvider {
   }
 }
 
-class OpenAIEmbedder implements EmbeddingProvider {
+/**
+ * The OpenAI embedder. `clientOptions` is SDK client configuration, applied
+ * under the API key, request timeout and retry count this provider sets.
+ */
+export class OpenAIEmbedder implements EmbeddingProvider {
   private readonly client: OpenAI;
   private readonly model: string;
   private readonly dims: number;
   private readonly batchSize: number;
   private readonly cb = createCircuitBreaker();
 
-  constructor(model = "text-embedding-3-small", dims = 1536, batchSize = 128, apiKey?: string) {
+  constructor(
+    model = "text-embedding-3-small",
+    dims = 1536,
+    batchSize = 128,
+    apiKey?: string,
+    clientOptions: ClientOptions = {},
+  ) {
     const key = apiKey || process.env.OPENAI_API_KEY;
     if (!key) {
       throw new Error("OPENAI_API_KEY environment variable is required for OpenAI embeddings");
     }
-    this.client = new OpenAI({ apiKey: key, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
+    this.client = new OpenAI({
+      ...clientOptions,
+      apiKey: key,
+      timeout: REQUEST_TIMEOUT_MS,
+      maxRetries: 1,
+    });
     this.model = model;
     this.dims = dims;
     this.batchSize = batchSize;
