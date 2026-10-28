@@ -45,8 +45,8 @@ The pipeline follows a modular design with pluggable providers:
 
 Providers are registered via a triple registry pattern (`src/providers/registry.ts`):
 
-- **LLM**: Anthropic (Claude), OpenAI (GPT)
-- **Embedding**: OpenAI, Cohere
+- **LLM**: Bedrock (default), Anthropic (Claude), OpenAI (GPT)
+- **Embedding**: Bedrock Titan (default), OpenAI, Cohere
 - **Vector store**: Chroma, pgvector, Qdrant, Pinecone
 
 ### Design Decisions
@@ -57,6 +57,8 @@ Providers are registered via a triple registry pattern (`src/providers/registry.
 - **Content-hash deduplication** -- each chunk gets a deterministic ID from a SHA-256 hash of the source path plus chunk index, preventing duplicate entries on re-ingestion.
 - **Score-threshold filtering** -- retrieval results below a configurable similarity threshold are discarded before reranking, reducing noise in the generation context.
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema with sensible defaults. Missing or invalid values throw immediately, not at query time.
+- **Request timeouts** -- `LLM_REQUEST_TIMEOUT_MS` (30s by default) bounds every model call the bedrock, anthropic and openai providers make, so a hung connection fails into the provider's circuit breaker instead of holding the pipeline. The bedrock providers abandon the whole call at it; the anthropic and openai clients apply it to each attempt and retry a timed-out attempt once, so an endpoint that never answers holds the pipeline for two timeouts plus the SDK's backoff. `loadConfig()` refuses a value that is not a positive whole number.
+- **One LLM per configuration** -- generation builds the configured LLM once for each loaded configuration and reuses it for every query, so the provider's circuit breaker sees all of them.
 - **Provider isolation** -- embedding and vector store providers expose narrow interfaces (`embed`/`embedBatch`, `addDocuments`/`search`). LLM providers handle only generation. No provider knows about another.
 
 ## Evals

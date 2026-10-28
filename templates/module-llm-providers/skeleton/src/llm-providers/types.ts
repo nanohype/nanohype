@@ -18,9 +18,15 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0-2). */
+  /**
+   * Temperature for sampling (0-2). Whether a request carries it is the
+   * provider's decision: a provider that can send something other than the
+   * caller's value declares what it sends through its `sampling` hook, and
+   * one without the hook sends the caller's value whenever it is set. Each
+   * provider's module header gives its rule.
+   */
   temperature?: number;
-  /** Top-p nucleus sampling. */
+  /** Top-p nucleus sampling. A provider decides whether to send it as it does `temperature`. */
   topP?: number;
   /** Stop sequences. */
   stop?: string[];

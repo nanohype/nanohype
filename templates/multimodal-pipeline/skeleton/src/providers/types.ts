@@ -16,13 +16,18 @@ export interface AnalysisResult {
   usage: Record<string, number>;
 }
 
+/**
+ * A vision and text analysis provider. `temperature` is undefined when the
+ * configuration sets none; config.ts states what each provider sends, set or
+ * unset.
+ */
 export interface MultimodalLlmProvider {
   /** Analyze a processed multimodal input and return structured text. */
   analyze(
     input: ProcessedInput,
     systemPrompt: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult>;
 
@@ -31,7 +36,7 @@ export interface MultimodalLlmProvider {
     frames: string[],
     systemPrompt: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult>;
 }

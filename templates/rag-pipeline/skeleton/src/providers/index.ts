@@ -5,6 +5,7 @@
  * module to trigger self-registration as a side effect.
  */
 
+export type { EmbeddingProviderFactory, LlmProviderFactory } from "./registry.js";
 export {
   getEmbeddingProvider,
   getLlmProvider,
@@ -18,7 +19,9 @@ export {
 } from "./registry.js";
 export type {
   EmbeddingProvider,
+  EmbeddingProviderSettings,
   LlmProvider,
+  LlmProviderSettings,
   SearchResult,
   VectorDocument,
   VectorStoreProvider,

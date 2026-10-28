@@ -4,7 +4,7 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 
 ## What you get
 
-- Factory-based provider registry with no module-level mutable state
+- Factory-based provider registry; each built-in provider is one module-level instance that lives as long as the process, so its SDK client, circuit breaker and log-once state hold across lookups
 - Anthropic provider (Claude Sonnet, Opus, Haiku) with streaming and circuit breaker
 - OpenAI provider (GPT-4o, GPT-4o-mini, o1) with streaming and circuit breaker
 - Groq provider (Llama, Mixtral) with streaming and circuit breaker
@@ -60,13 +60,21 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
         counter.ts              # js-tiktoken token counting
       resilience/
         circuit-breaker.ts      # Sliding-window circuit breaker
+        request-timeout.ts      # LLM_REQUEST_TIMEOUT_MS and the SDK retry count
         __tests__/
           circuit-breaker.test.ts
+          request-timeout.test.ts
       __tests__/
         registry.test.ts
         mock.test.ts
         adapters.test.ts
         tokens.test.ts
+        anthropic-request.test.ts         # Anthropic SDK over an in-process fetch
+        chat-completions-request.test.ts  # openai and groq SDKs over an in-process fetch
+        bedrock-request.test.ts           # (conditional) AWS Bedrock
+        vertex-request.test.ts            # (conditional) Google Vertex AI
+        huggingface-request.test.ts       # (conditional) Hugging Face Inference
+        ollama-request.test.ts            # (conditional) Ollama local inference
   package.json
   tsconfig.json
 ```

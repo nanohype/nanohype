@@ -102,10 +102,7 @@ describe("mock provider", () => {
     });
   });
 
-  it("creates independent instances (factory pattern)", () => {
-    const a = getMock();
-    const b = getMock();
-    expect(a).not.toBe(b);
-    expect(a.name).toBe(b.name);
+  it("is one instance for every lookup", () => {
+    expect(getMock()).toBe(getMock());
   });
 });

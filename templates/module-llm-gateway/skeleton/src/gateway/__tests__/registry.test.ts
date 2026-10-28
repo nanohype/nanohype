@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 // ── Registry Tests ──────────────────────────────────────────────────
 //
 // Verifies all three registries: provider, routing, and caching.
-// Ensures self-registration works and all built-in implementations
-// are discoverable.
+// Ensures self-registration works, all built-in implementations are
+// discoverable, and each built-in provider is one instance, so its
+// circuit breaker holds across lookups.
 //
 
 describe("provider registry", () => {
@@ -30,6 +31,17 @@ describe("provider registry", () => {
   it("throws for unknown provider", async () => {
     const { getProvider } = await import("../providers/registry.js");
     expect(() => getProvider("nonexistent")).toThrow("not found");
+  });
+
+  it("returns one instance of each built-in provider for every lookup", async () => {
+    await import("../providers/index.js");
+    const { getProvider, listProviders } = await import("../providers/registry.js");
+    const builtIn = ["bedrock", "anthropic", "openai", "groq", "mock"];
+
+    expect(listProviders()).toEqual(expect.arrayContaining(builtIn));
+    for (const name of builtIn) {
+      expect(getProvider(name), name).toBe(getProvider(name));
+    }
   });
 });
 

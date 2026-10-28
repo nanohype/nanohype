@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Gateway } from "../index.js";
 import type { GatewayProvider } from "../providers/types.js";
 import type { ChatMessage, ChatOptions, GatewayResponse } from "../types.js";
 
@@ -179,6 +180,109 @@ describe("gateway integration", () => {
     expect(costs.byUser["alice"]).toBeGreaterThan(0);
     expect(costs.byProject["test"]).toBeGreaterThan(0);
 
+    await gateway.close();
+  });
+});
+
+describe("gateway response cache key", () => {
+  // The cache is checked before routing, so the key carries a temperature
+  // when any provider that could serve the request sends one. These use
+  // providers that declare what they send, and count the calls that reach
+  // them: a call is a cache miss.
+
+  /** A provider that counts its calls and sends `temperature` unless `drops` says not. */
+  function countingProvider(name: string, drops?: (model?: string) => boolean) {
+    const calls: ChatOptions[] = [];
+    const provider: GatewayProvider = {
+      ...createTestProvider(name),
+      async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<GatewayResponse> {
+        calls.push({ ...opts });
+        return createTestProvider(name).chat(messages, opts);
+      },
+    };
+    if (drops) {
+      provider.sampling = (opts) => (drops(opts.model) ? {} : { temperature: opts.temperature });
+    }
+    return { provider, calls };
+  }
+
+  async function gatewayOver(
+    providers: GatewayProvider[],
+    models?: Record<string, string>,
+  ): Promise<Gateway> {
+    const { registerProvider, listProviders } = await import("../providers/registry.js");
+    for (const provider of providers) {
+      if (!listProviders().includes(provider.name)) {
+        registerProvider(provider.name, () => provider);
+      }
+    }
+    const { createGateway } = await import("../index.js");
+    return createGateway({
+      providers: providers.map((p) => p.name),
+      routingStrategy: "static",
+      cachingStrategy: "hash",
+      models,
+    });
+  }
+
+  const messages: ChatMessage[] = [{ role: "user", content: "Same prompt." }];
+
+  it("does not split entries on a temperature the provider drops", async () => {
+    const dropper = countingProvider("key-drops", () => true);
+    const gateway = await gatewayOver([dropper.provider]);
+
+    await gateway.chat(messages, { temperature: 0.2 });
+    const second = await gateway.chat(messages, { temperature: 0.7 });
+
+    expect(dropper.calls).toHaveLength(1);
+    expect(second.cached).toBe(true);
+    await gateway.close();
+  });
+
+  it("keys on temperature for a provider that declares nothing", async () => {
+    const sender = countingProvider("key-sends");
+    const gateway = await gatewayOver([sender.provider]);
+
+    await gateway.chat(messages, { temperature: 0.2 });
+    const second = await gateway.chat(messages, { temperature: 0.7 });
+    const third = await gateway.chat(messages, { temperature: 0.2 });
+
+    expect(sender.calls).toHaveLength(2);
+    expect(second.cached).toBe(false);
+    expect(third.cached).toBe(true);
+    await gateway.close();
+  });
+
+  it("keys on temperature while any candidate sends it, and not once the request names the dropper", async () => {
+    const dropper = countingProvider("mixed-drops", () => true);
+    const sender = countingProvider("mixed-sends");
+    const gateway = await gatewayOver([dropper.provider, sender.provider]);
+
+    await gateway.chat(messages, { temperature: 0.2 });
+    await gateway.chat(messages, { temperature: 0.7 });
+    expect(dropper.calls).toHaveLength(2);
+
+    const forced = await gateway.chat(messages, { temperature: 0.9, provider: "mixed-drops" });
+    expect(forced.cached).toBe(false);
+    const forcedAgain = await gateway.chat(messages, { temperature: 0.1, provider: "mixed-drops" });
+    expect(forcedAgain.cached).toBe(true);
+    expect(dropper.calls).toHaveLength(3);
+    expect(sender.calls).toHaveLength(0);
+    await gateway.close();
+  });
+
+  it("decides from the model the config names for the provider", async () => {
+    const byModel = countingProvider("key-by-model", (model) => model === "no-sampling-model");
+    const gateway = await gatewayOver([byModel.provider], {
+      "key-by-model": "no-sampling-model",
+    });
+
+    await gateway.chat(messages, { temperature: 0.2 });
+    const second = await gateway.chat(messages, { temperature: 0.7 });
+
+    expect(byModel.calls).toHaveLength(1);
+    expect(byModel.calls[0].model).toBe("no-sampling-model");
+    expect(second.cached).toBe(true);
     await gateway.close();
   });
 });

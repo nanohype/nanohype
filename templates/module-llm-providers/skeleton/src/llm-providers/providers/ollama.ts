@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
@@ -18,7 +19,14 @@ import type { LlmProvider } from "./types.js";
 //
 // Local inference via Ollama's OpenAI-compatible API. Zero SDK
 // dependency — uses native fetch. Defaults to http://localhost:11434/v1.
-// Each factory call returns a new instance with its own circuit breaker.
+// createOllamaProvider() returns an instance with its own circuit
+// breaker; the registered `ollama` factory returns one such instance for
+// the life of the process. Every call, a stream included, carries an
+// abort signal that fires at LLM_REQUEST_TIMEOUT_MS, so a local model that
+// takes longer than that to finish a reply needs a larger setting.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: None (local server).
 //
@@ -47,7 +55,11 @@ function getBaseUrl(): string {
   return (process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1").replace(/\/$/, "");
 }
 
-function createOllamaProvider(): LlmProvider {
+/**
+ * An Ollama provider instance with its own circuit breaker. The registered
+ * `ollama` provider is one of these.
+ */
+export function createOllamaProvider(): LlmProvider {
   const cb = createCircuitBreaker();
   const pricing: Pricing = { input: 0, output: 0 };
 
@@ -65,7 +77,7 @@ function createOllamaProvider(): LlmProvider {
       const response = await cb.execute(async () => {
         const res = await fetch(`${getBaseUrl()}/chat/completions`, {
           method: "POST",
-          signal: AbortSignal.timeout(300_000),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model,
@@ -116,7 +128,7 @@ function createOllamaProvider(): LlmProvider {
 
         const res = await fetch(`${getBaseUrl()}/chat/completions`, {
           method: "POST",
-          signal: AbortSignal.timeout(300_000),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model,
@@ -219,5 +231,7 @@ function createOllamaProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("ollama", createOllamaProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const ollamaProvider = createOllamaProvider();
+registerProvider("ollama", () => ollamaProvider);

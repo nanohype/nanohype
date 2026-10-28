@@ -1,6 +1,7 @@
-import { VertexAI } from "@google-cloud/vertexai";
+import { type RequestOptions, VertexAI, type VertexInit } from "@google-cloud/vertexai";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
@@ -17,8 +18,14 @@ import type { LlmProvider } from "./types.js";
 // ── Google Vertex AI Provider ──────────────────────────────────────
 //
 // Gemini models via @google-cloud/vertexai. Uses Google Application
-// Default Credentials (ADC) for auth. Each factory call returns a
-// new instance with its own client and circuit breaker.
+// Default Credentials (ADC) for auth. createVertexProvider() returns an
+// instance with its own client and circuit breaker; the registered
+// `vertex` factory returns one such instance for the life of the process.
+// Every call, a stream included, passes LLM_REQUEST_TIMEOUT_MS as the
+// SDK's request timeout, which aborts the request when it fires.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION env vars,
 // plus ADC (gcloud auth application-default login).
@@ -26,18 +33,35 @@ import type { LlmProvider } from "./types.js";
 
 const DEFAULT_MODEL = "gemini-2.0-flash";
 
-function createVertexProvider(): LlmProvider {
+/** The SDK request options every model call carries. */
+const REQUEST_OPTIONS: RequestOptions = { timeout: REQUEST_TIMEOUT_MS };
+
+export interface VertexProviderOptions {
+  /**
+   * Vertex AI client settings, applied over the project and location
+   * GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION name: an API endpoint, or
+   * the `googleAuthOptions` credentials come from.
+   */
+  client?: VertexInit;
+}
+
+/**
+ * A Vertex AI provider instance with its own client and circuit breaker.
+ * The registered `vertex` provider is one of these, built with no options.
+ */
+export function createVertexProvider(options: VertexProviderOptions = {}): LlmProvider {
   let vertexAI: VertexAI | null = null;
   const cb = createCircuitBreaker();
 
   function getVertexAI(): VertexAI {
     if (!vertexAI) {
-      const project = process.env.GOOGLE_CLOUD_PROJECT;
-      const location = process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
+      const project = options.client?.project ?? process.env.GOOGLE_CLOUD_PROJECT;
+      const location =
+        options.client?.location ?? process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
       if (!project) {
         throw new Error("GOOGLE_CLOUD_PROJECT environment variable is required");
       }
-      vertexAI = new VertexAI({ project, location });
+      vertexAI = new VertexAI({ ...options.client, project, location });
     }
     return vertexAI;
   }
@@ -53,15 +77,18 @@ function createVertexProvider(): LlmProvider {
       const maxTokens = opts?.maxTokens ?? 4096;
       const temperature = opts?.temperature ?? 1;
 
-      const generativeModel = getVertexAI().getGenerativeModel({
-        model,
-        generationConfig: {
-          maxOutputTokens: maxTokens,
-          temperature,
-          ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
-          ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+      const generativeModel = getVertexAI().getGenerativeModel(
+        {
+          model,
+          generationConfig: {
+            maxOutputTokens: maxTokens,
+            temperature,
+            ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
+            ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+          },
         },
-      });
+        REQUEST_OPTIONS,
+      );
 
       const systemParts = messages.filter((m) => m.role === "system");
       const conversationParts = messages.filter((m) => m.role !== "system");
@@ -119,15 +146,18 @@ function createVertexProvider(): LlmProvider {
         const start = performance.now();
         let fullText = "";
 
-        const generativeModel = getVertexAI().getGenerativeModel({
-          model,
-          generationConfig: {
-            maxOutputTokens: maxTokens,
-            temperature,
-            ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
-            ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+        const generativeModel = getVertexAI().getGenerativeModel(
+          {
+            model,
+            generationConfig: {
+              maxOutputTokens: maxTokens,
+              temperature,
+              ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
+              ...(opts?.stop ? { stopSequences: opts.stop } : {}),
+            },
           },
-        });
+          REQUEST_OPTIONS,
+        );
 
         const systemParts = messages.filter((m) => m.role === "system");
         const conversationParts = messages.filter((m) => m.role !== "system");
@@ -196,5 +226,7 @@ function createVertexProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("vertex", createVertexProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const vertexProvider = createVertexProvider();
+registerProvider("vertex", () => vertexProvider);

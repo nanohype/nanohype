@@ -1,6 +1,7 @@
-import OpenAI from "openai";
+import OpenAI, { type ClientOptions } from "openai";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_MAX_RETRIES, REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
@@ -16,22 +17,47 @@ import type { LlmProvider } from "./types.js";
 
 // ── OpenAI Provider ────────────────────────────────────────────────
 //
-// GPT-4o via the openai SDK. Each factory call returns a new instance
-// with its own lazily-initialized SDK client and circuit breaker.
-// Supports both request/response and streaming modes.
+// GPT-4o via the openai SDK. createOpenAIProvider() returns an instance
+// with its own lazily-initialized SDK client and circuit breaker; the
+// registered `openai` factory returns one such instance for the life of
+// the process. Supports both request/response and streaming modes. The
+// client applies LLM_REQUEST_TIMEOUT_MS (30s by default) to each attempt
+// and retries a timed-out attempt once, unless the caller's client
+// options set `timeout` or `maxRetries`; resilience/request-timeout.ts
+// gives the bound that makes.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: OPENAI_API_KEY environment variable (read by the SDK).
 //
 
 const DEFAULT_MODEL = "gpt-4o";
 
-function createOpenAIProvider(): LlmProvider {
+export interface OpenAIProviderOptions {
+  /**
+   * SDK client options: credentials (OPENAI_API_KEY when unset), base URL,
+   * timeout (LLM_REQUEST_TIMEOUT_MS when unset), maxRetries
+   * (REQUEST_MAX_RETRIES when unset), or the `fetch` requests go through.
+   */
+  client?: ClientOptions;
+}
+
+/**
+ * An OpenAI provider instance with its own SDK client and circuit breaker.
+ * The registered `openai` provider is one of these, built with no options.
+ */
+export function createOpenAIProvider(options: OpenAIProviderOptions = {}): LlmProvider {
   let client: OpenAI | null = null;
   const cb = createCircuitBreaker();
 
   function getClient(): OpenAI {
     if (!client) {
-      client = new OpenAI();
+      client = new OpenAI({
+        timeout: REQUEST_TIMEOUT_MS,
+        maxRetries: REQUEST_MAX_RETRIES,
+        ...options.client,
+      });
     }
     return client;
   }
@@ -150,5 +176,7 @@ function createOpenAIProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("openai", createOpenAIProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const openaiProvider = createOpenAIProvider();
+registerProvider("openai", () => openaiProvider);

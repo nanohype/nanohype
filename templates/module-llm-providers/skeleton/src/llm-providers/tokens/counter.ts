@@ -8,9 +8,8 @@
 
 import { encodingForModel, type TiktokenModel } from "js-tiktoken";
 
-// Shared encoder cache — tiktoken encoders are stateless once initialized.
-// This is an intentional exception to the "no module-level mutable state" rule
-// because encoders are pure function objects with no side effects.
+// One encoder per model, shared by every caller: a tiktoken encoder holds
+// no per-call state once it is built.
 const encoderCache = new Map<string, ReturnType<typeof encodingForModel>>();
 
 // Models that use cl100k_base encoding

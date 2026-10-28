@@ -4,38 +4,67 @@
  * Supports image analysis via Claude's vision capabilities and text
  * analysis for transcribed audio. Registers itself as the "anthropic"
  * provider on import.
+ *
+ * The Messages API rejects `temperature`, `top_p` and `top_k` at any value,
+ * so the configured `temperature` is not sent. An instance logs the first
+ * request that carries one, once, at debug level.
+ *
+ * The client applies LLM_REQUEST_TIMEOUT_MS (30s by default) to each attempt
+ * and retries a timed-out attempt once, unless `clientOptions` sets `timeout`
+ * or `maxRetries`; resilience/request-timeout.ts gives the bound that makes.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic, { type ClientOptions } from "@anthropic-ai/sdk";
+import { logger } from "../logger.js";
 import type { ProcessedInput } from "../processors/types.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_MAX_RETRIES, REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { registerProvider } from "./registry.js";
 import type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
 
 type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
-class AnthropicVisionProvider implements MultimodalLlmProvider {
+/**
+ * The Anthropic vision provider. `clientOptions` is SDK client configuration
+ * (base URL, timeout, maxRetries, the `fetch` requests go through), applied
+ * over the LLM_REQUEST_TIMEOUT_MS timeout and REQUEST_MAX_RETRIES and under
+ * the API key this provider sets.
+ */
+export class AnthropicVisionProvider implements MultimodalLlmProvider {
   private readonly client: Anthropic;
   private readonly cb = createCircuitBreaker();
+  private droppedTemperatureLogged = false;
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, clientOptions: ClientOptions = {}) {
     const key = apiKey || process.env.ANTHROPIC_API_KEY;
     if (!key) {
       throw new Error(
         "ANTHROPIC_API_KEY environment variable is required when using the Anthropic provider",
       );
     }
-    this.client = new Anthropic({ apiKey: key });
+    this.client = new Anthropic({
+      timeout: REQUEST_TIMEOUT_MS,
+      maxRetries: REQUEST_MAX_RETRIES,
+      ...clientOptions,
+      apiKey: key,
+    });
+  }
+
+  private noteDroppedTemperature(temperature: number): void {
+    if (this.droppedTemperatureLogged) return;
+    this.droppedTemperatureLogged = true;
+    logger.debug("anthropic sends no temperature", { temperature });
   }
 
   async analyze(
     input: ProcessedInput,
     systemPrompt: string,
     model: string,
-    _temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    if (temperature !== undefined) this.noteDroppedTemperature(temperature);
+    const content: Anthropic.ContentBlockParam[] = [];
 
     if (input.base64 && input.modality === "image") {
       content.push({
@@ -84,10 +113,11 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     frames: string[],
     systemPrompt: string,
     model: string,
-    _temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    if (temperature !== undefined) this.noteDroppedTemperature(temperature);
+    const content: Anthropic.ContentBlockParam[] = [];
 
     for (let i = 0; i < frames.length; i++) {
       content.push({

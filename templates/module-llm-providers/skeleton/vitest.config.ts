@@ -11,11 +11,12 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the module's pure logic: the registry, factory facade, core
-      // types (pricing/cost), token counting, circuit breaker, adapters, and
-      // the deterministic mock provider. SDK-backed providers (bedrock,
-      // openai, anthropic, groq, vertex, huggingface, ollama)
-      // are exercised against live SDKs, not unit-covered, as are bootstrap,
-      // the index barrels, logger, metrics (OTel no-ops), and config.
+      // types (pricing/cost), token counting, circuit breaker and request
+      // timeout, adapters, and the deterministic mock provider, along with
+      // every provider that calls a model, each with a request suite that
+      // runs its SDK client, or ollama's own `fetch` call, over an
+      // in-process transport. Bootstrap, the index barrels, logger, metrics
+      // (OTel no-ops), and config are not unit-covered.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -25,13 +26,6 @@ export default defineConfig({
         "src/llm-providers/metrics.ts",
         "src/llm-providers/config.ts",
         "src/llm-providers/providers/index.ts",
-        "src/llm-providers/providers/bedrock.ts",
-        "src/llm-providers/providers/openai.ts",
-        "src/llm-providers/providers/anthropic.ts",
-        "src/llm-providers/providers/groq.ts",
-        "src/llm-providers/providers/vertex.ts",
-        "src/llm-providers/providers/huggingface.ts",
-        "src/llm-providers/providers/ollama.ts",
       ],
       thresholds: {
         lines: 75,

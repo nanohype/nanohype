@@ -62,11 +62,19 @@ variables:
 conditionals:
   - path: 'src/llm-providers/providers/bedrock.ts'
     when: IncludeBedrock
+  - path: 'src/llm-providers/__tests__/bedrock-request.test.ts'
+    when: IncludeBedrock
   - path: 'src/llm-providers/providers/vertex.ts'
+    when: IncludeVertex
+  - path: 'src/llm-providers/__tests__/vertex-request.test.ts'
     when: IncludeVertex
   - path: 'src/llm-providers/providers/huggingface.ts'
     when: IncludeHuggingFace
+  - path: 'src/llm-providers/__tests__/huggingface-request.test.ts'
+    when: IncludeHuggingFace
   - path: 'src/llm-providers/providers/ollama.ts'
+    when: IncludeOllama
+  - path: 'src/llm-providers/__tests__/ollama-request.test.ts'
     when: IncludeOllama
 
 hooks:

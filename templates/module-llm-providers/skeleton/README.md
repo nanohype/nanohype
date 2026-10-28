@@ -45,6 +45,23 @@ console.log(`\nTotal tokens: ${final.usage.outputTokens}`);
 | `huggingface` | @huggingface/inference | meta-llama/Llama-3.3-70B-Instruct | `HF_TOKEN` | Conditional |
 | `ollama` | native fetch | llama3.2 | none (local) | Conditional |
 
+### Sampling parameters
+
+Each provider decides which of the caller's `temperature` and `topP` its request carries. A provider that can send something other than the caller's values declares what it sends through its `sampling(opts)` hook, and one without the hook sends the caller's values whenever they are set.
+
+| Provider | `temperature` | `topP` |
+|----------|---------------|--------|
+| `openai`, `groq`, `vertex`, `huggingface`, `ollama` | The caller's value, and 1 when the caller sets none | The caller's value, when set |
+| `anthropic` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value | Never |
+| `bedrock` | Per model id, under `samplingParameters` | As `temperature` |
+| `mock` | Not read | Not read |
+
+The `bedrock` provider's `samplingParameters` takes one of three values. `auto`, the default, sends the caller's values only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id names none and is treated as Claude: an ARN of any other resource type (an application inference profile, provisioned model, imported model, custom model, custom model deployment, prompt or prompt router) or an id with no provider segment. `send` sends the caller's values to every model id, which is how an ARN serving another family receives them, and `omit` sends them to none. `BEDROCK_SAMPLING_PARAMETERS` sets it for the registered `bedrock` provider and is read when the provider's module loads, so a value other than `auto`, `send` or `omit` fails the import. `createBedrockProvider({ samplingParameters })`, imported from `./llm-providers/providers/bedrock.js`, sets it on a provider you register yourself.
+
+`auto` sends no `temperature` to Claude Haiku 4.5 or Claude Sonnet 4.5, though Bedrock accepts one from either. A classification or routing call that wants temperature 0 from one of them runs under `send` and leaves `topP` unset, because those models reject `temperature` and `top_p` together.
+
+The `anthropic` and `bedrock` providers log the first request whose caller-set values they drop, once per instance, at debug level. The registered instance lives as long as the process, so that is once per process.
+
 ## Streaming
 
 Every provider supports streaming via `streamChat()`. The returned `StreamResponse` is an `AsyncIterable<StreamChunk>` with a `response` promise that resolves once the stream completes:
@@ -96,6 +113,8 @@ const gatewayProvider = createGatewayAdapter(provider);
 // gatewayProvider satisfies the GatewayProvider interface structurally
 ```
 
+The adapter passes a provider's `sampling(opts)` hook through as the gateway's `sampling` hook, narrowed to `temperature`, so the gateway's response cache does not split on a temperature the provider drops.
+
 ## Custom Providers
 
 Register a new provider factory:
@@ -137,9 +156,10 @@ registerProvider("my-provider", createMyProvider);
 
 ## Architecture
 
-- **Factory-based registry** -- `registerProvider(name, factory)` stores a factory function, and `getProvider(name)` calls it to produce a fresh instance. No module-level mutable state is shared between callers — each instance has its own SDK client, circuit breaker, and internal state.
-- **Lazy SDK initialization** -- SDK clients are created on first use inside each factory closure, not at import time. This avoids side effects from module loading and allows safe tree-shaking of unused providers.
-- **Per-instance circuit breakers** -- each provider instance gets its own circuit breaker via the factory. Failures in one consumer's provider do not affect other consumers.
+- **Factory-based registry** -- `registerProvider(name, factory)` stores a factory function, and `getProvider(name)` calls it on every lookup. Each built-in provider registers a factory that returns one instance for the life of the process, so its SDK client is built once and its circuit breaker and log-once state see every request. Every provider module except `mock` also exports a factory that builds an independent instance to register under another name with its own options: `createAnthropicProvider()` from `./llm-providers/providers/anthropic.js`, and `createOpenAIProvider()`, `createGroqProvider()`, `createBedrockProvider()`, `createVertexProvider()`, `createHuggingFaceProvider()` and `createOllamaProvider()` from the matching `providers/<name>.js` module.
+- **Lazy SDK initialization** -- an SDK client is built on the instance's first request, not at import time. Importing a provider module registers its instance and reads its environment settings (`LLM_REQUEST_TIMEOUT_MS`, and `BEDROCK_SAMPLING_PARAMETERS` for `bedrock`), so an invalid value fails the import rather than the first request.
+- **Per-instance circuit breakers** -- each provider instance owns its circuit breaker. Every caller of a registered provider shares that instance, so its breaker opens on failures from any of them.
+- **Request timeouts** -- every provider that calls a model bounds its calls by `LLM_REQUEST_TIMEOUT_MS` (30s by default), so a hung connection fails into the circuit breaker instead of holding the caller. The `anthropic`, `openai` and `groq` SDK clients apply it to each attempt and retry a timed-out attempt once, so an endpoint that never answers holds the caller for two timeouts plus the SDK's backoff; a caller's own client options can set `timeout` and `maxRetries`. The `bedrock`, `vertex`, `huggingface` and `ollama` providers abandon the whole call, retries included, at one timeout, so a local Ollama model that takes longer than that to finish a reply needs a larger setting. A value that is not a positive whole number fails the import.
 - **Unified streaming** -- all providers implement `streamChat()` returning `StreamResponse`, an `AsyncIterable<StreamChunk>` with a `response` promise. The streaming adapter normalizes raw string iterables into the standard chunk format.
 - **Gateway bridge** -- `createGatewayAdapter()` wraps any `LlmProvider` into the `GatewayProvider` shape using structural typing (no compile-time dependency on module-llm-gateway).
 - **OTel metrics** -- request totals, duration, and token usage are recorded as OTel counters and histograms. No-ops when no SDK is configured.

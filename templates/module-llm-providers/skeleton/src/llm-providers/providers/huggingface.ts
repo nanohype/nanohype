@@ -1,6 +1,7 @@
-import { HfInference } from "@huggingface/inference";
+import { HfInference, type Options } from "@huggingface/inference";
 import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { countTokens } from "../tokens/counter.js";
 import type {
   ChatMessage,
@@ -17,21 +18,40 @@ import type { LlmProvider } from "./types.js";
 // ── Hugging Face Provider ──────────────────────────────────────────
 //
 // Text generation via @huggingface/inference. Uses the Inference API
-// for hosted models. Each factory call returns a new instance with
-// its own client and circuit breaker.
+// for hosted models. createHuggingFaceProvider() returns an instance
+// with its own client and circuit breaker; the registered `huggingface`
+// factory returns one such instance for the life of the process. Every
+// call, a stream included, carries an abort signal that fires at
+// LLM_REQUEST_TIMEOUT_MS, and the SDK's retries of a request answered 503
+// run under that same signal.
+//
+// Sends the caller's `temperature`, and 1 when the caller sets none, and
+// the caller's `topP` when one is set.
 //
 // Auth: HF_TOKEN environment variable.
 //
 
 const DEFAULT_MODEL = "meta-llama/Llama-3.3-70B-Instruct";
 
-function createHuggingFaceProvider(): LlmProvider {
+export interface HuggingFaceProviderOptions {
+  /** The access token requests carry. HF_TOKEN when unset. */
+  accessToken?: string;
+  /** SDK options every request takes, such as the `fetch` requests go through. */
+  client?: Options;
+}
+
+/**
+ * A Hugging Face provider instance with its own client and circuit breaker.
+ * The registered `huggingface` provider is one of these, built with no
+ * options.
+ */
+export function createHuggingFaceProvider(options: HuggingFaceProviderOptions = {}): LlmProvider {
   let client: HfInference | null = null;
   const cb = createCircuitBreaker();
 
   function getClient(): HfInference {
     if (!client) {
-      client = new HfInference(process.env.HF_TOKEN);
+      client = new HfInference(options.accessToken ?? process.env.HF_TOKEN, options.client);
     }
     return client;
   }
@@ -50,17 +70,20 @@ function createHuggingFaceProvider(): LlmProvider {
       const start = performance.now();
 
       const response = await cb.execute(() =>
-        getClient().chatCompletion({
-          model,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          max_tokens: maxTokens,
-          temperature,
-          ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
-          ...(opts?.stop ? { stop: opts.stop } : {}),
-        }),
+        getClient().chatCompletion(
+          {
+            model,
+            messages: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            max_tokens: maxTokens,
+            temperature,
+            ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
+            ...(opts?.stop ? { stop: opts.stop } : {}),
+          },
+          { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+        ),
       );
 
       const latencyMs = performance.now() - start;
@@ -90,17 +113,20 @@ function createHuggingFaceProvider(): LlmProvider {
         const start = performance.now();
         let fullText = "";
 
-        const stream = getClient().chatCompletionStream({
-          model,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          max_tokens: maxTokens,
-          temperature,
-          ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
-          ...(opts?.stop ? { stop: opts.stop } : {}),
-        });
+        const stream = getClient().chatCompletionStream(
+          {
+            model,
+            messages: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+            max_tokens: maxTokens,
+            temperature,
+            ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
+            ...(opts?.stop ? { stop: opts.stop } : {}),
+          },
+          { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+        );
 
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta?.content;
@@ -145,5 +171,7 @@ function createHuggingFaceProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("huggingface", createHuggingFaceProvider);
+// Self-register. The registry returns this one instance for every lookup,
+// so its circuit breaker holds across requests.
+const huggingFaceProvider = createHuggingFaceProvider();
+registerProvider("huggingface", () => huggingFaceProvider);

@@ -17,7 +17,7 @@ import type { PipelineResult } from "./output/types.js";
 import { getProcessorByMimeType } from "./processors/registry.js";
 import type { Modality, ProcessedInput } from "./processors/types.js";
 import { getProvider } from "./providers/registry.js";
-import type { AnalysisResult } from "./providers/types.js";
+import type { AnalysisResult, MultimodalLlmProvider } from "./providers/types.js";
 
 // Ensure all processors and providers are registered
 import "./processors/index.js";
@@ -55,6 +55,22 @@ Return ONLY valid JSON, no markdown fences or extra text.`,
 }
 Return ONLY valid JSON, no markdown fences or extra text.`,
 };
+
+/**
+ * The analysis provider each loaded configuration uses. One instance serves
+ * every file a configuration analyzes, so the provider's circuit breaker and
+ * its once-per-instance debug log see all of that configuration's requests.
+ */
+const providers = new WeakMap<Config, MultimodalLlmProvider>();
+
+function providerFor(config: Config): MultimodalLlmProvider {
+  let provider = providers.get(config);
+  if (!provider) {
+    provider = getProvider(config.llm.provider);
+    providers.set(config, provider);
+  }
+  return provider;
+}
 
 /**
  * Detect the modality of a file from its MIME type.
@@ -116,8 +132,7 @@ export async function analyzeProcessed(
 ): Promise<PipelineResult> {
   const { modality, mimeType, source } = processed;
 
-  // Get the LLM provider
-  const provider = getProvider(config.llm.provider);
+  const provider = providerFor(config);
   logger.info("Analyzing with LLM", { provider: config.llm.provider, model: config.llm.model });
 
   // Route to the appropriate analysis method
