@@ -3,7 +3,21 @@ const path = require("path");
 
 const isWatch = process.argv.includes("--watch");
 
-/** Extension host bundle — runs in Node, excludes vscode */
+/**
+ * Extension host bundle — excludes vscode. It runs on the Node release VS Code
+ * ships, not on the toolchain `engines.node` names, so `target` is the Node
+ * major of the oldest editor `engines.vscode` admits: VS Code 1.125 ships
+ * Node 24. `target` can rise only with the `engines.vscode` floor, to the Node
+ * major of the release the floor names. The `target` line of `remote/.npmrc`
+ * at a VS Code release tag names the Node release that version ships:
+ *
+ *   gh api 'repos/microsoft/vscode/contents/remote/.npmrc?ref=1.125.0' \
+ *     -H 'Accept: application/vnd.github.raw'
+ *
+ * `@types/node` types the toolchain that builds and tests the extension, so it
+ * follows `engines.node`. A Node API newer than the host's still type-checks,
+ * and is missing when the extension runs in the editor.
+ */
 const extensionConfig = {
   entryPoints: [path.resolve(__dirname, "src/extension.ts")],
   bundle: true,
@@ -11,7 +25,7 @@ const extensionConfig = {
   external: ["vscode"],
   format: "cjs",
   platform: "node",
-  target: "node22",
+  target: "node24",
   sourcemap: true,
   minify: false,
 };

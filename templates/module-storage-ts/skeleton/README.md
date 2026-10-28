@@ -113,5 +113,5 @@ const storage = await createStorageClient("my-provider", { /* config */ });
 
 ## Requirements
 
-- Node.js >= 22
+- Node.js >= 26
 - TypeScript >= 5.8

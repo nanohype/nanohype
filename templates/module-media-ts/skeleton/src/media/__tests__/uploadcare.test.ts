@@ -291,6 +291,7 @@ describe("uploadcare upload", () => {
     expect(form.get("UPLOADCARE_PUB_KEY")).toBe(PUBLIC_KEY);
     expect(form.get("UPLOADCARE_STORE")).toBe("auto");
     expect((form.get("file") as File).name).toBe("upload");
+    expect(Buffer.from(await (form.get("file") as File).arrayBuffer()).toString()).toBe("bytes");
 
     expect(asset).toEqual({
       id: "a1b2",

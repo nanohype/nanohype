@@ -83,6 +83,6 @@ prerequisites:
     purpose: 'Workspace-aware package manager for the monorepo'
     optional: false
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for TypeScript tooling and Turborepo'
     optional: false

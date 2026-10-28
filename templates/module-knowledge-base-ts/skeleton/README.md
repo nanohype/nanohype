@@ -134,5 +134,5 @@ registerProvider("my-provider", createMyProvider);
 
 ## Requirements
 
-- Node.js >= 22
+- Node.js >= 26
 - TypeScript >= 5.8

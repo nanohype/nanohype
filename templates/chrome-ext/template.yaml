@@ -87,7 +87,7 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for Vite build tooling'
     optional: false
   - name: chrome

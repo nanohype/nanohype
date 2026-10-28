@@ -19,7 +19,7 @@
     "tsconfig.json"
   ],
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
-    "@types/node": "^25.8.0",
+    "@types/node": "^26.6.5",
     "@vitest/coverage-v8": "^4.1.9",
     "typescript": "^7.0.0",
     "vitest": "^4.1.6"
