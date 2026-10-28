@@ -109,7 +109,7 @@ beforeEach(() => {
       },
     ],
     structure: { index: "index.md", orphanThresholdDays: 14, contradictionPolicy: "flag" },
-    llm: { provider: "mock-llm", model: "test", temperature: 0.2, maxPagesPerIngest: 10 },
+    llm: { provider: "mock-llm", model: "test", maxPagesPerIngest: 10 },
   };
   writeFileSync(join(tempDir, "schema.yaml"), stringify(schema), "utf-8");
   mkdirSync(join(tempDir, "test-tenant", "wiki"), { recursive: true });

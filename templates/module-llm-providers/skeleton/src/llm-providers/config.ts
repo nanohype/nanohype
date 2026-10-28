@@ -13,7 +13,13 @@ export const ProviderConfigSchema = z.object({
   models: z.record(z.string(), z.string()).optional(),
   /** Default max tokens. */
   maxTokens: z.number().int().positive().optional(),
-  /** Default temperature. */
+  /**
+   * Default temperature, applied to every request that sets none. The
+   * OpenAI, Groq, Vertex, Hugging Face and Ollama providers send it, and so
+   * does the Bedrock provider for a model outside the Claude family. No
+   * Claude model receives it, whether through the Anthropic provider or
+   * through Bedrock.
+   */
   temperature: z.number().min(0).max(2).optional(),
 });
 

@@ -12,10 +12,12 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       // Gate the module's pure logic: the registry, factory facade, core
       // types (pricing/cost), token counting, circuit breaker, adapters, and
-      // the deterministic mock provider. SDK-backed providers (bedrock,
-      // openai, anthropic, groq, vertex, huggingface, ollama)
-      // are exercised against live SDKs, not unit-covered, as are bootstrap,
-      // the index barrels, logger, metrics (OTel no-ops), and config.
+      // the deterministic mock provider, along with the anthropic and bedrock
+      // providers, whose request suites replace the SDK client with a
+      // recorder. The other SDK-backed providers (openai, groq, vertex,
+      // huggingface, ollama) are exercised against live SDKs, not
+      // unit-covered, as are bootstrap, the index barrels, logger, metrics
+      // (OTel no-ops), and config.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -25,9 +27,7 @@ export default defineConfig({
         "src/llm-providers/metrics.ts",
         "src/llm-providers/config.ts",
         "src/llm-providers/providers/index.ts",
-        "src/llm-providers/providers/bedrock.ts",
         "src/llm-providers/providers/openai.ts",
-        "src/llm-providers/providers/anthropic.ts",
         "src/llm-providers/providers/groq.ts",
         "src/llm-providers/providers/vertex.ts",
         "src/llm-providers/providers/huggingface.ts",

@@ -33,11 +33,12 @@ class AnthropicLlmProvider implements LlmProvider {
         content: m.content,
       }));
 
+    // No sampling parameters: the Messages API rejects `temperature`, `top_p`
+    // and `top_k`.
     const response = await this.cb.execute(() =>
       client.messages.create({
         model: opts?.model ?? DEFAULT_MODEL,
         max_tokens: opts?.maxTokens ?? DEFAULT_MAX_TOKENS,
-        temperature: opts?.temperature,
         ...(systemMessage ? { system: systemMessage.content } : {}),
         messages: conversationMessages,
       }),

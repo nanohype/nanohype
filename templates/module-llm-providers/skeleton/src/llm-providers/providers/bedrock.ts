@@ -33,9 +33,23 @@ import type { LlmProvider } from "./types.js";
 // Converse normalizes the model-family quirks (Claude vs. Llama) into one
 // request/response shape, so there is no hand-rolled body marshalling.
 //
+// No Claude model receives `temperature`, `top_p` or `top_k`, whether
+// through this provider or through the Anthropic one. Bedrock documents
+// them per Claude model: unsupported outright, held to their defaults,
+// limited to one of `temperature` and `top_p`, or incompatible with
+// thinking, which some models run by default. Rules that differ per
+// model cannot be met from provider-neutral options, so a Claude model
+// id gets none of them in either request mode. Other model families get
+// the caller's values.
+//
 
 const DEFAULT_MODEL = "us.anthropic.claude-sonnet-5";
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+
+// A Claude model id on Bedrock: the foundation model (`anthropic.…`), an
+// inference profile (`us.anthropic.…`, `global.anthropic.…`), or an ARN
+// ending in either.
+const CLAUDE_MODEL_ID = /(?:^|[./])anthropic\./;
 
 // Never trust raw model output — validate the Converse usage block before
 // reading token counts. Fields are optional because not every model family
@@ -101,6 +115,23 @@ function createBedrockProvider(): LlmProvider {
 
   const pricing: Pricing = getPricing("claude-sonnet-5");
 
+  // The caller's sampling options, as Converse names them, for a request
+  // to `model`: none for a Claude model id. The first request that drops
+  // one says so at debug level.
+  let droppedSamplingLogged = false;
+  function samplingFor(model: string, opts?: ChatOptions): { temperature?: number; topP?: number } {
+    const requested = {
+      ...(opts?.temperature !== undefined ? { temperature: opts.temperature } : {}),
+      ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
+    };
+    if (!CLAUDE_MODEL_ID.test(model)) return requested;
+    if (Object.keys(requested).length > 0 && !droppedSamplingLogged) {
+      droppedSamplingLogged = true;
+      logger.debug("bedrock sends no sampling options to a Claude model", { model, ...requested });
+    }
+    return {};
+  }
+
   return {
     name: "bedrock",
     pricing,
@@ -108,14 +139,7 @@ function createBedrockProvider(): LlmProvider {
     async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<LlmResponse> {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      // Sampling parameters are omitted unless the caller sets one. Claude
-      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-      // `top_p` and `top_k` outright — the default value included — so a
-      // request that always carries one cannot reach the two models
-      // standards/llm-policy.json names as the default and the escalation
-      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-      // caller keeps the option rather than losing it.
-      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
+      const sampling = samplingFor(model, opts);
 
       const { system, turns } = buildConverse(messages);
       const start = performance.now();
@@ -129,7 +153,6 @@ function createBedrockProvider(): LlmProvider {
             inferenceConfig: {
               maxTokens,
               ...sampling,
-              ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
               ...(opts?.stop ? { stopSequences: opts.stop } : {}),
             },
           }),
@@ -158,14 +181,7 @@ function createBedrockProvider(): LlmProvider {
     streamChat(messages: ChatMessage[], opts?: ChatOptions): StreamResponse {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      // Sampling parameters are omitted unless the caller sets one. Claude
-      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-      // `top_p` and `top_k` outright — the default value included — so a
-      // request that always carries one cannot reach the two models
-      // standards/llm-policy.json names as the default and the escalation
-      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-      // caller keeps the option rather than losing it.
-      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
+      const sampling = samplingFor(model, opts);
 
       let resolveResponse: (value: LlmResponse) => void;
       const responsePromise = new Promise<LlmResponse>((resolve) => {
@@ -187,7 +203,6 @@ function createBedrockProvider(): LlmProvider {
             inferenceConfig: {
               maxTokens,
               ...sampling,
-              ...(opts?.topP !== undefined ? { topP: opts.topP } : {}),
               ...(opts?.stop ? { stopSequences: opts.stop } : {}),
             },
           }),

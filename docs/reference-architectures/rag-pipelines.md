@@ -461,13 +461,13 @@ Build an eval dataset, run it on every pipeline change, track metrics over time.
 
 ### 11.2 Generation Failures
 
-| Symptom                                                     | Likely cause                                                           | Fix                                                                                                                     |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Answer contradicts the context                              | Model ignoring context (especially with strong priors)                 | Move context closer to the question in the prompt, increase temperature=0, add explicit instruction to only use context |
-| Answer is correct but does not cite sources                 | Citation instruction not strong enough or not in system prompt         | Reinforce citation instruction, provide few-shot examples                                                               |
-| Answer says "I don't know" when context contains the answer | Similarity threshold too high, or context placed too far from question | Lower threshold, restructure prompt, check chunk quality                                                                |
-| Answer includes information not in the context              | Hallucination, model falling back to training data                     | Add faithfulness check, instruct model to only use provided context, reduce temperature                                 |
-| Answer is verbose and unfocused                             | Too many chunks included, no instruction on conciseness                | Reduce number of chunks, add reranking, instruct model on desired length                                                |
+| Symptom                                                     | Likely cause                                                           | Fix                                                                                                         |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Answer contradicts the context                              | Model ignoring context (especially with strong priors)                 | Move context closer to the question in the prompt, add explicit instruction to only use context             |
+| Answer is correct but does not cite sources                 | Citation instruction not strong enough or not in system prompt         | Reinforce citation instruction, provide few-shot examples                                                   |
+| Answer says "I don't know" when context contains the answer | Similarity threshold too high, or context placed too far from question | Lower threshold, restructure prompt, check chunk quality                                                    |
+| Answer includes information not in the context              | Hallucination, model falling back to training data                     | Add faithfulness check, instruct model to only use provided context, require a cited passage for each claim |
+| Answer is verbose and unfocused                             | Too many chunks included, no instruction on conciseness                | Reduce number of chunks, add reranking, instruct model on desired length                                    |
 
 ### 11.3 Debugging Strategy
 

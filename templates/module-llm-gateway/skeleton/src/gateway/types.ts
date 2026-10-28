@@ -17,7 +17,12 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0–2). */
+  /**
+   * Temperature for sampling (0–2). The OpenAI and Groq providers send it,
+   * and so does the Bedrock provider for a model outside the Claude family.
+   * No Claude model receives it, whether through the Anthropic provider or
+   * through Bedrock.
+   */
   temperature?: number;
   /** Force a specific provider by name. */
   provider?: string;
@@ -70,6 +75,11 @@ export interface GatewayConfig {
   models?: Record<string, string>;
   /** Default max tokens. */
   maxTokens?: number;
-  /** Default temperature. */
+  /**
+   * Default temperature, applied to every request that sets none. The OpenAI
+   * and Groq providers send it, and so does the Bedrock provider for a model
+   * outside the Claude family. No Claude model receives it, whether through
+   * the Anthropic provider or through Bedrock.
+   */
   temperature?: number;
 }

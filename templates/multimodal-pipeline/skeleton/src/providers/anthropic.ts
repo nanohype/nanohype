@@ -4,9 +4,14 @@
  * Supports image analysis via Claude's vision capabilities and text
  * analysis for transcribed audio. Registers itself as the "anthropic"
  * provider on import.
+ *
+ * The Messages API rejects `temperature`, `top_p` and `top_k`, so the
+ * `temperature` the provider interface passes in is not sent. The first
+ * request an instance serves says so at debug level.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { logger } from "../logger.js";
 import type { ProcessedInput } from "../processors/types.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerProvider } from "./registry.js";
@@ -17,6 +22,7 @@ type ImageMediaType = "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 class AnthropicVisionProvider implements MultimodalLlmProvider {
   private readonly client: Anthropic;
   private readonly cb = createCircuitBreaker();
+  private droppedTemperatureLogged = false;
 
   constructor(apiKey?: string) {
     const key = apiKey || process.env.ANTHROPIC_API_KEY;
@@ -28,14 +34,21 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     this.client = new Anthropic({ apiKey: key });
   }
 
+  private noteDroppedTemperature(temperature: number): void {
+    if (this.droppedTemperatureLogged) return;
+    this.droppedTemperatureLogged = true;
+    logger.debug("anthropic sends no temperature", { temperature });
+  }
+
   async analyze(
     input: ProcessedInput,
     systemPrompt: string,
     model: string,
-    _temperature: number,
+    temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    this.noteDroppedTemperature(temperature);
+    const content: Anthropic.ContentBlockParam[] = [];
 
     if (input.base64 && input.modality === "image") {
       content.push({
@@ -84,10 +97,11 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     frames: string[],
     systemPrompt: string,
     model: string,
-    _temperature: number,
+    temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    this.noteDroppedTemperature(temperature);
+    const content: Anthropic.ContentBlockParam[] = [];
 
     for (let i = 0; i < frames.length; i++) {
       content.push({

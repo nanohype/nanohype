@@ -62,6 +62,14 @@ export interface Gateway {
   close(): Promise<void>;
 }
 
+/** The sampling options `provider` sends for `opts`. */
+function sentSampling(
+  provider: GatewayProvider,
+  opts: ChatOptions,
+): Pick<ChatOptions, "temperature"> {
+  return provider.sampling ? provider.sampling(opts) : { temperature: opts.temperature };
+}
+
 /** Zod schema for validating createGateway arguments. */
 const CreateGatewaySchema = z.object({
   providers: z.array(z.string().min(1)).min(1, "At least one provider is required"),
@@ -110,6 +118,17 @@ export function createGateway(config: GatewayConfig): Gateway {
   // Cost tracker
   const costTracker = createCostTracker();
 
+  // The options one provider receives: the request's, with the model the
+  // config names for that provider when the request names none. Computed
+  // per provider so each candidate gets its own configured model.
+  function attemptOptions(provider: GatewayProvider, chatOpts: ChatOptions): ChatOptions {
+    const attemptOpts: ChatOptions = { ...chatOpts };
+    if (!attemptOpts.model && config.models?.[provider.name]) {
+      attemptOpts.model = config.models[provider.name];
+    }
+    return attemptOpts;
+  }
+
   return {
     async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<GatewayResponse> {
       const chatOpts: ChatOptions = {
@@ -125,12 +144,23 @@ export function createGateway(config: GatewayConfig): Gateway {
         effectiveProviders = [specific];
       }
 
-      // Build cache context and check cache
+      // Build cache context and check cache. The lookup precedes routing,
+      // since routing strategies update their state on every selection, so
+      // the routed provider is not known yet: the key carries a temperature
+      // when any provider that could serve the request sends one, and a
+      // temperature every candidate drops does not split entries.
       const promptText = messages.map((m) => m.content).join("\n");
+      const temperatureSent = effectiveProviders.some(
+        (provider) =>
+          sentSampling(provider, attemptOptions(provider, chatOpts)).temperature !== undefined,
+      );
       const cacheContext = {
         prompt: promptText,
         model: chatOpts.model ?? "",
-        params: { maxTokens: chatOpts.maxTokens, temperature: chatOpts.temperature },
+        params: {
+          maxTokens: chatOpts.maxTokens,
+          temperature: temperatureSent ? chatOpts.temperature : undefined,
+        },
         ttl: chatOpts.cacheTtl,
       };
       const cacheKey = computeCacheKey(cacheContext);
@@ -164,15 +194,8 @@ export function createGateway(config: GatewayConfig): Gateway {
       let lastError: unknown;
 
       for (const provider of candidates) {
-        // Apply model override from config if not set in options. Recomputed
-        // per candidate so each provider gets its own configured model.
-        const attemptOpts: ChatOptions = { ...chatOpts };
-        if (!attemptOpts.model && config.models?.[provider.name]) {
-          attemptOpts.model = config.models[provider.name];
-        }
-
         try {
-          response = await provider.chat(messages, attemptOpts);
+          response = await provider.chat(messages, attemptOptions(provider, chatOpts));
           routing.recordOutcome?.(provider.name, response.latencyMs, true);
           break;
         } catch (error) {

@@ -43,6 +43,10 @@ const generationSchema = z.object({
   // Bedrock model id (the org default). For the direct Anthropic API use
   // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
   model: z.string().default("us.anthropic.claude-sonnet-5"),
+  // Sent by the openai provider only. No Claude model receives it, whether
+  // through the anthropic provider, since the Messages API rejects sampling
+  // parameters, or through the bedrock provider, since Bedrock restricts
+  // them per Claude model, up to rejecting them outright.
   temperature: z.coerce.number().min(0).max(2).default(0.1),
   maxTokens: z.coerce.number().int().positive().default(1024),
 });

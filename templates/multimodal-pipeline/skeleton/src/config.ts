@@ -15,6 +15,8 @@ const llmSchema = z.object({
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
   model: z.string().default("claude-sonnet-5"),
+  // Sent by the openai provider. The anthropic provider sends no sampling
+  // parameters: the Messages API rejects them.
   temperature: z.coerce.number().min(0).max(2).default(0.1),
   maxTokens: z.coerce.number().int().positive().default(4096),
 });

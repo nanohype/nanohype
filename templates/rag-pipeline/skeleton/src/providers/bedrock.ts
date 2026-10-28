@@ -5,6 +5,14 @@
  * hung Bedrock socket trips the circuit breaker instead of hanging, and the
  * Titan response is schema-validated before use (never trust raw model output).
  *
+ * The LLM sends no `temperature`, `top_p` or `top_k` to any model, so the
+ * `temperature` the provider interface passes in is not sent. Bedrock
+ * documents them per Claude model, the template's default family:
+ * unsupported outright, held to their defaults, limited to one of
+ * `temperature` and `top_p`, or incompatible with thinking, which some
+ * models run by default. The first request an instance serves says so at
+ * debug level.
+ *
  * Registers itself as the "bedrock" LLM provider and the "bedrock" embedding
  * provider on import.
  */
@@ -15,6 +23,7 @@ import {
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
 import { z } from "zod";
+import { logger } from "../logger.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerEmbeddingProvider, registerLlmProvider } from "./registry.js";
 import type { EmbeddingProvider, LlmProvider } from "./types.js";
@@ -28,14 +37,22 @@ function newClient(): BedrockRuntimeClient {
 class BedrockLlm implements LlmProvider {
   private readonly client = newClient();
   private readonly cb = createCircuitBreaker();
+  private droppedTemperatureLogged = false;
+
+  private noteDroppedTemperature(model: string, temperature: number): void {
+    if (this.droppedTemperatureLogged) return;
+    this.droppedTemperatureLogged = true;
+    logger.debug("bedrock sends no temperature", { model, temperature });
+  }
 
   async generate(
     systemPrompt: string,
     userMessage: string,
     model: string,
-    _temperature: number,
+    temperature: number,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
+    this.noteDroppedTemperature(model, temperature);
     const response = await this.cb.execute(() =>
       this.client.send(
         new ConverseCommand({

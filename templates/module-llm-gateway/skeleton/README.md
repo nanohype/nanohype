@@ -147,6 +147,8 @@ const myProvider: GatewayProvider = {
 registerProvider(myProvider);
 ```
 
+A provider that leaves `temperature` out of some or all of its requests declares what it sends with `sampling(opts)`. The gateway keys its response cache on the result, so a temperature the provider drops does not split cache entries. A provider without `sampling` is taken to send `temperature` as given.
+
 ## Architecture
 
 - **Gateway facade** -- `createGateway()` returns a `Gateway` object that orchestrates provider selection, caching, and cost tracking behind a single `chat()` method. Application code never touches provider internals or strategy state.

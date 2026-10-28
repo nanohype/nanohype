@@ -11,6 +11,12 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // circuit breaker for fault isolation. Maps Anthropic-native
 // responses into the unified GatewayResponse shape.
 //
+// No Claude model receives `temperature`, `top_p` or `top_k`, whether
+// through this provider or through Bedrock. The Messages API rejects
+// them at any value, the default included, so this provider sends none
+// whatever `opts.temperature` holds. The Bedrock provider leaves them
+// out for Claude model ids too; bedrock.ts gives the Bedrock reason.
+//
 
 const DEFAULT_MODEL = "claude-sonnet-5";
 
@@ -30,17 +36,13 @@ const anthropicProvider: GatewayProvider = {
     output: 15,
   } satisfies ProviderPricing,
 
+  sampling(): Pick<ChatOptions, "temperature"> {
+    return {};
+  },
+
   async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<GatewayResponse> {
     const model = opts?.model ?? DEFAULT_MODEL;
     const maxTokens = opts?.maxTokens ?? 4096;
-    // Sampling parameters are omitted unless the caller sets one. Claude
-    // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-    // `top_p` and `top_k` outright — the default value included — so a
-    // request that always carries one cannot reach the two models
-    // standards/llm-policy.json names as the default and the escalation
-    // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-    // caller keeps the option rather than losing it.
-    const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
 
     // Separate system messages from conversation
     const systemParts = messages.filter((m) => m.role === "system");
@@ -53,7 +55,6 @@ const anthropicProvider: GatewayProvider = {
       getClient().messages.create({
         model,
         max_tokens: maxTokens,
-        ...sampling,
         system: systemPrompt || undefined,
         messages: conversationParts.map((m) => ({
           role: m.role as "user" | "assistant",

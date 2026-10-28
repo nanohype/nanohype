@@ -16,9 +16,29 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // carries an explicit request timeout so a hung Bedrock socket trips the
 // circuit breaker instead of hanging forever.
 //
+// No Claude model receives `temperature`, `top_p` or `top_k`, whether
+// through this provider or through the Anthropic one. Bedrock documents
+// them per Claude model: unsupported outright, held to their defaults,
+// limited to one of `temperature` and `top_p`, or incompatible with
+// thinking, which some models run by default. Rules that differ per
+// model cannot be met from provider-neutral options, so a Claude model
+// id gets none of them. Other model families get the caller's values.
+//
 
 const DEFAULT_MODEL = process.env.LLM_MODEL ?? "us.anthropic.claude-sonnet-5";
 const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+
+// A Claude model id on Bedrock: the foundation model (`anthropic.…`), an
+// inference profile (`us.anthropic.…`, `global.anthropic.…`), or an ARN
+// ending in either.
+const CLAUDE_MODEL_ID = /(?:^|[./])anthropic\./;
+
+/** The sampling options a Converse request for `opts` carries. */
+function samplingFor(opts: ChatOptions): Pick<ChatOptions, "temperature"> {
+  const model = opts.model ?? DEFAULT_MODEL;
+  if (CLAUDE_MODEL_ID.test(model) || opts.temperature === undefined) return {};
+  return { temperature: opts.temperature };
+}
 
 let client: BedrockRuntimeClient | null = null;
 function getClient(): BedrockRuntimeClient {
@@ -39,17 +59,12 @@ const bedrockProvider: GatewayProvider = {
     output: 15,
   } satisfies ProviderPricing,
 
+  sampling: samplingFor,
+
   async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<GatewayResponse> {
     const model = opts?.model ?? DEFAULT_MODEL;
     const maxTokens = opts?.maxTokens ?? 4096;
-    // Sampling parameters are omitted unless the caller sets one. Claude
-    // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-    // `top_p` and `top_k` outright — the default value included — so a
-    // request that always carries one cannot reach the two models
-    // standards/llm-policy.json names as the default and the escalation
-    // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-    // caller keeps the option rather than losing it.
-    const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
+    const sampling = samplingFor(opts ?? {});
 
     // Separate system messages from the conversation — Bedrock takes the
     // system prompt as its own field, with the cachePoint right after it.

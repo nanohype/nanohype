@@ -22,6 +22,13 @@ import type { LlmProvider } from "./types.js";
 //
 // Auth: ANTHROPIC_API_KEY environment variable (read by the SDK).
 //
+// No Claude model receives `temperature`, `top_p` or `top_k`, whether
+// through this provider or through Bedrock. The Messages API rejects
+// them at any value, the default included, so neither request mode sends
+// them whatever `opts.temperature` and `opts.topP` hold. The Bedrock
+// provider leaves them out for Claude model ids too; bedrock.ts gives the
+// Bedrock reason.
+//
 
 const DEFAULT_MODEL = "claude-sonnet-5";
 
@@ -38,6 +45,19 @@ function createAnthropicProvider(): LlmProvider {
 
   const pricing: Pricing = getPricing(DEFAULT_MODEL);
 
+  // The first request that sets a sampling option says, at debug level,
+  // that it was not sent.
+  let droppedSamplingLogged = false;
+  function noteDroppedSampling(opts?: ChatOptions): void {
+    if (droppedSamplingLogged) return;
+    if (opts?.temperature === undefined && opts?.topP === undefined) return;
+    droppedSamplingLogged = true;
+    logger.debug("anthropic sends no sampling options", {
+      temperature: opts.temperature,
+      topP: opts.topP,
+    });
+  }
+
   return {
     name: "anthropic",
     pricing,
@@ -45,14 +65,7 @@ function createAnthropicProvider(): LlmProvider {
     async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<LlmResponse> {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      // Sampling parameters are omitted unless the caller sets one. Claude
-      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-      // `top_p` and `top_k` outright — the default value included — so a
-      // request that always carries one cannot reach the two models
-      // standards/llm-policy.json names as the default and the escalation
-      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-      // caller keeps the option rather than losing it.
-      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
+      noteDroppedSampling(opts);
 
       const systemParts = messages.filter((m) => m.role === "system");
       const conversationParts = messages.filter((m) => m.role !== "system");
@@ -64,13 +77,11 @@ function createAnthropicProvider(): LlmProvider {
         getClient().messages.create({
           model,
           max_tokens: maxTokens,
-          ...sampling,
           system: systemPrompt || undefined,
           messages: conversationParts.map((m) => ({
             role: m.role as "user" | "assistant",
             content: m.content,
           })),
-          ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
           ...(opts?.stop ? { stop_sequences: opts.stop } : {}),
         }),
       );
@@ -97,14 +108,7 @@ function createAnthropicProvider(): LlmProvider {
     streamChat(messages: ChatMessage[], opts?: ChatOptions): StreamResponse {
       const model = opts?.model ?? DEFAULT_MODEL;
       const maxTokens = opts?.maxTokens ?? 4096;
-      // Sampling parameters are omitted unless the caller sets one. Claude
-      // Sonnet 5, Opus 5, Opus 4.8/4.7 and Fable 5 reject `temperature`,
-      // `top_p` and `top_k` outright — the default value included — so a
-      // request that always carries one cannot reach the two models
-      // standards/llm-policy.json names as the default and the escalation
-      // tier. Haiku 4.5 and the 4.6 line still accept them, which is why the
-      // caller keeps the option rather than losing it.
-      const sampling = opts?.temperature !== undefined ? { temperature: opts.temperature } : {};
+      noteDroppedSampling(opts);
 
       const systemParts = messages.filter((m) => m.role === "system");
       const conversationParts = messages.filter((m) => m.role !== "system");
@@ -122,13 +126,11 @@ function createAnthropicProvider(): LlmProvider {
         const stream = getClient().messages.stream({
           model,
           max_tokens: maxTokens,
-          ...sampling,
           system: systemPrompt || undefined,
           messages: conversationParts.map((m) => ({
             role: m.role as "user" | "assistant",
             content: m.content,
           })),
-          ...(opts?.topP !== undefined ? { top_p: opts.topP } : {}),
           ...(opts?.stop ? { stop_sequences: opts.stop } : {}),
         });
 
