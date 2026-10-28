@@ -13,7 +13,10 @@ export const ProviderConfigSchema = z.object({
   models: z.record(z.string(), z.string()).optional(),
   /** Default max tokens. */
   maxTokens: z.number().int().positive().optional(),
-  /** Default temperature. */
+  /**
+   * Default temperature. The Anthropic provider does not send it: the
+   * Messages API rejects sampling parameters.
+   */
   temperature: z.number().min(0).max(2).optional(),
 });
 

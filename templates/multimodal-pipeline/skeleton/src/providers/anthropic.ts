@@ -4,6 +4,9 @@
  * Supports image analysis via Claude's vision capabilities and text
  * analysis for transcribed audio. Registers itself as the "anthropic"
  * provider on import.
+ *
+ * The Messages API rejects `temperature`, `top_p` and `top_k`, so the
+ * `temperature` the provider interface passes in is not sent.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -35,7 +38,7 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     _temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    const content: Anthropic.ContentBlockParam[] = [];
 
     if (input.base64 && input.modality === "image") {
       content.push({
@@ -87,7 +90,7 @@ class AnthropicVisionProvider implements MultimodalLlmProvider {
     _temperature: number,
     maxTokens: number,
   ): Promise<AnalysisResult> {
-    const content: Anthropic.MessageParam["content"] = [];
+    const content: Anthropic.ContentBlockParam[] = [];
 
     for (let i = 0; i < frames.length; i++) {
       content.push({

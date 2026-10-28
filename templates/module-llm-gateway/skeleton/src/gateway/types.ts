@@ -17,7 +17,10 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0–2). */
+  /**
+   * Temperature for sampling (0–2). The Anthropic provider does not send it:
+   * the Messages API rejects sampling parameters.
+   */
   temperature?: number;
   /** Force a specific provider by name. */
   provider?: string;
@@ -70,6 +73,9 @@ export interface GatewayConfig {
   models?: Record<string, string>;
   /** Default max tokens. */
   maxTokens?: number;
-  /** Default temperature. */
+  /**
+   * Default temperature. The Anthropic provider does not send it: the
+   * Messages API rejects sampling parameters.
+   */
   temperature?: number;
 }

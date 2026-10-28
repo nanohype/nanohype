@@ -18,9 +18,15 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0-2). */
+  /**
+   * Temperature for sampling (0-2). The Anthropic provider does not send it:
+   * the Messages API rejects sampling parameters.
+   */
   temperature?: number;
-  /** Top-p nucleus sampling. */
+  /**
+   * Top-p nucleus sampling. The Anthropic provider does not send it: the
+   * Messages API rejects sampling parameters.
+   */
   topP?: number;
   /** Stop sequences. */
   stop?: string[];
