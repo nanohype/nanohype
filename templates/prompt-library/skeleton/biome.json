@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "files": {
     "ignoreUnknown": true,
     "includes": [
@@ -11,7 +11,8 @@
       "!**/.next",
       "!**/out",
       "!**/cdk.out",
-      "!package-lock.json"
+      "!package-lock.json",
+      "!prompts/**/*.yaml"
     ]
   },
   "css": {
@@ -36,6 +37,16 @@
         "noFloatingPromises": "error",
         "noMisusedPromises": "error"
       }
+    }
+  },
+  "markdown": {
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "yaml": {
+    "formatter": {
+      "enabled": false
     }
   },
   "javascript": {
