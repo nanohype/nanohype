@@ -221,15 +221,20 @@ function createStripeProvider(): PaymentProvider {
   };
 }
 
+// A status this table does not know maps to `incomplete`, never `active`:
+// a subscription whose state cannot be read grants no access to the plan.
 function mapStripeSubStatus(status: string): Subscription["status"] {
   const mapping: Record<string, Subscription["status"]> = {
     active: "active",
-    canceled: "canceled",
-    past_due: "past_due",
     trialing: "trialing",
+    incomplete: "incomplete",
+    incomplete_expired: "incomplete_expired",
+    past_due: "past_due",
+    unpaid: "unpaid",
     paused: "paused",
+    canceled: "canceled",
   };
-  return mapping[status] ?? "active";
+  return mapping[status] ?? "incomplete";
 }
 
 function mapStripeInvoiceStatus(status: string | null): Invoice["status"] {

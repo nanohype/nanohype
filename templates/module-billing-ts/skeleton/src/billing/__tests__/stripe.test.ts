@@ -297,17 +297,39 @@ describe("stripe provider createSubscription", () => {
     });
   });
 
-  it("falls back to active for a subscription status it does not map", async () => {
+  it.each([
+    "active",
+    "trialing",
+    "incomplete",
+    "incomplete_expired",
+    "past_due",
+    "unpaid",
+    "paused",
+    "canceled",
+  ])("carries the Stripe subscription status %s through unchanged", async (status) => {
     client.subscriptions.create.mockResolvedValue({
-      id: "sub_incomplete",
-      status: "incomplete_expired",
+      id: `sub_${status}`,
+      status,
       items: { data: [{ current_period_start: 0, current_period_end: 0 }] },
     });
     const provider = await initialized();
 
     const subscription = await provider.createSubscription("cus_1", "price_1");
 
-    expect(subscription.status).toBe("active");
+    expect(subscription.status).toBe(status);
+  });
+
+  it("maps a subscription status it does not know to incomplete, never active", async () => {
+    client.subscriptions.create.mockResolvedValue({
+      id: "sub_unknown",
+      status: "suspended",
+      items: { data: [{ current_period_start: 0, current_period_end: 0 }] },
+    });
+    const provider = await initialized();
+
+    const subscription = await provider.createSubscription("cus_1", "price_1");
+
+    expect(subscription.status).toBe("incomplete");
   });
 
   it("throws when Stripe returns a subscription with no items", async () => {

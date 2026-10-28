@@ -109,8 +109,22 @@ export interface Subscription {
   /** Plan or price identifier. */
   planId: string;
 
-  /** Current subscription status. */
-  status: "active" | "canceled" | "past_due" | "trialing" | "paused";
+  /**
+   * Current subscription status. Only `active` and `trialing` entitle the
+   * customer to the plan; every other status means payment has not cleared
+   * (`incomplete`, `past_due`, `unpaid`), the first payment never cleared
+   * (`incomplete_expired`), or the subscription is stopped (`paused`,
+   * `canceled`).
+   */
+  status:
+    | "active"
+    | "trialing"
+    | "incomplete"
+    | "incomplete_expired"
+    | "past_due"
+    | "unpaid"
+    | "paused"
+    | "canceled";
 
   /** ISO-8601 timestamp of the current period start. */
   currentPeriodStart: string;
