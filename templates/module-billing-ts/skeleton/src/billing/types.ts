@@ -1,9 +1,12 @@
 // ── Billing Core Types ─────────────────────────────────────────────
 //
 // Shared interfaces for usage records, invoices, subscriptions,
-// customers, line items, and configuration. These are provider-agnostic
-// — every payment backend works against the same shapes.
+// customers, line items, and configuration. The domain shapes are
+// provider-agnostic — every payment backend works against them — and
+// BillingConfig carries one block per built-in provider.
 //
+
+import type Stripe from "stripe";
 
 /** A recorded usage event for a customer. */
 export interface UsageRecord {
@@ -31,7 +34,12 @@ export interface LineItem {
   /** Description of the charge (e.g., "API calls — 10,000 units"). */
   description: string;
 
-  /** Metric name this line item corresponds to. */
+  /**
+   * Metric name this line item corresponds to. On an invoice listed from
+   * Stripe it is read from the `metric` metadata the Stripe provider writes
+   * on every invoice item it creates, and is empty for a line it did not
+   * create — a subscription line, or an item added in the Dashboard.
+   */
   metric: string;
 
   /** Total quantity for this line item. */
@@ -109,8 +117,24 @@ export interface Subscription {
   /** Plan or price identifier. */
   planId: string;
 
-  /** Current subscription status. */
-  status: "active" | "canceled" | "past_due" | "trialing" | "paused";
+  /**
+   * Current subscription status. Only `active` and `trialing` entitle the
+   * customer to the plan — test it with `isEntitled()`. Every other status
+   * means payment has not cleared (`incomplete`, `past_due`, `unpaid`), the
+   * first payment never cleared (`incomplete_expired`), or the subscription
+   * is stopped (`paused`, `canceled`). A status the provider reports that
+   * this union does not name reads as `incomplete`, so a state this module
+   * cannot interpret never grants access.
+   */
+  status:
+    | "active"
+    | "trialing"
+    | "incomplete"
+    | "incomplete_expired"
+    | "past_due"
+    | "unpaid"
+    | "paused"
+    | "canceled";
 
   /** ISO-8601 timestamp of the current period start. */
   currentPeriodStart: string;
@@ -163,7 +187,11 @@ export interface PricingTier {
 
 /** Configuration for creating a billing service. */
 export interface BillingConfig {
-  /** Default payment provider name. */
+  /**
+   * Payment provider name. When omitted, `DEFAULT_PROVIDER` from config.ts —
+   * the provider the project was scaffolded with. The mock provider runs only
+   * when it is named here.
+   */
   provider?: string;
 
   /** Currency code (default: "usd"). */
@@ -174,8 +202,32 @@ export interface BillingConfig {
 
   /** Stripe-specific configuration. */
   stripe?: {
+    /** Secret API key. Falls back to the STRIPE_SECRET_KEY env var. */
     secretKey?: string;
+
+    /** Webhook endpoint signing secret. Falls back to STRIPE_WEBHOOK_SECRET. */
     webhookSecret?: string;
+
+    /**
+     * Milliseconds before a single Stripe request is abandoned. Defaults to
+     * DEFAULT_STRIPE_TIMEOUT_MS.
+     */
+    timeoutMs?: number;
+
+    /**
+     * Retries the SDK makes after a connection error, a 409, or a 5xx, with
+     * exponential backoff. Defaults to DEFAULT_STRIPE_MAX_NETWORK_RETRIES.
+     * Every write carries an idempotency key, so a retried write is applied
+     * once.
+     */
+    maxNetworkRetries?: number;
+
+    /**
+     * HTTP client the SDK sends requests through. Defaults to the SDK's Node
+     * client; pass `Stripe.createFetchHttpClient()` on a runtime without
+     * `node:http`, or a client backed by a fake `fetch` in tests.
+     */
+    httpClient?: Stripe.HttpClient;
   };
 
   /** Provider-specific configuration. */
@@ -209,14 +261,34 @@ export interface ChargeResult {
   error?: string;
 }
 
-/** Webhook event emitted by billing lifecycle. */
+/** A verified webhook event from the payment provider. */
 export interface BillingWebhookEvent {
-  /** Event type (e.g., "subscription.created", "invoice.paid", "payment_failed"). */
+  /**
+   * The provider's event ID (Stripe `evt_...`). Stripe delivers an event at
+   * least once, so a handler that must act once dedupes on this ID.
+   */
+  id: string;
+
+  /**
+   * The provider's event type — for Stripe, `invoice.paid`,
+   * `invoice.payment_failed`, `customer.subscription.created`,
+   * `customer.subscription.updated`, `customer.subscription.deleted`, and the
+   * rest of Stripe's event catalog.
+   */
   type: string;
 
-  /** Event payload — shape depends on the event type. */
+  /**
+   * The object the event describes; its shape depends on the event type. On
+   * a Stripe `customer.subscription.*` event it is the Stripe subscription
+   * with `status` normalised to `Subscription["status"]`, so a status this
+   * module does not recognise reads as `incomplete` and `isEntitled()` holds
+   * for it only when it is `active` or `trialing`.
+   */
   payload: unknown;
 
-  /** ISO-8601 timestamp. */
+  /** ISO-8601 timestamp of when the provider created the event. */
   timestamp: string;
 }
+
+/** A subscription status, as `Subscription["status"]` names it. */
+export type SubscriptionStatus = Subscription["status"];

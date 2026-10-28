@@ -1,14 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { DEFAULT_STRIPE_MAX_NETWORK_RETRIES, DEFAULT_STRIPE_TIMEOUT_MS } from "../config.js";
 import { getProvider } from "../providers/registry.js";
-import { createStripeProvider } from "../providers/stripe.js";
+import { createStripeProvider, isStripeOutage } from "../providers/stripe.js";
 import type { BillingConfig, Invoice } from "../types.js";
 
 // ── Stripe Provider ────────────────────────────────────────────────
 //
 // The `stripe` package is replaced wholesale — no network, no SDK, no
-// key. The stand-in constructor records the secret key it was handed
-// and adopts the per-test stub client, so every assertion here is about
-// what the provider hands the SDK rather than what Stripe does with it.
+// key. The stand-in constructor records the secret key and options it
+// was handed and adopts the per-test stub client, so every assertion
+// here is about what the provider hands the SDK rather than what Stripe
+// does with it. billing-service.test.ts drives the real SDK through the
+// facade, with only the HTTP transport faked.
 //
 // The webhook assertions are pinned to Stripe's published signature
 // contract: `webhooks.constructEvent(payload, header, secret)` is what
@@ -20,16 +23,18 @@ import type { BillingConfig, Invoice } from "../types.js";
 
 const stripeSdk = vi.hoisted(() => {
   const constructedWith: string[] = [];
+  const optionsGiven: unknown[] = [];
   const state: { client: object } = { client: {} };
 
   class StripeStub {
-    constructor(secretKey: string) {
+    constructor(secretKey: string, options?: unknown) {
       constructedWith.push(secretKey);
+      optionsGiven.push(options);
       Object.assign(this, state.client);
     }
   }
 
-  return { StripeStub, constructedWith, state };
+  return { StripeStub, constructedWith, optionsGiven, state };
 });
 
 vi.mock("stripe", () => ({ default: stripeSdk.StripeStub }));
@@ -68,7 +73,13 @@ const VERIFIED_EVENT = {
 interface StubClient {
   customers: { create: Mock };
   subscriptions: { create: Mock };
-  invoices: { create: Mock; finalizeInvoice: Mock; pay: Mock; list: Mock };
+  invoices: {
+    create: Mock;
+    finalizeInvoice: Mock;
+    pay: Mock;
+    list: Mock;
+    listLineItems: Mock;
+  };
   invoiceItems: { create: Mock };
   webhooks: { constructEvent: Mock };
 }
@@ -77,10 +88,21 @@ function stubClient(): StubClient {
   return {
     customers: { create: vi.fn() },
     subscriptions: { create: vi.fn() },
-    invoices: { create: vi.fn(), finalizeInvoice: vi.fn(), pay: vi.fn(), list: vi.fn() },
+    invoices: {
+      create: vi.fn(),
+      finalizeInvoice: vi.fn(),
+      pay: vi.fn(),
+      list: vi.fn(),
+      listLineItems: vi.fn(),
+    },
     invoiceItems: { create: vi.fn() },
     webhooks: { constructEvent: vi.fn() },
   };
+}
+
+/** An error shaped like the SDK's for an HTTP answer with this status. */
+function stripeError(statusCode: number, message: string): Error {
+  return Object.assign(new Error(message), { statusCode, type: "StripeError" });
 }
 
 let client: StubClient;
@@ -89,6 +111,7 @@ beforeEach(() => {
   client = stubClient();
   stripeSdk.state.client = client;
   stripeSdk.constructedWith.length = 0;
+  stripeSdk.optionsGiven.length = 0;
   vi.stubEnv("STRIPE_SECRET_KEY", undefined);
   vi.stubEnv("STRIPE_WEBHOOK_SECRET", undefined);
 });
@@ -183,6 +206,28 @@ describe("stripe provider init", () => {
     await expect(provider.init({ stripe: {} })).rejects.toThrow(/Stripe secret key is required/);
     expect(stripeSdk.constructedWith).toEqual([]);
   });
+
+  it("sets an explicit request timeout and retry count when the config names none", async () => {
+    await initialized();
+
+    expect(stripeSdk.optionsGiven).toEqual([
+      {
+        timeout: DEFAULT_STRIPE_TIMEOUT_MS,
+        maxNetworkRetries: DEFAULT_STRIPE_MAX_NETWORK_RETRIES,
+        httpClient: undefined,
+      },
+    ]);
+  });
+
+  it("hands the SDK the configured timeout, retry count, and HTTP client", async () => {
+    const httpClient = { getClientName: () => "fake", makeRequest: vi.fn() };
+
+    await initialized({
+      stripe: { secretKey: SECRET_KEY, timeoutMs: 5_000, maxNetworkRetries: 0, httpClient },
+    });
+
+    expect(stripeSdk.optionsGiven).toEqual([{ timeout: 5_000, maxNetworkRetries: 0, httpClient }]);
+  });
 });
 
 describe("stripe provider createCustomer", () => {
@@ -261,6 +306,75 @@ describe("stripe provider circuit breaker", () => {
     );
     expect(client.customers.create).toHaveBeenCalledTimes(5);
   });
+
+  it("opens on 5xx answers, which say Stripe is failing", async () => {
+    client.customers.create.mockRejectedValue(stripeError(503, "Service unavailable"));
+    const provider = await initialized();
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await expect(provider.createCustomer("a@example.com", "A")).rejects.toThrow(
+        "Service unavailable",
+      );
+    }
+
+    await expect(provider.createCustomer("a@example.com", "A")).rejects.toThrow(
+      /Circuit breaker is open/,
+    );
+  });
+
+  it("stays closed through declined cards, so one customer's decline blocks no one else", async () => {
+    client.invoices.create.mockRejectedValue(stripeError(402, "Your card was declined."));
+    const provider = await initialized();
+
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const result = await provider.chargeInvoice(invoiceFixture({ id: `inv-${attempt}` }));
+      expect(result).toEqual({ ok: false, error: "Your card was declined." });
+    }
+
+    expect(client.invoices.create).toHaveBeenCalledTimes(10);
+  });
+
+  it.each([
+    [400, "invalid request"],
+    [401, "invalid API key"],
+    [404, "no such customer"],
+    [429, "rate limited"],
+  ])("stays closed through %i answers (%s)", async (status, message) => {
+    client.customers.create.mockRejectedValue(stripeError(status, message));
+    const provider = await initialized();
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      await expect(provider.createCustomer("a@example.com", "A")).rejects.toThrow(message);
+    }
+
+    expect(client.customers.create).toHaveBeenCalledTimes(6);
+  });
+});
+
+describe("isStripeOutage", () => {
+  it.each([400, 401, 402, 403, 404, 409, 429, 499])("reads a %i answer as Stripe up", (status) => {
+    expect(isStripeOutage(stripeError(status, "refused"))).toBe(false);
+  });
+
+  it.each([500, 502, 503, 504])("reads a %i answer as an outage", (status) => {
+    expect(isStripeOutage(stripeError(status, "failing"))).toBe(true);
+  });
+
+  it("reads an error with no HTTP status — a connection failure or timeout — as an outage", () => {
+    expect(isStripeOutage(new Error("ECONNRESET"))).toBe(true);
+  });
+
+  it("reads a status that is not a number as no status at all", () => {
+    expect(isStripeOutage({ statusCode: "402" })).toBe(true);
+  });
+
+  it.each([
+    ["a string", "rate_limited"],
+    ["null", null],
+    ["undefined", undefined],
+  ])("reads %s as an outage", (_label, err) => {
+    expect(isStripeOutage(err)).toBe(true);
+  });
 });
 
 describe("stripe provider createSubscription", () => {
@@ -297,17 +411,39 @@ describe("stripe provider createSubscription", () => {
     });
   });
 
-  it("falls back to active for a subscription status it does not map", async () => {
+  it.each([
+    "active",
+    "trialing",
+    "incomplete",
+    "incomplete_expired",
+    "past_due",
+    "unpaid",
+    "paused",
+    "canceled",
+  ])("carries the Stripe subscription status %s through unchanged", async (status) => {
     client.subscriptions.create.mockResolvedValue({
-      id: "sub_incomplete",
-      status: "incomplete_expired",
+      id: `sub_${status}`,
+      status,
       items: { data: [{ current_period_start: 0, current_period_end: 0 }] },
     });
     const provider = await initialized();
 
     const subscription = await provider.createSubscription("cus_1", "price_1");
 
-    expect(subscription.status).toBe("active");
+    expect(subscription.status).toBe(status);
+  });
+
+  it("maps a subscription status it does not know to incomplete, never active", async () => {
+    client.subscriptions.create.mockResolvedValue({
+      id: "sub_unknown",
+      status: "suspended",
+      items: { data: [{ current_period_start: 0, current_period_end: 0 }] },
+    });
+    const provider = await initialized();
+
+    const subscription = await provider.createSubscription("cus_1", "price_1");
+
+    expect(subscription.status).toBe("incomplete");
   });
 
   it("throws when Stripe returns a subscription with no items", async () => {
@@ -370,28 +506,111 @@ describe("stripe provider chargeInvoice", () => {
 
     const result = await provider.chargeInvoice(invoice);
 
-    expect(client.invoices.create).toHaveBeenCalledWith({
-      customer: "cus_nanohype",
-      auto_advance: true,
-    });
+    expect(client.invoices.create).toHaveBeenCalledWith(
+      {
+        customer: "cus_nanohype",
+        currency: "eur",
+        auto_advance: true,
+        metadata: { invoice_id: "inv-local-1" },
+      },
+      { idempotencyKey: "billing-invoice:inv-local-1:create" },
+    );
     expect(client.invoiceItems.create).toHaveBeenCalledTimes(2);
-    expect(client.invoiceItems.create).toHaveBeenNthCalledWith(1, {
-      customer: "cus_nanohype",
-      invoice: "in_created",
-      amount: 4500,
-      currency: "eur",
-      description: "API calls",
-    });
-    expect(client.invoiceItems.create).toHaveBeenNthCalledWith(2, {
-      customer: "cus_nanohype",
-      invoice: "in_created",
-      amount: 400,
-      currency: "eur",
-      description: "Storage",
-    });
-    expect(client.invoices.finalizeInvoice).toHaveBeenCalledWith("in_created");
-    expect(client.invoices.pay).toHaveBeenCalledWith("in_created");
+    expect(client.invoiceItems.create).toHaveBeenNthCalledWith(
+      1,
+      {
+        customer: "cus_nanohype",
+        invoice: "in_created",
+        amount: 4500,
+        currency: "eur",
+        description: "API calls",
+        metadata: { metric: "api_calls" },
+      },
+      { idempotencyKey: "billing-invoice:inv-local-1:item-0" },
+    );
+    expect(client.invoiceItems.create).toHaveBeenNthCalledWith(
+      2,
+      {
+        customer: "cus_nanohype",
+        invoice: "in_created",
+        amount: 400,
+        currency: "eur",
+        description: "Storage",
+        metadata: { metric: "storage_gb" },
+      },
+      { idempotencyKey: "billing-invoice:inv-local-1:item-1" },
+    );
+    expect(client.invoices.finalizeInvoice).toHaveBeenCalledWith(
+      "in_created",
+      {},
+      { idempotencyKey: "billing-invoice:inv-local-1:finalize" },
+    );
+    expect(client.invoices.pay).toHaveBeenCalledWith(
+      "in_created",
+      {},
+      { idempotencyKey: "billing-invoice:inv-local-1:pay" },
+    );
     expect(result).toEqual({ ok: true, externalId: "in_created" });
+  });
+
+  it("keys every write of a retried charge exactly as the first attempt keyed it", async () => {
+    client.invoices.create.mockResolvedValue({ id: "in_created" });
+    client.invoiceItems.create.mockResolvedValue({ id: "ii_1" });
+    client.invoices.finalizeInvoice.mockResolvedValue({ id: "in_created", status: "open" });
+    client.invoices.pay
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockResolvedValueOnce({ id: "in_created", status: "paid" });
+    const provider = await initialized();
+    const invoice = invoiceFixture();
+
+    const first = await provider.chargeInvoice(invoice);
+    const retry = await provider.chargeInvoice(invoice);
+
+    const keys = (mock: Mock) =>
+      mock.mock.calls.map((call) => (call.at(-1) as { idempotencyKey: string }).idempotencyKey);
+    for (const write of [
+      client.invoices.create,
+      client.invoiceItems.create,
+      client.invoices.finalizeInvoice,
+      client.invoices.pay,
+    ]) {
+      const [firstKey, retryKey] = keys(write);
+      expect(firstKey).toMatch(/^billing-invoice:inv-local-1:/);
+      expect(retryKey).toBe(firstKey);
+    }
+    expect(first).toEqual({ ok: false, externalId: "in_created", error: "socket hang up" });
+    expect(retry).toEqual({ ok: true, externalId: "in_created" });
+  });
+
+  it("keys two different invoices apart", async () => {
+    client.invoices.create.mockResolvedValue({ id: "in_created" });
+    client.invoiceItems.create.mockResolvedValue({ id: "ii_1" });
+    client.invoices.finalizeInvoice.mockResolvedValue({ id: "in_created", status: "paid" });
+    const provider = await initialized();
+
+    await provider.chargeInvoice(invoiceFixture({ id: "inv-a" }));
+    await provider.chargeInvoice(invoiceFixture({ id: "inv-b" }));
+
+    expect(client.invoices.create.mock.calls.map((call) => call[1])).toEqual([
+      { idempotencyKey: "billing-invoice:inv-a:create" },
+      { idempotencyKey: "billing-invoice:inv-b:create" },
+    ]);
+  });
+
+  it("names the Stripe invoice it created when a later step fails", async () => {
+    client.invoices.create.mockResolvedValue({ id: "in_open" });
+    client.invoiceItems.create.mockResolvedValue({ id: "ii_1" });
+    client.invoices.finalizeInvoice.mockResolvedValue({ id: "in_open", status: "open" });
+    client.invoices.pay.mockRejectedValue(stripeError(402, "Your card was declined."));
+    const provider = await initialized();
+
+    const result = await provider.chargeInvoice(invoiceFixture());
+
+    expect(result).toEqual({
+      ok: false,
+      externalId: "in_open",
+      error: "Your card was declined.",
+    });
   });
 
   it("adds no line items for an invoice that has none", async () => {
@@ -463,6 +682,7 @@ describe("stripe provider handleWebhook", () => {
 
     expect(client.webhooks.constructEvent).toHaveBeenCalledTimes(1);
     expect(event).toEqual({
+      id: "evt_nanohypeVerified",
       type: "invoice.payment_succeeded",
       payload: { id: "in_verified", amount_due: 4200 },
       timestamp: "2023-11-14T22:13:20.000Z",
@@ -537,6 +757,84 @@ describe("stripe provider handleWebhook", () => {
       /No signatures found/,
     );
   });
+
+  function subscriptionEvent(type: string, status: string) {
+    return {
+      id: `evt_${status}`,
+      type,
+      created: 1_700_000_000,
+      data: { object: { id: "sub_1", object: "subscription", customer: "cus_1", status } },
+    };
+  }
+
+  it.each([
+    "customer.subscription.created",
+    "customer.subscription.updated",
+    "customer.subscription.deleted",
+    "customer.subscription.paused",
+  ])("normalises the subscription status on %s", async (type) => {
+    client.webhooks.constructEvent.mockReturnValue(subscriptionEvent(type, "suspended"));
+    const provider = await initialized();
+
+    const event = await provider.handleWebhook(RAW_PAYLOAD, SIGNATURE_HEADER);
+
+    expect(event.payload).toEqual({
+      id: "sub_1",
+      object: "subscription",
+      customer: "cus_1",
+      status: "incomplete",
+    });
+  });
+
+  it.each([
+    "active",
+    "trialing",
+    "incomplete",
+    "incomplete_expired",
+    "past_due",
+    "unpaid",
+    "paused",
+    "canceled",
+  ])("carries a %s subscription status through a webhook unchanged", async (status) => {
+    client.webhooks.constructEvent.mockReturnValue(
+      subscriptionEvent("customer.subscription.updated", status),
+    );
+    const provider = await initialized();
+
+    const event = await provider.handleWebhook(RAW_PAYLOAD, SIGNATURE_HEADER);
+
+    expect((event.payload as { status: string }).status).toBe(status);
+  });
+
+  it("reads an inherited property name as an unknown status, not a known one", async () => {
+    client.webhooks.constructEvent.mockReturnValue(
+      subscriptionEvent("customer.subscription.updated", "constructor"),
+    );
+    const provider = await initialized();
+
+    const event = await provider.handleWebhook(RAW_PAYLOAD, SIGNATURE_HEADER);
+
+    expect((event.payload as { status: string }).status).toBe("incomplete");
+  });
+
+  it("leaves the status on an object that is not a subscription alone", async () => {
+    client.webhooks.constructEvent.mockReturnValue({
+      id: "evt_invoice",
+      type: "invoice.payment_failed",
+      created: 1_700_000_000,
+      data: { object: { id: "in_1", object: "invoice", status: "open" } },
+    });
+    const provider = await initialized();
+
+    const event = await provider.handleWebhook(RAW_PAYLOAD, SIGNATURE_HEADER);
+
+    expect(event).toEqual({
+      id: "evt_invoice",
+      type: "invoice.payment_failed",
+      payload: { id: "in_1", object: "invoice", status: "open" },
+      timestamp: "2023-11-14T22:13:20.000Z",
+    });
+  });
 });
 
 describe("stripe provider listInvoices", () => {
@@ -556,19 +854,24 @@ describe("stripe provider listInvoices", () => {
           lines: {
             data: [
               {
+                id: "il_1",
                 description: "API calls",
                 quantity: 10,
                 amount: 5000,
                 pricing: { unit_amount_decimal: "500.0000000000" },
+                metadata: { metric: "api_calls" },
               },
               {
+                id: "il_2",
                 description: "Fractional unit price",
                 quantity: 1,
                 amount: 1235,
                 pricing: { unit_amount_decimal: "1234.5600000000" },
+                metadata: {},
               },
-              { description: null, quantity: null, amount: 0, pricing: undefined },
+              { id: "il_3", description: null, quantity: null, amount: 0, pricing: undefined },
             ],
+            has_more: false,
           },
           total: 6235,
           currency: "eur",
@@ -591,7 +894,7 @@ describe("stripe provider listInvoices", () => {
         lineItems: [
           {
             description: "API calls",
-            metric: "",
+            metric: "api_calls",
             quantity: 10,
             unitPrice: 500,
             amount: 5000,
@@ -669,6 +972,139 @@ describe("stripe provider listInvoices", () => {
     const invoices = await provider.listInvoices("cus_1");
 
     expect(invoices[0]?.status).toBe("draft");
+  });
+
+  function invoiceStub(id: string, lines: object = { data: [], has_more: false }) {
+    return {
+      id,
+      period_start: 0,
+      period_end: 0,
+      lines,
+      total: 0,
+      currency: "usd",
+      status: "paid",
+      created: 0,
+    };
+  }
+
+  /** `count` invoice stubs named from `start`. */
+  function invoiceRun(start: number, count: number) {
+    return Array.from({ length: count }, (_, i) => invoiceStub(`in_${start + i}`));
+  }
+
+  it("follows the cursor past the first page", async () => {
+    client.invoices.list
+      .mockResolvedValueOnce({ data: invoiceRun(0, 100), has_more: true })
+      .mockResolvedValueOnce({ data: invoiceRun(100, 40), has_more: false });
+    const provider = await initialized();
+
+    const invoices = await provider.listInvoices("cus_1");
+
+    expect(invoices).toHaveLength(140);
+    expect(invoices.at(-1)?.id).toBe("in_139");
+    expect(client.invoices.list).toHaveBeenNthCalledWith(1, { customer: "cus_1", limit: 100 });
+    expect(client.invoices.list).toHaveBeenNthCalledWith(2, {
+      customer: "cus_1",
+      limit: 100,
+      starting_after: "in_99",
+    });
+  });
+
+  it("stops at the listing bound when more invoices remain", async () => {
+    let next = 0;
+    client.invoices.list.mockImplementation(async () => {
+      const page = invoiceRun(next, 100);
+      next += 100;
+      return { data: page, has_more: true };
+    });
+    const provider = await initialized();
+
+    const invoices = await provider.listInvoices("cus_1");
+
+    expect(invoices).toHaveLength(1000);
+    expect(client.invoices.list).toHaveBeenCalledTimes(10);
+  });
+
+  it("reads a list that ends exactly at the bound in full", async () => {
+    let next = 0;
+    client.invoices.list.mockImplementation(async () => {
+      const page = invoiceRun(next, 100);
+      next += 100;
+      return { data: page, has_more: next < 1000 };
+    });
+    const provider = await initialized();
+
+    const invoices = await provider.listInvoices("cus_1");
+
+    expect(invoices).toHaveLength(1000);
+    expect(invoices.at(-1)?.id).toBe("in_999");
+  });
+
+  it("stops on a page that claims more but carries nothing to cursor from", async () => {
+    client.invoices.list.mockResolvedValue({ data: [], has_more: true });
+    const provider = await initialized();
+
+    const invoices = await provider.listInvoices("cus_1");
+
+    expect(invoices).toEqual([]);
+    expect(client.invoices.list).toHaveBeenCalledTimes(1);
+  });
+
+  function lineRun(start: number, count: number) {
+    return Array.from({ length: count }, (_, i) => ({
+      id: `il_${start + i}`,
+      description: `line ${start + i}`,
+      quantity: 1,
+      amount: 1,
+      pricing: null,
+      metadata: { metric: "api_calls" },
+    }));
+  }
+
+  it("reads every line of an invoice, not only the page embedded in it", async () => {
+    client.invoices.list.mockResolvedValue({
+      data: [invoiceStub("in_long", { data: lineRun(0, 10), has_more: true })],
+      has_more: false,
+    });
+    client.invoices.listLineItems.mockResolvedValue({ data: lineRun(10, 25), has_more: false });
+    const provider = await initialized();
+
+    const [invoice] = await provider.listInvoices("cus_1");
+
+    expect(invoice?.lineItems).toHaveLength(35);
+    expect(invoice?.lineItems.at(-1)).toEqual({
+      description: "line 34",
+      metric: "api_calls",
+      quantity: 1,
+      unitPrice: 0,
+      amount: 1,
+    });
+    expect(client.invoices.listLineItems).toHaveBeenCalledExactlyOnceWith("in_long", {
+      limit: 100,
+      starting_after: "il_9",
+    });
+  });
+
+  it("stops reading an invoice's lines at the bound", async () => {
+    let next = 10;
+    client.invoices.list.mockResolvedValue({
+      data: [invoiceStub("in_huge", { data: lineRun(0, 10), has_more: true })],
+      has_more: false,
+    });
+    client.invoices.listLineItems.mockImplementation(async () => {
+      const page = lineRun(next, 100);
+      next += 100;
+      // The page that crosses the bound is the last one Stripe has, so the
+      // overshoot alone is what marks the listing as cut short.
+      return { data: page, has_more: next < 1010 };
+    });
+    const provider = await initialized();
+
+    const [invoice] = await provider.listInvoices("cus_1");
+
+    expect(invoice?.lineItems).toHaveLength(1000);
+    expect(invoice?.lineItems.at(-1)?.description).toBe("line 999");
+    expect(client.invoices.listLineItems).toHaveBeenCalledTimes(10);
   });
 });
 

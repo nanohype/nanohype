@@ -110,4 +110,37 @@ describe("invoice formatter", () => {
       "Unsupported invoice format",
     );
   });
+
+  // Amounts are held in the currency's smallest unit, and that unit is the
+  // currency's own: the line "| … | 1000 |" reads $10.00, ¥1,000, or KWD 1.000.
+  function totalLine(currency: string, amount: number): string | undefined {
+    const output = formatInvoice(
+      {
+        ...sampleInvoice,
+        currency,
+        lineItems: [{ ...sampleInvoice.lineItems[0]!, unitPrice: amount, amount }],
+        totalAmount: amount,
+      },
+      "markdown",
+    );
+    return output.split("\n").find((line) => line.startsWith("**Total:**"));
+  }
+
+  it("formats a two-decimal currency from cents", () => {
+    expect(totalLine("usd", 123456)).toBe("**Total:** $1,234.56");
+  });
+
+  it("formats a zero-decimal currency without dividing by 100", () => {
+    expect(totalLine("jpy", 1000)).toBe("**Total:** ¥1,000");
+  });
+
+  it("formats a three-decimal currency from thousandths", () => {
+    expect(totalLine("kwd", 1234)).toMatch(/^\*\*Total:\*\* KWD\s1\.234$/);
+  });
+
+  it("formats the line items in the invoice's currency too", () => {
+    const output = formatInvoice({ ...sampleInvoice, currency: "jpy" }, "markdown");
+
+    expect(output).toContain("| API calls — 1000 units | 1000 | ¥1 | ¥1,000 |");
+  });
 });

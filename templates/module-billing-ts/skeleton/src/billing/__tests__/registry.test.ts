@@ -26,7 +26,7 @@ function stubProvider(name: string): PaymentProvider {
       return { ok: true };
     },
     async handleWebhook() {
-      return { type: "test", payload: null, timestamp: new Date().toISOString() };
+      return { id: "evt_stub", type: "test", payload: null, timestamp: new Date().toISOString() };
     },
     async listInvoices() {
       return [];

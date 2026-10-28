@@ -27,12 +27,17 @@ export interface PaymentProvider {
   /** Create a subscription for a customer. */
   createSubscription(customerId: string, planId: string): Promise<Subscription>;
 
-  /** Charge an invoice through the payment system. */
+  /**
+   * Charge an invoice through the payment system. Charging the same invoice
+   * ID again must not charge it twice: a caller retries this after a timeout
+   * without knowing whether the first attempt landed.
+   */
   chargeInvoice(invoice: Invoice): Promise<ChargeResult>;
 
   /**
-   * Handle an incoming webhook from the payment provider.
-   * Verifies signature and returns parsed event.
+   * Verify an incoming webhook and return the event it carries. Throws when
+   * the signature does not verify against the raw `payload` bytes, so no
+   * unverified event reaches a handler.
    */
   handleWebhook(payload: string, signature: string): Promise<BillingWebhookEvent>;
 

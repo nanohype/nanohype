@@ -1,3 +1,5 @@
+import type Stripe from "stripe";
+import { DEFAULT_STRIPE_MAX_NETWORK_RETRIES, DEFAULT_STRIPE_TIMEOUT_MS } from "../config.js";
 import { logger } from "../logger.js";
 import { CircuitBreaker } from "../resilience/circuit-breaker.js";
 import type {
@@ -20,26 +22,110 @@ import type { PaymentProvider } from "./types.js";
 // Key design decisions:
 //   - Lazy client initialization — Stripe SDK only loaded when init()
 //     is called, so the module can be imported without side effects
-//   - Circuit breaker on all API calls — prevents cascade failures
-//     when Stripe is degraded
+//   - Explicit request timeout and network retries, set from config
+//   - Circuit breaker on all API calls, opened only by outages — a 4xx
+//     is Stripe answering, and never counts against it
+//   - Every write chargeInvoice makes carries an idempotency key derived
+//     from the caller's invoice ID, so a retried charge replays instead
+//     of creating and paying a second invoice
 //   - Webhook verification via stripe.webhooks.constructEvent()
 //
 
-// Lazy import types — actual Stripe class loaded in init()
-type StripeClient = import("stripe").default;
+/** Upper bound on the invoices listInvoices reads, and on the lines per invoice. */
+const MAX_LISTED = 1000;
+
+/** The largest page Stripe's list endpoints return. */
+const PAGE_SIZE = 100;
+
+/** Invoice-item metadata key that carries a line's metric name. */
+const METRIC_METADATA_KEY = "metric";
+
+interface ListPage<T> {
+  data: T[];
+  has_more: boolean;
+}
+
+/**
+ * True when a failed Stripe call is evidence that Stripe is unavailable: a
+ * connection failure or timeout, which carries no HTTP status, or a 5xx. A 4xx
+ * — a declined card, an invalid request, a rejected key, a rate limit — is
+ * Stripe answering. Counting it would let five declined cards open the breaker
+ * and block every customer's billing for the reset window.
+ */
+export function isStripeOutage(err: unknown): boolean {
+  const status = (err as { statusCode?: unknown } | null | undefined)?.statusCode;
+  return !(typeof status === "number" && status >= 400 && status < 500);
+}
+
+/**
+ * Read a Stripe list to its end or to MAX_LISTED items, whichever comes first,
+ * cursoring with `starting_after` on the last item's ID. `first` is a page
+ * already in hand, such as the lines embedded in an invoice.
+ */
+async function collectPages<T extends { id?: string }>(
+  fetchPage: (startingAfter: string | undefined) => Promise<ListPage<T>>,
+  first?: ListPage<T>,
+): Promise<{ items: T[]; truncated: boolean }> {
+  const items: T[] = [];
+  let page = first ?? (await fetchPage(undefined));
+
+  for (;;) {
+    items.push(...page.data);
+    if (items.length >= MAX_LISTED) {
+      return {
+        items: items.slice(0, MAX_LISTED),
+        truncated: page.has_more || items.length > MAX_LISTED,
+      };
+    }
+
+    const cursor = page.data.at(-1)?.id;
+    if (!page.has_more || cursor === undefined) return { items, truncated: false };
+    page = await fetchPage(cursor);
+  }
+}
 
 function createStripeProvider(): PaymentProvider {
-  let client: StripeClient | null = null;
+  let client: Stripe | null = null;
   let webhookSecret: string | null = null;
 
   const breaker = new CircuitBreaker({
     failureThreshold: 5,
     resetTimeout: 30_000,
     halfOpenMaxAttempts: 2,
+    isFailure: isStripeOutage,
   });
 
   async function withBreaker<T>(fn: () => Promise<T>): Promise<T> {
     return breaker.execute(fn);
+  }
+
+  function requireClient(): Stripe {
+    if (!client) throw new Error("Stripe provider not initialized");
+    return client;
+  }
+
+  /**
+   * Every line of an invoice: the page embedded in it, then the rest. Paging
+   * starts from the embedded page, so every page fetched here has a cursor.
+   */
+  async function invoiceLines(
+    stripe: Stripe,
+    invoice: Stripe.Invoice,
+  ): Promise<Stripe.InvoiceLineItem[]> {
+    const { items, truncated } = await collectPages(
+      (startingAfter) =>
+        withBreaker(() =>
+          stripe.invoices.listLineItems(invoice.id, {
+            limit: PAGE_SIZE,
+            starting_after: startingAfter,
+          }),
+        ),
+      invoice.lines ?? { data: [], has_more: false },
+    );
+    if (truncated) {
+      logger.warn("Stripe invoice lines truncated", { externalId: invoice.id, limit: MAX_LISTED });
+    }
+    return items;
   }
 
   return {
@@ -64,8 +150,12 @@ function createStripeProvider(): PaymentProvider {
       // only value that compiles is the one the client already falls back to.
       // Writing it out cannot change which `Stripe-Version` is sent; it can only
       // stop compiling on the next SDK release, on a tree nobody edited.
-      const { default: Stripe } = await import("stripe");
-      client = new Stripe(secretKey);
+      const { default: StripeSdk } = await import("stripe");
+      client = new StripeSdk(secretKey, {
+        timeout: config.stripe?.timeoutMs ?? DEFAULT_STRIPE_TIMEOUT_MS,
+        maxNetworkRetries: config.stripe?.maxNetworkRetries ?? DEFAULT_STRIPE_MAX_NETWORK_RETRIES,
+        httpClient: config.stripe?.httpClient,
+      });
 
       logger.info("Stripe provider initialized");
     },
@@ -75,10 +165,10 @@ function createStripeProvider(): PaymentProvider {
       name: string,
       metadata?: Record<string, string>,
     ): Promise<Customer> {
-      if (!client) throw new Error("Stripe provider not initialized");
+      const stripe = requireClient();
 
       const stripeCustomer = await withBreaker(() =>
-        client!.customers.create({ email, name, metadata }),
+        stripe.customers.create({ email, name, metadata }),
       );
 
       logger.info("Stripe customer created", { externalId: stripeCustomer.id });
@@ -88,15 +178,15 @@ function createStripeProvider(): PaymentProvider {
         email: stripeCustomer.email ?? email,
         name: stripeCustomer.name ?? name,
         externalId: stripeCustomer.id,
-        metadata: (metadata ?? {}) as Record<string, string>,
+        metadata: metadata ?? {},
       };
     },
 
     async createSubscription(customerId: string, planId: string): Promise<Subscription> {
-      if (!client) throw new Error("Stripe provider not initialized");
+      const stripe = requireClient();
 
       const stripeSub = await withBreaker(() =>
-        client!.subscriptions.create({
+        stripe.subscriptions.create({
           customer: customerId,
           items: [{ price: planId }],
         }),
@@ -112,10 +202,10 @@ function createStripeProvider(): PaymentProvider {
         customerId,
         planId,
         status: mapStripeSubStatus(stripeSub.status),
-        // The billing period moved off the subscription and onto its items,
-        // because a subscription with staggered items has more than one. A
-        // single-price subscription — what this provider creates — has exactly
-        // one item, so its period is the subscription's.
+        // A subscription's billing period lives on its items, because a
+        // subscription with staggered items has more than one. A single-price
+        // subscription — what this provider creates — has exactly one item,
+        // so its period is the subscription's.
         currentPeriodStart: new Date(period.current_period_start * 1000).toISOString(),
         currentPeriodEnd: new Date(period.current_period_end * 1000).toISOString(),
         externalId: stripeSub.id,
@@ -123,35 +213,58 @@ function createStripeProvider(): PaymentProvider {
     },
 
     async chargeInvoice(invoice: Invoice): Promise<ChargeResult> {
-      if (!client) throw new Error("Stripe provider not initialized");
+      const stripe = requireClient();
+
+      // Each write is keyed by the caller's invoice ID and its step, so
+      // charging the same invoice again — after a timeout, a crash, or a lost
+      // response — replays every step Stripe already applied instead of
+      // creating a second invoice and paying it. Stripe holds a key for 24
+      // hours and replays the stored response, failures included: a declined
+      // payment stays declined for this invoice ID. Collecting it after that
+      // is Stripe's automatic collection on the open invoice (`auto_advance`),
+      // which reports through `invoice.paid` and `invoice.payment_failed`.
+      const key = (step: string) => `billing-invoice:${invoice.id}:${step}`;
+      let externalId: string | undefined;
 
       try {
         const stripeInvoice = await withBreaker(async () => {
-          const inv = await client!.invoices.create({
-            customer: invoice.customerId,
-            auto_advance: true,
-          });
-
-          // Add line items
-          for (const item of invoice.lineItems) {
-            await client!.invoiceItems.create({
+          const created = await stripe.invoices.create(
+            {
               customer: invoice.customerId,
-              invoice: inv.id,
-              amount: item.amount,
               currency: invoice.currency,
-              description: item.description,
-            });
+              auto_advance: true,
+              metadata: { invoice_id: invoice.id },
+            },
+            { idempotencyKey: key("create") },
+          );
+          externalId = created.id;
+
+          for (const [index, item] of invoice.lineItems.entries()) {
+            await stripe.invoiceItems.create(
+              {
+                customer: invoice.customerId,
+                invoice: created.id,
+                amount: item.amount,
+                currency: invoice.currency,
+                description: item.description,
+                metadata: { [METRIC_METADATA_KEY]: item.metric },
+              },
+              { idempotencyKey: key(`item-${index}`) },
+            );
           }
 
-          // Finalize and pay
-          const finalized = await client!.invoices.finalizeInvoice(inv.id);
+          const finalized = await stripe.invoices.finalizeInvoice(
+            created.id,
+            {},
+            { idempotencyKey: key("finalize") },
+          );
           if (finalized.status === "open") {
-            return client!.invoices.pay(inv.id);
+            return stripe.invoices.pay(created.id, {}, { idempotencyKey: key("pay") });
           }
           return finalized;
         });
 
-        logger.info("Stripe invoice charged", { externalId: stripeInvoice.id });
+        logger.info("Stripe invoice charged", { invoiceId: invoice.id, externalId });
 
         return {
           ok: stripeInvoice.status === "paid",
@@ -159,13 +272,13 @@ function createStripeProvider(): PaymentProvider {
         };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        logger.error("Stripe charge failed", { error: message });
-        return { ok: false, error: message };
+        logger.error("Stripe charge failed", { invoiceId: invoice.id, externalId, error: message });
+        return { ok: false, externalId, error: message };
       }
     },
 
     async handleWebhook(payload: string, signature: string): Promise<BillingWebhookEvent> {
-      if (!client) throw new Error("Stripe provider not initialized");
+      const stripe = requireClient();
 
       if (!webhookSecret) {
         throw new Error(
@@ -173,44 +286,59 @@ function createStripeProvider(): PaymentProvider {
         );
       }
 
-      const event = client.webhooks.constructEvent(payload, signature, webhookSecret);
+      const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
 
       logger.info("Stripe webhook verified", { type: event.type, id: event.id });
 
       return {
+        id: event.id,
         type: event.type,
-        payload: event.data.object,
+        payload: webhookPayload(event),
         timestamp: new Date(event.created * 1000).toISOString(),
       };
     },
 
     async listInvoices(customerId: string): Promise<Invoice[]> {
-      if (!client) throw new Error("Stripe provider not initialized");
+      const stripe = requireClient();
 
-      const result = await withBreaker(() =>
-        client!.invoices.list({ customer: customerId, limit: 100 }),
+      const { items, truncated } = await collectPages((startingAfter) =>
+        withBreaker(() =>
+          stripe.invoices.list({
+            customer: customerId,
+            limit: PAGE_SIZE,
+            ...(startingAfter ? { starting_after: startingAfter } : {}),
+          }),
+        ),
       );
+      if (truncated) {
+        logger.warn("Stripe invoice listing truncated", { customerId, limit: MAX_LISTED });
+      }
 
-      return result.data.map((inv) => ({
-        id: inv.id,
-        customerId,
-        periodStart: new Date((inv.period_start ?? 0) * 1000).toISOString(),
-        periodEnd: new Date((inv.period_end ?? 0) * 1000).toISOString(),
-        lineItems: (inv.lines?.data ?? []).map((line) => ({
-          description: line.description ?? "",
-          metric: "",
-          quantity: line.quantity ?? 0,
-          // pricing.unit_amount_decimal is a decimal string with up to 12
-          // places, not the integer minor-unit amount `price.unit_amount` was.
-          unitPrice: Math.round(Number(line.pricing?.unit_amount_decimal ?? 0)),
-          amount: line.amount,
-        })),
-        totalAmount: inv.total,
-        currency: inv.currency ?? "usd",
-        status: mapStripeInvoiceStatus(inv.status),
-        createdAt: new Date(inv.created * 1000).toISOString(),
-        externalId: inv.id,
-      }));
+      const invoices: Invoice[] = [];
+      for (const inv of items) {
+        const lines = await invoiceLines(stripe, inv);
+        invoices.push({
+          id: inv.id,
+          customerId,
+          periodStart: new Date((inv.period_start ?? 0) * 1000).toISOString(),
+          periodEnd: new Date((inv.period_end ?? 0) * 1000).toISOString(),
+          lineItems: lines.map((line) => ({
+            description: line.description ?? "",
+            metric: line.metadata?.[METRIC_METADATA_KEY] ?? "",
+            quantity: line.quantity ?? 0,
+            // pricing.unit_amount_decimal is a decimal string with up to 12
+            // places; LineItem.unitPrice holds an integer minor-unit amount.
+            unitPrice: Math.round(Number(line.pricing?.unit_amount_decimal ?? 0)),
+            amount: line.amount,
+          })),
+          totalAmount: inv.total,
+          currency: inv.currency ?? "usd",
+          status: mapStripeInvoiceStatus(inv.status),
+          createdAt: new Date(inv.created * 1000).toISOString(),
+          externalId: inv.id,
+        });
+      }
+      return invoices;
     },
 
     async close(): Promise<void> {
@@ -221,26 +349,53 @@ function createStripeProvider(): PaymentProvider {
   };
 }
 
-function mapStripeSubStatus(status: string): Subscription["status"] {
-  const mapping: Record<string, Subscription["status"]> = {
-    active: "active",
-    canceled: "canceled",
-    past_due: "past_due",
-    trialing: "trialing",
-    paused: "paused",
-  };
-  return mapping[status] ?? "active";
+/**
+ * The object a verified event describes. On a `customer.subscription.*` event
+ * the subscription's raw Stripe status is replaced by the mapped one, so a
+ * handler reads the same statuses createSubscription returns and a status this
+ * module does not recognise cannot read as entitled.
+ */
+function webhookPayload(event: Stripe.Event): unknown {
+  const object = event.data.object;
+  if (event.type.startsWith("customer.subscription.")) {
+    const subscription = object as Stripe.Subscription;
+    return { ...subscription, status: mapStripeSubStatus(subscription.status) };
+  }
+  return object;
 }
 
-function mapStripeInvoiceStatus(status: string | null): Invoice["status"] {
-  const mapping: Record<string, Invoice["status"]> = {
-    draft: "draft",
-    open: "open",
-    paid: "paid",
-    void: "void",
-    uncollectible: "uncollectible",
-  };
-  return mapping[status ?? "draft"] ?? "draft";
+const SUBSCRIPTION_STATUSES = {
+  active: true,
+  trialing: true,
+  incomplete: true,
+  incomplete_expired: true,
+  past_due: true,
+  unpaid: true,
+  paused: true,
+  canceled: true,
+} satisfies Record<Subscription["status"], true>;
+
+// A status this table does not know maps to `incomplete`, never `active`:
+// a subscription whose state cannot be read grants no access to the plan.
+function mapStripeSubStatus(status: Stripe.Subscription.Status): Subscription["status"] {
+  if (Object.hasOwn(SUBSCRIPTION_STATUSES, status)) return status as Subscription["status"];
+  logger.warn("Unrecognised Stripe subscription status read as incomplete", { status });
+  return "incomplete";
+}
+
+const INVOICE_STATUSES = {
+  draft: true,
+  open: true,
+  paid: true,
+  void: true,
+  uncollectible: true,
+} satisfies Record<Invoice["status"], true>;
+
+function mapStripeInvoiceStatus(status: Stripe.Invoice.Status | null): Invoice["status"] {
+  if (status !== null && Object.hasOwn(INVOICE_STATUSES, status)) {
+    return status as Invoice["status"];
+  }
+  return "draft";
 }
 
 // Self-register factory
