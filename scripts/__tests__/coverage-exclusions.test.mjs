@@ -713,7 +713,7 @@ describe("the third-party surface behind the exclusions", () => {
     "@opentelemetry/resources",
     "@opentelemetry/sdk-metrics",
     "@opentelemetry/sdk-node",
-    "@opentelemetry/sdk-trace-node",
+    "@opentelemetry/sdk-trace",
     "@opentelemetry/semantic-conventions",
     "@pinecone-database/pinecone",
     "@qdrant/js-client-rest",

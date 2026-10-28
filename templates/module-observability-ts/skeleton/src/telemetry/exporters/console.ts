@@ -1,7 +1,7 @@
 import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
 import { ConsoleMetricExporter } from "@opentelemetry/sdk-metrics";
-import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
-import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
+import type { SpanExporter } from "@opentelemetry/sdk-trace";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace";
 import { registerExporter } from "./registry.js";
 import type { TelemetryExporter } from "./types.js";
 

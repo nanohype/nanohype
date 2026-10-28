@@ -1,7 +1,7 @@
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
+import { BatchSpanProcessor } from "@opentelemetry/sdk-trace";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { validateBootstrap } from "./bootstrap.js";
 import { getExporter } from "./exporters/index.js";
@@ -71,14 +71,16 @@ export function initTelemetry(config: TelemetryConfig): () => Promise<void> {
   };
 
   if (spanExporter) {
-    sdkConfig.spanProcessors = [new BatchSpanProcessor(spanExporter)];
+    sdkConfig.spanProcessors = [new BatchSpanProcessor({ exporter: spanExporter })];
   }
 
   if (metricExporter) {
-    sdkConfig.metricReader = new PeriodicExportingMetricReader({
-      exporter: metricExporter,
-      exportIntervalMillis: config.metricIntervalMs ?? 60_000,
-    });
+    sdkConfig.metricReaders = [
+      new PeriodicExportingMetricReader({
+        exporter: metricExporter,
+        exportIntervalMillis: config.metricIntervalMs ?? 60_000,
+      }),
+    ];
   }
 
   sdk = new NodeSDK(sdkConfig);

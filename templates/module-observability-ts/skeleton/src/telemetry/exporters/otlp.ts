@@ -1,7 +1,7 @@
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import type { PushMetricExporter } from "@opentelemetry/sdk-metrics";
-import type { SpanExporter } from "@opentelemetry/sdk-trace-node";
+import type { SpanExporter } from "@opentelemetry/sdk-trace";
 import { registerExporter } from "./registry.js";
 import type { TelemetryExporter } from "./types.js";
 
