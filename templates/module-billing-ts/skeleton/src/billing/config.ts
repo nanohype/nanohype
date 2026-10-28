@@ -1,10 +1,19 @@
 import { z } from "zod";
+import { StripeConfigSchema } from "./providers/stripe-config.js";
 
 // ── Billing Config Validation ──────────────────────────────────────
 //
 // Zod schema for validating BillingConfig at construction time.
 // Catches misconfiguration early — before any provider is initialized.
 //
+
+/**
+ * The provider createBillingService selects when the config names none — the
+ * payment provider this project was scaffolded with. The mock provider refuses
+ * to start unless the config names it, so a default of "mock" fails closed
+ * rather than accepting every webhook.
+ */
+export const DEFAULT_PROVIDER = "__PAYMENT_PROVIDER__";
 
 const PricingTierSchema = z.object({
   upTo: z.number().positive().or(z.literal(Infinity)),
@@ -25,12 +34,10 @@ export const BillingConfigSchema = z
     provider: z.string().min(1, "provider must be a non-empty string").optional(),
     currency: z.string().length(3).optional(),
     pricingRules: z.array(PricingRuleSchema).optional(),
-    stripe: z
-      .object({
-        secretKey: z.string().optional(),
-        webhookSecret: z.string().optional(),
-      })
+    idGenerator: z
+      .custom((value) => typeof value === "function", "idGenerator must be a function")
       .optional(),
+    stripe: StripeConfigSchema.optional(),
   })
   .passthrough();
 

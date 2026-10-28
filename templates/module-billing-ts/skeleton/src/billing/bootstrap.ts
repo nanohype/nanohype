@@ -1,8 +1,9 @@
 // ── Bootstrap Validation ────────────────────────────────────────────
 //
 // Catches unresolved nanohype placeholders left from incomplete
-// scaffolding. Runs once at startup — exits with a helpful message
-// if any __PLACEHOLDER__ patterns remain in package metadata.
+// scaffolding. createBillingService calls it before it touches a
+// provider, on every call; it exits with a helpful message if any
+// __PLACEHOLDER__ patterns remain in package metadata.
 //
 
 const PLACEHOLDER_RE = /__[A-Z][A-Z0-9_]*__/;

@@ -1,8 +1,10 @@
 // ── Billing Core Types ─────────────────────────────────────────────
 //
 // Shared interfaces for usage records, invoices, subscriptions,
-// customers, line items, and configuration. These are provider-agnostic
-// — every payment backend works against the same shapes.
+// customers, line items, and configuration. The domain shapes are
+// provider-agnostic — every payment backend works against them — and
+// nothing here imports a provider: each provider module adds the type of
+// its own config block to ProviderConfigs.
 //
 
 /** A recorded usage event for a customer. */
@@ -31,7 +33,12 @@ export interface LineItem {
   /** Description of the charge (e.g., "API calls — 10,000 units"). */
   description: string;
 
-  /** Metric name this line item corresponds to. */
+  /**
+   * Metric name this line item corresponds to. On an invoice a provider
+   * lists, it is the metric the charge recorded on the line, and empty for a
+   * line no charge of this module wrote, such as a subscription line or one
+   * added by hand in the provider.
+   */
   metric: string;
 
   /** Total quantity for this line item. */
@@ -49,7 +56,13 @@ export interface LineItem {
 
 /** An invoice for a customer covering a billing period. */
 export interface Invoice {
-  /** Unique identifier for this invoice. */
+  /**
+   * Unique identifier for this invoice, and the key a payment provider
+   * charges it under. The invoice generator derives it from the customer, the
+   * billing period, and the invoice's sequence within that period. On an
+   * invoice a provider lists, it is the ID the invoice was charged under, or
+   * the provider's own ID for an invoice no charge of this module wrote.
+   */
   id: string;
 
   /** Customer this invoice belongs to. */
@@ -109,8 +122,24 @@ export interface Subscription {
   /** Plan or price identifier. */
   planId: string;
 
-  /** Current subscription status. */
-  status: "active" | "canceled" | "past_due" | "trialing" | "paused";
+  /**
+   * Current subscription status. Only `active` and `trialing` entitle the
+   * customer to the plan — test it with `isEntitled()`. Every other status
+   * means payment has not cleared (`incomplete`, `past_due`, `unpaid`), the
+   * first payment never cleared (`incomplete_expired`), or the subscription
+   * is stopped (`paused`, `canceled`). A status the provider reports that
+   * this union does not name reads as `incomplete`, so a state this module
+   * cannot interpret never grants access.
+   */
+  status:
+    | "active"
+    | "trialing"
+    | "incomplete"
+    | "incomplete_expired"
+    | "past_due"
+    | "unpaid"
+    | "paused"
+    | "canceled";
 
   /** ISO-8601 timestamp of the current period start. */
   currentPeriodStart: string;
@@ -161,9 +190,39 @@ export interface PricingTier {
   label?: string;
 }
 
+/**
+ * Derives an invoice's ID from its customer, its billing period, and its
+ * sequence within that period: 0 for the period's first invoice, 1 for the
+ * first invoice of usage that one did not bill, and so on.
+ */
+export type InvoiceIdGenerator = (
+  customerId: string,
+  period: BillingPeriod,
+  sequence: number,
+) => string;
+
+/**
+ * Each provider's config block, keyed by the provider's name. A provider
+ * module adds its block by declaration merging, as
+ * `providers/stripe-config.ts` adds `stripe`, so BillingConfig types every
+ * block it carries while this module names no provider:
+ *
+ *   declare module "../types.js" {
+ *     interface ProviderConfigs {
+ *       acme?: AcmeConfig;
+ *     }
+ *   }
+ */
+// biome-ignore lint/suspicious/noEmptyInterface: declaration merging needs an interface to merge into.
+export interface ProviderConfigs {}
+
 /** Configuration for creating a billing service. */
-export interface BillingConfig {
-  /** Default payment provider name. */
+export interface BillingConfig extends ProviderConfigs {
+  /**
+   * Payment provider name. When omitted, `DEFAULT_PROVIDER` from config.ts —
+   * the provider the project was scaffolded with. The mock provider runs only
+   * when it is named here.
+   */
   provider?: string;
 
   /** Currency code (default: "usd"). */
@@ -172,13 +231,15 @@ export interface BillingConfig {
   /** Pricing rules keyed by metric name. */
   pricingRules?: PricingRule[];
 
-  /** Stripe-specific configuration. */
-  stripe?: {
-    secretKey?: string;
-    webhookSecret?: string;
-  };
+  /**
+   * Derives the ID of every invoice the service generates. Defaults to
+   * deriveInvoiceId(). A payment provider charges an ID once, so the ID has
+   * to come out the same each time the same customer, period and sequence
+   * are generated, or a regenerated invoice is charged again.
+   */
+  idGenerator?: InvoiceIdGenerator;
 
-  /** Provider-specific configuration. */
+  /** A config block for a provider that adds none to ProviderConfigs. */
   [key: string]: unknown;
 }
 
@@ -197,26 +258,168 @@ export interface UsageSummary {
   lineItems: LineItem[];
 }
 
-/** Result of charging an invoice through a payment provider. */
-export interface ChargeResult {
-  /** Whether the charge succeeded. */
-  ok: boolean;
+/** Options for one chargeInvoice call. */
+export interface ChargeOptions {
+  /**
+   * Stops the charge before its next payment-provider call once aborted; a
+   * charge the signal stopped reports `code: "aborted"`, and charging the same
+   * invoice again resumes it. A call already in flight is not interrupted, so
+   * the charge settles when that call does, within the provider's request
+   * timeout and retry budget.
+   */
+  signal?: AbortSignal;
 
-  /** External transaction or payment intent ID. */
-  externalId?: string;
-
-  /** Error message if the charge failed. */
-  error?: string;
+  /**
+   * Charge as though this invoice ID was never charged when the provider's
+   * search for an earlier charge ends at its bound without finding one, the
+   * case it otherwise reports as `lookup_exhausted`. Set it only after
+   * checking the payment system for an invoice carrying this ID and finding
+   * none: an earlier charge past the bound is charged again. An earlier
+   * charge the search does find is resumed whether this is set or not.
+   */
+  assumeUncharged?: boolean;
 }
 
-/** Webhook event emitted by billing lifecycle. */
+/** A charge that left its invoice paid. */
+export interface ChargePaid {
+  ok: true;
+
+  /** The payment provider's ID for the invoice the charge paid. */
+  externalId: string;
+
+  /**
+   * What this call's own payment request collected, in the smallest currency
+   * unit. It is 0 when an earlier charge of the same ID had paid the invoice,
+   * and 0 when the provider answered this call's payment request from an
+   * earlier request with the same idempotency key: of two charges that race
+   * to pay one invoice, only the one whose request made the payment reports
+   * it. A payment whose answer was lost is reported by no call, because the
+   * request that retries it is answered from the stored payment. Summed over
+   * calls, `collected` never exceeds what was paid.
+   */
+  collected: number;
+}
+
+/** A charge that did not leave its invoice paid. */
+export interface ChargeFailed {
+  ok: false;
+
+  /**
+   * Why the invoice is not paid:
+   *
+   * - `declined` — the payment method was refused, such as a declined card.
+   *   The invoice stays open; a provider that collects on its own retries it
+   *   and reports the outcome by webhook.
+   * - `payment_pending` — the payment was accepted and has not settled, as
+   *   with a bank debit. Its outcome arrives by webhook.
+   * - `unavailable` — the provider could not be reached or failed: a
+   *   connection failure, a timeout, a 5xx, or a circuit breaker a run of
+   *   those opened. Charging the invoice again resumes it.
+   * - `rate_limited` — the provider refused the request because too many
+   *   arrived at once (HTTP 429). The refusal passes by itself: charging the
+   *   invoice again after a backoff resumes it.
+   * - `rejected` — the provider refused the request for a reason that lasts
+   *   until someone fixes it: an invalid request, a rejected key, an
+   *   idempotency conflict. Charging the invoice again once the cause is
+   *   fixed resumes it.
+   * - `aborted` — `ChargeOptions.signal` stopped the charge. Charging the
+   *   invoice again resumes it.
+   * - `invoice_closed` — the invoice an earlier charge of this ID left is void
+   *   or uncollectible, so it takes no payment, and charging the ID again
+   *   creates no other.
+   * - `lookup_exhausted` — a read the provider bounds stopped at its bound,
+   *   and nothing was written; `error` names the bound. Without `externalId`,
+   *   the search for an earlier charge of this ID found none, so the provider
+   *   cannot tell whether the ID was charged: look for an invoice carrying
+   *   the ID in the payment system, and charge again with
+   *   `ChargeOptions.assumeUncharged` only when there is none. With
+   *   `externalId`, the provider could not read all of that invoice's lines
+   *   to compare them with this invoice's, and paid nothing: compare the two
+   *   in the payment system.
+   * - `before_charge_window` — the invoice's period starts further ahead
+   *   than the provider is configured to charge, and a later charge of the
+   *   ID would not search back far enough to find this one. Nothing was
+   *   written. Charge it once its window opens, or configure the provider's
+   *   lead to cover how far ahead of a period this service bills.
+   */
+  code:
+    | "declined"
+    | "payment_pending"
+    | "unavailable"
+    | "rate_limited"
+    | "rejected"
+    | "aborted"
+    | "invoice_closed"
+    | "lookup_exhausted"
+    | "before_charge_window";
+
+  /** The provider's message, or the abort reason. */
+  error: string;
+
+  /** The provider's ID for the invoice the charge reached, when it reached one. */
+  externalId?: string;
+}
+
+/**
+ * An invoice issued under this invoice ID bills other content than this
+ * invoice: another currency, or lines that differ in amount, metric or
+ * quantity. The issued invoice is left as it is and nothing is paid.
+ *
+ * Usually an earlier charge of the ID issued it. The invoice ID derives from
+ * the customer, period and sequence, not from what the invoice bills, so
+ * usage recorded after the first charge regenerates an invoice under the
+ * same ID that bills more. Bill the difference with
+ * `generateInvoice(customerId, period, { billed })`, which invoices the usage
+ * the billed invoices leave out under the period's next sequence.
+ *
+ * It can also be the invoice this charge finalized: two charges of one ID
+ * with different content that run at once can empty each other's draft
+ * before it is finalized. Run a period's charges from one worker.
+ */
+export interface ChargeContentChanged {
+  ok: false;
+
+  code: "invoice_content_changed";
+
+  /** Names the issued invoice and both totals. */
+  error: string;
+
+  /** The provider's ID for the issued invoice that bills other content. */
+  externalId: string;
+
+  /** What that invoice bills, in the smallest currency unit: the sum of its lines. */
+  billedAmount: number;
+}
+
+/** Result of charging an invoice through a payment provider. */
+export type ChargeResult = ChargePaid | ChargeFailed | ChargeContentChanged;
+
+/** Every code a charge that did not leave its invoice paid reports. */
+export type ChargeFailureCode = (ChargeFailed | ChargeContentChanged)["code"];
+
+/** A verified webhook event from the payment provider. */
 export interface BillingWebhookEvent {
-  /** Event type (e.g., "subscription.created", "invoice.paid", "payment_failed"). */
+  /**
+   * The provider's event ID. A provider can deliver an event more than once,
+   * so a handler that must act once dedupes on this ID.
+   */
+  id: string;
+
+  /** The provider's event type, in the provider's own names. */
   type: string;
 
-  /** Event payload — shape depends on the event type. */
+  /**
+   * The object the event describes; its shape depends on the event type. On
+   * a subscription event the provider replaces the subscription's status
+   * with the `Subscription["status"]` it maps to, so a status this module
+   * does not recognize reads as `incomplete` and `isEntitled()` holds for it
+   * only when it is `active` or `trialing`.
+   */
   payload: unknown;
 
-  /** ISO-8601 timestamp. */
+  /** ISO-8601 timestamp of when the provider created the event. */
   timestamp: string;
 }
+
+/** A subscription status, as `Subscription["status"]` names it. */
+export type SubscriptionStatus = Subscription["status"];

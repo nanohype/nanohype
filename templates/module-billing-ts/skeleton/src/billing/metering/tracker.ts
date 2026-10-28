@@ -31,6 +31,9 @@ export function createUsageTracker(config: UsageTrackerConfig = {}): UsageTracke
 
   return {
     record(opts: RecordOptions): UsageRecord {
+      if (opts.metric === "") {
+        throw new Error("Usage metric must be a non-empty name");
+      }
       if (opts.quantity <= 0) {
         throw new Error("Usage quantity must be a positive number");
       }
