@@ -56,7 +56,7 @@ class MockVisionProvider implements MultimodalLlmProvider {
     input: ProcessedInput,
     _systemPrompt: string,
     _model: string,
-    _temperature: number,
+    _temperature: number | undefined,
     _maxTokens: number,
   ): Promise<AnalysisResult> {
     switch (input.modality) {
@@ -75,7 +75,7 @@ class MockVisionProvider implements MultimodalLlmProvider {
     frames: string[],
     _systemPrompt: string,
     _model: string,
-    _temperature: number,
+    _temperature: number | undefined,
     _maxTokens: number,
   ): Promise<AnalysisResult> {
     const result = { ...VIDEO_ANALYSIS };

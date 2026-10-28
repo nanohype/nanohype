@@ -114,12 +114,12 @@ export class Retriever {
  * Create a retriever from pipeline configuration.
  */
 export async function createRetriever(config: Config): Promise<Retriever> {
-  const embedder = getEmbeddingProvider(
-    config.embedding.provider,
-    config.embedding.model,
-    config.embedding.dimensions,
-    config.embedding.batchSize,
-  );
+  const embedder = getEmbeddingProvider(config.embedding.provider, {
+    model: config.embedding.model,
+    dimensions: config.embedding.dimensions,
+    batchSize: config.embedding.batchSize,
+    requestTimeoutMs: config.requestTimeoutMs,
+  });
 
   const store = getVectorStoreProvider(
     config.vectorstore.backend,

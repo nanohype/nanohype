@@ -7,26 +7,31 @@
  * by name at runtime.
  */
 
-import type { EmbeddingProvider, LlmProvider, VectorStoreProvider } from "./types.js";
+import type {
+  EmbeddingProvider,
+  EmbeddingProviderSettings,
+  LlmProvider,
+  LlmProviderSettings,
+  VectorStoreProvider,
+} from "./types.js";
 
 // ── LLM Registry ──────────────────────────────────────────────────
 
-const llmProviders = new Map<string, (...args: unknown[]) => LlmProvider>();
+export type LlmProviderFactory = (settings: LlmProviderSettings) => LlmProvider;
 
-export function registerLlmProvider(
-  name: string,
-  factory: (...args: unknown[]) => LlmProvider,
-): void {
+const llmProviders = new Map<string, LlmProviderFactory>();
+
+export function registerLlmProvider(name: string, factory: LlmProviderFactory): void {
   llmProviders.set(name, factory);
 }
 
-export function getLlmProvider(name: string, ...args: unknown[]): LlmProvider {
+export function getLlmProvider(name: string, settings: LlmProviderSettings = {}): LlmProvider {
   const factory = llmProviders.get(name);
   if (!factory) {
     const available = [...llmProviders.keys()].join(", ") || "(none)";
     throw new Error(`Unknown LLM provider "${name}". Registered providers: ${available}`);
   }
-  return factory(...args);
+  return factory(settings);
 }
 
 export function listLlmProviders(): string[] {
@@ -35,22 +40,24 @@ export function listLlmProviders(): string[] {
 
 // ── Embedding Registry ────────────────────────────────────────────
 
-const embeddingProviders = new Map<string, (...args: unknown[]) => EmbeddingProvider>();
+export type EmbeddingProviderFactory = (settings: EmbeddingProviderSettings) => EmbeddingProvider;
 
-export function registerEmbeddingProvider(
-  name: string,
-  factory: (...args: unknown[]) => EmbeddingProvider,
-): void {
+const embeddingProviders = new Map<string, EmbeddingProviderFactory>();
+
+export function registerEmbeddingProvider(name: string, factory: EmbeddingProviderFactory): void {
   embeddingProviders.set(name, factory);
 }
 
-export function getEmbeddingProvider(name: string, ...args: unknown[]): EmbeddingProvider {
+export function getEmbeddingProvider(
+  name: string,
+  settings: EmbeddingProviderSettings = {},
+): EmbeddingProvider {
   const factory = embeddingProviders.get(name);
   if (!factory) {
     const available = [...embeddingProviders.keys()].join(", ") || "(none)";
     throw new Error(`Unknown embedding provider "${name}". Registered providers: ${available}`);
   }
-  return factory(...args);
+  return factory(settings);
 }
 
 export function listEmbeddingProviders(): string[] {

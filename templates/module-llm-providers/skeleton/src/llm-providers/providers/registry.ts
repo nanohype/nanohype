@@ -1,11 +1,13 @@
 // ── Provider Registry ──────────────────────────────────────────────
 //
 // Factory-based registry for LLM providers. Each provider module
-// registers a factory function — getProvider() returns a new instance
-// every time, ensuring no shared mutable state between callers.
+// registers a factory function, and getProvider() calls it on every
+// lookup.
 //
-// This differs from singleton registries: each consumer gets its own
-// circuit breaker, SDK client, and internal state.
+// Each built-in provider registers a factory that returns one instance,
+// built as its module loads, so the instance's circuit breaker, SDK
+// client and log-once state hold across every request in the process. A
+// factory that builds an instance per call gives each caller its own.
 //
 
 import type { LlmProvider, LlmProviderFactory } from "./types.js";
@@ -24,8 +26,7 @@ export function registerProvider(name: string, factory: LlmProviderFactory): voi
 }
 
 /**
- * Create a new provider instance by name. Returns a fresh instance
- * with its own circuit breaker and SDK client state.
+ * The provider instance the factory registered under `name` returns.
  */
 export function getProvider(name: string): LlmProvider {
   const factory = factories.get(name);

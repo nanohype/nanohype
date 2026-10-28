@@ -50,9 +50,26 @@ gateway.close();
 | `groq`      | Llama 3 70B                                      | `llama-3.3-70b-versatile`     | $0.59 / $0.79                 |
 | `mock`      | In-memory                                        | `mock-model`                  | $0 / $0                       |
 
-`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every call carries an explicit `AbortSignal.timeout` (`LLM_REQUEST_TIMEOUT_MS`, default 30s) so a hung socket trips the circuit breaker instead of hanging.
+`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every provider that calls a model bounds its calls by `LLM_REQUEST_TIMEOUT_MS` (default 120s), so a hung socket trips the circuit breaker instead of hanging; a value that is not a whole number of milliseconds from 1 to 2147483647 fails the import, and each `create*Provider()` takes `requestTimeoutMs` to set it per instance. A call has to finish its whole reply within the timeout, and the default covers the 4096-token `maxTokens` default at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The `bedrock` provider gives up on the whole call, the SDK's retries included, at one timeout. The `anthropic`, `openai` and `groq` SDK clients apply it to each attempt and retry a timed-out attempt once, so an endpoint that never answers holds the caller for two timeouts plus the SDK's backoff before the gateway falls through; a caller's own client options can set `timeout` and `maxRetries`.
 
 Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds. If a provider call fails, the gateway falls through to the next configured provider in order before surfacing the error.
+
+### Sampling parameters
+
+Each provider decides whether its request carries the caller's `temperature`. A provider that can send something other than the caller's value declares what it sends through its `sampling(opts)` hook, and one without the hook sends the caller's value when it is set and its own default otherwise.
+
+| Provider | `temperature` sent |
+| -------- | ------------------ |
+| `openai`, `groq` | The caller's value, and 1 when the caller sets none |
+| `anthropic` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value |
+| `bedrock` | Per model id, under `samplingParameters` |
+| `mock` | Not read |
+
+The `bedrock` provider's `samplingParameters` takes one of three values. `auto`, the default, sends the caller's `temperature` only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id names none and is treated as Claude: an ARN of any other resource type (an application inference profile, provisioned model, imported model, custom model, custom model deployment, prompt or prompt router) or an id with no provider segment. `send` sends the caller's `temperature` to every model id, which is how an ARN serving another family receives it, and `omit` sends it to none. `BEDROCK_SAMPLING_PARAMETERS` sets it for the registered `bedrock` provider and is read when the provider's module loads, so a value other than `auto`, `send` or `omit` fails the import. `createBedrockProvider({ samplingParameters })`, imported from `./gateway/providers/bedrock.js`, sets it on a provider you register yourself.
+
+`auto` sends no `temperature` to Claude Haiku 4.5 or Claude Sonnet 4.5, though Bedrock accepts one from either. A classification or routing call that wants temperature 0 from one of them runs under `send`.
+
+A provider drops a `temperature` it does not send without logging it; the gateway carries no logger. The response cache keys on the temperature only when some candidate provider would send it, so a dropped value does not split cache entries.
 
 ## Routing Strategies
 
@@ -144,13 +161,15 @@ const myProvider: GatewayProvider = {
   },
 };
 
-registerProvider(myProvider);
+registerProvider("my-llm", () => myProvider);
 ```
+
+A provider that leaves `temperature` out of some or all of its requests declares what it sends with `sampling(opts)`, built from the same function as the request `chat` sends. The gateway keys its response cache on the result, so a temperature the provider drops does not split cache entries. The gateway takes a provider without `sampling` to send the caller's `temperature` whenever one is set.
 
 ## Architecture
 
 - **Gateway facade** -- `createGateway()` returns a `Gateway` object that orchestrates provider selection, caching, and cost tracking behind a single `chat()` method. Application code never touches provider internals or strategy state.
-- **Provider registry with self-registration** -- each provider module (bedrock, anthropic, openai, groq, mock) calls `registerProvider()` at import time. Adding a custom provider is one `registerProvider()` call.
+- **Provider registry with self-registration** -- each provider module (bedrock, anthropic, openai, groq, mock) calls `registerProvider()` at import time with a factory that returns one instance for the life of the process, so its SDK client is built once and its circuit breaker sees every request. `createBedrockProvider()`, `createAnthropicProvider()`, `createOpenAIProvider()` and `createGroqProvider()`, each imported from its `./gateway/providers/<name>.js` module, build an independent instance to register under another name with its own options. Adding a custom provider is one `registerProvider()` call.
 - **Routing with gateway-level fallback** -- six built-in strategies self-register. The gateway delegates provider selection to the active strategy, then tries the selected provider followed by the remaining configured providers in order, so a single provider failure doesn't fail the request.
 - **Caching strategy registry** -- three built-in strategies self-register. The gateway checks cache before routing and stores responses after successful calls.
 - **Cost tracker** -- records every non-cached request with attribution tags. Supports filtered queries with breakdowns by model, user, and project.

@@ -45,8 +45,8 @@ The pipeline follows a modular design with pluggable providers:
 
 Providers are registered via a triple registry pattern (`src/providers/registry.ts`):
 
-- **LLM**: Anthropic (Claude), OpenAI (GPT)
-- **Embedding**: OpenAI, Cohere
+- **LLM**: Bedrock (default), Anthropic (Claude), OpenAI (GPT)
+- **Embedding**: Bedrock Titan (default), OpenAI, Cohere
 - **Vector store**: Chroma, pgvector, Qdrant, Pinecone
 
 ### Design Decisions
@@ -57,6 +57,8 @@ Providers are registered via a triple registry pattern (`src/providers/registry.
 - **Content-hash deduplication** -- each chunk gets a deterministic ID from a SHA-256 hash of the source path plus chunk index, preventing duplicate entries on re-ingestion.
 - **Score-threshold filtering** -- retrieval results below a configurable similarity threshold are discarded before reranking, reducing noise in the generation context.
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema with sensible defaults. Missing or invalid values throw immediately, not at query time.
+- **Request timeouts** -- `LLM_REQUEST_TIMEOUT_MS` (120s by default) bounds every model call the bedrock, anthropic and openai providers make, so a hung connection fails into the provider's circuit breaker instead of holding the pipeline. A call has to finish its whole reply within the timeout, and the default covers 4096 tokens at about 34 tokens a second, four times the 1024-token `LLM_MAX_TOKENS` default, so a deployment that raises `LLM_MAX_TOKENS` past that raises the timeout with it. The bedrock providers give up on the whole call at it; the anthropic and openai clients give each attempt the full timeout and retry a timed-out attempt once, so an endpoint that never answers holds the pipeline for two timeouts plus the SDK's backoff. `loadConfig()` refuses a value that is not a whole number of milliseconds from 1 to 2147483647.
+- **One LLM per configuration** -- generation builds the configured LLM once for each loaded configuration and reuses it for every query, so the provider's circuit breaker sees all of them.
 - **Provider isolation** -- embedding and vector store providers expose narrow interfaces (`embed`/`embedBatch`, `addDocuments`/`search`). LLM providers handle only generation. No provider knows about another.
 
 ## Evals

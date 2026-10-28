@@ -68,7 +68,7 @@ variables:
   - name: IncludeTests
     type: bool
     placeholder: '__INCLUDE_TESTS__'
-    description: 'Include vitest test suite with chunking, retrieval, and registry tests'
+    description: 'Include the vitest config and the chunking, retrieval and registry suites, with the anthropic, bedrock and openai request suites'
     prompt: 'Include tests?'
     default: true
 
@@ -80,6 +80,12 @@ conditionals:
   - path: 'src/__tests__/retrieval.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/registry.test.ts'
+    when: IncludeTests
+  - path: 'src/providers/__tests__/anthropic-request.test.ts'
+    when: IncludeTests
+  - path: 'src/providers/__tests__/bedrock-request.test.ts'
+    when: IncludeTests
+  - path: 'src/providers/__tests__/openai-request.test.ts'
     when: IncludeTests
 
 hooks:

@@ -4,33 +4,54 @@
  * Supports image analysis via GPT-4o's vision capabilities and text
  * analysis for transcribed audio. Registers itself as the "openai"
  * provider on import.
+ *
+ * Sends the configured `temperature`, and 0.1 when the configuration sets
+ * none. The client gives each attempt LLM_REQUEST_TIMEOUT_MS (120s by
+ * default) and retries a timed-out attempt once, unless `clientOptions` sets
+ * `timeout` or `maxRetries`; resilience/request-timeout.ts gives the bound
+ * that makes.
  */
 
-import OpenAI from "openai";
+import OpenAI, { type ClientOptions } from "openai";
 import type { ProcessedInput } from "../processors/types.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
+import { REQUEST_MAX_RETRIES, REQUEST_TIMEOUT_MS } from "../resilience/request-timeout.js";
 import { registerProvider } from "./registry.js";
 import type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
 
-class OpenAIVisionProvider implements MultimodalLlmProvider {
+/** The temperature the provider sends when the configuration sets none. */
+const DEFAULT_TEMPERATURE = 0.1;
+
+/**
+ * The OpenAI vision provider. `clientOptions` is SDK client configuration
+ * (base URL, timeout, maxRetries, the `fetch` requests go through), applied
+ * over the LLM_REQUEST_TIMEOUT_MS timeout and REQUEST_MAX_RETRIES and under
+ * the API key this provider sets.
+ */
+export class OpenAIVisionProvider implements MultimodalLlmProvider {
   private readonly client: OpenAI;
   private readonly cb = createCircuitBreaker();
 
-  constructor(apiKey?: string) {
+  constructor(apiKey?: string, clientOptions: ClientOptions = {}) {
     const key = apiKey || process.env.OPENAI_API_KEY;
     if (!key) {
       throw new Error(
         "OPENAI_API_KEY environment variable is required when using the OpenAI provider",
       );
     }
-    this.client = new OpenAI({ apiKey: key });
+    this.client = new OpenAI({
+      timeout: REQUEST_TIMEOUT_MS,
+      maxRetries: REQUEST_MAX_RETRIES,
+      ...clientOptions,
+      apiKey: key,
+    });
   }
 
   async analyze(
     input: ProcessedInput,
     systemPrompt: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult> {
     const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [];
@@ -61,7 +82,7 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
           { role: "system", content: systemPrompt },
           { role: "user", content },
         ],
-        temperature,
+        temperature: temperature ?? DEFAULT_TEMPERATURE,
         max_tokens: maxTokens,
       }),
     );
@@ -86,7 +107,7 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
     frames: string[],
     systemPrompt: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<AnalysisResult> {
     const content: OpenAI.Chat.Completions.ChatCompletionContentPart[] = [];
@@ -117,7 +138,7 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
           { role: "system", content: systemPrompt },
           { role: "user", content },
         ],
-        temperature,
+        temperature: temperature ?? DEFAULT_TEMPERATURE,
         max_tokens: maxTokens,
       }),
     );
@@ -139,4 +160,4 @@ class OpenAIVisionProvider implements MultimodalLlmProvider {
   }
 }
 
-registerProvider("openai", (apiKey?: unknown) => new OpenAIVisionProvider(apiKey as string));
+registerProvider("openai", (apiKey) => new OpenAIVisionProvider(apiKey));

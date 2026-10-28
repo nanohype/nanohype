@@ -9,13 +9,14 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the pipeline, processors, mock provider, registries, the eval
-      // corpus loader, and circuit breaker. The anthropic/openai/whisper
-      // providers need an API key and a hosted endpoint; bootstrap exits on an
-      // unresolved placeholder; config and logger read the environment; the
-      // formatter runs under processFile; and the eval runner calls a live
-      // provider, so it is a command a consumer runs rather than a CI step —
-      // the loader it depends on for its empty-corpus refusal is covered here
-      // instead.
+      // corpus loader, circuit breaker and request timeout, and the anthropic
+      // and openai providers, whose request suites run the real SDK clients
+      // over an in-process transport. The whisper provider needs an API key
+      // and a hosted endpoint; bootstrap exits on an unresolved placeholder;
+      // config and logger read the environment; the formatter runs under
+      // processFile; and the eval runner calls a live provider, so it is a
+      // command a consumer runs rather than a CI step — the loader it depends
+      // on for its empty-corpus refusal is covered here instead.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -24,8 +25,6 @@ export default defineConfig({
         "src/config.ts",
         "src/logger.ts",
         "src/output/formatter.ts",
-        "src/providers/anthropic.ts",
-        "src/providers/openai.ts",
         "src/providers/whisper.ts",
         "src/**/index.ts",
         "src/**/types.ts",

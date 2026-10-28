@@ -8,7 +8,7 @@
 
 import type { Config } from "./config.js";
 import { logger } from "./logger.js";
-import { getLlmProvider } from "./providers/index.js";
+import { getLlmProvider, type LlmProvider } from "./providers/index.js";
 import type { RetrievalResult } from "./retrieval.js";
 import { createRetriever } from "./retrieval.js";
 
@@ -36,6 +36,27 @@ function buildUserMessage(query: string, context: string): string {
   );
 }
 
+/**
+ * The LLM each loaded configuration uses. One instance answers every query a
+ * configuration makes, so the provider's circuit breaker and its
+ * once-per-instance debug log see all of them.
+ */
+const llms = new WeakMap<Config, LlmProvider>();
+
+function llmFor(config: Config): LlmProvider {
+  let llm = llms.get(config);
+  if (!llm) {
+    llm = getLlmProvider(config.generation.provider, {
+      anthropicApiKey: config.generation.anthropicApiKey,
+      openaiApiKey: config.generation.openaiApiKey,
+      samplingParameters: config.generation.bedrockSamplingParameters,
+      requestTimeoutMs: config.requestTimeoutMs,
+    });
+    llms.set(config, llm);
+  }
+  return llm;
+}
+
 export interface SourceCitation {
   source: string;
   score: number;
@@ -60,8 +81,7 @@ export async function generate(
   const context = formatContext(results);
   const providerName = config.generation.provider;
 
-  const apiKey = config.generation.anthropicApiKey || config.generation.openaiApiKey;
-  const provider = getLlmProvider(providerName, apiKey);
+  const provider = llmFor(config);
   const userMessage = buildUserMessage(query, context);
 
   const { answer, usage } = await provider.generate(

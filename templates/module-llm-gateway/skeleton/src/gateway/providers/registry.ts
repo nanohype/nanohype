@@ -4,7 +4,9 @@ import type { GatewayProvider } from "./types.js";
 //
 // Central registry for LLM provider factories. Each provider module
 // self-registers by calling registerProvider() at import time.
-// Consumer code calls getProvider() to obtain a fresh provider instance.
+// Consumer code calls getProvider(), which returns what the factory
+// registered under that name returns: for each built-in provider, the one
+// instance its module built as it loaded.
 //
 
 export type GatewayProviderFactory = () => GatewayProvider;

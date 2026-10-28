@@ -96,6 +96,18 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
       registry.test.ts
 ```
 
+## Configuration
+
+The project reads these settings from the process environment and loads no `.env` file. `src/config.ts` declares them.
+
+- `WIKI_DATA_DIR` -- directory that holds the tenant registry and each tenant's wiki. Defaults to `./data`.
+- `WIKI_STORAGE_PROVIDER` -- storage provider ingest, query and lint use. Defaults to the `StorageProvider` value.
+- `WIKI_SOURCE_PROVIDER` -- source provider ingest reads from. Defaults to the `SourceProvider` value.
+- `WIKI_LLM_PROVIDER` -- LLM provider ingest and query call. Defaults to the `LlmProvider` value.
+- `ANTHROPIC_API_KEY` -- key the `anthropic` LLM provider authenticates with, required by its first request.
+- `LLM_REQUEST_TIMEOUT_MS` -- how long the `anthropic` provider waits on each attempt at a model call, in milliseconds: a whole number from 1 to 2147483647, and 120000 when unset or empty. An attempt has to finish its whole reply within it, and the default covers the provider's 4096-token reply at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The provider retries a timed-out attempt once, so an endpoint that never answers holds an operation for two timeouts plus the SDK's backoff. Any other value fails the first operation that loads the configuration.
+- `WIKI_API_KEY` -- bearer token the HTTP API requires. When it is unset, the API serves every request unauthenticated and warns that it does.
+
 ## After scaffolding
 
 ```bash
