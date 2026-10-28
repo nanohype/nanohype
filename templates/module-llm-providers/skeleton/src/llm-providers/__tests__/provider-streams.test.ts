@@ -64,7 +64,6 @@ describeProviderContract("anthropic", {
     return { endpoint, provider };
   },
   ChatTimeoutError: AnthropicTimeoutError,
-  dropsConnection: true,
 });
 
 describeProviderContract("openai", {
@@ -77,7 +76,6 @@ describeProviderContract("openai", {
     return { endpoint, provider };
   },
   ChatTimeoutError: OpenAITimeoutError,
-  dropsConnection: true,
 });
 
 describeProviderContract("groq", {
@@ -90,7 +88,6 @@ describeProviderContract("groq", {
     return { endpoint, provider };
   },
   ChatTimeoutError: GroqTimeoutError,
-  dropsConnection: true,
 });
 
 describe("a timeout in the client options", () => {

@@ -1,6 +1,6 @@
-import type { VertexInit } from "@google-cloud/vertexai";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createVertexProvider } from "../providers/vertex.js";
+import type { GoogleGenAIOptions } from "@google/genai";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createVertexProvider, type VertexProviderOptions } from "../providers/vertex.js";
 import { RequestTimeoutError } from "../resilience/request-timeout.js";
 import type { ChatMessage, ChatOptions, StreamResponse } from "../types.js";
 import {
@@ -12,16 +12,19 @@ import {
 // ── Vertex Request Tests ───────────────────────────────────────────
 //
 // The vertex provider bounds a request by LLM_REQUEST_TIMEOUT_MS and a
-// stream by each wait for its next event, and leaves the SDK's own request
-// timeout unset, whose timer outlives the call. These hold the provider to
-// the request it builds in both request modes, to giving up on either one
-// at that timeout, and to leaving no timer behind, and run it under the
-// breaker and timeout contract provider-contract.ts gives. The Vertex AI
-// SDK sends
-// its requests through the global `fetch`, which each test replaces with
-// one that answers in-process, and its credentials come from an auth
-// client that hands out a fixed token, so no request leaves the process.
+// stream by each wait for its next event, aborts a request it gives up on,
+// and leaves the SDK's own request timeout unset, whose timer outlives the
+// call. These hold the provider to the request it builds in both request
+// modes, to authenticating through its credentials rather than an API key,
+// to giving up on and aborting either mode at that timeout, and to leaving
+// no timer behind, and run it under the breaker and timeout contract
+// provider-contract.ts gives. The SDK sends its requests through the
+// global `fetch`, which each test replaces with one that answers
+// in-process, and its credentials come from an auth client that hands out
+// a fixed token, so no request leaves the process.
 //
+
+type AuthClient = NonNullable<GoogleGenAIOptions["googleAuthOptions"]>["authClient"];
 
 const messages: ChatMessage[] = [
   { role: "system", content: "Answer briefly." },
@@ -30,12 +33,14 @@ const messages: ChatMessage[] = [
 
 const opts: ChatOptions = { model: "test-model", maxTokens: 64, temperature: 0.2, topP: 0.9 };
 
-const client: VertexInit = {
+const client: VertexProviderOptions["client"] = {
   project: "test-project",
   location: "us-central1",
   googleAuthOptions: {
-    authClient: { getAccessToken: async () => ({ token: "test-token" }) },
-  } as unknown as VertexInit["googleAuthOptions"],
+    authClient: {
+      getRequestHeaders: async () => new Headers({ authorization: "Bearer test-token" }),
+    } as unknown as AuthClient,
+  },
 };
 
 const REPLY = {
@@ -45,13 +50,14 @@ const REPLY = {
 
 /**
  * A `fetch` that answers as the Vertex AI API does, with server-sent
- * events for a streamed request. It keeps each request's URL and body.
+ * events for a streamed request. It keeps each request's URL, headers and
+ * body.
  */
 function vertexApiFetch() {
-  const sent: { url: string; body: Record<string, unknown> }[] = [];
+  const sent: { url: string; headers: Headers; body: Record<string, unknown> }[] = [];
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
-    sent.push({ url, body: JSON.parse(String(init?.body)) });
+    sent.push({ url, headers: new Headers(init?.headers), body: JSON.parse(String(init?.body)) });
     if (url.includes(":streamGenerateContent")) {
       return new Response(`data: ${JSON.stringify(REPLY)}\n\n`, {
         headers: { "content-type": "text/event-stream" },
@@ -62,11 +68,20 @@ function vertexApiFetch() {
   return { sent, fetch };
 }
 
-/** A `fetch` that answers nothing, as a hung connection does, until its request aborts. */
-function hungFetch(_input: string | URL | Request, init?: RequestInit): Promise<Response> {
-  return new Promise<Response>((_resolve, reject) => {
-    init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
-  });
+/**
+ * A `fetch` that answers nothing, as a hung connection does, until its
+ * request aborts. It counts the requests that abort.
+ */
+function hungFetch() {
+  const state = { aborted: 0 };
+  const fetch = (_input: string | URL | Request, init?: RequestInit) =>
+    new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener("abort", () => {
+        state.aborted += 1;
+        reject(init.signal?.reason);
+      });
+    });
+  return { state, fetch };
 }
 
 /** How `call` has settled so far: "waiting", "answered", or its error. */
@@ -92,25 +107,23 @@ async function drain(response: StreamResponse): Promise<string> {
 }
 
 describe("vertex provider request", () => {
-  beforeEach(() => {
-    // The SDK warns of its deprecation as each client is built.
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-  });
-
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
-  it("sends the caller's sampling options and reads the reply", async () => {
+  it("sends the caller's sampling options to the v1 API and reads the reply", async () => {
     const { sent, fetch } = vertexApiFetch();
     vi.stubGlobal("fetch", fetch);
 
     const response = await createVertexProvider({ client }).chat(messages, opts);
 
     expect(sent).toHaveLength(1);
-    expect(sent[0]?.url).toMatch(/\/models\/test-model:generateContent$/);
+    expect(sent[0]?.url).toMatch(
+      /\/v1\/projects\/test-project\/locations\/us-central1\/publishers\/google\/models\/test-model:generateContent$/,
+    );
     expect(sent[0]?.body).toMatchObject({
       contents: [{ role: "user", parts: [{ text: "Say hello." }] }],
       systemInstruction: { parts: [{ text: "Answer briefly." }] },
@@ -124,20 +137,52 @@ describe("vertex provider request", () => {
     });
   });
 
-  it("streams the reply's text", async () => {
+  it("sends temperature 1 and no topP when the caller sets neither", async () => {
+    const { sent, fetch } = vertexApiFetch();
+    vi.stubGlobal("fetch", fetch);
+
+    await createVertexProvider({ client }).chat(messages, { model: "test-model" });
+
+    expect(sent[0]?.body.generationConfig).toEqual({ maxOutputTokens: 4096, temperature: 1 });
+  });
+
+  it("streams the reply's text and its usage", async () => {
     const { sent, fetch } = vertexApiFetch();
     vi.stubGlobal("fetch", fetch);
 
     const stream = createVertexProvider({ client }).streamChat(messages, opts);
 
     expect(await drain(stream)).toBe("Hello.");
-    expect(await stream.response).toMatchObject({ text: "Hello.", provider: "vertex" });
-    expect(sent[0]?.url).toMatch(/:streamGenerateContent\?alt=sse$/);
+    expect(await stream.response).toMatchObject({
+      text: "Hello.",
+      provider: "vertex",
+      usage: { inputTokens: 12, outputTokens: 3 },
+    });
+    expect(sent[0]?.url).toMatch(
+      /\/v1\/projects\/test-project\/.*:streamGenerateContent\?alt=sse$/,
+    );
+    expect(sent[0]?.body).toMatchObject({
+      generationConfig: { maxOutputTokens: 64, temperature: 0.2, topP: 0.9 },
+    });
   });
 
-  it("gives up on a request at 120 seconds by default, in both request modes", async () => {
+  it("authenticates with its credentials, not an API key in the environment", async () => {
+    vi.stubEnv("GOOGLE_API_KEY", "test-api-key");
+    // The SDK logs, at debug level, that the project and location win.
+    vi.spyOn(console, "debug").mockImplementation(() => {});
+    const { sent, fetch } = vertexApiFetch();
+    vi.stubGlobal("fetch", fetch);
+
+    await createVertexProvider({ client }).chat(messages, opts);
+
+    expect(sent[0]?.headers.get("authorization")).toBe("Bearer test-token");
+    expect(sent[0]?.headers.get("x-goog-api-key")).toBeNull();
+  });
+
+  it("gives up on and aborts a request at 120 seconds by default, in both request modes", async () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    vi.stubGlobal("fetch", hungFetch);
+    const hung = hungFetch();
+    vi.stubGlobal("fetch", hung.fetch);
     const provider = createVertexProvider({ client });
 
     const chat = track(provider.chat(messages, opts));
@@ -146,10 +191,12 @@ describe("vertex provider request", () => {
     await vi.advanceTimersByTimeAsync(119_999);
     expect(chat.outcome).toBe("waiting");
     expect(stream.outcome).toBe("waiting");
+    expect(hung.state.aborted).toBe(0);
 
     await vi.advanceTimersByTimeAsync(1);
     expect(chat.outcome).toBeInstanceOf(RequestTimeoutError);
     expect(stream.outcome).toBeInstanceOf(RequestTimeoutError);
+    expect(hung.state.aborted).toBe(2);
   });
 
   it("leaves no timer running once a call returns", async () => {
@@ -180,6 +227,4 @@ describeProviderContract("vertex", {
     };
   },
   ChatTimeoutError: RequestTimeoutError,
-  // The SDK takes no abort signal.
-  dropsConnection: false,
 });

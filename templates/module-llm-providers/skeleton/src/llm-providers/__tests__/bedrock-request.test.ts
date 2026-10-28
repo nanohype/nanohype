@@ -546,5 +546,4 @@ describeProviderContract("bedrock", {
     return { endpoint, provider };
   },
   ChatTimeoutError: RequestTimeoutError,
-  dropsConnection: true,
 });
