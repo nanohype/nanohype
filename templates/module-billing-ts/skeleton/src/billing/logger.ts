@@ -1,22 +1,24 @@
 // ── Billing Logger ─────────────────────────────────────────────────
 //
 // Thin structured-logging wrapper. Writes JSON to stdout/stderr.
-// Respects LOG_LEVEL env var (debug, info, warn, error). Defaults
-// to "info" in production, "debug" otherwise.
+// Respects the LOG_LEVEL env var (debug, info, warn, error, silent),
+// read on every call. Unset or unrecognized, the level is "info";
+// "silent" writes nothing.
 //
 
 type Level = "debug" | "info" | "warn" | "error";
 
-const LEVELS: Record<Level, number> = {
+const LEVELS: Record<Level | "silent", number> = {
   debug: 0,
   info: 1,
   warn: 2,
   error: 3,
+  silent: 4,
 };
 
 function currentLevel(): number {
-  const env = (process.env.LOG_LEVEL ?? "info").toLowerCase() as Level;
-  return LEVELS[env] ?? LEVELS.info;
+  const env = (process.env.LOG_LEVEL ?? "info").toLowerCase();
+  return Object.hasOwn(LEVELS, env) ? LEVELS[env as keyof typeof LEVELS] : LEVELS.info;
 }
 
 function emit(level: Level, message: string, data?: Record<string, unknown>): void {
@@ -31,7 +33,7 @@ function emit(level: Level, message: string, data?: Record<string, unknown>): vo
   };
 
   const out = level === "error" ? process.stderr : process.stdout;
-  out.write(JSON.stringify(entry) + "\n");
+  out.write(`${JSON.stringify(entry)}\n`);
 }
 
 export const logger = {

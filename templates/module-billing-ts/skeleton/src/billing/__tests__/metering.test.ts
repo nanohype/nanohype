@@ -51,6 +51,12 @@ describe("usage tracker", () => {
     ).toThrow("positive number");
   });
 
+  it("throws on an empty metric name", () => {
+    expect(() => tracker.record({ customerId: "cus-1", metric: "", quantity: 1 })).toThrow(
+      "Usage metric must be a non-empty name",
+    );
+  });
+
   it("retrieves records by customer and period", () => {
     const now = new Date();
     const period: BillingPeriod = {

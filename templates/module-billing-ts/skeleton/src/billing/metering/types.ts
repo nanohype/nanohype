@@ -10,7 +10,11 @@ export interface RecordOptions {
   /** Customer identifier. */
   customerId: string;
 
-  /** Metric name (e.g., "api_calls", "tokens_used"). */
+  /**
+   * Metric name (e.g., "api_calls", "tokens_used"). Must not be empty: an
+   * invoice line names the metric it bills, and a line a payment provider
+   * lists with no metric reads as one no charge of this module wrote.
+   */
   metric: string;
 
   /** Quantity consumed. Must be a positive number. */

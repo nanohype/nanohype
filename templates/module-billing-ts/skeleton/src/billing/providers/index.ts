@@ -9,6 +9,7 @@
 import "./stripe.js";
 import "./mock.js";
 
+export { ProviderConfigError } from "./errors.js";
 export type { PaymentProviderFactory } from "./registry.js";
 export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { PaymentProvider } from "./types.js";
