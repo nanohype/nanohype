@@ -17,7 +17,16 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0–2). */
+  /**
+   * Temperature for sampling (0–2). Whether a request carries it is the
+   * provider's decision: a provider that can send something other than the
+   * caller's value declares what it sends through its `sampling` hook, and
+   * one without the hook sends the caller's value when it is set and its
+   * own default otherwise. A provider drops a value it does not send
+   * without logging it, since the gateway carries no logger. The README's
+   * Sampling parameters section and each provider's module header give the
+   * rules.
+   */
   temperature?: number;
   /** Force a specific provider by name. */
   provider?: string;
@@ -70,6 +79,10 @@ export interface GatewayConfig {
   models?: Record<string, string>;
   /** Default max tokens. */
   maxTokens?: number;
-  /** Default temperature. */
+  /**
+   * Default temperature, applied to every request that sets none. Each
+   * provider decides whether a request carries it, as it does for
+   * ChatOptions.temperature.
+   */
   temperature?: number;
 }

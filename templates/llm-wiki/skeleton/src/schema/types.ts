@@ -16,7 +16,6 @@ export interface WikiSchema {
   llm: {
     provider: string;
     model: string;
-    temperature: number;
     maxPagesPerIngest: number;
   };
 }

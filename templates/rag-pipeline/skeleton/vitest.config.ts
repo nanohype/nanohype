@@ -10,8 +10,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the pure logic (chunking, retrieval, the eval corpus loader and
-      // its assertion checks).
+      // Gate the pure logic (chunking, retrieval, request timeouts, the eval
+      // corpus loader and its assertion checks) and the anthropic, bedrock and
+      // openai providers, whose request suites run the real SDK clients over
+      // an in-process transport.
       exclude: [
         "src/**/*.test.ts",
         "src/__tests__/**",
@@ -20,19 +22,25 @@ export default defineConfig({
         "src/generation.ts",
         "src/logger.ts",
         // The CLI entry, the eval runner, the wiring that reads the environment,
-        // the ingest IO path, and the SDK-backed providers. Nothing covers these: the
-        // provider suites import each module for the registration it performs
-        // at load and call nothing in it, the eval runner asks a live model, and
-        // no suite here reaches a live
-        // Anthropic, OpenAI, Bedrock, Cohere, Chroma, pgvector, Pinecone or
-        // Qdrant endpoint. Untested shipped code, said plainly, rather than a
-        // suite named as the reason it need not be measured.
+        // the ingest IO path, the providers barrel, the SDK-backed providers
+        // other than anthropic, bedrock and openai, and the mock LLM and vector
+        // store. No suite measures these: the eval runner asks a live model, no
+        // suite reaches a Cohere, pgvector, Pinecone or Qdrant endpoint, the
+        // Chroma suite runs only when CHROMA_TEST_URL names a live server, and
+        // no suite calls the mocks.
         "src/index.ts",
         "src/eval/runner.ts",
         "src/bootstrap.ts",
         "src/ingest.ts",
         "src/config.ts",
-        "src/providers/**",
+        "src/providers/chroma.ts",
+        "src/providers/cohere.ts",
+        "src/providers/index.ts",
+        "src/providers/mock-vectorstore.ts",
+        "src/providers/mock.ts",
+        "src/providers/pgvector.ts",
+        "src/providers/pinecone.ts",
+        "src/providers/qdrant.ts",
       ],
       thresholds: {
         lines: 75,

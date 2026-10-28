@@ -16,8 +16,8 @@ class CohereEmbedder implements EmbeddingProvider {
   private readonly batchSize: number;
   private readonly cb = createCircuitBreaker();
 
-  constructor(model = "embed-english-v3.0", dims = 1024, batchSize = 96, apiKey?: string) {
-    const key = apiKey || process.env.COHERE_API_KEY;
+  constructor(model = "embed-english-v3.0", dims = 1024, batchSize = 96) {
+    const key = process.env.COHERE_API_KEY;
     if (!key) {
       throw new Error("COHERE_API_KEY environment variable is required for Cohere embeddings");
     }
@@ -72,6 +72,5 @@ class CohereEmbedder implements EmbeddingProvider {
 
 registerEmbeddingProvider(
   "cohere",
-  (model?: unknown, dims?: unknown, batchSize?: unknown, apiKey?: unknown) =>
-    new CohereEmbedder(model as string, dims as number, batchSize as number, apiKey as string),
+  (settings) => new CohereEmbedder(settings.model, settings.dimensions, settings.batchSize),
 );

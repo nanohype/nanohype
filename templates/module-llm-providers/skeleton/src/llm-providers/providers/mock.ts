@@ -13,7 +13,8 @@ import type { LlmProvider } from "./types.js";
 //
 // Deterministic provider for testing. Returns keyword-matched
 // responses with fake token counts. No external dependencies or
-// API keys required. Always included in the module.
+// API keys required. Reads no sampling options. Always included in the
+// module.
 //
 
 const RESPONSES: Record<string, string> = {
@@ -126,5 +127,6 @@ function createMockProvider(): LlmProvider {
   };
 }
 
-// Self-register factory
-registerProvider("mock", createMockProvider);
+// Self-register. The registry returns this one instance for every lookup.
+const mockProvider = createMockProvider();
+registerProvider("mock", () => mockProvider);

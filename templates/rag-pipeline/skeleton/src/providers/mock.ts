@@ -26,7 +26,7 @@ class MockLlm implements LlmProvider {
     _systemPrompt: string,
     userMessage: string,
     _model: string,
-    _temperature: number,
+    _temperature: number | undefined,
     _maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }> {
     const lower = userMessage.toLowerCase();

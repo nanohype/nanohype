@@ -139,12 +139,12 @@ export async function ingestDirectory(config: Config): Promise<IngestStats> {
   });
 
   // Embed
-  const embedder = getEmbeddingProvider(
-    config.embedding.provider,
-    config.embedding.model,
-    config.embedding.dimensions,
-    config.embedding.batchSize,
-  );
+  const embedder = getEmbeddingProvider(config.embedding.provider, {
+    model: config.embedding.model,
+    dimensions: config.embedding.dimensions,
+    batchSize: config.embedding.batchSize,
+    requestTimeoutMs: config.requestTimeoutMs,
+  });
   const texts = allDocs.map((doc) => doc.content);
   const embeddings = await embedder.embedBatch(texts);
 

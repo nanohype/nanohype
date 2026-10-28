@@ -4,9 +4,10 @@ import type { LlmProviderFactory } from "../providers/types.js";
 
 // ── Registry Tests ─────────────────────────────────────────────────
 //
-// Verifies the factory-based registry: each getProvider() call returns
-// a new instance, factories can be registered and retrieved, and
-// duplicate registration is rejected.
+// Verifies the factory-based registry: getProvider() calls the factory
+// registered under a name on every lookup, each built-in provider's
+// factory returns one instance for every lookup, and duplicate
+// registration is rejected.
 //
 
 function stubFactory(name: string): LlmProviderFactory {
@@ -59,7 +60,7 @@ describe("LLM provider registry", () => {
     expect(provider.name).toBe(name);
   });
 
-  it("returns independent instances from each getProvider() call", () => {
+  it("calls the factory on every lookup", () => {
     const name = unique();
     registerProvider(name, stubFactory(name));
 
@@ -100,5 +101,15 @@ describe("LLM provider registry", () => {
     expect(names).toContain("openai");
     expect(names).toContain("groq");
     expect(names).toContain("mock");
+  });
+
+  it("returns one instance of each built-in provider for every lookup", async () => {
+    await import("../providers/index.js");
+    const builtIn = listProviders().filter((name) => !name.startsWith("test-"));
+
+    expect(builtIn).toEqual(expect.arrayContaining(["anthropic", "openai", "groq", "mock"]));
+    for (const name of builtIn) {
+      expect(getProvider(name), name).toBe(getProvider(name));
+    }
   });
 });

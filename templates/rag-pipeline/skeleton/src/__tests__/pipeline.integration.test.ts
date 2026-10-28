@@ -3,13 +3,19 @@
  *
  * Wires real chunking strategies with mock embedding, vector store,
  * and LLM providers to verify the end-to-end flow: ingest documents,
- * chunk them, embed, store, retrieve, and generate an answer.
+ * chunk them, embed, store, retrieve, and generate an answer. It also
+ * holds the pipeline to the settings it hands each provider it builds,
+ * and to building one LLM for each loaded configuration.
  */
 
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createChunker } from "../chunking.js";
 import type { Config } from "../config.js";
 import { generate } from "../generation.js";
+import { ingestDirectory } from "../ingest.js";
 import {
   registerEmbeddingProvider,
   registerLlmProvider,
@@ -17,11 +23,13 @@ import {
 } from "../providers/registry.js";
 import type {
   EmbeddingProvider,
+  EmbeddingProviderSettings,
+  LlmProviderSettings,
   SearchResult,
   VectorDocument,
   VectorStoreProvider,
 } from "../providers/types.js";
-import { Retriever } from "../retrieval.js";
+import { createRetriever, Retriever } from "../retrieval.js";
 
 // ── Mock Providers ────────────────────────────────────────────────
 
@@ -157,9 +165,11 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
       model: "test-model",
       temperature: 0,
       maxTokens: 256,
+      bedrockSamplingParameters: "auto",
     },
     retrieval: { topK: 3, scoreThreshold: 0.0 },
     docsDir: "./test-docs",
+    requestTimeoutMs: 30_000,
     ...overrides,
   };
 }
@@ -354,6 +364,94 @@ describe("RAG pipeline integration", () => {
       const retriever = new Retriever(embedder, strategyStore, 3);
       const results = await retriever.retrieve("TypeScript");
       expect(results.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ── Provider Construction ─────────────────────────────────────────
+
+describe("RAG pipeline provider construction", () => {
+  const embedded: EmbeddingProviderSettings[] = [];
+  const answered: LlmProviderSettings[] = [];
+
+  beforeEach(() => {
+    embedded.length = 0;
+    answered.length = 0;
+    registerEmbeddingProvider("test-settings-embed", (settings) => {
+      embedded.push(settings);
+      return new TestEmbedder();
+    });
+    registerVectorStoreProvider("test-settings-vs", () => new TestVectorStore());
+    registerLlmProvider("test-settings-llm", (settings) => {
+      answered.push(settings);
+      return {
+        async generate() {
+          return { answer: "An answer.", usage: { total_tokens: 1 } };
+        },
+      };
+    });
+  });
+
+  function settingsConfig(): Config {
+    const base = makeConfig({ requestTimeoutMs: 5_000 });
+    return {
+      ...base,
+      embedding: { ...base.embedding, provider: "test-settings-embed" },
+      vectorstore: { ...base.vectorstore, backend: "test-settings-vs" },
+      generation: {
+        ...base.generation,
+        provider: "test-settings-llm",
+        anthropicApiKey: "anthropic-key",
+        openaiApiKey: "openai-key",
+        bedrockSamplingParameters: "send",
+      },
+    };
+  }
+
+  it("hands the LLM it builds the configured settings, each key under its own name", async () => {
+    await generate("What is TypeScript?", [], settingsConfig());
+
+    expect(answered).toEqual([
+      {
+        anthropicApiKey: "anthropic-key",
+        openaiApiKey: "openai-key",
+        samplingParameters: "send",
+        requestTimeoutMs: 5_000,
+      },
+    ]);
+  });
+
+  it("builds one LLM for each loaded configuration, however many questions it answers", async () => {
+    const config = settingsConfig();
+
+    await generate("What is TypeScript?", [], config);
+    await generate("What is Python?", [], config);
+    expect(answered).toHaveLength(1);
+
+    await generate("What is TypeScript?", [], settingsConfig());
+    expect(answered).toHaveLength(2);
+  });
+
+  it("hands the embedder retrieval builds the configured request timeout", async () => {
+    await createRetriever(settingsConfig());
+
+    expect(embedded).toEqual([
+      { model: "test", dimensions: 8, batchSize: 128, requestTimeoutMs: 5_000 },
+    ]);
+  });
+
+  it("hands the embedder ingestion builds the configured request timeout", async () => {
+    const docsDir = await mkdtemp(join(tmpdir(), "rag-ingest-"));
+    try {
+      await writeFile(join(docsDir, "typescript.md"), DOCUMENT_A);
+
+      await ingestDirectory({ ...settingsConfig(), docsDir });
+
+      expect(embedded).toEqual([
+        { model: "test", dimensions: 8, batchSize: 128, requestTimeoutMs: 5_000 },
+      ]);
+    } finally {
+      await rm(docsDir, { recursive: true, force: true });
     }
   });
 });

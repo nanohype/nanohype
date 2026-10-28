@@ -9,6 +9,13 @@
 
 import "dotenv/config";
 import { z } from "zod";
+import { SAMPLING_PARAMETERS } from "./providers/types.js";
+import { DEFAULT_REQUEST_TIMEOUT_MS, parseTimeoutMs } from "./resilience/request-timeout.js";
+
+/** An empty environment value (`LLM_TEMPERATURE=`) reads as unset. */
+function unsetWhenEmpty(value: unknown): unknown {
+  return value === "" ? undefined : value;
+}
 
 const chunkingSchema = z.object({
   strategy: z.string().default("__CHUNK_STRATEGY__"),
@@ -43,8 +50,29 @@ const generationSchema = z.object({
   // Bedrock model id (the org default). For the direct Anthropic API use
   // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
   model: z.string().default("us.anthropic.claude-sonnet-5"),
-  temperature: z.coerce.number().min(0).max(2).default(0.1),
+  // Optional, so a provider can tell a configured temperature from none; an
+  // empty LLM_TEMPERATURE is unset. The openai provider sends it, and 0.1
+  // when it is unset. The anthropic provider never sends one: the Messages
+  // API rejects sampling parameters. The bedrock provider sends it under
+  // the rule bedrockSamplingParameters names, and none to any model when it
+  // is unset.
+  temperature: z.preprocess(unsetWhenEmpty, z.coerce.number().min(0).max(2).optional()),
   maxTokens: z.coerce.number().int().positive().default(1024),
+  // Which bedrock requests carry the configured temperature: `auto` sends it
+  // to a model id that names a family other than Claude and to none that is
+  // Claude or names no family, `send` to every model id, and `omit` to none.
+  // providers/bedrock.ts says how a model id names its family. Unset or
+  // empty is `auto`.
+  bedrockSamplingParameters: z.preprocess(
+    unsetWhenEmpty,
+    z
+      .enum(SAMPLING_PARAMETERS, {
+        error: (issue) =>
+          `BEDROCK_SAMPLING_PARAMETERS must be one of ${SAMPLING_PARAMETERS.join(", ")}, ` +
+          `got ${JSON.stringify(issue.input)}`,
+      })
+      .default("auto"),
+  ),
 });
 
 const retrievalSchema = z.object({
@@ -59,6 +87,21 @@ const configSchema = z.object({
   generation: generationSchema,
   retrieval: retrievalSchema,
   docsDir: z.string().default("./docs"),
+  // How long the LLM and embedding providers wait on a model call, in
+  // milliseconds, read by parseTimeoutMs(): DEFAULT_REQUEST_TIMEOUT_MS when
+  // unset or empty. resilience/request-timeout.ts gives the bound it puts
+  // on each provider.
+  requestTimeoutMs: z
+    .string()
+    .optional()
+    .transform((value, ctx) => {
+      try {
+        return parseTimeoutMs("LLM_REQUEST_TIMEOUT_MS", value, DEFAULT_REQUEST_TIMEOUT_MS);
+      } catch (error) {
+        ctx.addIssue({ code: "custom", message: (error as Error).message });
+        return z.NEVER;
+      }
+    }),
 });
 
 export type ChunkingConfig = z.infer<typeof chunkingSchema>;
@@ -75,9 +118,9 @@ export type Config = z.infer<typeof configSchema>;
  * - CHUNK_STRATEGY, CHUNK_SIZE, CHUNK_OVERLAP
  * - EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_BATCH_SIZE
  * - VECTORSTORE_BACKEND, VECTORSTORE_COLLECTION_NAME, etc.
- * - LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS
+ * - LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS, BEDROCK_SAMPLING_PARAMETERS
  * - RETRIEVAL_TOP_K, RETRIEVAL_SCORE_THRESHOLD
- * - DOCS_DIR
+ * - DOCS_DIR, LLM_REQUEST_TIMEOUT_MS
  */
 export function loadConfig(): Config {
   const env = process.env;
@@ -111,11 +154,13 @@ export function loadConfig(): Config {
       model: env.LLM_MODEL,
       temperature: env.LLM_TEMPERATURE,
       maxTokens: env.LLM_MAX_TOKENS,
+      bedrockSamplingParameters: env.BEDROCK_SAMPLING_PARAMETERS,
     },
     retrieval: {
       topK: env.RETRIEVAL_TOP_K,
       scoreThreshold: env.RETRIEVAL_SCORE_THRESHOLD,
     },
     docsDir: env.DOCS_DIR,
+    requestTimeoutMs: env.LLM_REQUEST_TIMEOUT_MS,
   });
 }

@@ -5,7 +5,6 @@ export interface LlmMessage {
 
 export interface LlmOptions {
   model?: string;
-  temperature?: number;
   maxTokens?: number;
 }
 
