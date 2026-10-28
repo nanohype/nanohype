@@ -1,4 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nanohype/.github"]
+  "extends": ["github>nanohype/.github"],
+  "packageRules": [
+    {
+      "description": [
+        "The vscode-ext skeleton runs in VS Code's extension host, on the Node release VS Code ships rather than the catalog's Node line, so its @types/node stays on the editor's major. Typings ahead of the host type-check calls that throw at runtime.",
+        "VS Code's Node release is the `target` that `gh api repos/microsoft/vscode/contents/remote/.npmrc -H 'Accept: application/vnd.github.raw'` prints. Raise the bound when that major moves."
+      ],
+      "matchFileNames": ["templates/vscode-ext/skeleton/package.json"],
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<25"
+    }
+  ]
 }

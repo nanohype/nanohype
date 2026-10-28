@@ -402,6 +402,12 @@ describe("cloudinary media provider", () => {
       expect(calls[0].init.signal).toBeInstanceOf(AbortSignal);
       const body = calls[0].init.body as FormData;
       expect(body.get("file")).toBeInstanceOf(Blob);
+      // The part holds the bytes the caller passed and no more. A short Buffer
+      // is a view into a shared pool, so a part built from its backing buffer
+      // uploads the rest of the pool with it.
+      expect(Buffer.from(await (body.get("file") as Blob).arrayBuffer()).toString()).toBe(
+        "image bytes",
+      );
       // The upload carries no Content-Type of its own. `fetch` derives
       // `multipart/form-data` and the boundary from the FormData body; a header
       // set by hand omits that boundary, and the parts arrive unparseable —

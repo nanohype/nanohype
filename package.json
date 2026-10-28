@@ -23,7 +23,7 @@
     "infrastructure"
   ],
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "scripts": {
     "validate": "for t in templates/*/; do ./scripts/validate.sh \"$t\" || exit 1; done",

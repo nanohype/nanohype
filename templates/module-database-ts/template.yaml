@@ -54,6 +54,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for Drizzle ORM and database drivers'
     optional: false

@@ -37,13 +37,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
-    "@types/node": "^24.12.2",
+    "@types/node": "^26.6.5",
     "@vitest/coverage-v8": "^4.1.4",
     "tsx": "^4.21.0",
     "typescript": "^7.0.0",
     "vitest": "^4.1.4"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   }
 }

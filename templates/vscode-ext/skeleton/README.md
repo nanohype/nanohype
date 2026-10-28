@@ -6,7 +6,7 @@ __DESCRIPTION__
 
 ### Prerequisites
 
-- Node.js >= 22
+- Node.js >= 26 to build and test (the extension itself runs on the Node release VS Code ships)
 - VS Code >= 1.96
 
 ### Setup

@@ -65,6 +65,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for LLM observability module'
     optional: false

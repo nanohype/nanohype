@@ -6,6 +6,10 @@ import { build, context } from "esbuild";
  * Bundles src/main/index.ts and src/main/preload.ts into dist/main/.
  * Electron and Node.js built-ins are marked as external since they
  * are available at runtime without bundling.
+ *
+ * The main process runs on the Node release Electron embeds, so `target`
+ * answers to the `electron` version rather than to `engines.node`, which
+ * governs only the toolchain that builds it.
  */
 
 const isWatch = process.argv.includes("--watch");

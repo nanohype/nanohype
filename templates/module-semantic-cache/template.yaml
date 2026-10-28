@@ -60,6 +60,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=24'
+    version: '>=26'
     purpose: 'Node.js runtime for the semantic cache module'
     optional: false

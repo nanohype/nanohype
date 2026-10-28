@@ -3,7 +3,11 @@ const path = require("path");
 
 const isWatch = process.argv.includes("--watch");
 
-/** Extension host bundle — runs in Node, excludes vscode */
+/**
+ * Extension host bundle — excludes vscode. It runs on the Node release VS Code
+ * ships, not the one `engines.node` asks of the toolchain, so `target` and
+ * `@types/node` answer to the editor's runtime rather than to `engines.node`.
+ */
 const extensionConfig = {
   entryPoints: [path.resolve(__dirname, "src/extension.ts")],
   bundle: true,

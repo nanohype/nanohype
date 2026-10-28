@@ -47,7 +47,7 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for the OAuth delegation module'
     optional: false
   - name: aws-cli

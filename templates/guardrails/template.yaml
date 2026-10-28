@@ -77,6 +77,6 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for the guardrails module'
     optional: false

@@ -9,9 +9,10 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the transform builder/presets, the mock provider, the registry,
-      // the circuit breaker, the signing primitives and the three vendor
-      // adapters. Excluded: barrels, type and schema declarations, the startup
-      // check that exits the process, and the logger and OTel shims.
+      // the circuit breaker, the signing primitives, the three vendor
+      // adapters and the upload payload two of them share. Excluded: barrels,
+      // type and schema declarations, the startup check that exits the
+      // process, and the logger and OTel shims.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -56,6 +57,15 @@ export default defineConfig({
           branches: 100,
         },
         "src/media/providers/uploadcare.ts": {
+          lines: 100,
+          functions: 100,
+          statements: 100,
+          branches: 100,
+        },
+        // The bytes both upload adapters send. A part built from the wrong
+        // window of a Buffer uploads someone else's bytes with a 200, so both
+        // arms of the copy decision are exercised.
+        "src/media/providers/blob.ts": {
           lines: 100,
           functions: 100,
           statements: 100,
