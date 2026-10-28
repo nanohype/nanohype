@@ -3,7 +3,7 @@ import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
+import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace";
 
 // ── OpenTelemetry Setup ──────────────────────────────────────────────
 //
@@ -20,18 +20,20 @@ export function initTelemetry(): void {
     ? new OTLPTraceExporter({ url: `${otlpEndpoint}/v1/traces` })
     : new ConsoleSpanExporter();
 
-  const metricReader = otlpEndpoint
-    ? new PeriodicExportingMetricReader({
-        exporter: new OTLPMetricExporter({
-          url: `${otlpEndpoint}/v1/metrics`,
+  const metricReaders = otlpEndpoint
+    ? [
+        new PeriodicExportingMetricReader({
+          exporter: new OTLPMetricExporter({
+            url: `${otlpEndpoint}/v1/metrics`,
+          }),
         }),
-      })
+      ]
     : undefined;
 
   const sdk = new NodeSDK({
     serviceName: process.env.OTEL_SERVICE_NAME ?? "__PROJECT_NAME__",
     traceExporter,
-    metricReader,
+    metricReaders,
     instrumentations: [
       getNodeAutoInstrumentations({
         "@opentelemetry/instrumentation-fs": { enabled: false },
