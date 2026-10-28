@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatInvoice } from "../invoicing/formatter.js";
-import { createInvoiceGenerator } from "../invoicing/generator.js";
+import { createInvoiceGenerator, deriveInvoiceId } from "../invoicing/generator.js";
 import type { BillingPeriod, LineItem } from "../types.js";
 
 describe("invoice generator", () => {
@@ -64,6 +64,72 @@ describe("invoice generator", () => {
 
     expect(invoice.totalAmount).toBe(600);
   });
+
+  it("hands an injected ID generator the customer and the period", () => {
+    const seen: unknown[] = [];
+    const injected = createInvoiceGenerator({
+      idGenerator: (customerId, billing) => {
+        seen.push([customerId, billing]);
+        return "inv-injected";
+      },
+    });
+
+    const invoice = injected.generate("cus-1", period, []);
+
+    expect(invoice.id).toBe("inv-injected");
+    expect(seen).toEqual([["cus-1", period]]);
+  });
+});
+
+describe("invoice IDs", () => {
+  const january = { start: "2025-01-01T00:00:00.000Z", end: "2025-01-31T23:59:59.999Z" };
+  const february = { start: "2025-02-01T00:00:00.000Z", end: "2025-02-28T23:59:59.999Z" };
+
+  it("gives an invoice regenerated for the same customer and period the same ID", () => {
+    const generator = createInvoiceGenerator();
+
+    const first = generator.generate("cus-1", january, []);
+    const again = createInvoiceGenerator().generate("cus-1", { ...january }, []);
+
+    expect(again.id).toBe(first.id);
+    expect(first.id).toBe(deriveInvoiceId("cus-1", january));
+    expect(first.id).toMatch(/^inv_[0-9a-f]{32}$/);
+  });
+
+  it("gives a different customer or a different period a different ID", () => {
+    const ids = new Set([
+      deriveInvoiceId("cus-1", january),
+      deriveInvoiceId("cus-2", january),
+      deriveInvoiceId("cus-1", february),
+      deriveInvoiceId("cus-1", { start: january.start, end: february.end }),
+    ]);
+
+    expect(ids.size).toBe(4);
+  });
+
+  it("reads two spellings of the same instants as one period", () => {
+    expect(
+      deriveInvoiceId("cus-1", { start: "2025-01-01T00:00:00Z", end: "2025-02-01T00:00:00Z" }),
+    ).toBe(
+      deriveInvoiceId("cus-1", {
+        start: "2025-01-01T00:00:00.000Z",
+        end: "2025-02-01T00:00:00.000Z",
+      }),
+    );
+  });
+
+  it("keeps period bounds that do not parse apart from one another", () => {
+    const unparsed = (start: string) => deriveInvoiceId("cus-1", { start, end: january.end });
+
+    expect(unparsed("first of the month")).toBe(unparsed("first of the month"));
+    expect(unparsed("first of the month")).not.toBe(unparsed("start of the quarter"));
+  });
+
+  it("keeps a customer ID apart from the period it is followed by", () => {
+    // A separator in the customer ID cannot make two different pairs of
+    // customer and period read as one.
+    expect(deriveInvoiceId('cus-1","x', january)).not.toBe(deriveInvoiceId("cus-1", january));
+  });
 });
 
 describe("invoice formatter", () => {
@@ -109,5 +175,38 @@ describe("invoice formatter", () => {
     expect(() => formatInvoice(sampleInvoice, "xml" as "json")).toThrow(
       "Unsupported invoice format",
     );
+  });
+
+  // Amounts are held in the currency's smallest unit, and that unit is the
+  // currency's own: the line "| … | 1000 |" reads $10.00, ¥1,000, or KWD 1.000.
+  function totalLine(currency: string, amount: number): string | undefined {
+    const output = formatInvoice(
+      {
+        ...sampleInvoice,
+        currency,
+        lineItems: [{ ...sampleInvoice.lineItems[0]!, unitPrice: amount, amount }],
+        totalAmount: amount,
+      },
+      "markdown",
+    );
+    return output.split("\n").find((line) => line.startsWith("**Total:**"));
+  }
+
+  it("formats a two-decimal currency from cents", () => {
+    expect(totalLine("usd", 123456)).toBe("**Total:** $1,234.56");
+  });
+
+  it("formats a zero-decimal currency without dividing by 100", () => {
+    expect(totalLine("jpy", 1000)).toBe("**Total:** ¥1,000");
+  });
+
+  it("formats a three-decimal currency from thousandths", () => {
+    expect(totalLine("kwd", 1234)).toMatch(/^\*\*Total:\*\* KWD\s1\.234$/);
+  });
+
+  it("formats the line items in the invoice's currency too", () => {
+    const output = formatInvoice({ ...sampleInvoice, currency: "jpy" }, "markdown");
+
+    expect(output).toContain("| API calls — 1000 units | 1000 | ¥1 | ¥1,000 |");
   });
 });

@@ -925,7 +925,7 @@
     {
       "name": "module-billing-ts",
       "displayName": "Module: Billing",
-      "description": "Composable usage metering, invoice generation, and payment processing with Stripe. Records usage events with per-metric tracking, aggregates by customer and billing period, generates invoices with tiered pricing, and processes payments through a pluggable provider registry. Ships with a Stripe provider and an in-memory mock for testing.",
+      "description": "Composable usage metering, invoice generation, and payment processing with Stripe. Records usage events with per-metric tracking, aggregates by customer and billing period with per-unit, tiered, and flat pricing, generates invoices, charges them with idempotent Stripe writes, and verifies and dispatches Stripe webhooks through a pluggable provider registry. Ships with a Stripe provider and an in-memory mock for testing that starts only when named.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [

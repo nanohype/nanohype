@@ -23,10 +23,10 @@ function stubProvider(name: string): PaymentProvider {
       };
     },
     async chargeInvoice() {
-      return { ok: true };
+      return { ok: true as const, externalId: "stub", collected: 0 };
     },
     async handleWebhook() {
-      return { type: "test", payload: null, timestamp: new Date().toISOString() };
+      return { id: "evt_stub", type: "test", payload: null, timestamp: new Date().toISOString() };
     },
     async listInvoices() {
       return [];
