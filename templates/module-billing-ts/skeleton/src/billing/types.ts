@@ -374,7 +374,12 @@ export interface ChargeFailed {
  *
  * It can also be the invoice this charge finalized: two charges of one ID
  * with different content that run at once can empty each other's draft
- * before it is finalized. Run a period's charges from one worker.
+ * before it is finalized. Such an invoice bills what no charge asked for. A
+ * provider that collects open invoices on its own leaves that collection off
+ * until a charge has found an invoice billing that charge's content, so it
+ * collects nothing on this one. One left owing something stays open until it
+ * is voided or reconciled in the payment system. Run a period's charges from
+ * one worker.
  */
 export interface ChargeContentChanged {
   ok: false;

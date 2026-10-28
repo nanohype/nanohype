@@ -22,6 +22,7 @@ import {
   DEFAULT_STRIPE_MAX_NETWORK_RETRIES,
   DEFAULT_STRIPE_TIMEOUT_MS,
   STRIPE_SECRET_KEY_PATTERN,
+  StripeConfigSchema,
 } from "./stripe-config.js";
 import type { PaymentProvider } from "./types.js";
 
@@ -39,11 +40,14 @@ import type { PaymentProvider } from "./types.js";
 //     is Stripe answering, and never counts against it
 //   - chargeInvoice finds the Stripe invoice an earlier charge of the same
 //     invoice ID wrote, checks it bills what this invoice bills, and
-//     finishes it, and keys every POST by that ID, so a retried or
-//     regenerated charge resumes instead of paying twice. Where its search
-//     could miss an earlier charge, it refuses rather than charge again.
-//     What it finalizes is read back and paid only when it bills this
-//     invoice
+//     finishes it, and keys every POST that creates, fills, finalizes or
+//     pays it by that ID, so a retried or regenerated charge resumes
+//     instead of paying twice. Where its search could miss an earlier
+//     charge, it refuses rather than charge again. It finalizes with
+//     Stripe's automatic collection off, reads what it finalized back, and
+//     turns collection on and pays only when that bills this invoice, so
+//     Stripe collects no invoice that bills other content than the charge
+//     that issued it was given
 //   - Webhook verification via stripe.webhooks.constructEvent()
 //
 
@@ -127,9 +131,10 @@ function contentDigest(invoice: Invoice): string {
 
 /**
  * The earliest `created` time, in Unix seconds, the search for an earlier
- * charge of `invoice` reads from: the start of its period, less `leadMs` and
- * CLOCK_SKEW_SECONDS. chargeInvoice charges nothing before the period start
- * less `leadMs`, so every charge of the invoice's ID lands inside the window.
+ * charge of `invoice` reads from: the start of its period, less `lookbackMs`
+ * and CLOCK_SKEW_SECONDS. chargeInvoice charges nothing before the period
+ * start less the charge lead, and init refuses a `lookbackMs` below the
+ * lead, so every charge of the invoice's ID lands inside the window.
  *
  * The window hangs from the period rather than from when the invoice was
  * generated. An invoice regenerated for the same period carries a later
@@ -137,10 +142,10 @@ function contentDigest(invoice: Invoice): string {
  * as one billed in advance of its period is. undefined when the period start
  * does not parse, and the search is bounded by MAX_LISTED alone.
  */
-function chargedSince(invoice: Invoice, leadMs: number): number | undefined {
+function chargedSince(invoice: Invoice, lookbackMs: number): number | undefined {
   const start = Date.parse(invoice.periodStart);
   if (Number.isNaN(start)) return undefined;
-  return Math.floor((start - leadMs) / 1000) - CLOCK_SKEW_SECONDS;
+  return Math.floor((start - lookbackMs) / 1000) - CLOCK_SKEW_SECONDS;
 }
 
 /**
@@ -378,6 +383,7 @@ function createStripeProvider(): PaymentProvider {
   let client: Stripe | null = null;
   let webhookSecret: string | null = null;
   let chargeLeadMs = DEFAULT_STRIPE_CHARGE_LEAD_MS;
+  let lookbackMs = DEFAULT_STRIPE_CHARGE_LEAD_MS;
 
   const breaker = new CircuitBreaker({
     failureThreshold: 5,
@@ -483,6 +489,42 @@ function createStripeProvider(): PaymentProvider {
   }
 
   /**
+   * Turns on Stripe's automatic collection on `open`, an open Stripe invoice
+   * issued under `invoice`'s ID whose finalized lines bill what `invoice`
+   * bills, unless it is on already, and pays it. A charge finalizes with
+   * automatic collection off and turns it on only here, so Stripe collects
+   * no invoice whose lines no charge has found to bill its own invoice, such
+   * as one a concurrent charge of the ID emptied in part before it was
+   * finalized. Collection stays on after a declined payment, and Stripe
+   * retries it.
+   *
+   * The update is not keyed by the invoice ID. Setting `auto_advance` is
+   * idempotent on its own, and Stripe answers a key it holds with the
+   * response it stored, failures included, so a keyed update that failed
+   * would fail the same way for every later charge of the ID while Stripe
+   * holds the key. Stripe refuses `auto_advance` with a 400 on an invoice
+   * that is no longer open, as one a concurrent charge of the same content
+   * has paid, so a 400 lets the payment go ahead: it is keyed, and reports
+   * what became of the invoice.
+   */
+  async function collect(
+    stripe: Stripe,
+    invoice: Invoice,
+    open: Stripe.Invoice,
+    call: StripeCall,
+  ): Promise<ChargeResult> {
+    if (open.auto_advance !== true) {
+      try {
+        await call(() => stripe.invoices.update(open.id, { auto_advance: true }));
+      } catch (err) {
+        if (statusOf(err) !== 400) throw err;
+      }
+    }
+    const paid = await payInvoice(stripe, invoice, open, call);
+    return outcome(invoice, paid, collectedBy(paid));
+  }
+
+  /**
    * Resume from an invoice an earlier charge issued. A void or uncollectible
    * one takes no payment and is reported before any line is read. An open or
    * paid one is checked against `invoice` line for line before anything
@@ -501,8 +543,7 @@ function createStripeProvider(): PaymentProvider {
     if (changed !== undefined) return changed;
 
     if (issued.status === "paid") return outcome(invoice, issued, 0);
-    const paid = await payInvoice(stripe, invoice, issued, call);
-    return outcome(invoice, paid, collectedBy(paid));
+    return collect(stripe, invoice, issued, call);
   }
 
   /**
@@ -546,7 +587,7 @@ function createStripeProvider(): PaymentProvider {
           // Off while lines are added: Stripe finalizes a draft that has
           // automatic advancement on about an hour after creating it, so a
           // charge interrupted before its last line would be finalized short
-          // of it. Finalizing turns it on.
+          // of it. It stays off through finalizing, and collect turns it on.
           auto_advance: false,
           // The digest makes the create's parameters name its content, so a
           // create of this ID for other content cannot reuse the key: Stripe
@@ -567,8 +608,11 @@ function createStripeProvider(): PaymentProvider {
 
   /**
    * Add the lines of `invoice` that `draft` does not carry yet, then finalize
-   * it with automatic collection on. Every write is keyed by the invoice ID
-   * and the draft, so a draft that replaced another gets keys of its own.
+   * it with automatic collection off: a charge of the ID for other content
+   * can delete lines from the draft until it is finalized, so collection
+   * waits for the charge to read the finalized lines back. Every write is
+   * keyed by the invoice ID and the draft, so a draft that replaced another
+   * gets keys of its own.
    */
   async function finishDraft(
     stripe: Stripe,
@@ -601,7 +645,7 @@ function createStripeProvider(): PaymentProvider {
     return call(() =>
       stripe.invoices.finalizeInvoice(
         draft.id,
-        { auto_advance: true },
+        { auto_advance: false },
         { idempotencyKey: chargeKey(invoice.id, `${draft.id}:finalize`) },
       ),
     );
@@ -626,8 +670,21 @@ function createStripeProvider(): PaymentProvider {
         );
       }
 
+      // createBillingService validates the stripe block before any provider
+      // starts. A provider started on its own, through getProvider("stripe"),
+      // is held to the same schema here: a `lookbackMs` below the lead, among
+      // the values it refuses, would hide earlier charges from the search.
+      const parsed = StripeConfigSchema.safeParse(config.stripe ?? {});
+      if (!parsed.success) {
+        const issues = parsed.error.issues
+          .map((issue) => `stripe.${issue.path.join(".")}: ${issue.message}`)
+          .join(", ");
+        throw new ProviderConfigError(`Invalid billing config: ${issues}`);
+      }
+
       webhookSecret = config.stripe?.webhookSecret ?? process.env.STRIPE_WEBHOOK_SECRET ?? null;
       chargeLeadMs = config.stripe?.chargeLeadMs ?? DEFAULT_STRIPE_CHARGE_LEAD_MS;
+      lookbackMs = config.stripe?.lookbackMs ?? chargeLeadMs;
 
       // Lazy load the Stripe SDK
       //
@@ -642,8 +699,8 @@ function createStripeProvider(): PaymentProvider {
         timeout: config.stripe?.timeoutMs ?? DEFAULT_STRIPE_TIMEOUT_MS,
         maxNetworkRetries: config.stripe?.maxNetworkRetries ?? DEFAULT_STRIPE_MAX_NETWORK_RETRIES,
         // StripeConfig types the client by the two methods the SDK calls on
-        // it, so the config types import nothing from the SDK;
-        // createBillingService checks both are there before a provider starts.
+        // it, so the config types import nothing from the SDK; the schema
+        // check above refuses a client without both.
         httpClient: config.stripe?.httpClient as Stripe.HttpClient | undefined,
       });
 
@@ -706,10 +763,12 @@ function createStripeProvider(): PaymentProvider {
       const stripe = requireClient();
       const { signal } = options;
 
-      // A charge made before the window opens would sit outside the search
-      // every later charge of this ID makes, so it is refused before anything
-      // is written. A period start that does not parse opens no window, and
-      // the search then runs back to MAX_LISTED invoices with no time bound.
+      // A charge made before the window opens could sit outside the search a
+      // later charge of this ID makes, so it is refused before anything is
+      // written. The search reaches back `lookbackMs`, which init refuses
+      // below the lead. A period start that does not parse opens no window,
+      // and the search then runs back to MAX_LISTED invoices with no time
+      // bound.
       const opens = Date.parse(invoice.periodStart) - chargeLeadMs;
       if (Date.now() < opens) {
         logger.warn("Stripe charge refused before its window opens", {
@@ -740,29 +799,31 @@ function createStripeProvider(): PaymentProvider {
       // metadata, and the charge resumes from it. An issued invoice has to
       // bill what this invoice bills, line for line: one that does is paid if
       // it is open and reported if it is paid, and one that does not is
-      // reported as invoice_content_changed. A draft is finished when it was
-      // created for this content and replaced when it was not. A Stripe
+      // reported as invoice_content_changed and left as it is. Stripe's
+      // automatic collection is on only for an invoice a charge found billing
+      // its own invoice (collect). A draft is finished when it was created
+      // for this content and replaced when it was not. A Stripe
       // invoice is created only when the search found no earlier charge and
       // read the whole window doing so; a search cut short at MAX_LISTED
       // reports lookup_exhausted unless the caller assumes the ID uncharged.
       // An invoice under this ID with more than MAX_LISTED lines is reported
       // as lookup_exhausted too, since its lines cannot be compared.
       //
-      // Every POST is also keyed by the invoice ID and its step, and every
-      // write to a Stripe invoice by that invoice as well. Stripe holds a key
-      // for at least 24 hours and replays the stored response, failures
-      // included, so two charges that both miss the lookup still create one
-      // invoice and pay it once, and the one whose payment Stripe replayed
-      // reports nothing collected. A declined payment stays declined for this
-      // invoice ID while Stripe holds its key. Collecting it after that is
-      // Stripe's automatic collection on the open invoice, which reports
-      // through `invoice.paid` and `invoice.payment_failed`. A DELETE carries
-      // no key; a retried one Stripe already applied answers 404, read as
-      // done.
+      // Every POST but collect's update is also keyed by the invoice ID and
+      // its step, and every such write to a Stripe invoice by that invoice as
+      // well. Stripe holds a key for at least 24 hours and replays the stored
+      // response, failures included, so two charges that both miss the lookup
+      // still create one invoice and pay it once, and the one whose payment
+      // Stripe replayed reports nothing collected. A declined payment stays
+      // declined for this invoice ID while Stripe holds its key. Collecting
+      // it after that is Stripe's automatic collection on the open invoice,
+      // which reports through `invoice.paid` and `invoice.payment_failed`. A
+      // DELETE carries no key; a retried one Stripe already applied answers
+      // 404, read as done.
       let externalId: string | undefined;
 
       try {
-        const since = chargedSince(invoice, chargeLeadMs);
+        const since = chargedSince(invoice, lookbackMs);
         const { earlier, exhausted } = await earlierCharge(stripe, invoice, since, step);
         if (exhausted) {
           logger.warn("Stripe invoice lookup stopped at its bound with no earlier charge found", {
@@ -801,15 +862,15 @@ function createStripeProvider(): PaymentProvider {
         // A charge of this ID for other content can delete the draft's lines
         // between this charge's read of them and its finalize, and Stripe then
         // finalizes what is left. A finalized invoice cannot change, so
-        // its lines are read back once, and it is paid, or reported paid, only
-        // when they bill this invoice.
+        // its lines are read back once, and it is collected, or reported
+        // paid, only when they bill this invoice. One that does not is left
+        // open with Stripe's automatic collection off, as it was finalized.
         const lines = await comparableLines(stripe, invoice, finalized, step);
         const changed = contentChanged(invoice, finalized, lines);
         if (changed !== undefined) return changed;
         // Stripe marks an invoice that owes nothing paid when it finalizes it.
         if (finalized.status !== "open") return outcome(invoice, finalized, collectedBy(finalized));
-        const paid = await payInvoice(stripe, invoice, finalized, step);
-        return outcome(invoice, paid, collectedBy(paid));
+        return await collect(stripe, invoice, finalized, step);
       } catch (err) {
         const code = failureCode(err, signal);
         const error = err instanceof Error ? err.message : String(err);

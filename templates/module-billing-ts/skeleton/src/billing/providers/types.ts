@@ -49,6 +49,10 @@ export interface PaymentProvider {
    * - An invoice the charge issues itself is checked the same way before it
    *   is paid, so a charge whose draft a concurrent charge of the ID with
    *   other content emptied reports `invoice_content_changed`, not paid.
+   *   Such an invoice bills what no charge asked for, so a provider that
+   *   collects open invoices on its own issues each with that collection
+   *   off and turns it on only for one a charge has found billing that
+   *   charge's content.
    *
    * `collected` is what this call's own payment request collected, so a
    * payment is counted by at most one call however many charges reach it.
