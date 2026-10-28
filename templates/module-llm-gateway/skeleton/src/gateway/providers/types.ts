@@ -27,4 +27,13 @@ export interface GatewayProvider {
 
   /** Pricing per 1M tokens for cost tracking. */
   readonly pricing: ProviderPricing;
+
+  /**
+   * The sampling options `chat` puts on the request for `opts`. Build both
+   * from one function so the two cannot disagree. The gateway keys its
+   * response cache on the result, so a value the provider drops does not
+   * split cache entries. The gateway takes a provider without it to send
+   * `temperature` as given.
+   */
+  sampling?(opts: ChatOptions): Pick<ChatOptions, "temperature">;
 }

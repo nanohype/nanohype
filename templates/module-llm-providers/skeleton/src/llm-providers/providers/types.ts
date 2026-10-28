@@ -28,4 +28,12 @@ export interface LlmProvider {
 
   /** Pricing per 1M tokens for cost tracking. */
   readonly pricing: Pricing;
+
+  /**
+   * The sampling options the request for `opts` carries. Build it from the
+   * same function as the request, so the two cannot disagree. The gateway
+   * adapter hands it to module-llm-gateway, which keys its response cache on
+   * it. A provider without it sends `temperature` and `topP` as given.
+   */
+  sampling?(opts: ChatOptions): Pick<ChatOptions, "temperature" | "topP">;
 }

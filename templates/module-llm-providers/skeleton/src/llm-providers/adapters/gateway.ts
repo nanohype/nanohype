@@ -37,18 +37,30 @@ export interface GatewayProviderShape {
   }>;
   countTokens(text: string): number;
   readonly pricing: { input: number; output: number };
+  sampling?(opts: { model?: string; temperature?: number }): { temperature?: number };
 }
 
 /**
  * Create a gateway-compatible adapter from an LlmProvider.
  *
  * The returned object structurally matches GatewayProvider from
- * module-llm-gateway. No import from the gateway module is needed.
+ * module-llm-gateway. No import from the gateway module is needed. A
+ * provider's `sampling` hook passes through, narrowed to the `temperature`
+ * the gateway keys its response cache on, so a temperature the provider
+ * drops does not split the gateway's cache entries.
  */
 export function createGatewayAdapter(provider: LlmProvider): GatewayProviderShape {
+  const sampling = provider.sampling?.bind(provider);
   return {
     name: provider.name,
     pricing: provider.pricing,
+
+    ...(sampling && {
+      sampling(opts: ChatOptions) {
+        const { temperature } = sampling(opts);
+        return temperature === undefined ? {} : { temperature };
+      },
+    }),
 
     async chat(
       messages: ChatMessage[],

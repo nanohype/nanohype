@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { createGatewayAdapter } from "../adapters/gateway.js";
 import { collectStream, fromStringStream, normalizeStream } from "../adapters/streaming.js";
+import { createAnthropicProvider } from "../providers/anthropic.js";
 import { getProvider } from "../providers/registry.js";
+import type { LlmProvider } from "../providers/types.js";
 import "../providers/mock.js";
 
 // ── Adapter Tests ──────────────────────────────────────────────────
 //
-// Validates gateway adapter shape and streaming normalization.
+// Validates gateway adapter shape, its pass-through of a provider's
+// sampling hook, and streaming normalization.
 //
 
 describe("gateway adapter", () => {
@@ -42,6 +45,31 @@ describe("gateway adapter", () => {
 
     const count = adapted.countTokens("Hello, world!");
     expect(count).toBe(Math.ceil("Hello, world!".length / 4));
+  });
+
+  it("passes a provider's sampling hook through, narrowed to temperature", () => {
+    const provider: LlmProvider = {
+      ...getProvider("mock"),
+      sampling: (opts) =>
+        opts.model === "drops-sampling" ? {} : { temperature: opts.temperature, topP: 0.9 },
+    };
+    const adapted = createGatewayAdapter(provider);
+
+    expect(adapted.sampling?.({ model: "drops-sampling", temperature: 0.2 })).toEqual({});
+    expect(adapted.sampling?.({ model: "sends-sampling", temperature: 0.2 })).toEqual({
+      temperature: 0.2,
+    });
+    expect(adapted.sampling?.({ model: "sends-sampling" })).toEqual({});
+  });
+
+  it("declares the anthropic provider's dropped temperature to the gateway", () => {
+    const adapted = createGatewayAdapter(createAnthropicProvider());
+
+    expect(adapted.sampling?.({ model: "claude-sonnet-5", temperature: 0.2 })).toEqual({});
+  });
+
+  it("declares no sampling hook for a provider without one", () => {
+    expect(createGatewayAdapter(getProvider("mock")).sampling).toBeUndefined();
   });
 });
 

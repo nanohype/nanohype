@@ -4,11 +4,16 @@
  */
 
 export interface LlmProvider {
+  /**
+   * Answer `userMessage` under `systemPrompt`. `temperature` is undefined
+   * when the configuration sets none; config.ts states what each provider
+   * sends, set or unset.
+   */
   generate(
     systemPrompt: string,
     userMessage: string,
     model: string,
-    temperature: number,
+    temperature: number | undefined,
     maxTokens: number,
   ): Promise<{ answer: string; usage: Record<string, number> }>;
 }

@@ -43,7 +43,14 @@ const generationSchema = z.object({
   // Bedrock model id (the org default). For the direct Anthropic API use
   // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
   model: z.string().default("us.anthropic.claude-sonnet-5"),
-  temperature: z.coerce.number().min(0).max(2).default(0.1),
+  // Optional, so a provider can tell a configured temperature from none.
+  // The openai provider sends it, and 0.1 when it is unset. The anthropic
+  // provider never sends one: the Messages API rejects sampling parameters.
+  // The bedrock provider sends it to a model id that names a family other
+  // than Claude, and to none that is Claude or names no family unless
+  // BEDROCK_SAMPLING_PARAMETERS is `send`; providers/bedrock.ts states the
+  // rule. When it is unset, the bedrock provider sends none to any model.
+  temperature: z.coerce.number().min(0).max(2).optional(),
   maxTokens: z.coerce.number().int().positive().default(1024),
 });
 

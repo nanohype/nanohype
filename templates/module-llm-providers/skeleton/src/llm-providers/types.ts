@@ -18,9 +18,19 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0-2). */
+  /**
+   * Temperature for sampling (0-2). The OpenAI, Groq, Vertex, Hugging Face
+   * and Ollama providers send it, and the Anthropic provider never does. The
+   * Bedrock provider sends it to a model id that names a family other than
+   * Claude, and to none that is Claude or names no family (an application
+   * inference profile or provisioned model ARN, for example) unless its
+   * `samplingParameters` is `send`; providers/bedrock.ts states the rule.
+   */
   temperature?: number;
-  /** Top-p nucleus sampling. */
+  /**
+   * Top-p nucleus sampling. It reaches the same providers and model ids as
+   * `temperature`.
+   */
   topP?: number;
   /** Stop sequences. */
   stop?: string[];

@@ -17,7 +17,15 @@ export interface ChatOptions {
   model?: string;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** Temperature for sampling (0–2). */
+  /**
+   * Temperature for sampling (0–2). The OpenAI and Groq providers send it,
+   * and the Anthropic provider never does. The Bedrock provider sends it to
+   * a model id that names a family other than Claude, and to none that is
+   * Claude or names no family (an application inference profile or
+   * provisioned model ARN, for example) unless its `samplingParameters` is
+   * `send`; providers/bedrock.ts states the rule. A provider drops it
+   * without logging.
+   */
   temperature?: number;
   /** Force a specific provider by name. */
   provider?: string;
@@ -70,6 +78,9 @@ export interface GatewayConfig {
   models?: Record<string, string>;
   /** Default max tokens. */
   maxTokens?: number;
-  /** Default temperature. */
+  /**
+   * Default temperature, applied to every request that sets none. It reaches
+   * the providers ChatOptions.temperature names, and no others.
+   */
   temperature?: number;
 }

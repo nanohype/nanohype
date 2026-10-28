@@ -45,6 +45,12 @@ console.log(`\nTotal tokens: ${final.usage.outputTokens}`);
 | `huggingface` | @huggingface/inference | meta-llama/Llama-3.3-70B-Instruct | `HF_TOKEN` | Conditional |
 | `ollama` | native fetch | llama3.2 | none (local) | Conditional |
 
+### Sampling parameters
+
+`temperature` and `topP` reach the `openai`, `groq`, `vertex`, `huggingface` and `ollama` providers as given. The `anthropic` provider never sends them: the Messages API rejects `temperature`, `top_p` and `top_k` at any value. The `bedrock` provider sends them only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id (an application inference profile, provisioned model, imported model, custom model or custom model deployment ARN, or an id with no provider segment) names none and is treated as Claude. `BEDROCK_SAMPLING_PARAMETERS` overrides the rule for the registered `bedrock` factory: `send` sends the caller's values to every model id, which is how an ARN serving another family receives them, and `omit` sends them to none. `createBedrockProvider({ samplingParameters })` sets the same thing on a provider you register yourself.
+
+A provider instance that drops values the caller set logs it once, at debug level. Each provider that drops them declares what it sends through its `sampling(opts)` hook.
+
 ## Streaming
 
 Every provider supports streaming via `streamChat()`. The returned `StreamResponse` is an `AsyncIterable<StreamChunk>` with a `response` promise that resolves once the stream completes:
@@ -95,6 +101,8 @@ const gatewayProvider = createGatewayAdapter(provider);
 // Now usable with module-llm-gateway's registerProvider()
 // gatewayProvider satisfies the GatewayProvider interface structurally
 ```
+
+The adapter passes a provider's `sampling(opts)` hook through as the gateway's `sampling` hook, narrowed to `temperature`, so the gateway's response cache does not split on a temperature the provider drops.
 
 ## Custom Providers
 

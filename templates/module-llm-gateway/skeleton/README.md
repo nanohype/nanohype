@@ -54,6 +54,12 @@ gateway.close();
 
 Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds. If a provider call fails, the gateway falls through to the next configured provider in order before surfacing the error.
 
+### Sampling parameters
+
+`temperature` reaches the `openai` and `groq` providers as given. The `anthropic` provider never sends it: the Messages API rejects `temperature`, `top_p` and `top_k` at any value. The `bedrock` provider sends it only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id (an application inference profile, provisioned model, imported model, custom model or custom model deployment ARN, or an id with no provider segment) names none and is treated as Claude. `BEDROCK_SAMPLING_PARAMETERS` overrides the rule for the registered `bedrock` provider: `send` sends the caller's `temperature` to every model id, which is how an ARN serving another family receives it, and `omit` sends it to none. `createBedrockProvider({ samplingParameters })` sets the same thing on a provider you register yourself.
+
+A provider drops a `temperature` it does not send without logging it; the gateway carries no logger. The response cache keys on the temperature only when some candidate provider would send it, so a dropped value does not split cache entries.
+
 ## Routing Strategies
 
 | Strategy      | Behavior                                                                                                                                                                           |
@@ -146,6 +152,8 @@ const myProvider: GatewayProvider = {
 
 registerProvider(myProvider);
 ```
+
+A provider that leaves `temperature` out of some or all of its requests declares what it sends with `sampling(opts)`, built from the same function as the request `chat` sends. The gateway keys its response cache on the result, so a temperature the provider drops does not split cache entries. A provider without `sampling` is taken to send `temperature` as given.
 
 ## Architecture
 
