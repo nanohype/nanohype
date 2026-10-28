@@ -8,6 +8,7 @@
 import type {
   BillingConfig,
   BillingWebhookEvent,
+  ChargeOptions,
   ChargeResult,
   Customer,
   Invoice,
@@ -27,12 +28,28 @@ export interface PaymentProvider {
   /** Create a subscription for a customer. */
   createSubscription(customerId: string, planId: string): Promise<Subscription>;
 
-  /** Charge an invoice through the payment system. */
-  chargeInvoice(invoice: Invoice): Promise<ChargeResult>;
+  /**
+   * Charge an invoice through the payment system. Charging an invoice ID a
+   * second time must resume the first charge, not start another: a caller
+   * retries this after a timeout without knowing whether the first attempt
+   * landed, and an invoice regenerated for the same customer and period
+   * carries the same ID. The mock remembers every ID it charged until it is
+   * closed. The Stripe provider finds the Stripe invoice it wrote for the ID
+   * among the customer's newest MAX_LISTED Stripe invoices
+   * (`providers/stripe.ts`), so a replay that falls outside them is charged
+   * again once Stripe has dropped the first attempt's idempotency keys, which
+   * it holds for at least 24 hours.
+   *
+   * Once `options.signal` aborts, the charge makes no further call to the
+   * payment system and reports `ok: false`.
+   */
+  chargeInvoice(invoice: Invoice, options?: ChargeOptions): Promise<ChargeResult>;
 
   /**
-   * Handle an incoming webhook from the payment provider.
-   * Verifies signature and returns parsed event.
+   * Verify an incoming webhook and return the event it carries. A provider
+   * throws when the signature does not verify against the raw `payload`
+   * bytes, so no unverified event reaches a handler. The mock, selectable
+   * only by name, is the exception: it accepts any signature.
    */
   handleWebhook(payload: string, signature: string): Promise<BillingWebhookEvent>;
 

@@ -1,13 +1,18 @@
 import { logger } from "../logger.js";
-import { getProvider } from "../providers/registry.js";
+import type { PaymentProvider } from "../providers/types.js";
 import type { BillingWebhookEvent } from "../types.js";
 
-// ── Billing Webhook Handler ────────────────────────────────────────
+// ── Billing Webhook Router ─────────────────────────────────────────
 //
-// Receives incoming billing webhooks, verifies the signature via the
-// active payment provider, parses the event, and dispatches to
-// registered lifecycle handlers. Supports events like
-// subscription.created, invoice.paid, and payment_failed.
+// Verifies an incoming webhook with the payment provider it was built
+// with, then dispatches the verified event to the handler registered for
+// its type. A request that fails verification reaches no handler.
+//
+// The provider is passed in rather than looked up by name: verifying
+// needs the signing secret and client that init() installed, and the
+// registry hands out a fresh, uninitialised instance on every lookup.
+// Event types are the provider's own — for Stripe, `invoice.paid`,
+// `invoice.payment_failed`, `customer.subscription.created`, and so on.
 //
 
 export type WebhookEventHandler = (event: BillingWebhookEvent) => Promise<void>;
@@ -17,8 +22,8 @@ export interface BillingWebhookRouter {
   on(eventType: string, handler: WebhookEventHandler): void;
 
   /**
-   * Handle an incoming webhook. Verifies signature via the payment
-   * provider and dispatches to the matching handler.
+   * Handle an incoming webhook. Verifies the signature with the router's
+   * payment provider and dispatches to the matching handler.
    */
   handleBillingWebhook(
     payload: string,
@@ -27,17 +32,21 @@ export interface BillingWebhookRouter {
 }
 
 /**
- * Create a billing webhook router that verifies and dispatches events.
+ * Create a billing webhook router that verifies with `provider` and
+ * dispatches events. `provider` must already be initialised —
+ * createBillingService builds its router from the provider it initialised.
  *
- *   const router = createBillingWebhookRouter("stripe");
+ *   const provider = getProvider("stripe");
+ *   await provider.init({ provider: "stripe", stripe: { secretKey, webhookSecret } });
+ *   const router = createBillingWebhookRouter(provider);
  *
  *   router.on("invoice.paid", async (event) => {
- *     console.log("Invoice paid:", event.payload);
+ *     console.log("Invoice paid:", event.id, event.payload);
  *   });
  *
  *   const result = await router.handleBillingWebhook(rawBody, signature);
  */
-export function createBillingWebhookRouter(providerName: string): BillingWebhookRouter {
+export function createBillingWebhookRouter(provider: PaymentProvider): BillingWebhookRouter {
   const handlers = new Map<string, WebhookEventHandler>();
 
   return {
@@ -49,18 +58,16 @@ export function createBillingWebhookRouter(providerName: string): BillingWebhook
       payload: string,
       signature: string,
     ): Promise<{ ok: boolean; event?: BillingWebhookEvent; error?: string }> {
-      const provider = getProvider(providerName);
-
       let event: BillingWebhookEvent;
       try {
         event = await provider.handleWebhook(payload, signature);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        logger.error("Webhook verification failed", { error: message });
+        logger.error("Webhook verification failed", { provider: provider.name, error: message });
         return { ok: false, error: message };
       }
 
-      logger.info("Webhook received", { type: event.type });
+      logger.info("Webhook received", { id: event.id, type: event.type });
 
       const handler = handlers.get(event.type);
       if (handler) {
@@ -68,7 +75,11 @@ export function createBillingWebhookRouter(providerName: string): BillingWebhook
           await handler(event);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          logger.error("Webhook handler failed", { type: event.type, error: message });
+          logger.error("Webhook handler failed", {
+            id: event.id,
+            type: event.type,
+            error: message,
+          });
           return { ok: false, event, error: message };
         }
       }
