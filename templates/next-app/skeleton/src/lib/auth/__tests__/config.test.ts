@@ -9,11 +9,13 @@ import { authOptions } from "../options";
  * thing under test.
  */
 
+const handlers = { GET: () => undefined, POST: () => undefined };
+
 // The rest parameter is what lets the mock below forward its arguments: a
 // spread into a function declared with none is not assignable, whatever the
 // call passes.
 const nextAuth = vi.fn((..._args: unknown[]) => ({
-  handlers: { GET: () => undefined, POST: () => undefined },
+  handlers,
   auth: () => undefined,
   signIn: () => undefined,
   signOut: () => undefined,
