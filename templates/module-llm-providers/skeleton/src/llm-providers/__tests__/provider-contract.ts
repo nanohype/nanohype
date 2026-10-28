@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { LlmProvider } from "../providers/types.js";
 import { CircuitBreakerOpenError } from "../resilience/circuit-breaker.js";
 import { RequestTimeoutError } from "../resilience/request-timeout.js";
@@ -7,14 +7,15 @@ import type { ChatMessage, StreamResponse } from "../types.js";
 // ── Provider Contract ──────────────────────────────────────────────
 //
 // Every provider that calls a model runs both request modes through one
-// circuit breaker and bounds them by the request timeout its
-// `requestTimeoutMs` option sets: a request by its whole reply, a stream
-// by each wait for its next event. describeProviderContract() holds one
-// provider to both, over an endpoint that answers in-process: one whose
-// stream sends its first event and then nothing, as a stalled connection
-// does, and whose request never answers, or one that refuses every
-// request. Each provider's request suite runs it, so the contract ships
-// with the provider it covers.
+// circuit breaker, bounds them by the request timeout its
+// `requestTimeoutMs` option sets (a request by its whole reply, a stream
+// by each wait for its next event), and aborts the request of a call it
+// gives up on, which drops its connection. describeProviderContract()
+// holds one provider to all three, over an endpoint that answers
+// in-process: one whose stream sends its first event and then nothing, as
+// a stalled connection does, and whose request never answers, or one that
+// refuses every request. Each provider's request suite runs it, so the
+// contract ships with the provider it covers.
 //
 
 /** The requestTimeoutMs every provider under the contract is built with. */
@@ -82,8 +83,6 @@ export interface ProviderContract {
   ChatTimeoutError: new (
     ...args: never[]
   ) => Error;
-  /** Whether the provider's SDK takes an abort signal, so giving up drops the connection. */
-  dropsConnection: boolean;
 }
 
 const messages: ChatMessage[] = [{ role: "user", content: "Say hello." }];
@@ -143,16 +142,15 @@ export async function expectStallToFailAt(
   await expect(stream.response).rejects.toBeInstanceOf(RequestTimeoutError);
 }
 
-/** Holds the provider `contract` builds to the breaker and timeout contract. */
+/**
+ * Holds the provider `contract` builds to the contract: one circuit breaker
+ * for both request modes, the request timeout, and aborting the request of
+ * a call it gives up on.
+ */
 export function describeProviderContract(name: string, contract: ProviderContract): void {
-  const { create, ChatTimeoutError, dropsConnection } = contract;
+  const { create, ChatTimeoutError } = contract;
 
   describe(`${name} provider breaker and timeouts`, () => {
-    beforeEach(() => {
-      // The Vertex AI SDK warns of its deprecation as each client is built.
-      vi.spyOn(console, "warn").mockImplementation(() => {});
-    });
-
     afterEach(() => {
       vi.useRealTimers();
       vi.unstubAllGlobals();
@@ -164,7 +162,7 @@ export function describeProviderContract(name: string, contract: ProviderContrac
       const { endpoint, provider } = create("stalls");
 
       await expectStallToFailAt(provider.streamChat(messages), endpoint, CONTRACT_TIMEOUT_MS);
-      expect(endpoint.aborted).toBe(dropsConnection);
+      expect(endpoint.aborted).toBe(true);
     });
 
     it("fails a request that outlasts requestTimeoutMs", async () => {
@@ -179,7 +177,7 @@ export function describeProviderContract(name: string, contract: ProviderContrac
 
       await vi.advanceTimersByTimeAsync(1);
       expect(chat.outcome).toBeInstanceOf(ChatTimeoutError);
-      expect(endpoint.aborted).toBe(dropsConnection);
+      expect(endpoint.aborted).toBe(true);
     });
 
     it("opens its breaker on five refused streams and refuses the sixth unsent", async () => {
