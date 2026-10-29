@@ -10,32 +10,33 @@ Individual templates are building blocks. Composites are the blueprints that ass
 
 ## Selection guide
 
-| Composite                  | What it produces                                                                           | Templates | Best for                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------ | --------- | ---------------------------------------------------------------- |
-| `proof-of-concept`         | Minimal AI agent with eval harness                                                         | 2         | Quick POC -- validate an idea in days, not weeks                 |
-| `ai-chatbot`               | Full-stack chatbot with auth, evals, deployment                                            | 6         | Customer-facing conversational AI                                |
-| `ai-web-app`               | Next.js frontend with RAG, auth, database, observability                                   | 8         | AI-powered web applications with document search                 |
-| `production-api`           | TypeScript API with auth, DB, caching, rate limiting, queue, observability                 | 9         | Backend services that need to be production-grade from day one   |
-| `enterprise-ai`            | Agents, RAG, guardrails, evals, prompts, storage, K8s deploy                               | 15        | Full enterprise AI platform with all the operational layers      |
-| `multi-agent`              | A2A orchestrator, agent, MCP tools, guardrails, evals                                      | 8         | Systems where multiple AI agents collaborate and delegate        |
-| `rag-agent`                | Agent with RAG pipeline, storage, database, evals                                          | 8         | AI agents that need grounded knowledge from documents            |
-| `document-intelligence`    | RAG pipeline, API service, storage, database, evals                                        | 7         | Document search and question-answering systems                   |
-| `background-processor`     | Worker service with queue, database, storage, observability                                | 7         | Async job processing without synchronous HTTP                    |
-| `safe-ai-agent`            | Agent with guardrails, evals, prompt library                                               | 5         | Responsible AI -- input filtering, output validation, testing    |
-| `eval-suite`               | Eval harness, prompt library, guardrails validation                                        | 4         | Testing AI systems without building them                         |
-| `go-microservice`          | Go HTTP service with evals and deployment                                                  | 3         | Lightweight, single-binary Go services                           |
-| `mcp-toolkit`              | MCP server with prompts and evals                                                          | 3         | Building tool servers for AI systems                             |
-| `chrome-ai-extension`      | Chrome extension with MCP tools and prompt library                                         | 3         | Browser extensions with AI sidepanel                             |
-| `vscode-ai-extension`      | VS Code extension with MCP tools and prompt library                                        | 3         | Editor extensions with AI integration                            |
-| `internal-tool`            | CLI or extension backed by MCP servers                                                     | 4         | Internal team tooling                                            |
-| `cost-optimized-ai`        | LLM gateway with cost routing, semantic caching, observability                             | 4         | Minimizing LLM spend with smart routing and caching              |
-| `ai-platform`              | Monorepo with service, gateway, vectors, pipeline, auth, database, billing, monitoring     | 9         | Full AI product with usage-based billing                         |
-| `agent-team`               | Orchestrator, specialized agents, MCP tools, evals                                         | 6         | Multi-agent systems with distinct roles                          |
-| `client-engagement`        | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook              | 5         | Non-engineering client engagement workflows                      |
-| `product-launch`           | Next.js app, design system, tokens, test plan, acceptance criteria, PRD, campaign, runbook | 10        | Cross-functional product launches spanning eng through marketing |
-| `research-to-prototype`    | PRD, agentic loop prototype, optional test plan                                            | 3         | Research-driven prototyping from idea to validated POC           |
-| `spring-boot-microservice` | Spring Boot 4 HTTP service on JDK 25 with K8s deploy, optional Grafana + Prometheus + Loki | 4         | Java services that need production posture out of the gate       |
-| `identity-aware-service`   | Spring Boot 4 service with Istio mesh-edge auth + Spring Security resource server          | 5         | Defense-in-depth identity against a shared OIDC issuer           |
+| Composite                  | What it produces                                                                                | Best for                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `proof-of-concept`         | Minimal AI agent with eval harness and Platform tenant chart                                    | Quick POC -- validate an idea in days, not weeks                 |
+| `ai-chatbot`               | Full-stack chatbot with auth, evals, Platform tenant chart                                      | Customer-facing conversational AI                                |
+| `ai-web-app`               | Next.js frontend with RAG, auth, database, observability, Platform tenant chart                 | AI-powered web applications with document search                 |
+| `production-api`           | TypeScript API with auth, DB, caching, rate limiting, queue, observability                      | Backend services that need to be production-grade from day one   |
+| `enterprise-ai`            | Agents, RAG, guardrails, evals, prompts, storage, Platform tenant chart                         | Full enterprise AI platform with all the operational layers      |
+| `multi-agent`              | A2A orchestrator, agent, MCP tools, guardrails, evals, Platform tenant chart                    | Systems where multiple AI agents collaborate and delegate        |
+| `rag-agent`                | Agent with RAG pipeline, storage, database, evals, Platform tenant chart                        | AI agents that need grounded knowledge from documents            |
+| `document-intelligence`    | RAG pipeline, API service, storage, database, evals, Platform tenant chart                      | Document search and question-answering systems                   |
+| `background-processor`     | Worker service with queue, database, storage, observability                                     | Async job processing without synchronous HTTP                    |
+| `safe-ai-agent`            | Agent with guardrails, evals, prompt library, Platform tenant chart                             | Responsible AI -- input filtering, output validation, testing    |
+| `eval-suite`               | Eval harness, prompt library, guardrails validation                                             | Testing AI systems without building them                         |
+| `go-microservice`          | Go HTTP service with evals and deployment                                                       | Lightweight, single-binary Go services                           |
+| `mcp-toolkit`              | MCP server with prompts and evals                                                               | Building tool servers for AI systems                             |
+| `chrome-ai-extension`      | Chrome extension with MCP tools and prompt library                                              | Browser extensions with AI sidepanel                             |
+| `vscode-ai-extension`      | VS Code extension with MCP tools and prompt library                                             | Editor extensions with AI integration                            |
+| `internal-tool`            | CLI or extension backed by MCP servers                                                          | Internal team tooling                                            |
+| `cost-optimized-ai`        | LLM gateway with cost routing, semantic caching, observability, Platform tenant chart           | Minimizing LLM spend with smart routing and caching              |
+| `ai-platform`              | Service, gateway, vectors, pipeline, auth, database, billing, monitoring, Platform tenant chart | Full AI product with usage-based billing                         |
+| `agent-team`               | Orchestrator, specialized agents, MCP tools, evals, Platform tenant chart                       | Multi-agent systems with distinct roles                          |
+| `client-engagement`        | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook                   | Non-engineering client engagement workflows                      |
+| `product-launch`           | Next.js app, Platform tenant chart, design system, tokens, test plan, PRD, campaign, runbook    | Cross-functional product launches spanning eng through marketing |
+| `research-to-prototype`    | PRD, agentic loop prototype, Platform tenant chart, optional test plan                          | Research-driven prototyping from idea to validated POC           |
+| `spring-boot-microservice` | Spring Boot 4 HTTP service on JDK 25 with K8s deploy, optional Grafana + Prometheus + Loki      | Java services that need production posture out of the gate       |
+| `identity-aware-service`   | Spring Boot 4 service with Istio mesh-edge auth + Spring Security resource server               | Defense-in-depth identity against a shared OIDC issuer           |
+| `platform-tenant`          | Platform tenant chart with optional LLM gateway, vector store, and audit ledger packages        | Making an app a k8s-native Platform tenant                       |
 
 ---
 
@@ -65,10 +66,22 @@ npx nanohype scaffold --composite production-api \
 
 ## Post-scaffold wiring
 
+### The Platform tenant chart (`infra/`)
+
+Every composite whose packages default to the `gateway` provider carries `k8s-app-tenant` at `infra/`: the Helm chart with its per-env values and ApplicationSet entry, and `platform.yaml` with the Platform, BudgetPolicy and ModelGateway CRs. The ModelGateway is the stack's model path. The eks-agent-platform operator runs it as the Service `<ProjectName>-gateway` in `tenants-<ProjectName>`, holding the Bedrock role, and the chart hands the app that endpoint as `MODEL_GATEWAY_ENDPOINT` with the route names `MODEL_ROUTE` and `EMBEDDING_ROUTE`, so no package holds a model key. A stack that embeds through the gateway also gets the `embeddings` route.
+
+- `Tenant` (default `ProjectName`) is the owning team: the `tenants-<team>` namespace the CRs are applied in, the Platform's `spec.tenant`, and the team label on the chart's resources and telemetry. `Image` (default `ProjectName`) is the image repository the chart deploys, and each `values-<env>.yaml` pins its tag
+- `AppMetric` (default `http`) is the prefix of the RED series the chart's Grafana dashboard reads, `<prefix>_requests_total`, `_errors_total` and `_request_duration_seconds`: `http` is the prefix a ts-service emits them under, and a stack that deploys another service sets the prefix that service emits
+- Apply `infra/platform.yaml` once during tenant setup and copy `infra/gitops/applicationset-entry.yaml` into the gitops repo; ArgoCD rolls out `infra/chart` from there
+- The chart's NetworkPolicy opens no `:443`, which keeps the gateway the app's route to Bedrock; an app that calls a third-party API names it by hostname in a CiliumNetworkPolicy `toFQDNs` rule
+- The eval harness runs on a CI runner, off the substrate: its workflow assumes the IAM role the repository variable `EVAL_ROLE_ARN` names through GitHub OIDC federation, and its `bedrock` provider calls Bedrock under that role
+
+Off the substrate (a CI runner, a CLI, a workstation) the LLM policy has a stack reach Bedrock under an IAM role it assumes, GitHub OIDC federation on a CI runner and an AWS profile on a workstation, as the eval harness's `bedrock` provider does. No package reads a provider API key, on the substrate or off it: a model of another family is reached through a ModelGateway route or through Bedrock.
+
 ### proof-of-concept
 
 - Run `npm install` at the project root, then `npm run dev` to start the agent in watch mode
-- Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY` if you chose OpenAI as the provider)
+- The agent calls the Platform's ModelGateway through the `gateway` provider with no model key; `infra/` declares the gateway and deploys the agent's image
 - The agent loop lives in `src/agent.ts` -- edit the system prompt and tool definitions there
 - Add new tools by creating files in `src/tools/` and registering them in the tool index
 - Run `npm run eval` to execute the eval suite in `evals/` -- add fixtures as JSON files
@@ -79,11 +92,11 @@ npx nanohype scaffold --composite production-api \
 
 - Run `pnpm install` at the monorepo root to install all workspace dependencies
 - Start the API server: `pnpm --filter *-api dev` (runs on the port defined in `.env`)
-- Set LLM API keys in `apps/api/.env` -- the agentic loop in `packages/ai/` reads them at runtime
+- The agentic loop in `packages/ai/` calls the Platform's ModelGateway with no model key; on the cluster the chart in `infra/` hands it `MODEL_GATEWAY_ENDPOINT` and `MODEL_ROUTE`
 - The frontend is not included -- wire your own UI to `POST /api/chat` on the API service
 - Auth is JWT-based via `packages/auth/` -- generate tokens with the auth module's helpers
 - If you enabled evals, run `pnpm --filter *-evals eval` to validate agent behavior
-- Deploy with `cd infra && fly deploy` after configuring `fly.toml` with your app name and secrets
+- Deploy through `infra/`, the Platform tenant chart: the chart serves the API image on port 3000
 
 ### production-api
 
@@ -104,7 +117,7 @@ npx nanohype scaffold --composite production-api \
 - Guardrails (`packages/guardrails/`) run as middleware -- wire them into the API's request pipeline to filter inputs and validate outputs
 - The prompt library (`packages/prompts/`) versions your system prompts -- use it from the agent and eval harness
 - Storage (`packages/storage/`) defaults to S3 -- set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `S3_BUCKET`
-- Deploy to Kubernetes with `cd infra && helm install` -- the K8s deploy template includes HPA, ingress, and CI manifests
+- Deploy through `infra/`, the Platform tenant chart: the chart serves the API image on port 3000, and with `IncludeRag` its ModelGateway adds the `embeddings` route the RAG pipeline calls
 - Scale by splitting services: run the API, agent workers, and RAG indexer as separate deployments behind the queue
 
 ### multi-agent
@@ -115,22 +128,24 @@ npx nanohype scaffold --composite production-api \
 - MCP tools (`packages/tools/`) are shared across agents via stdio transport -- register new tools in the server's tool index
 - If guardrails are enabled, wire them into the orchestrator's request pipeline to filter inter-agent messages
 - Run evals with `pnpm --filter *-evals eval` -- test both individual agent behavior and multi-agent coordination scenarios
-- Deploy to AWS ECS via the `infra/` directory -- each agent type can run as a separate ECS service behind the VPC
+- Deploy through `infra/`, the Platform tenant chart: the chart serves the API image on port 3000, and every agent reaches a model through its ModelGateway
 
 ### cost-optimized-ai
 
 - Run `pnpm install` at the monorepo root
 - The LLM gateway (`packages/gateway/`) routes requests to the cheapest provider that meets quality thresholds -- configure routing rules in its config
-- The semantic cache (`packages/cache/`) deduplicates similar prompts -- set `OPENAI_API_KEY` for the embedding model
+- The semantic cache (`packages/cache/`) deduplicates similar prompts, embedding them through the gateway's `embeddings` route, which `infra/platform.yaml` declares
 - The observability package (`packages/observability/`) tracks token usage and cost per request -- wire it into your API layer
 - Tune the similarity threshold in the cache config to balance cost savings against freshness
+- `infra/` is the Platform tenant chart for the app you build on these packages, rendered for `k8s-app-tenant`'s default port, 8080; an app on another port sets it in `infra/chart/values.yaml` under `service`, `probes` and the NetworkPolicy ingress rule
 
 ### ai-platform
 
 - Run `pnpm install`, then `pnpm --filter *-api dev` to start the API server
 - Configure `DATABASE_URL` and run migrations via `pnpm --filter *-db migrate`
-- The LLM gateway (`packages/gateway/`) manages provider routing -- set API keys for your chosen providers
-- The data pipeline (`packages/pipeline/`) handles document ingestion into the vector store
+- The LLM gateway (`packages/gateway/`) manages provider routing over the Platform's ModelGateway with no model key
+- The data pipeline (`packages/pipeline/`) handles document ingestion into the vector store, embedding through the gateway's `embeddings` route
+- `infra/` is the Platform tenant chart that serves the API image on port 3000 and declares the ModelGateway both packages call
 - If billing is enabled, configure Stripe keys in `packages/billing/.env` -- usage metering is automatic
 - The monitoring stack (`infra/monitoring/`) provides Prometheus, Grafana, and Loki -- deploy with `cd infra/monitoring && docker compose up`
 
@@ -142,6 +157,7 @@ npx nanohype scaffold --composite production-api \
 - MCP tools (`packages/tools/`) are shared across agents via stdio transport -- add new tools in the server's tool index
 - Run `pnpm --filter *-evals eval` to validate agent behavior -- add multi-agent coordination test cases
 - To add a new agent role, duplicate an existing agent directory and register it with the orchestrator
+- The agents call the Platform's ModelGateway with no model key; `infra/` is the Platform tenant chart that declares it and deploys the stack's image
 
 ### client-engagement
 
@@ -158,14 +174,15 @@ npx nanohype scaffold --composite production-api \
 - Design system (`packages/design-system/`) and tokens (`packages/design-tokens/`) define the visual language
 - QA artifacts (test plan, acceptance criteria) live alongside the PRD in `docs/`
 - The campaign brief and runbook are in `docs/` -- hand these to marketing and operations respectively
+- The app's chat route calls the Platform's ModelGateway; `infra/` is the Platform tenant chart that serves the app on port 3000 and declares the gateway
 - This composite spans engineering, design, QA, product, marketing, and operations personas
 
 ### research-to-prototype
 
-- Start with the PRD (`docs/prd/`) to define the research question and success criteria
-- The agentic loop prototype (`src/`) is a minimal AI agent -- edit the system prompt and tools to match the research hypothesis
-- If the test plan is enabled (`docs/test-plan/`), use it to define validation criteria before building
-- Run `npm install && npm run dev` to start iterating on the prototype
+- Start with the research framework (`docs/research/`) and the PRD (`docs/product/`) to define the research question and success criteria
+- The agentic loop prototype (`apps/agent/`) is a minimal AI agent -- edit the system prompt and tools to match the research hypothesis
+- If the test plan is enabled (`docs/qa/`), use it to define validation criteria before building
+- Run `npm install && npm run dev` in `apps/agent/` to start iterating on the prototype; it calls the Platform's ModelGateway that `infra/` declares
 - When the prototype validates the hypothesis, graduate to a full composite like `ai-chatbot` or `enterprise-ai`
 
 ---

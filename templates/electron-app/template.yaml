@@ -4,10 +4,11 @@ name: electron-app
 displayName: 'Electron Desktop App (React + esbuild)'
 description: >
   Scaffolds an Electron desktop application with a React 19 renderer for
-  AI-powered chat. The main process holds API keys and routes AI calls
-  through IPC, keeping secrets out of the renderer. Uses esbuild for
-  main process bundling and Vite for the renderer. Supports Anthropic
-  and OpenAI as LLM providers with a pluggable registry.
+  AI-powered chat. The main process calls Bedrock under the AWS SDK's
+  default credential chain and serves the renderer over IPC, so no model
+  credential reaches the renderer and none ships in the app. Uses esbuild
+  for main process bundling and Vite for the renderer. Providers plug into
+  a registry beside the bedrock one.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
@@ -36,9 +37,9 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider for AI interactions'
+    description: 'Default LLM provider for AI interactions: bedrock, or a custom provider registered in src/main/providers/'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'bedrock'
 
   - name: IncludeAutoUpdate
     type: bool

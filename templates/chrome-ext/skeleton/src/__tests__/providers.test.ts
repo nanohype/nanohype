@@ -14,13 +14,11 @@ async function freshRegistry() {
   return mod;
 }
 
-function stubProvider(overrides?: Partial<AiProvider>): AiProvider {
-  return {
-    defaultModel: "test-model",
-    sendMessage: async () => "stub response",
-    ...overrides,
-  };
+function stubProvider(reply = "stub response"): AiProvider {
+  return { sendMessage: async () => reply };
 }
+
+const SETTINGS = { endpoint: "http://localhost:8080", route: "default" };
 
 describe("provider registry", () => {
   beforeEach(async () => {
@@ -39,16 +37,16 @@ describe("provider registry", () => {
   it("retrieves a provider by name from its factory", async () => {
     const { registerProvider, getProvider } = await freshRegistry();
 
-    registerProvider("openai", () => stubProvider({ defaultModel: "gpt-4o" }));
+    registerProvider("gateway", () => stubProvider("from the gateway"));
 
-    const result = getProvider("openai");
-    expect(result.defaultModel).toBe("gpt-4o");
+    const result = getProvider("gateway");
+    expect(await result.sendMessage([], SETTINGS)).toBe("from the gateway");
   });
 
   it("throws with a helpful message for an unknown provider", async () => {
     const { registerProvider, getProvider } = await freshRegistry();
-    registerProvider("anthropic", () => stubProvider());
-    registerProvider("openai", () => stubProvider());
+    registerProvider("gateway", () => stubProvider());
+    registerProvider("custom", () => stubProvider());
 
     expect(() => getProvider("cohere")).toThrowError(/Unknown AI provider: "cohere"/);
     expect(() => getProvider("cohere")).toThrowError(/Available:/);
@@ -57,22 +55,22 @@ describe("provider registry", () => {
   it("lists all registered provider names", async () => {
     const { registerProvider, listProviders } = await freshRegistry();
 
-    registerProvider("anthropic", () => stubProvider());
-    registerProvider("openai", () => stubProvider());
+    registerProvider("gateway", () => stubProvider());
+    registerProvider("custom", () => stubProvider());
 
     const names = listProviders();
-    expect(names).toEqual(expect.arrayContaining(["anthropic", "openai"]));
+    expect(names).toEqual(expect.arrayContaining(["gateway", "custom"]));
     expect(names).toHaveLength(2);
   });
 
   it("returns a fresh instance on each getProvider call", async () => {
     const { registerProvider, getProvider } = await freshRegistry();
 
-    registerProvider("test", () => stubProvider({ defaultModel: "fresh" }));
+    registerProvider("test", () => stubProvider("fresh"));
 
     const a = getProvider("test");
     const b = getProvider("test");
     expect(a).not.toBe(b);
-    expect(a.defaultModel).toBe("fresh");
+    expect(await a.sendMessage([], SETTINGS)).toBe("fresh");
   });
 });

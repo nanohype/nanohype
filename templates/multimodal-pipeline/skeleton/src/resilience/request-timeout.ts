@@ -1,19 +1,17 @@
 /**
  * How long an LLM provider waits on a model call before it gives up on it,
  * so a hung connection fails into the provider's circuit breaker instead of
- * holding the pipeline. The anthropic and openai analysis providers read
+ * holding the pipeline. The gateway and bedrock analysis providers read
  * LLM_REQUEST_TIMEOUT_MS as this module loads, so a value the parse refuses
- * fails the import rather than the first request. The whisper transcription
- * client runs under its SDK's own timeout.
+ * fails the import rather than the first request. A transcription job runs
+ * under AUDIO_TRANSCRIPTION_TIMEOUT_MS instead.
  *
  * A call has to finish its whole reply inside the timeout, so the timeout
  * caps LLM_MAX_TOKENS: the 120000 ms default covers the 4096-token default at
  * about 34 tokens a second. A deployment that raises LLM_MAX_TOKENS raises the
  * timeout with it.
  *
- * The SDK clients apply it to each attempt and retry an attempt that times
- * out REQUEST_MAX_RETRIES times, so an endpoint that never answers holds the
- * pipeline for two timeouts plus the SDK's backoff between the attempts.
+ * Both providers give up on a call, retries included, at one timeout.
  */
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */
@@ -47,9 +45,3 @@ export const REQUEST_TIMEOUT_MS = parseTimeoutMs(
   process.env.LLM_REQUEST_TIMEOUT_MS,
   DEFAULT_REQUEST_TIMEOUT_MS,
 );
-
-/**
- * How many more attempts the anthropic and openai SDK clients make after an
- * attempt that times out or fails with an error the SDK retries.
- */
-export const REQUEST_MAX_RETRIES = 1;

@@ -1,10 +1,10 @@
 /**
  * Audio processor.
  *
- * Reads audio files and prepares them for transcription via the
- * registered transcription provider (Whisper by default). The
- * transcribed text is then available for LLM analysis.
- * Registers itself as the "audio" processor on import.
+ * Transcribes audio files through the "transcribe" provider, Amazon
+ * Transcribe under the AWS credential chain, staging each file under
+ * TRANSCRIBE_S3_URI. The transcribed text is then available for LLM
+ * analysis. Registers itself as the "audio" processor on import.
  */
 
 import { stat } from "node:fs/promises";
@@ -30,16 +30,18 @@ class AudioProcessor implements Processor {
 
   async process(filePath: string, mimeType: string): Promise<ProcessedInput> {
     const config = loadConfig();
-    const apiKey = config.llm.openaiApiKey || process.env.OPENAI_API_KEY;
 
     const fileInfo = await stat(filePath);
     const fileSizeBytes = fileInfo.size;
 
-    const provider = getTranscriptionProvider("whisper", apiKey);
-    const transcription = await provider.transcribe(
+    const transcription = await getTranscriptionProvider("transcribe").transcribe(
       filePath,
       mimeType,
-      config.audio.transcriptionModel,
+      {
+        s3Uri: config.audio.s3Uri,
+        languageCode: config.audio.languageCode,
+        timeoutMs: config.audio.transcriptionTimeoutMs,
+      },
     );
 
     return {
@@ -50,7 +52,7 @@ class AudioProcessor implements Processor {
       metadata: {
         duration: transcription.duration,
         language: transcription.language,
-        model: config.audio.transcriptionModel,
+        transcriber: "amazon-transcribe",
         fileSizeBytes,
       },
     };

@@ -77,7 +77,7 @@ Templates span four engineering categories plus composable modules. Beyond engin
 | [module-analytics-ts](templates/module-analytics-ts/)               | Product analytics with pluggable backends (Segment, PostHog, Mixpanel, Amplitude)                       | `analytics` `events` `posthog`            |
 | [module-media-ts](templates/module-media-ts/)                       | Media processing and delivery (Cloudinary, Uploadcare, imgix)                                           | `media` `images` `cdn`                    |
 | [module-llm-gateway](templates/module-llm-gateway/)                 | LLM provider gateway with routing and fallback                                                          | `llm` `gateway` `ai`                      |
-| [module-llm-providers](templates/module-llm-providers/)             | Shared LLM provider pack (Anthropic, OpenAI, Groq core; Bedrock/Vertex/HF/Ollama optional)              | `llm` `providers` `ai`                    |
+| [module-llm-providers](templates/module-llm-providers/)             | Shared LLM provider pack (Platform ModelGateway core; Bedrock optional)                                 | `llm` `providers` `ai`                    |
 | [module-vector-store](templates/module-vector-store/)               | Vector store abstraction with pluggable backends                                                        | `vectors` `embeddings` `ai`               |
 | [module-semantic-cache](templates/module-semantic-cache/)           | Semantic caching for LLM responses using embeddings                                                     | `cache` `semantic` `ai`                   |
 | [module-llm-observability](templates/module-llm-observability/)     | LLM-specific observability with cost and latency tracking                                               | `observability` `llm` `cost`              |
@@ -107,8 +107,8 @@ Pre-configured multi-template stacks in `composites/`:
 
 | Composite                                                            | Use case                                                                                                    |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| [proof-of-concept](composites/proof-of-concept.yaml)                 | Minimal AI agent + evals — fastest path to a working prototype                                              |
-| [ai-chatbot](composites/ai-chatbot.yaml)                             | Customer-facing chatbot with agent, service, auth, and deployment                                           |
+| [proof-of-concept](composites/proof-of-concept.yaml)                 | Minimal AI agent + evals + Platform tenant chart — fastest path to a working prototype                      |
+| [ai-chatbot](composites/ai-chatbot.yaml)                             | Customer-facing chatbot with agent, service, auth, and Platform tenant chart                                |
 | [document-intelligence](composites/document-intelligence.yaml)       | Document search and Q&A with RAG, storage, and database                                                     |
 | [rag-agent](composites/rag-agent.yaml)                               | AI agent using RAG as a knowledge tool                                                                      |
 | [safe-ai-agent](composites/safe-ai-agent.yaml)                       | Agent with guardrails, evals, and prompt management                                                         |
@@ -121,7 +121,7 @@ Pre-configured multi-template stacks in `composites/`:
 | [go-microservice](composites/go-microservice.yaml)                   | Go service with evals and Fly.io deployment                                                                 |
 | [background-processor](composites/background-processor.yaml)         | Async job processing with queue, storage, and database                                                      |
 | [internal-tool](composites/internal-tool.yaml)                       | CLI or browser extension with MCP tools                                                                     |
-| [enterprise-ai](composites/enterprise-ai.yaml)                       | Full enterprise stack — agents, RAG, guardrails, evals, K8s                                                 |
+| [enterprise-ai](composites/enterprise-ai.yaml)                       | Full enterprise stack — agents, RAG, guardrails, evals, Platform tenant chart                               |
 | [eval-suite](composites/eval-suite.yaml)                             | Standalone eval infrastructure with prompts and safety testing                                              |
 | [cost-optimized-ai](composites/cost-optimized-ai.yaml)               | LLM gateway with cost-aware routing, semantic caching, and cost tracking                                    |
 | [ai-platform](composites/ai-platform.yaml)                           | Full AI platform with service, gateway, vectors, pipeline, auth, billing, monitoring                        |

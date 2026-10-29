@@ -145,6 +145,49 @@ describe("resolveVariables", () => {
     expect(result.Name).toBe("my-app");
   });
 
+  // A check composed from other variables holds only while the caller cannot
+  // set the value its pattern sees: ProviderCheck=anything would otherwise
+  // pass every pattern, and the disagreeing pair it exists to stop renders.
+  describe("a derived variable", () => {
+    const check = () => [
+      v({ name: "Provider", default: "gateway" }),
+      v({ name: "IncludeKeys", type: "bool", default: false }),
+      v({
+        name: "Check",
+        derived: true,
+        default: "${Provider}:${IncludeKeys}",
+        validation: { pattern: "(?!anthropic:false$).*", message: "anthropic needs IncludeKeys" },
+      }),
+    ];
+
+    it("resolves to its expanded default", () => {
+      expect(resolveVariables(check(), { Provider: "anthropic", IncludeKeys: true }).Check).toBe(
+        "anthropic:true",
+      );
+    });
+
+    it("validates the value its default derives", () => {
+      expect(() => resolveVariables(check(), { Provider: "anthropic" })).toThrow(
+        /Variable 'Check' value 'anthropic:false'.*anthropic needs IncludeKeys/,
+      );
+    });
+
+    it("rejects a value the caller supplies, even one its pattern accepts", () => {
+      expect(() =>
+        resolveVariables(check(), { Provider: "anthropic", Check: "anthropic:true" }),
+      ).toThrow(
+        /Variable 'Check' is derived from `\$\{Provider\}:\$\{IncludeKeys\}` and takes no value/,
+      );
+    });
+
+    it("leaves a variable that is not derived open to the caller", () => {
+      const vars = check().map((x) => (x.name === "Check" ? { ...x, derived: false } : x));
+      expect(resolveVariables(vars, { Provider: "anthropic", Check: "anthropic:true" }).Check).toBe(
+        "anthropic:true",
+      );
+    });
+  });
+
   it("converts boolean and number values to strings", () => {
     const result = resolveVariables(
       [v({ name: "Flag", type: "bool" }), v({ name: "Count", type: "int" })],

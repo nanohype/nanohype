@@ -3,8 +3,8 @@
 // check-eval-suites.mjs — every AI surface the catalog ships carries an eval
 // suite, and every suite has something in it.
 //
-// A template whose skeleton depends on a model-provider SDK puts a non-deterministic component on a consumer's
-// critical path. Unit tests cover the code around it; nothing covers what the
+// A template whose skeleton reaches a model puts a non-deterministic component
+// on a consumer's critical path. Unit tests cover the code around it; nothing covers what the
 // model does. That is what an eval suite is for, and it is the tenth
 // dimension of `standards/quality-rubric-dimensions.json` — "eval suites for
 // non-deterministic components".
@@ -41,10 +41,11 @@ const Ajv2020 = _Ajv2020.default ?? _Ajv2020;
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 const validateCase = ajv.compile(JSON.parse(readFileSync(CASE_SCHEMA, "utf-8")));
 
-// The category the catalog uses for surfaces whose product is the model's
-// behaviour. Read from the manifest rather than inferred, so a template moves
-// in and out of scope by declaring what it is.
-const AI_CATEGORY = "ai-systems";
+// The tag a template declares when its skeleton calls the Platform's
+// ModelGateway. A gateway provider is a fetch to an in-cluster Service and
+// depends on no SDK, so the tag is how such a template declares that it
+// reaches a model.
+const GATEWAY_TAG = "model-gateway";
 
 /** The TypeScript provider SDK the LLM policy names, so the two cannot drift. */
 function rubricSdkForTypeScript() {
@@ -64,34 +65,35 @@ export function dependsOnProvider(packageJson) {
   return declared.some((name) => PROVIDER_PACKAGES.has(name));
 }
 
+/** True when the manifest declares that its skeleton calls the Platform's ModelGateway. */
+export function callsGateway(manifest) {
+  return (manifest?.tags ?? []).includes(GATEWAY_TAG);
+}
+
+/** True when the template reaches a model, so its skeleton owes an eval suite. */
+export function inEvalScope(manifest, packageJson) {
+  return dependsOnProvider(packageJson) || callsGateway(manifest);
+}
+
 /**
  * The packages a skeleton depends on to reach a model.
  *
- * Scope is decided by what a template *declares* — its category, and the
- * dependencies in its `package.json` — not by how it spells a call. A list of
- * call spellings is a list of the ones its author thought of: the same
- * Anthropic SDK's `messages.stream` is a model call and would not have been on
- * it, so a template could leave scope, lose its whole eval suite, and keep the
- * gate green. Leaving scope means removing a dependency.
+ * Scope is decided by what a template *declares* — the `model-gateway` tag in
+ * its manifest, and the dependencies in its `package.json` — not by how it
+ * spells a call. A list of call spellings is a list of the ones its author
+ * thought of: a streaming call is a model call and would not have been on it,
+ * so a template could leave scope, lose its whole eval suite, and keep the
+ * gate green. Leaving scope means removing a dependency or the tag.
  *
- * The Bedrock entry is read from `standards/llm-policy.json`, which names the
- * SDK per language. The direct-API packages sit beside it, and
+ * The one package is the Bedrock SDK `standards/llm-policy.json` names for
+ * TypeScript. A provider SDK that authenticates with an API key is refused in
+ * every skeleton by `check-no-model-keys.mjs`, so none belongs here.
  * `__tests__/eval-suites.test.mjs` walks every dependency declared across the
- * catalog's ai-systems skeletons so a provider package missing from this set
- * fails there rather than narrowing scope in silence.
+ * catalog's skeletons so a model-invoking package missing from this set fails
+ * there rather than narrowing scope in silence, and holds every skeleton that
+ * registers a gateway provider to the tag.
  */
-const PROVIDER_PACKAGES = new Set(
-  [
-    rubricSdkForTypeScript(),
-    "@anthropic-ai/sdk",
-    "openai",
-    "@google/generative-ai",
-    "@google/genai",
-    "@mistralai/mistralai",
-    "cohere-ai",
-    "groq-sdk",
-  ].filter(Boolean),
-);
+const PROVIDER_PACKAGES = new Set([rubricSdkForTypeScript()].filter(Boolean));
 
 const SKIP_DIRS = new Set(["node_modules", "dist", "coverage", ".turbo", "build"]);
 const EVAL_DIRS = new Set(["eval", "evals", "suites"]);
@@ -138,12 +140,13 @@ if (invokedDirectly) {
   }
 
   /**
-   * Templates depending on a model-provider SDK that carry no eval suite yet,
-   * keyed by template name.
+   * Templates that reach a model and carry no eval suite yet, keyed by
+   * template name.
    *
    * Each is an AI surface a consumer scaffolds with no eval corpus. Enumerated
-   * rather than tolerated: a template outside this list fails, and an entry that
-   * gains a suite fails too, so the list can only shrink.
+   * rather than tolerated: a template outside this list fails, an entry that
+   * gains a suite fails, and so does an entry for a template the scope no
+   * longer holds, so the list can only shrink.
    *
    * The list is derived from the tree — every in-scope template with no `eval`
    * script — not from a judgement about which AI surfaces deserve evals. All of
@@ -163,6 +166,7 @@ if (invokedDirectly) {
 
   const missingSuite = [];
   const suiteArrived = [];
+  const outOfScope = new Set(KNOWN_WITHOUT_SUITE);
   const missingEntry = [];
   const emptySuite = [];
   const oneSided = [];
@@ -174,17 +178,18 @@ if (invokedDirectly) {
     const skeleton = join(templatesDir, name, "skeleton");
     if (!existsSync(skeleton)) continue;
 
-    const manifestPkgPath = join(skeleton, "package.json");
-    const manifestPkg = existsSync(manifestPkgPath)
-      ? JSON.parse(readFileSync(manifestPkgPath, "utf-8"))
-      : {};
-    if (!dependsOnProvider(manifestPkg)) continue;
+    // The eval script a suite is run by lives in package.json, so a skeleton
+    // without one has no command to check.
+    const packageJsonPath = join(skeleton, "package.json");
+    if (!existsSync(packageJsonPath)) continue;
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    const manifest = yaml.load(readFileSync(join(templatesDir, name, "template.yaml"), "utf-8"));
+    if (!inEvalScope(manifest, packageJson)) continue;
 
     const files = walk(skeleton);
 
-    const packageJson = manifestPkg;
-
     inScope += 1;
+    outOfScope.delete(name);
     const where = `templates/${name}/skeleton`;
 
     const scripts = packageJson.scripts ?? {};
@@ -248,8 +253,8 @@ if (invokedDirectly) {
 
   if (inScope === 0) {
     console.error(
-      `check-eval-suites: no template declares category '${AI_CATEGORY}' with a provider SDK ` +
-        `dependency. ` +
+      "check-eval-suites: no template depends on a model-provider SDK or declares the " +
+        `'${GATEWAY_TAG}' tag. ` +
         "The catalog ships templates that do, so this is the walk breaking rather than the " +
         "catalog losing them.",
     );
@@ -269,6 +274,12 @@ if (invokedDirectly) {
     "entr(ies) in the known-without-suite list ship a suite.",
     "A list that outlives what it describes stops being a record of what is left and starts\n" +
       "being permission. Delete the entry.",
+  );
+  report(
+    [...outOfScope].map((name) => `${name}  does not reach a model by what it declares`),
+    "entr(ies) in the known-without-suite list name a template outside the eval scope.",
+    "An entry the walk never consults exempts nothing and hides what it once described.\n" +
+      "Delete the entry, or restore the dependency or tag that put the template in scope.",
   );
   report(
     missingSuite,
@@ -304,7 +315,7 @@ if (invokedDirectly) {
   if (failed) process.exit(1);
 
   console.log(
-    `check-eval-suites: ${inScope} template(s) depend on a model-provider SDK. ` +
+    `check-eval-suites: ${inScope} template(s) reach a model. ` +
       `${inScope - KNOWN_WITHOUT_SUITE.size} carry an eval suite: each declares an eval script ` +
       `whose entry it ships, and golden and adversarial cases valid against the case schema ` +
       `(${casesChecked} checked). The remaining ${KNOWN_WITHOUT_SUITE.size} are enumerated in ` +

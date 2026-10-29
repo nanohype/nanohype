@@ -17,13 +17,14 @@ function unsetWhenEmpty(value: unknown): unknown {
 
 const llmSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
-  anthropicApiKey: z.string().default(""),
-  openaiApiKey: z.string().default(""),
-  model: z.string().default("claude-sonnet-5"),
+  // The inference-profile ID the bedrock provider calls. The gateway
+  // provider names a route instead, MODEL_ROUTE.
+  model: z.string().default("us.anthropic.claude-sonnet-5"),
   // Optional, so a provider can tell a configured temperature from none; an
-  // empty LLM_TEMPERATURE is unset. The openai provider sends it, and 0.1
-  // when it is unset. The anthropic provider never sends one: the Messages
-  // API rejects sampling parameters.
+  // empty LLM_TEMPERATURE is unset. The bedrock provider sends it to a model
+  // of a family other than Claude. Neither provider sends one to Claude: the
+  // Messages API rejects sampling parameters, and Claude on Bedrock refuses
+  // them on some models and under thinking.
   temperature: z.preprocess(unsetWhenEmpty, z.coerce.number().min(0).max(2).optional()),
   maxTokens: z.coerce.number().int().positive().default(4096),
 });
@@ -34,7 +35,13 @@ const imageSchema = z.object({
 });
 
 const audioSchema = z.object({
-  transcriptionModel: z.string().default("whisper-1"),
+  // The s3://bucket/prefix Amazon Transcribe reads staged audio from and
+  // writes its transcript to.
+  s3Uri: z.string().default(""),
+  // The language the audio is in; an empty AUDIO_LANGUAGE_CODE lets
+  // Transcribe identify it.
+  languageCode: z.preprocess(unsetWhenEmpty, z.string().optional()),
+  transcriptionTimeoutMs: z.coerce.number().int().positive().default(900_000),
   maxDurationSeconds: z.coerce.number().int().positive().default(600),
 });
 
@@ -64,7 +71,8 @@ export type Config = z.infer<typeof configSchema>;
  * Environment variable mapping uses prefixed names:
  * - LLM_PROVIDER, LLM_MODEL, LLM_TEMPERATURE, LLM_MAX_TOKENS
  * - IMAGE_MAX_DIMENSION, IMAGE_DETAIL
- * - AUDIO_TRANSCRIPTION_MODEL, AUDIO_MAX_DURATION_SECONDS
+ * - TRANSCRIBE_S3_URI, AUDIO_LANGUAGE_CODE, AUDIO_TRANSCRIPTION_TIMEOUT_MS,
+ *   AUDIO_MAX_DURATION_SECONDS
  * - VIDEO_FRAME_INTERVAL_SECONDS, VIDEO_MAX_FRAMES
  * - OUTPUT_FORMAT, LOG_LEVEL
  */
@@ -74,8 +82,6 @@ export function loadConfig(): Config {
   return configSchema.parse({
     llm: {
       provider: env.LLM_PROVIDER,
-      anthropicApiKey: env.ANTHROPIC_API_KEY,
-      openaiApiKey: env.OPENAI_API_KEY,
       model: env.LLM_MODEL,
       temperature: env.LLM_TEMPERATURE,
       maxTokens: env.LLM_MAX_TOKENS,
@@ -85,7 +91,9 @@ export function loadConfig(): Config {
       detail: env.IMAGE_DETAIL,
     },
     audio: {
-      transcriptionModel: env.AUDIO_TRANSCRIPTION_MODEL,
+      s3Uri: env.TRANSCRIBE_S3_URI,
+      languageCode: env.AUDIO_LANGUAGE_CODE,
+      transcriptionTimeoutMs: env.AUDIO_TRANSCRIPTION_TIMEOUT_MS,
       maxDurationSeconds: env.AUDIO_MAX_DURATION_SECONDS,
     },
     video: {

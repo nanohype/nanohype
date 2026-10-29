@@ -3,7 +3,14 @@ export interface ChatMessage {
   content: string;
 }
 
+/** Where a provider sends a conversation, as the options page sets it. */
+export interface ProviderSettings {
+  /** The gateway root, as ModelGateway status.endpoint publishes it. */
+  endpoint: string;
+  /** The ModelGateway route a request names as its model. */
+  route: string;
+}
+
 export interface AiProvider {
-  sendMessage(messages: ChatMessage[], apiKey: string, model?: string): Promise<string>;
-  defaultModel: string;
+  sendMessage(messages: ChatMessage[], settings: ProviderSettings): Promise<string>;
 }

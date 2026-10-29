@@ -71,6 +71,11 @@ function manifestFromBundle(): Plugin {
         version: "0.1.0",
         manifest_version: 3,
         permissions: ["sidePanel", "storage", "activeTab"],
+        // The model gateway's origin is set on the options page, which asks
+        // for a host permission on that one origin when it saves. Requests
+        // to it leave the service worker over https, or over http to a
+        // port-forward on this machine.
+        optional_host_permissions: ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
         side_panel: { default_path: "src/sidepanel/index.html" },
         background: { service_worker: entry("background"), type: "module" },
         icons: {

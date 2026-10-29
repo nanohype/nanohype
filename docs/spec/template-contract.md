@@ -119,6 +119,7 @@ Each entry in `variables` describes one user-supplied value and how it maps into
 | `prompt`      | string                               | no          | Human-friendly prompt text. Consumers MAY use this when interactively collecting values. Defaults to `description` if absent.                       |
 | `default`     | (varies)                             | no          | Default value. Type must match `type`. See [5.3 Defaults](#53-defaults).                                                                            |
 | `required`    | boolean                              | no          | Whether the user must supply a value. Defaults to `false`. When `true` and no `default` is set, the consumer MUST obtain a value before proceeding. |
+| `derived`     | boolean                              | no          | The value is the default, expanded, and nothing else; the consumer MUST reject a value supplied for it. See [5.3 Defaults](#53-defaults).           |
 | `validation`  | [Validation](#421-validation-object) | no          | Constraints on the value.                                                                                                                           |
 | `options`     | array of strings                     | conditional | **Required** when `type` is `enum`. The allowed values. MUST NOT be present when `type` is not `enum`.                                              |
 
@@ -215,6 +216,7 @@ cmd/myapp/main.go
 - Defaults MAY reference other variables using the syntax `${VariableName}`. Consumers MUST resolve references after all explicit user values are collected. Circular references are invalid; consumers MUST reject them.
 - If `required` is `true` and no `default` is provided, the consumer MUST prompt the user or fail — it MUST NOT silently use an empty value.
 - If `required` is `false` (or absent) and no `default` is provided and the user supplies no value, the consumer MUST substitute an empty string for `string` and `enum` types, `false` for `bool`, and `0` for `int`.
+- A variable with `derived: true` resolves to its `default`, expanded, and to nothing else: the consumer MUST reject a value the user supplies for it, and MUST NOT prompt for it. A derived variable declares a `default` and is not `required`. It is how a template checks a combination of other variables: the default composes them, and the variable's `validation` rejects the combinations that cannot work. The check holds only because the user cannot set the value it sees.
 
 ### 5.4 Validation
 
@@ -404,6 +406,7 @@ Beyond schema validation, consumers MUST enforce:
 5. Every `default` value matches its variable's `type`.
 6. Default value cross-references (`${VariableName}`) do not form cycles.
 7. `name` field matches the directory name in the catalog.
+8. Every variable with `derived: true` declares a `default`, is not `required`, and declares no `prompt`.
 
 ---
 

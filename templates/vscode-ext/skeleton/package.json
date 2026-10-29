@@ -31,13 +31,23 @@
       "properties": {
         "__PROJECT_NAME__.provider": {
           "type": "string",
-          "default": "anthropic",
+          "default": "bedrock",
           "description": "AI provider the webview chat sends turns to, when the webview and AI features are included. Any name the provider registry holds is accepted."
         },
         "__PROJECT_NAME__.model": {
           "type": "string",
           "default": "",
-          "description": "Model id the webview chat sends, when the webview and AI features are included. Empty uses the provider's default model."
+          "description": "Model id the webview chat sends, when the webview and AI features are included: a Bedrock cross-region inference-profile ID for the bedrock provider. Empty uses the provider's default model."
+        },
+        "__PROJECT_NAME__.awsProfile": {
+          "type": "string",
+          "default": "",
+          "description": "AWS profile the bedrock provider signs with, from the AWS config file. Empty uses the AWS SDK's default credential chain."
+        },
+        "__PROJECT_NAME__.awsRegion": {
+          "type": "string",
+          "default": "",
+          "description": "AWS region the bedrock provider calls Bedrock in. Empty uses AWS_REGION, then us-east-1."
         }
       }
     }
@@ -56,8 +66,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.3.0",
-    "openai": "^7.0.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1030.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

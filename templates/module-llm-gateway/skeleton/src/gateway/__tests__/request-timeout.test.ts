@@ -60,7 +60,7 @@ describe("parseTimeoutMs", () => {
   });
 
   it.each([
-    ["anthropic", () => import("../providers/anthropic.js")],
+    ["gateway", () => import("../providers/gateway.js")],
     ["bedrock", () => import("../providers/bedrock.js")],
   ])("fails the %s provider's import on a value it refuses", async (_name, load) => {
     vi.stubEnv("LLM_REQUEST_TIMEOUT_MS", "30s");

@@ -29,7 +29,7 @@ const source = new GitHubSource({ repo: "nanohype/nanohype" });
 const { manifest, files } = await source.fetchTemplate("rag-pipeline");
 const result = renderTemplate(manifest, files, {
   ProjectName: "my-rag-bot",
-  LlmProvider: "anthropic",
+  LlmProvider: "gateway",
 });
 // result.files — write these to disk yourself; hooks are returned, not executed
 ```

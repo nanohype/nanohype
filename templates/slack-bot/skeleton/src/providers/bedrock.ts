@@ -1,17 +1,21 @@
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
+import { readRequestTimeoutMs } from "../config.js";
 import { llmDuration, llmErrorsTotal, llmRequestsTotal, recordLlmTokens } from "../metrics.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerProvider } from "./registry.js";
 import type { ChatMessage, LlmProvider } from "./types.js";
 
-// Bedrock via the Converse API — the org-default LLM path. Auth is the AWS
-// credential chain (IRSA on the cluster), never API keys. A cachePoint after
-// the system prompt amortizes the (large, stable) prefix across turns — the
-// mandated prompt-caching pattern; cache_read/cache_write tokens are metered so
-// the hit ratio is observable. Every call has an explicit request timeout, so a
-// hung Bedrock socket trips the circuit breaker instead of hanging forever.
+// Bedrock via the Converse API, called directly. Auth is the AWS credential
+// chain, never API keys, so it serves the bot off the nanohype substrate: an
+// ECS task role, or a local AWS profile. On the substrate the gateway provider
+// is the path to a model: a direct call skips the route's guardrail and rate
+// limit. A cachePoint after the system prompt amortizes the (large, stable)
+// prefix across turns — the mandated prompt-caching pattern;
+// cache_read/cache_write tokens are metered so the hit ratio is observable.
+// Every call has an explicit request timeout, so a hung Bedrock socket trips
+// the circuit breaker instead of hanging forever.
 
-const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+const REQUEST_TIMEOUT_MS = readRequestTimeoutMs();
 const MODEL = process.env.LLM_MODEL ?? "us.anthropic.claude-sonnet-5";
 
 class BedrockProvider implements LlmProvider {

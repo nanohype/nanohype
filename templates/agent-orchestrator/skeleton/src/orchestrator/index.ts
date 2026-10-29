@@ -58,7 +58,7 @@ export interface Orchestrator {
  * orchestrator (built-in agents and providers self-register on
  * import via their barrel modules).
  *
- *   const orchestrator = createOrchestrator({ providerName: "anthropic" });
+ *   const orchestrator = createOrchestrator({ providerName: "gateway" });
  *   const result = await orchestrator.execute({
  *     id: "task-1",
  *     description: "Research and analyze the AI agent landscape",

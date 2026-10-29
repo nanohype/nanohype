@@ -5,7 +5,7 @@ import type { ChatMessage, LlmProvider } from "./types.js";
 //
 // Returns deterministic, contextual responses based on keyword
 // matching against the last user message. No external API calls.
-// Useful for local development without API keys.
+// Useful for local development with no model to call.
 //
 
 const KEYWORD_RESPONSES: Record<string, string> = {
