@@ -6,13 +6,14 @@ description: >
   Scaffolds a Chrome extension using Manifest V3 with a React sidepanel
   for AI-powered interactions. Includes a Vite-based build system with
   multi-entry compilation for sidepanel, background service worker,
-  content script, and options page. Supports Anthropic and OpenAI as
-  LLM providers with streaming chat in the sidepanel.
+  content script, and options page. Chats in the sidepanel through a
+  Platform's ModelGateway at an endpoint the options page sets, and holds
+  no model credential: the gateway holds the Bedrock role.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: applications
-tags: [chrome-extension, react, vite, typescript, ai, browser]
+tags: [chrome-extension, react, vite, typescript, ai, browser, model-gateway]
 
 variables:
   - name: ProjectName
@@ -51,16 +52,16 @@ variables:
   - name: IncludeOptions
     type: bool
     placeholder: '__INCLUDE_OPTIONS__'
-    description: 'Include options page for API key and settings management'
+    description: 'Include the options page that sets the model gateway endpoint and route'
     prompt: 'Include options page?'
     default: true
 
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider for AI interactions'
+    description: 'LLM provider for AI interactions: gateway (a Platform ModelGateway at the endpoint the options page sets), or a custom provider registered in src/lib/providers/'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
 
 conditionals:
   - path: 'src/content/index.ts'

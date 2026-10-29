@@ -6,7 +6,7 @@
 //
 
 export interface EmbeddingProvider {
-  /** Unique provider name (e.g. "openai", "mock"). */
+  /** Unique provider name (e.g. "gateway", "bedrock", "mock"). */
   readonly name: string;
 
   /** The dimensionality of the embedding vectors produced. */

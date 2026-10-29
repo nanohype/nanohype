@@ -120,6 +120,10 @@
         "required": {
           "type": "boolean"
         },
+        "derived": {
+          "type": "boolean",
+          "description": "The value is the default, expanded, and nothing else: a consumer rejects a value supplied for it. A check composed from other variables in its default, with a validation pattern, holds only while the caller cannot set the value the pattern sees. A derived variable declares a default, and is neither required nor prompted for."
+        },
         "validation": {
           "type": "object",
           "additionalProperties": false,

@@ -2,11 +2,12 @@
 //
 // Importing this module causes all built-in providers to self-register
 // with the provider registry. Custom providers can be added by
-// importing their module after this one.
+// importing their module after this one. The gateway provider is the
+// path to a model on the nanohype substrate, and holds no model credential.
 //
 
-import "./anthropic.js";
-import "./openai.js";
+// Scaffolded with LlmProvider = __LLM_PROVIDER__.
+import "./gateway.js";
 import "./mock.js";
 
 export { getProvider, listProviders, registerProvider } from "./registry.js";

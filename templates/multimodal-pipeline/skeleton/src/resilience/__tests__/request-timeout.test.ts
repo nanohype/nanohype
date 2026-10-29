@@ -55,13 +55,17 @@ describe("parseTimeoutMs", () => {
     ).toThrow(REFUSAL(value));
   });
 
-  it.each([
-    ["anthropic", () => import("../../providers/anthropic.js")],
-    ["openai", () => import("../../providers/openai.js")],
-  ])("fails the %s provider's import on a value it refuses", async (_name, load) => {
+  it("fails the gateway provider's import on a value it refuses", async () => {
     vi.stubEnv("LLM_REQUEST_TIMEOUT_MS", "30s");
     vi.resetModules();
 
-    await expect(load()).rejects.toThrow(REFUSAL("30s"));
+    await expect(import("../../providers/gateway.js")).rejects.toThrow(REFUSAL("30s"));
+  });
+
+  it("fails the bedrock provider's import on a value it refuses", async () => {
+    vi.stubEnv("LLM_REQUEST_TIMEOUT_MS", "30s");
+    vi.resetModules();
+
+    await expect(import("../../providers/bedrock.js")).rejects.toThrow(REFUSAL("30s"));
   });
 });

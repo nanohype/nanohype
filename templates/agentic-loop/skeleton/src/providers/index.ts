@@ -7,9 +7,11 @@
  * name (set via the __LLM_PROVIDER__ placeholder) to getProvider().
  */
 
-// Side-effect imports: each module calls registerProvider() at load time
-import "./anthropic.js";
-import "./openai.js";
+// Side-effect imports: each module calls registerProvider() at load time.
+// The gateway provider is the path to a model on the nanohype substrate,
+// and holds no model credential.
+// Scaffolded with LlmProvider = __LLM_PROVIDER__.
+import "./gateway.js";
 import "./mock.js";
 
 // Re-export the public API

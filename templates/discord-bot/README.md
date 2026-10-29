@@ -8,17 +8,18 @@ TypeScript Discord bot with discord.js v14, AI-powered responses, and a pluggabl
 - **Slash command** `/ask` with Discord API registration script
 - **AI message handler** responds to DMs and mentions with LLM-generated replies
 - **Embed responses** rich formatting with Discord embeds for structured AI output
-- **Provider registry** pluggable LLM backend (Anthropic, OpenAI)
+- **Provider registry** pluggable LLM backend: `gateway` (the default), which calls the Platform's ModelGateway and holds no model credential, beside a deterministic `mock`
 - **Structured logging** with level-filtered JSON output
 
 ## Variables
 
-| Variable       | Type   | Default                   | Description               |
-| -------------- | ------ | ------------------------- | ------------------------- |
-| `ProjectName`  | string | _(required)_              | Kebab-case project name   |
-| `Description`  | string | `"A Discord bot with AI"` | Short project description |
-| `LlmProvider`  | string | `"anthropic"`             | `anthropic` or `openai`   |
-| `IncludeTests` | bool   | `true`                    | Include test files        |
+| Variable       | Type   | Default                   | Description                                                            |
+| -------------- | ------ | ------------------------- | ---------------------------------------------------------------------- |
+| `ProjectName`  | string | _(required)_              | Kebab-case project name                                                |
+| `Description`  | string | `"A Discord bot with AI"` | Short project description                                              |
+| `LlmProvider`  | string | `"gateway"`               | `gateway`, or a custom provider registered in `src/providers/`         |
+| `PlatformName` | string | `ProjectName`             | Platform CR the bot deploys under; sets the gateway's default endpoint |
+| `IncludeTests` | bool   | `true`                    | Include test files                                                     |
 
 ## Project layout
 
@@ -38,8 +39,7 @@ TypeScript Discord bot with discord.js v14, AI-powered responses, and a pluggabl
     providers/
       types.ts            # LlmProvider interface
       registry.ts         # Provider registry (register/get/list)
-      anthropic.ts        # Anthropic provider, self-registers
-      openai.ts           # OpenAI provider, self-registers
+      gateway.ts          # Platform ModelGateway provider, no credential
       index.ts            # Barrel — triggers registration
   package.json
   tsconfig.json

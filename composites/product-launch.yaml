@@ -5,7 +5,8 @@ displayName: 'Product Launch'
 description: >
   Full product launch kit spanning engineering, design, QA, product,
   marketing, and operations. Scaffolds a Next.js app with auth and
-  analytics alongside a design system, design tokens, test plan,
+  analytics and a Platform tenant chart whose ModelGateway is the app's
+  model path, alongside a design system, design tokens, test plan,
   acceptance criteria, PRD, campaign brief, and operational runbook.
 version: '0.1.0'
 tags: [launch, cross-functional, product, design, qa, marketing, operations]
@@ -29,14 +30,38 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for AI features'
-    default: 'anthropic'
+    description: 'LLM provider every package calls: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), so no package holds a model credential'
+    default: 'gateway'
 
   - name: IncludeMarketing
     type: bool
     placeholder: '__INCLUDE_MARKETING__'
     description: 'Include marketing campaign brief'
     default: true
+
+  - name: Tenant
+    type: string
+    placeholder: '__TENANT__'
+    description: 'Owning team: the tenants-<team> namespace the Platform, BudgetPolicy and ModelGateway CRs are applied in, the Platform''s spec.tenant, and the team label on the tenant chart''s resources and telemetry'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
+
+  - name: Image
+    type: string
+    placeholder: '__IMAGE__'
+    description: 'Container image repository the tenant chart deploys, without a tag; each values-<env>.yaml pins one'
+    default: '${ProjectName}'
+
+  - name: AppMetric
+    type: string
+    placeholder: '__APP_METRIC__'
+    description: 'Prefix of the RED series the tenant chart''s Grafana dashboard reads: <prefix>_requests_total, <prefix>_errors_total and <prefix>_request_duration_seconds. The default, http, is the prefix a ts-service emits them under; set it to the prefix the deployed service emits'
+    default: 'http'
+    validation:
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case: it prefixes Prometheus metric names'
 
 templates:
   - template: monorepo
@@ -67,6 +92,7 @@ templates:
     path: apps/web
     variables:
       ProjectName: '${ProjectName}-web'
+      PlatformName: '${ProjectName}'
       LlmProvider: '${LlmProvider}'
       IncludeAuth: true
 
@@ -102,3 +128,17 @@ templates:
     variables:
       ProjectName: '${ProjectName}-campaign'
       CampaignName: '${ProductName} Launch'
+
+  # The deploy unit: the Helm chart with its per-env values and ApplicationSet
+  # entry, and the Platform, BudgetPolicy and ModelGateway CRs. The
+  # ModelGateway is the model path every gateway provider above calls: the
+  # operator runs it as the Service <ProjectName>-gateway, which the chart
+  # hands the app as MODEL_GATEWAY_ENDPOINT.
+  - template: k8s-app-tenant
+    path: infra
+    variables:
+      AppName: '${ProjectName}'
+      AppMetric: '${AppMetric}'
+      Tenant: '${Tenant}'
+      Image: '${Image}'
+      Port: '3000'

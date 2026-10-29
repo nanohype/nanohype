@@ -1,5 +1,5 @@
 /**
- * Mock embedding provider for local development without API keys.
+ * Mock embedding provider for local development with no model to call.
  *
  * Generates deterministic hash-based embeddings — the same input text
  * always produces the same vector. Useful for testing pipeline

@@ -20,17 +20,20 @@ const datasetSchema = z.object({
 
 const trainingSchema = z.object({
   provider: z.string().default("__PROVIDER__"),
-  baseModel: z.string().default("gpt-4o-mini-2024-07-18"),
+  baseModel: z.string().default("amazon.nova-micro-v1:0:128k"),
   epochs: z.coerce.number().int().positive().optional(),
-  learningRateMultiplier: z.coerce.number().positive().optional(),
+  learningRate: z.coerce.number().positive().optional(),
   batchSize: z.coerce.number().int().positive().optional(),
   suffix: z.string().default("__PROJECT_NAME__"),
-  openaiApiKey: z.string().default(""),
 });
 
 // No sample size: the eval runs every case in the corpus. A run that
 // sampled could drop the adversarial half and still report a pass.
+//
+// The base model is invoked through an inference profile, which names it
+// differently from the identifier a fine-tuning job starts from.
 const evalSchema = z.object({
+  baseModel: z.string().default("us.amazon.nova-micro-v1:0"),
   fineTunedModel: z.string().optional(),
 });
 
@@ -51,9 +54,11 @@ export type Config = z.infer<typeof configSchema>;
  * Environment variable mapping:
  * - DATA_INPUT_PATH, DATA_OUTPUT_DIR
  * - SPLIT_TRAIN_RATIO, SPLIT_VAL_RATIO, SPLIT_TEST_RATIO
- * - BASE_MODEL, TRAINING_EPOCHS, LEARNING_RATE_MULTIPLIER, BATCH_SIZE, TRAINING_SUFFIX
- * - FINE_TUNED_MODEL
- * - OPENAI_API_KEY
+ * - TRAINING_PROVIDER, BASE_MODEL, TRAINING_EPOCHS, LEARNING_RATE, BATCH_SIZE, TRAINING_SUFFIX
+ * - EVAL_BASE_MODEL, FINE_TUNED_MODEL
+ *
+ * The bedrock provider reads TRAINING_ROLE_ARN, TRAINING_S3_URI and
+ * AWS_REGION itself, when a command first needs them.
  */
 export function loadConfig(): Config {
   const env = process.env;
@@ -70,12 +75,12 @@ export function loadConfig(): Config {
       provider: env.TRAINING_PROVIDER,
       baseModel: env.BASE_MODEL,
       epochs: env.TRAINING_EPOCHS || undefined,
-      learningRateMultiplier: env.LEARNING_RATE_MULTIPLIER || undefined,
+      learningRate: env.LEARNING_RATE || undefined,
       batchSize: env.BATCH_SIZE || undefined,
       suffix: env.TRAINING_SUFFIX,
-      openaiApiKey: env.OPENAI_API_KEY,
     },
     eval: {
+      baseModel: env.EVAL_BASE_MODEL || undefined,
       fineTunedModel: env.FINE_TUNED_MODEL || undefined,
     },
   });

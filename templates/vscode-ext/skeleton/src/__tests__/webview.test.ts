@@ -1,15 +1,14 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { makeChatHandler } from "../ai/chat-session";
+import type { AiClientOptions } from "../ai/client";
 import { assistantTurnFor, handleWebviewMessage } from "../webview/protocol";
 
 /**
  * The extension host and the webview run in two processes and communicate by
  * `postMessage`, which type-checks nothing. These cover the routing between
  * them without a running VS Code: `handleWebviewMessage` takes its host
- * surfaces as arguments, and `makeChatHandler` takes its configuration,
- * secret storage and client factory the same way.
+ * surfaces as arguments, and `makeChatHandler` takes its configuration and
+ * client factory the same way.
  */
 
 function deps(overrides: Partial<Parameters<typeof handleWebviewMessage>[1]> = {}) {
@@ -96,10 +95,14 @@ describe("makeChatHandler", () => {
 
   function handlerDeps(overrides = {}) {
     return {
-      getConfiguration: () => ({ provider: "anthropic", model: "a-model" }),
-      getApiKey: vi.fn(async () => "stored-key"),
-      requestApiKey: vi.fn(async () => "typed-key"),
-      storeApiKey: vi.fn(async () => {}),
+      getConfiguration: vi.fn(
+        (): AiClientOptions => ({
+          provider: "bedrock",
+          model: "a-model",
+          awsProfile: "a-profile",
+          awsRegion: "a-region",
+        }),
+      ),
       createClient: vi.fn(() => client),
       ...overrides,
     };
@@ -110,28 +113,33 @@ describe("makeChatHandler", () => {
     client.chat.mockResolvedValue("an answer");
   });
 
-  it("sends the turn with the stored key and the configured provider", async () => {
+  it("sends the turn to the configured provider with the configured settings", async () => {
     const d = handlerDeps();
 
     await expect(makeChatHandler(d)("hello")).resolves.toBe("an answer");
 
     expect(d.createClient).toHaveBeenCalledWith({
-      provider: "anthropic",
-      apiKey: "stored-key",
+      provider: "bedrock",
       model: "a-model",
+      awsProfile: "a-profile",
+      awsRegion: "a-region",
     });
     expect(client.chat).toHaveBeenCalledWith([{ role: "user", content: "hello" }]);
-    expect(d.requestApiKey).not.toHaveBeenCalled();
   });
 
-  it("asks for a key when storage holds none, and keeps it", async () => {
-    const d = handlerDeps({ getApiKey: vi.fn(async () => undefined) });
+  it("reads the settings again on every turn, so a change applies to the next one", async () => {
+    const d = handlerDeps();
+    const chat = makeChatHandler(d);
 
-    await expect(makeChatHandler(d)("hello")).resolves.toBe("an answer");
+    await chat("first");
+    d.getConfiguration.mockReturnValue({ provider: "bedrock", model: "another-model" });
+    await chat("second");
 
-    expect(d.requestApiKey).toHaveBeenCalled();
-    expect(d.storeApiKey).toHaveBeenCalledWith("typed-key");
-    expect(d.createClient).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "typed-key" }));
+    expect(d.getConfiguration).toHaveBeenCalledTimes(2);
+    expect(d.createClient).toHaveBeenLastCalledWith({
+      provider: "bedrock",
+      model: "another-model",
+    });
   });
 
   it("builds a real client when no factory is injected", async () => {
@@ -139,23 +147,13 @@ describe("makeChatHandler", () => {
     // the registry before it sends anything. Naming a provider the registry
     // does not hold stops the turn there, so this reaches the real constructor
     // without a network call — a registered name here would send a live
-    // request with whatever key the test supplied.
+    // request under whatever credentials the test machine holds.
     const d = handlerDeps({
       createClient: undefined,
       getConfiguration: () => ({ provider: "no-such-provider" }),
     });
 
     await expect(makeChatHandler(d)("hello")).rejects.toThrow(/Unknown AI provider/);
-  });
-
-  it("fails the turn when the key prompt is dismissed", async () => {
-    const d = handlerDeps({
-      getApiKey: vi.fn(async () => undefined),
-      requestApiKey: vi.fn(async () => undefined),
-    });
-
-    await expect(makeChatHandler(d)("hello")).rejects.toThrow(/No API key/);
-    expect(d.storeApiKey).not.toHaveBeenCalled();
   });
 });
 

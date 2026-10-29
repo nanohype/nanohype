@@ -5,8 +5,8 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 // ── Mock Provider ───────────────────────────────────────────────────
 //
 // Deterministic provider for testing. Returns keyword-matched
-// responses with fake token counts. No external dependencies or
-// API keys required. Reads no sampling options.
+// responses with fake token counts. No external dependencies, no
+// network and no credential. Reads no sampling options.
 //
 
 const RESPONSES: Record<string, string> = {
