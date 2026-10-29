@@ -6,8 +6,12 @@ services:
     environment:
       - NODE_ENV=production
       - LLM_PROVIDER=__LLM_PROVIDER__
+      - MODEL_GATEWAY_ENDPOINT=${MODEL_GATEWAY_ENDPOINT:-}
+      - MODEL_ROUTE=${MODEL_ROUTE:-}
+      # #if IncludeKeyProviders
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # #endif
       - DATABASE_URL=postgres://postgres:postgres@db:5432/__PROJECT_NAME__
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_URL=http://localhost:3000

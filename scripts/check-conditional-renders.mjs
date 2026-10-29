@@ -82,8 +82,6 @@ const KNOWN_BROKEN = new Set([
   "module-observability-ts src/telemetry/index.ts ./tracer.js",
   "monorepo packages/shared-ui/src/index.test.ts ./index.js",
   "monorepo packages/shared-utils/src/index.test.ts ./index.js",
-  "multimodal-pipeline src/processors/index.ts ./audio.js",
-  "multimodal-pipeline src/processors/index.ts ./video.js",
   "prompt-library sdk/src/__tests__/loader.test.ts ../index.js",
   "prompt-library sdk/src/__tests__/loader.test.ts ../types.js",
   "slack-bot src/index.ts ./commands/ask.js",

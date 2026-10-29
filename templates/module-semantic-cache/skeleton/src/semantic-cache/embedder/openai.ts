@@ -9,7 +9,9 @@ import type { EmbeddingProvider } from "./types.js";
 // OpenAI SDK. Each factory call builds its own circuit breaker and SDK
 // client, so providers don't share failure state across cache
 // instances. Every request carries an explicit timeout and bounded
-// retries. Reads OPENAI_API_KEY from the environment via the SDK.
+// retries. Reads OPENAI_API_KEY from the environment via the SDK, which
+// the LLM policy permits only off the nanohype substrate, for a provider
+// the intake brief names, and never committed.
 //
 
 const DIMENSIONS = 1536;

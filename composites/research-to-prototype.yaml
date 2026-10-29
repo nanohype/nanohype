@@ -28,8 +28,14 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for the prototype'
-    default: 'anthropic'
+    description: 'LLM provider: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
 
   - name: IncludeTests
     type: bool
@@ -62,6 +68,8 @@ templates:
     path: apps/agent
     variables:
       ProjectName: '${ProjectName}-agent'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       IncludeMemory: true
       IncludeEval: false

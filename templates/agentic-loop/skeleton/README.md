@@ -28,7 +28,7 @@ Final response
 
 ### Provider: __LLM_PROVIDER__
 
-The LLM provider is configured in `src/providers/`. The active provider is set to `__LLM_PROVIDER__`. Both Anthropic and OpenAI client wrappers are included — switch by changing the provider configuration in `src/providers/index.ts`.
+The LLM provider is configured in `src/providers/`. The active provider is set to `__LLM_PROVIDER__`. The `gateway` provider calls the Platform's ModelGateway, the only route to a model on the nanohype substrate: the eks-agent-platform operator runs it under the tenant's EKS Pod Identity, holding the Bedrock role, so the agent holds no model credential and sends none. It speaks native Anthropic Messages with tool use, and hands every reply block, thinking included, back on the next turn. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time; `MODEL_ROUTE` (`default`) names the route the ModelGateway maps to a Bedrock model. A project scaffolded with `IncludeKeyProviders` also carries the Anthropic and OpenAI client wrappers, which the LLM policy permits only off the substrate, for a provider the intake brief names, with the key read from the environment or the OS keychain.
 
 ### Tool Registry
 
@@ -53,7 +53,7 @@ The agent will automatically discover registered tools and present them to the L
 
 ## Production Readiness
 
-- [ ] Set API key environment variable (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`)
+- [ ] Declare the route the agent names (`MODEL_ROUTE`, `default` when unset) in the Platform's ModelGateway
 - [ ] Set `MAX_ITERATIONS` to an appropriate limit for your use case
 - [ ] Review tool permissions -- each tool should have minimal access
 - [ ] Set `LOG_LEVEL=warn` for production
@@ -65,9 +65,6 @@ The agent will automatically discover registered tools and present them to the L
 ## Usage
 
 ```bash
-# Set your API key
-export ANTHROPIC_API_KEY="sk-..."   # or OPENAI_API_KEY for OpenAI provider
-
 # Run the agent
 npm start
 
@@ -88,8 +85,8 @@ src/
   agent.ts              Core agentic loop
   providers/
     index.ts            Active provider export
-    anthropic.ts        Anthropic client wrapper
-    openai.ts           OpenAI client wrapper
+    gateway.ts          Platform ModelGateway provider, no credential
+    messages-tools.ts   Messages API tool definitions
   tools/
     index.ts            Tool registry with registered tools
     registry.ts         Tool type definitions and registry class

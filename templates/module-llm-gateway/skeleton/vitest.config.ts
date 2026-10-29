@@ -13,9 +13,10 @@ export default defineConfig({
       // Gate the pure logic: routing strategies, caching strategies, the cost
       // tracker/anomaly/pricing, the registries, the request timeout and the
       // token counter, along with the gateway facade, which decides the
-      // response cache key, and the bedrock, anthropic, openai and groq
-      // adapters, whose request suites run the real SDK clients over an
-      // in-process transport. Excluded: the mock provider is fixture data,
+      // response cache key, the model gateway adapter, whose request suite
+      // runs it against an in-process HTTP server, and the bedrock,
+      // anthropic, openai and groq adapters, whose request suites run the
+      // real SDK clients over an in-process transport. Excluded: the mock provider is fixture data,
       // metrics declares OTel instruments, bootstrap exits the process, and
       // the barrels re-export the registries gated above.
       exclude: [

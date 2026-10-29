@@ -42,6 +42,7 @@ templates:
     path: packages/evals
     variables:
       ProjectName: '${ProjectName}-evals'
+      PlatformName: '${ProjectName}'
       LlmProvider: '${LlmProvider}'
       IncludeCi: true
 

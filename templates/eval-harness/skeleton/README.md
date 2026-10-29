@@ -128,10 +128,12 @@ npx tsx bin/run-evals.ts [options]
 
 ## CI Integration
 
-The included GitHub Actions workflow runs eval suites on every pull request. Set the following secrets in your repository:
+The included GitHub Actions workflow runs eval suites on every pull request. A runner sits outside the cluster, so it calls a provider with a key: the LLM policy permits one only for a provider the intake brief names, stored as a repository secret and never committed.
 
 - `ANTHROPIC_API_KEY` — for the Anthropic provider
 - `OPENAI_API_KEY` — for the OpenAI provider
+
+A run inside the cluster uses `--provider gateway` instead: the `gateway` provider calls the Platform's ModelGateway at `MODEL_GATEWAY_ENDPOINT` (by default the Service the eks-agent-platform operator creates for the Platform named at scaffold time) on the route `MODEL_ROUTE` (`default`), and sends no credential.
 
 Eval results are uploaded as build artifacts for review.
 

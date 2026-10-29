@@ -6,15 +6,17 @@ description: >
   Scaffolds a TypeScript agentic loop that sends messages to an LLM,
   detects tool-call requests in the response, executes them via a typed
   tool registry, appends results, and repeats until the model stops
-  calling tools or an iteration limit is reached. Supports Anthropic and
-  OpenAI as LLM providers, an optional conversation memory subsystem
+  calling tools or an iteration limit is reached. Calls the Platform's
+  ModelGateway with tool use and holds no model credential, with Anthropic
+  and OpenAI key providers as an off-substrate opt-in, an optional
+  conversation memory subsystem
   with token-aware truncation, and an optional eval harness for
   assertion-based testing against fixture files.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, agent, llm, tools, agentic, ai]
+tags: [typescript, agent, llm, tools, agentic, ai, model-gateway]
 
 variables:
   - name: ProjectName
@@ -37,9 +39,19 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider to use for the agent'
+    description: 'LLM provider for the agent: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: IncludeMemory
     type: bool
@@ -62,7 +74,18 @@ variables:
     prompt: 'Max loop iterations'
     default: 10
 
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
 conditionals:
+  - path: 'src/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/openai.ts'
+    when: IncludeKeyProviders
   - path: 'src/memory/store.ts'
     when: IncludeMemory
   - path: 'src/memory/context.ts'

@@ -5,17 +5,19 @@ displayName: 'K8s App as Platform Tenant'
 description: >
   Primary scaffolding for a nanohype-org k8s-native application. Produces
   a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
-  ready to register against nanohype/eks-gitops,
-  and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required
-  BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant
-  boundary for the eks-agent-platform operator to reconcile. Use this for
-  every k8s-native deliverable unless an explicit escape hatch
-  (aws-lambda, fly, vercel, cloudflare) is justified.
+  ready to register against nanohype/eks-gitops, and a Platform CR
+  (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy
+  (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the
+  eks-agent-platform operator to reconcile, with a ModelGateway
+  (agents.nanohype.dev/v1alpha1) the app reaches a model through, so the
+  chart carries no model credential. Use this for every k8s-native
+  deliverable unless an explicit escape hatch (aws-lambda, fly, vercel,
+  cloudflare) is justified.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: infrastructure
-tags: [kubernetes, k8s, helm, argocd, platform, nanohype]
+tags: [kubernetes, k8s, helm, argocd, platform, nanohype, model-gateway]
 
 variables:
   - name: AppName

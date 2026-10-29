@@ -100,7 +100,23 @@ networkPolicy:
       ports:
         - protocol: UDP
           port: 53
-    # HTTPS egress to the internet (Bedrock, GitHub, etc.)
+    # The Platform's ModelGateway: the Envoy AI Gateway proxy the operator runs
+    # in this namespace, on its 8080 listener. Every model call goes here; the
+    # gateway holds the Bedrock role, so the app holds no model credential.
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: envoy
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/managed-by: envoy-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+    # HTTPS egress to the internet, for the third-party APIs the app calls. Not
+    # for a model: inference goes to the ModelGateway above, and the operator's
+    # egress policy opens no route to a model endpoint. NetworkPolicies are
+    # additive, so an app with no third-party API drops this rule and its pods
+    # reach nothing outside the cluster.
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -181,6 +197,20 @@ serviceMonitor:
   scrapeTimeout: 10s
   selector:
     release: kube-prometheus-stack
+
+# The Platform's ModelGateway, the only route to a model on the nanohype
+# substrate. The eks-agent-platform operator runs it in this namespace under
+# the tenant's EKS Pod Identity, holding the Bedrock role, so the app reaches a
+# model with no credential of its own and the chart carries no key secret.
+# With enabled, the Deployment hands the app the gateway root and the routes it
+# names: MODEL_GATEWAY_ENDPOINT (as ModelGateway status.endpoint publishes it,
+# no path), MODEL_ROUTE and EMBEDDING_ROUTE. The ModelGateway CR maps each route
+# to a Bedrock model.
+modelGateway:
+  enabled: true
+  endpoint: "http://__APP_NAME__-gateway.tenants-__APP_NAME__.svc.cluster.local:8080"
+  route: default
+  embeddingRoute: embeddings
 
 # OTel resource attrs propagate through traces/logs/metrics. The cluster-level
 # OTel Collector tags downstream exporters using these.

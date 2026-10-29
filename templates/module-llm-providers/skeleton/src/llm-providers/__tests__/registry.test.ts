@@ -97,17 +97,20 @@ describe("LLM provider registry", () => {
     await import("../providers/index.js");
     const names = listProviders();
 
+    expect(names).toContain("gateway");
+    expect(names).toContain("mock");
+    // #if IncludeKeyProviders
     expect(names).toContain("anthropic");
     expect(names).toContain("openai");
     expect(names).toContain("groq");
-    expect(names).toContain("mock");
+    // #endif
   });
 
   it("returns one instance of each built-in provider for every lookup", async () => {
     await import("../providers/index.js");
     const builtIn = listProviders().filter((name) => !name.startsWith("test-"));
 
-    expect(builtIn).toEqual(expect.arrayContaining(["anthropic", "openai", "groq", "mock"]));
+    expect(builtIn).toEqual(expect.arrayContaining(["gateway", "mock"]));
     for (const name of builtIn) {
       expect(getProvider(name), name).toBe(getProvider(name));
     }

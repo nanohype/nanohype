@@ -6,7 +6,8 @@ Embedding-based LLM response caching using vector similarity search.
 
 - Semantic cache facade with prompt-level lookup and storage
 - Embedding provider registry with self-registering backends
-- OpenAI embedding provider (text-embedding-3-small, 1536 dimensions) with circuit breaker
+- Gateway embedding provider (the default) that calls the Platform's ModelGateway and holds no model credential, with timeout and circuit breaker
+- Bedrock Titan Text v2 provider over the AWS credential chain, and with `IncludeKeyProviders` an OpenAI provider (text-embedding-3-small), for off-substrate use
 - Mock embedding provider for deterministic testing (64 dimensions)
 - Vector cache store registry with self-registering backends
 - In-memory vector store with cosine similarity search and TTL expiration
@@ -16,12 +17,14 @@ Embedding-based LLM response caching using vector similarity search.
 
 ## Variables
 
-| Variable            | Type   | Default                              | Description                                        |
-| ------------------- | ------ | ------------------------------------ | -------------------------------------------------- |
-| `ProjectName`       | string | --                                   | Kebab-case project name                            |
-| `Description`       | string | `Semantic caching for LLM responses` | Project description                                |
-| `EmbeddingProvider` | string | `openai`                             | Default embedding provider (openai/mock or custom) |
-| `VectorBackend`     | string | `memory`                             | Default vector store backend (memory or custom)    |
+| Variable              | Type   | Default                              | Description                                                                |
+| --------------------- | ------ | ------------------------------------ | -------------------------------------------------------------------------- |
+| `ProjectName`         | string | --                                   | Kebab-case project name                                                    |
+| `Description`         | string | `Semantic caching for LLM responses` | Project description                                                        |
+| `EmbeddingProvider`   | string | `gateway`                            | Embedding provider the README examples name                                |
+| `PlatformName`        | string | `ProjectName`                        | Platform CR whose ModelGateway Service the gateway provider defaults to    |
+| `IncludeKeyProviders` | bool   | `false`                              | Include the openai provider, which takes a provider key, off the substrate |
+| `VectorBackend`       | string | `memory`                             | Default vector store backend (memory or custom)                            |
 
 ## Project layout
 
@@ -37,7 +40,9 @@ Embedding-based LLM response caching using vector similarity search.
       embedder/
         types.ts            # EmbeddingProvider interface
         registry.ts         # Provider registry (register, get, list)
-        openai.ts           # OpenAI text-embedding-3-small
+        gateway.ts          # Platform ModelGateway embeddings, no credential
+        bedrock.ts          # Bedrock Titan Text v2 over the AWS credential chain
+        openai.ts           # OpenAI text-embedding-3-small (IncludeKeyProviders)
         mock.ts             # Deterministic hash-based embeddings
         index.ts            # Barrel import -- triggers self-registration
       store/
@@ -49,6 +54,7 @@ Embedding-based LLM response caching using vector similarity search.
         cache.test.ts
         similarity.test.ts
         embedder-registry.test.ts
+        gateway-embedder.test.ts
         store-registry.test.ts
         gateway-adapter.test.ts
   package.json

@@ -25,8 +25,10 @@ const chunkingSchema = z.object({
 
 const embeddingSchema = z.object({
   provider: z.string().default("__EMBEDDING_PROVIDER__"),
-  // Defaults target Bedrock Titan Text v2 (1024-dim). For OpenAI, set
-  // EMBEDDING_MODEL=text-embedding-3-small and EMBEDDING_DIMENSIONS=1536.
+  // Defaults target Bedrock Titan Text v2 (1024-dim). The gateway provider
+  // names EMBEDDING_ROUTE instead of a model and asks the route for these
+  // dimensions. For OpenAI, set EMBEDDING_MODEL=text-embedding-3-small and
+  // EMBEDDING_DIMENSIONS=1536.
   model: z.string().default("amazon.titan-embed-text-v2:0"),
   dimensions: z.coerce.number().int().positive().default(1024),
   batchSize: z.coerce.number().int().positive().default(128),
@@ -47,15 +49,16 @@ const generationSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
   anthropicApiKey: z.string().default(""),
   openaiApiKey: z.string().default(""),
-  // Bedrock model id (the org default). For the direct Anthropic API use
-  // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
+  // Bedrock model id for the bedrock provider. The gateway provider names
+  // MODEL_ROUTE instead. For the direct Anthropic API use "claude-sonnet-5";
+  // for OpenAI use e.g. "gpt-4o".
   model: z.string().default("us.anthropic.claude-sonnet-5"),
   // Optional, so a provider can tell a configured temperature from none; an
   // empty LLM_TEMPERATURE is unset. The openai provider sends it, and 0.1
-  // when it is unset. The anthropic provider never sends one: the Messages
-  // API rejects sampling parameters. The bedrock provider sends it under
-  // the rule bedrockSamplingParameters names, and none to any model when it
-  // is unset.
+  // when it is unset. The gateway and anthropic providers never send one:
+  // the Messages API rejects sampling parameters. The bedrock provider sends
+  // it under the rule bedrockSamplingParameters names, and none to any model
+  // when it is unset.
   temperature: z.preprocess(unsetWhenEmpty, z.coerce.number().min(0).max(2).optional()),
   maxTokens: z.coerce.number().int().positive().default(1024),
   // Which bedrock requests carry the configured temperature: `auto` sends it

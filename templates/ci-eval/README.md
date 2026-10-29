@@ -13,14 +13,15 @@ CI pipeline for eval-gated deployments. Runs LLM evaluation suites on every pull
 
 ## Variables
 
-| Name                  | Type   | Default                                  | Description                                |
-| --------------------- | ------ | ---------------------------------------- | ------------------------------------------ |
-| `ProjectName`         | string | _(required)_                             | Kebab-case project name                    |
-| `Description`         | string | `CI pipeline for eval-gated deployments` | Short project description                  |
-| `EvalPath`            | string | `evals`                                  | Directory containing YAML eval suite files |
-| `RegressionThreshold` | string | `0.05`                                   | Max allowed score regression (0.0–1.0)     |
-| `LlmProvider`         | string | `anthropic`                              | Default LLM provider                       |
-| `IncludeTests`        | bool   | `true`                                   | Include unit tests                         |
+| Name                  | Type   | Default                                  | Description                                                             |
+| --------------------- | ------ | ---------------------------------------- | ----------------------------------------------------------------------- |
+| `ProjectName`         | string | _(required)_                             | Kebab-case project name                                                 |
+| `Description`         | string | `CI pipeline for eval-gated deployments` | Short project description                                               |
+| `EvalPath`            | string | `evals`                                  | Directory containing YAML eval suite files                              |
+| `RegressionThreshold` | string | `0.05`                                   | Max allowed score regression (0.0–1.0)                                  |
+| `LlmProvider`         | string | `anthropic`                              | Default LLM provider (anthropic, openai, or gateway inside the cluster) |
+| `PlatformName`        | string | `ProjectName`                            | Platform whose ModelGateway the gateway provider calls                  |
+| `IncludeTests`        | bool   | `true`                                   | Include unit tests                                                      |
 
 ## Project layout
 
