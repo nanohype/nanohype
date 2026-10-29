@@ -73,7 +73,7 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for Electron, esbuild, and Vite'
     optional: false
   - name: electron

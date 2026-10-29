@@ -9,6 +9,7 @@ import type {
   TransformOptions,
   UploadOptions,
 } from "../types.js";
+import { toBlob } from "./blob.js";
 import { registerProvider } from "./registry.js";
 import { signCloudinaryParams } from "./signatures.js";
 import type { MediaProvider } from "./types.js";
@@ -109,7 +110,7 @@ function createCloudinaryProvider(): MediaProvider {
       const signature = generateSignature(params, apiSecret);
 
       const formData = new FormData();
-      formData.append("file", new Blob([data]), options?.filename ?? "upload");
+      formData.append("file", toBlob(data), options?.filename ?? "upload");
       formData.append("api_key", apiKey);
       formData.append("timestamp", timestamp);
       formData.append("signature", signature);

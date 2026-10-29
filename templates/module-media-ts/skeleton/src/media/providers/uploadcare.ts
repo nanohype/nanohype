@@ -9,6 +9,7 @@ import type {
   TransformOptions,
   UploadOptions,
 } from "../types.js";
+import { toBlob } from "./blob.js";
 import { registerProvider } from "./registry.js";
 import { signUploadcareRequest } from "./signatures.js";
 import type { MediaProvider } from "./types.js";
@@ -134,7 +135,7 @@ function createUploadcareProvider(): MediaProvider {
       const formData = new FormData();
       formData.append("UPLOADCARE_PUB_KEY", publicKey);
       formData.append("UPLOADCARE_STORE", "auto");
-      formData.append("file", new Blob([data]), options?.filename ?? "upload");
+      formData.append("file", toBlob(data), options?.filename ?? "upload");
       if (options?.metadata) {
         for (const [key, value] of Object.entries(options.metadata)) {
           formData.append(`metadata[${key}]`, value);

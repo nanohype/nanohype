@@ -15,7 +15,7 @@ The renderer communicates through `window.electronAPI.sendMessage()`.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 22
+- [Node.js](https://nodejs.org/) >= 26
 
 ## Getting Started
 

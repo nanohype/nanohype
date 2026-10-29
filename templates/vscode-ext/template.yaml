@@ -131,7 +131,7 @@ composition:
 
 prerequisites:
   - name: node
-    version: '>=22'
+    version: '>=26'
     purpose: 'Node.js runtime for building and bundling the extension'
     optional: false
   - name: vsce

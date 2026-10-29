@@ -47,7 +47,7 @@
     "@aws-sdk/client-kms": "^3.1030.0",
     "@biomejs/biome": "2.6.3",
     "@smithy/node-http-handler": "^4.0.0",
-    "@types/node": "^24.12.2",
+    "@types/node": "^26.6.5",
     "@vitest/coverage-v8": "^4.1.4",
     "aws-sdk-client-mock": "^4.1.0",
     "tsx": "^4.19.0",
@@ -55,6 +55,6 @@
     "vitest": "^4.1.4"
   },
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   }
 }

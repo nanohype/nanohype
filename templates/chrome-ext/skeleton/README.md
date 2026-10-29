@@ -8,7 +8,7 @@ A Chrome extension (Manifest V3) with a React sidepanel for AI-powered interacti
 
 ### Prerequisites
 
-- Node.js >= 22
+- Node.js >= 26
 - Google Chrome (or Chromium-based browser)
 
 ### Setup

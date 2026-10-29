@@ -37,6 +37,7 @@ Media processing and delivery with pluggable providers.
       providers/
         types.ts            # MediaProvider interface + factory type
         registry.ts         # Factory-based provider registry
+        blob.ts             # Upload bytes as a multipart Blob part
         cloudinary.ts       # Cloudinary Upload API + URL transforms
         uploadcare.ts       # Uploadcare REST API + CDN delivery
         imgix.ts            # imgix URL-based transforms + srcset

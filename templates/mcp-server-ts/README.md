@@ -39,7 +39,7 @@ Scaffolds a [Model Context Protocol](https://modelcontextprotocol.io) server in 
 
 ## Prerequisites
 
-- Node.js >= 22
+- Node.js >= 26
 - npm
 
 ## After scaffolding
