@@ -8,6 +8,12 @@
 import { z } from "zod";
 
 /**
+ * The provider a run uses when LLM_PROVIDER is unset or empty: the one the
+ * project was scaffolded with.
+ */
+export const DEFAULT_LLM_PROVIDER = "__LLM_PROVIDER__";
+
+/**
  * Configuration schema validated at startup.
  */
 export const ConfigSchema = z.object({
@@ -15,8 +21,8 @@ export const ConfigSchema = z.object({
   evalPath: z.string().default("evals"),
   /** Maximum allowed score regression (0.0–1.0) */
   regressionThreshold: z.coerce.number().min(0).max(1).default(0.05),
-  /** Default LLM provider name */
-  llmProvider: z.string().min(1, "LLM provider is required"),
+  /** The registered provider a run calls */
+  llmProvider: z.string().min(1).default(DEFAULT_LLM_PROVIDER),
   /** Path to the baseline JSON file */
   baselinePath: z.string().default(".eval-baseline.json"),
   /** Max parallel cases per suite */
@@ -35,7 +41,7 @@ export function loadConfig(overrides: Partial<Config> = {}): Config {
   const raw = {
     evalPath: overrides.evalPath ?? process.env.EVAL_PATH,
     regressionThreshold: overrides.regressionThreshold ?? process.env.REGRESSION_THRESHOLD,
-    llmProvider: overrides.llmProvider ?? process.env.LLM_PROVIDER,
+    llmProvider: overrides.llmProvider ?? (process.env.LLM_PROVIDER || undefined),
     baselinePath: overrides.baselinePath ?? process.env.BASELINE_PATH,
     concurrency: overrides.concurrency ?? process.env.EVAL_CONCURRENCY,
     logLevel: overrides.logLevel ?? process.env.LOG_LEVEL,

@@ -35,11 +35,32 @@ export const DEFAULT_PRICING: Record<string, ModelPricing> = {
 };
 
 /**
- * Look up pricing for a model. Falls back to a zero-cost default
+ * The DEFAULT_PRICING key a model id prices under: the id without its
+ * inference-profile geo and provider prefixes (`us.anthropic.`), its version
+ * suffix (`-v1:0`) and its snapshot date (`-20251001`). A Bedrock
+ * inference-profile ID and the vendor's alias for the same model share one
+ * key: `us.anthropic.claude-haiku-4-5-20251001-v1:0` and `claude-haiku-4-5`
+ * are both `claude-haiku-4-5`.
+ */
+export function pricingKey(model: string): string {
+  return model
+    .replace(/:\d+$/, "")
+    .replace(/^(?:[a-z]+\.)+/, "")
+    .replace(/-v\d+$/, "")
+    .replace(/-\d{8}$/, "");
+}
+
+/** Pricing for a model id the table lists, and undefined for one it does not. */
+export function findModelPricing(model: string): ModelPricing | undefined {
+  return DEFAULT_PRICING[model] ?? DEFAULT_PRICING[pricingKey(model)];
+}
+
+/**
+ * Look up pricing for a model id. Falls back to a zero-cost default
  * if the model is not in the pricing table.
  */
 export function getModelPricing(model: string): ModelPricing {
-  return DEFAULT_PRICING[model] ?? { input: 0, output: 0 };
+  return findModelPricing(model) ?? { input: 0, output: 0 };
 }
 
 /**

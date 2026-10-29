@@ -9,15 +9,15 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the baseline store, reporter, runner, assertions, and provider
-      // registry. Out of the denominator: bootstrap.ts exits the process; the
-      // anthropic/openai providers need an API key; and the Zod config schema,
-      // the stderr logger, the barrels and the type-only modules are wiring.
+      // Gate the baseline store, reporter, runner, assertions, config, and
+      // the provider registry and the bedrock and gateway providers. Out of
+      // the denominator: bootstrap.ts exits the process; the anthropic/openai
+      // providers need an API key; and the stderr logger, the barrels and the
+      // type-only modules are wiring.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/ci-eval/bootstrap.ts",
-        "src/ci-eval/config.ts",
         "src/ci-eval/logger.ts",
         "src/ci-eval/providers/anthropic.ts",
         "src/ci-eval/providers/openai.ts",

@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { createCircuitBreaker } from "../circuit-breaker.js";
 import { registerEmbeddingProvider } from "./registry.js";
+import { EMBED_REQUEST_TIMEOUT_MS } from "./request-timeout.js";
 import type { EmbeddingProvider } from "./types.js";
 
 // ── OpenAI Embedding Provider ──────────────────────────────────────
@@ -9,13 +10,13 @@ import type { EmbeddingProvider } from "./types.js";
 // OpenAI SDK. Each factory call builds its own circuit breaker and SDK
 // client, so providers don't share failure state across cache
 // instances. Every request carries an explicit timeout and bounded
-// retries. Reads OPENAI_API_KEY from the environment via the SDK.
+// retries. Reads OPENAI_API_KEY from the environment via the SDK, which
+// the LLM policy permits only off the nanohype substrate, for a provider
+// the intake brief names, and never committed.
 //
 
 const DIMENSIONS = 1536;
 const MODEL = "text-embedding-3-small";
-
-const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
 
 function createOpenaiEmbedder(): EmbeddingProvider {
   const breaker = createCircuitBreaker({
@@ -25,7 +26,7 @@ function createOpenaiEmbedder(): EmbeddingProvider {
   });
 
   const client = new OpenAI({
-    timeout: REQUEST_TIMEOUT_MS,
+    timeout: EMBED_REQUEST_TIMEOUT_MS,
     maxRetries: 2,
   });
 

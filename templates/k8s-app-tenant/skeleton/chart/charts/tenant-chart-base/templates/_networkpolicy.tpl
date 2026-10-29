@@ -2,7 +2,7 @@
 NetworkPolicy: the CR scaffold + a values-driven ingress and egress allow-list.
 Ingress varies by workload topology (single-pod vs api+web vs webhook+processor),
 so it's supplied per-app via `.Values.networkPolicy.ingress`; egress is the
-common DNS + HTTPS-out baseline, also values-driven so an app can tighten it.
+consumer's allow-list from `.Values.networkPolicy.egress`.
 
 Usage (consumer templates/networkpolicy.yaml):
   {{ include "tenant-chart-base.networkpolicy" . }}

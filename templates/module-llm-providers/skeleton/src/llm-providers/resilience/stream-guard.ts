@@ -6,7 +6,9 @@
 // request. The call fails when opening the stream fails, the provider's
 // stream fails, or the provider sends no event for the request timeout;
 // it succeeds when the stream ends, or when the consumer stops reading
-// early (`break`, or `return()` on the iterator). The call starts at the
+// early (`break`, or `return()` on the iterator). A failure the stream's
+// `counts` hook declines fails the stream without counting against the
+// breaker. The call starts at the
 // consumer's first read and stays open while the stream does, so a
 // consumer that leaves a stream unfinished without stopping it holds the
 // call open.
@@ -40,6 +42,12 @@ export interface GuardedStream<E> {
   text(event: E): string | undefined;
   /** The response for the whole reply, once the provider's stream has ended. */
   finish(text: string, latencyMs: number): LlmResponse | Promise<LlmResponse>;
+  /**
+   * Whether `error`, which failed the stream, counts against the breaker:
+   * false for an answer about the request rather than the provider's
+   * health. Every failure counts when unset.
+   */
+  counts?(error: unknown): boolean;
 }
 
 /** A StreamResponse over `stream`, run as one call through `cb`, waiting up to `timeoutMs` for each event. */
@@ -106,7 +114,7 @@ export function guardStream<E>(
       finished = true;
       settle();
     } catch (error) {
-      settle({ error });
+      settle(stream.counts?.(error) === false ? undefined : { error });
       rejectResponse(error);
       throw error;
     } finally {

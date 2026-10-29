@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { detectAnomalies } from "../cost/anomaly.js";
-import { calculateCost, getModelPricing } from "../cost/pricing.js";
+import {
+  calculateCost,
+  DEFAULT_PRICING,
+  findModelPricing,
+  getModelPricing,
+  pricingKey,
+} from "../cost/pricing.js";
 import type { CostEntry } from "../cost/tracker.js";
 import { createCostTracker } from "../cost/tracker.js";
 import type { GatewayResponse } from "../types.js";
@@ -24,6 +30,30 @@ describe("pricing", () => {
     const pricing = getModelPricing("claude-sonnet-5");
     expect(pricing.input).toBe(3);
     expect(pricing.output).toBe(15);
+  });
+
+  // A reply names its model as the provider reports it: a Bedrock
+  // inference-profile ID or foundation-model ID, with geo and provider
+  // prefixes, a snapshot date and a version suffix. The table lists each
+  // model once, by its alias, and a form that misses it prices the call at
+  // zero, which reads as a free model to anything routing by cost.
+  it.each([
+    ["us.anthropic.claude-haiku-4-5-20251001-v1:0", "claude-haiku-4-5"],
+    ["us.anthropic.claude-sonnet-5", "claude-sonnet-5"],
+    ["us.anthropic.claude-opus-5", "claude-opus-5"],
+    ["anthropic.claude-haiku-4-5-20251001-v1:0", "claude-haiku-4-5"],
+    ["gpt-4o-mini", "gpt-4o-mini"],
+    ["llama-3.3-70b-versatile", "llama-3.3-70b-versatile"],
+  ])("keys %s as %s", (model, key) => {
+    expect(pricingKey(model)).toBe(key);
+  });
+
+  it("prices an inference-profile ID at its model's rate, and an unlisted one not at all", () => {
+    expect(getModelPricing("us.anthropic.claude-haiku-4-5-20251001-v1:0")).toEqual(
+      DEFAULT_PRICING["claude-haiku-4-5"],
+    );
+    expect(findModelPricing("us.example.unlisted-model-v1:0")).toBeUndefined();
+    expect(getModelPricing("us.example.unlisted-model-v1:0")).toEqual({ input: 0, output: 0 });
   });
 });
 

@@ -6,20 +6,23 @@ Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document in
 
 - **Document ingestion** -- load PDF, Markdown, plain text, JSON, CSV files or scrape web pages
 - **Configurable chunking** -- recursive character splitting, fixed-size, or semantic (Jaccard similarity)
-- **Embedding generation** -- OpenAI (text-embedding-3-small) or deterministic mock for testing
+- **Embedding generation** -- the Platform ModelGateway by default (Titan v2, no model credential in the pipeline), Bedrock called directly, an OpenAI key provider off the substrate with `IncludeKeyProviders`, or a deterministic mock for testing
 - **Output adapters** -- JSONL file or pretty-print console, compatible with module-vector-store
 - **Pipeline orchestrator** -- chains stages with progress callbacks and per-document error handling
 - **Resilience** -- circuit breaker on external API calls, lazy SDK initialization
 
 ## Variables
 
-| Variable            | Type   | Default                          | Description               |
-| ------------------- | ------ | -------------------------------- | ------------------------- |
-| `ProjectName`       | string | _(required)_                     | Kebab-case project name   |
-| `Description`       | string | "Data pipeline for AI workloads" | Project description       |
-| `EmbeddingProvider` | string | `openai`                         | Embedding provider name   |
-| `ChunkStrategy`     | string | `recursive`                      | Chunking strategy name    |
-| `IncludeTests`      | bool   | `true`                           | Include vitest test suite |
+| Variable              | Type   | Default                          | Description                                                                                                                                                                              |
+| --------------------- | ------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ProjectName`         | string | _(required)_                     | Kebab-case project name                                                                                                                                                                  |
+| `Description`         | string | "Data pipeline for AI workloads" | Project description                                                                                                                                                                      |
+| `EmbeddingProvider`   | string | `gateway`                        | Embedding provider name: `gateway`, `bedrock`, or `openai` off the substrate                                                                                                             |
+| `PlatformName`        | string | `ProjectName`                    | Platform CR whose ModelGateway Service the gateway provider defaults to                                                                                                                  |
+| `ChunkStrategy`       | string | `recursive`                      | Chunking strategy name                                                                                                                                                                   |
+| `IncludeTests`        | bool   | `true`                           | Include vitest test suite                                                                                                                                                                |
+| `IncludeKeyProviders` | bool   | `false`                          | Include the openai provider, which takes a provider key, off the substrate                                                                                                               |
+| `ProviderCheck`       | string | derived                          | Derived from `EmbeddingProvider` and the Include variables; fails the scaffold when `EmbeddingProvider` names a provider the project leaves out. The scaffold rejects a value set for it |
 
 ## Project layout
 
@@ -48,7 +51,10 @@ Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document in
     embed/
       types.ts                         # EmbeddingProvider interface
       registry.ts                      # Factory-based provider registry
-      openai.ts                        # text-embedding-3-small, lazy init, circuit breaker
+      gateway.ts                       # Platform ModelGateway embeddings, no credential, circuit breaker
+      request-timeout.ts               # EMBED_REQUEST_TIMEOUT_MS and its parse
+      bedrock.ts                       # Titan v2 over the AWS credential chain, circuit breaker
+      openai.ts                        # text-embedding-3-small, lazy init, circuit breaker (IncludeKeyProviders)
       mock.ts                          # Deterministic hash-based embeddings
       index.ts                         # Barrel + self-registration
     output/
@@ -65,6 +71,7 @@ Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document in
       recursive.test.ts                # Recursive chunking tests (conditional)
       fixed-size.test.ts               # Fixed-size chunking tests (conditional)
       registry.test.ts                 # All 4 registry tests (conditional)
+      gateway.test.ts                  # Gateway embedder request tests (conditional)
   package.json
   tsconfig.json
   biome.json

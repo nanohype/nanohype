@@ -9,9 +9,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the pipeline, processors, mock provider, registries, the eval
-      // corpus loader, circuit breaker and request timeout, and the anthropic
-      // and openai providers, whose request suites run the real SDK clients
-      // over an in-process transport. The whisper provider needs an API key
+      // corpus loader, circuit breaker and request timeout, the gateway
+      // provider, whose request suite runs its `fetch` call against an
+      // in-process HTTP server, and the anthropic and openai providers, whose
+      // request suites run the real SDK clients over an in-process
+      // transport. The whisper provider needs an API key
       // and a hosted endpoint; bootstrap exits on an unresolved placeholder;
       // config and logger read the environment; the formatter runs under
       // processFile; and the eval runner calls a live provider, so it is a

@@ -100,15 +100,26 @@ networkPolicy:
       ports:
         - protocol: UDP
           port: 53
-    # HTTPS egress to the internet (Bedrock, GitHub, etc.)
+    # The Platform's ModelGateway: the Envoy AI Gateway proxy the operator runs
+    # in this namespace, on its 8080 listener. Model calls go here; the gateway
+    # holds the Bedrock role, so the app holds no model credential.
     - to:
-        - ipBlock:
-            cidr: 0.0.0.0/0
-            except:
-              - 169.254.0.0/16   # link-local / IMDS — must NOT be reachable from pods
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: envoy
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/managed-by: envoy-gateway
       ports:
         - protocol: TCP
-          port: 443
+          port: 8080
+    # No rule on 443. The operator's egress policy gives application pods
+    # outbound TLS only to the hostnames of their declared datastores, which
+    # keeps the gateway the pod's only route to Bedrock. NetworkPolicies are
+    # additive, so a CIDR rule on 443 here would open a second one: Bedrock
+    # answers on 443, and the pod's Pod Identity role can call it directly,
+    # past the gateway's guardrail and rate limit. An app that calls a
+    # third-party API names that API by hostname in a CiliumNetworkPolicy
+    # toFQDNs rule, which admits it and still excludes Bedrock.
     # OTLP export to the cluster's OpenTelemetry Collector gateway
     # (telemetry.monitoring.svc:4318). Required whenever otel.enabled renders
     # OTEL_EXPORTER_OTLP_ENDPOINT; a gRPC tenant (otel.protocol grpc) adds 4317.
@@ -181,6 +192,20 @@ serviceMonitor:
   scrapeTimeout: 10s
   selector:
     release: kube-prometheus-stack
+
+# The Platform's ModelGateway. The eks-agent-platform operator runs it in this
+# namespace under the tenant's EKS Pod Identity, holding the Bedrock role, so
+# the app reaches a model with no credential of its own and the chart carries
+# no key secret.
+# With enabled, the Deployment hands the app the gateway root and the routes it
+# names: MODEL_GATEWAY_ENDPOINT (as ModelGateway status.endpoint publishes it,
+# no path), MODEL_ROUTE and EMBEDDING_ROUTE. The ModelGateway CR maps each route
+# to a Bedrock model.
+modelGateway:
+  enabled: true
+  endpoint: "http://__APP_NAME__-gateway.tenants-__APP_NAME__.svc.cluster.local:8080"
+  route: default
+  embeddingRoute: embeddings
 
 # OTel resource attrs propagate through traces/logs/metrics. The cluster-level
 # OTel Collector tags downstream exporters using these.

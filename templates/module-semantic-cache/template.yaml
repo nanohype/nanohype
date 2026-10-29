@@ -5,15 +5,17 @@ displayName: 'Module: Semantic Cache'
 description: >
   Embedding-based LLM response caching using vector similarity search.
   Stores prompt embeddings alongside cached responses and retrieves them
-  by cosine similarity instead of exact key match. Ships with a Bedrock
-  Titan embedding provider (default), an OpenAI alternate, and an
-  in-memory vector store for development. Includes a gateway adapter for
-  drop-in integration with LLM gateway caching strategies.
+  by cosine similarity instead of exact key match. Embeds through the
+  Platform's ModelGateway by default, so the cache holds no model
+  credential, with Bedrock Titan called directly and an OpenAI key
+  provider as off-substrate alternates, and an in-memory vector store for
+  development. Includes a gateway adapter for drop-in integration with
+  LLM gateway caching strategies.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: composable-modules
-tags: [semantic-cache, embeddings, vector-search, llm, caching, typescript]
+tags: [semantic-cache, embeddings, vector-search, llm, caching, typescript, model-gateway]
 
 variables:
   - name: ProjectName
@@ -36,9 +38,36 @@ variables:
   - name: EmbeddingProvider
     type: string
     placeholder: '__EMBEDDING_PROVIDER__'
-    description: 'Default embedding provider (bedrock, openai, mock, or a custom name)'
+    description: 'Embedding provider the README examples name: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate, and the createSemanticCache() default), bedrock (called directly, off the substrate), openai off the substrate with IncludeKeyProviders, mock, or a custom name'
     prompt: 'Embedding provider'
-    default: 'bedrock'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the openai embedding provider, which authenticates with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from EmbeddingProvider and IncludeKeyProviders, and takes no value of its own. It fails the scaffold when EmbeddingProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    derived: true
+    default: '${EmbeddingProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!openai:false$).*'
+      message: 'EmbeddingProvider openai authenticates with a provider API key, and the project carries it only with IncludeKeyProviders=true; on the nanohype substrate EmbeddingProvider is gateway'
 
   - name: VectorBackend
     type: string
@@ -46,6 +75,10 @@ variables:
     description: 'Default vector cache store backend (memory or a custom name)'
     prompt: 'Vector store backend'
     default: 'memory'
+
+conditionals:
+  - path: 'src/semantic-cache/embedder/openai.ts'
+    when: IncludeKeyProviders
 
 hooks:
   post:

@@ -4,14 +4,22 @@
 // self-register with the provider registry. Custom providers can be added
 // by calling registerProvider() after this import.
 //
-// The bedrock, vertex, huggingface and ollama providers are optional. A
-// project generated without one carries neither its file nor its import
-// below, so the barrel registers exactly the providers the project ships.
+// The gateway and mock providers ship with every project. The anthropic,
+// openai and groq providers authenticate with a provider API key, which
+// the LLM policy permits only off the substrate, so they ship only with
+// IncludeKeyProviders; the bedrock, vertex, huggingface and ollama
+// providers are optional too. A project generated without one carries
+// neither its file nor its import below, so the barrel registers exactly
+// the providers the project ships.
 //
 
+// Scaffolded with DefaultProvider:IncludeKeyProviders:IncludeBedrock:IncludeVertex:IncludeHuggingFace:IncludeOllama = __PROVIDER_CHECK__.
+import "./gateway.js";
+// #if IncludeKeyProviders
 import "./anthropic.js";
 import "./openai.js";
 import "./groq.js";
+// #endif
 // #if IncludeBedrock
 import "./bedrock.js";
 // #endif

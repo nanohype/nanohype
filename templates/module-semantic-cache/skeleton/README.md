@@ -8,7 +8,7 @@
 import { createSemanticCache } from "./semantic-cache/index.js";
 
 const cache = await createSemanticCache({
-  embeddingProvider: "__EMBEDDING_PROVIDER__", // defaults to "bedrock"
+  embeddingProvider: "__EMBEDDING_PROVIDER__", // defaults to "gateway"
   vectorBackend: "__VECTOR_BACKEND__", // defaults to "memory"
   similarityThreshold: 0.92,
 });
@@ -29,19 +29,31 @@ await cache.close();
 
 ## Embedding Providers
 
-| Provider  | Backend                       | Dimensions | Use Case             |
-| --------- | ----------------------------- | ---------- | -------------------- |
-| `bedrock` | AWS Bedrock Titan Text v2     | 1024       | Production (default) |
-| `openai`  | OpenAI text-embedding-3-small | 1536       | Alternate            |
-| `mock`    | Deterministic hash            | 64         | Testing              |
+| Provider  | Backend                                  | Dimensions | Use Case                                      |
+| --------- | ---------------------------------------- | ---------- | --------------------------------------------- |
+| `gateway` | Platform ModelGateway (Titan Text v2)    | 1024       | On the nanohype substrate (default)           |
+| `bedrock` | AWS Bedrock Titan Text v2, called direct | 1024       | Off the substrate, AWS credential chain       |
+| `openai`  | OpenAI text-embedding-3-small            | 1536       | Off the substrate, with `IncludeKeyProviders` |
+| `mock`    | Deterministic hash                       | 64         | Testing                                       |
 
-### Bedrock (default)
+### Gateway (default)
 
-Uses Amazon Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`, 1024 dimensions) over the AWS credential chain — IRSA on the cluster, no API keys. Every call carries an AbortSignal timeout (`EMBED_REQUEST_TIMEOUT_MS`, default 30s) and is wrapped in a circuit breaker; the Titan response is Zod-validated before use. Override the model with `BEDROCK_EMBEDDING_MODEL`.
+Calls the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the cache holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time. Requests speak the OpenAI embeddings shape at `/v1/embeddings` and name the `EMBEDDING_ROUTE` route (`embeddings`), which the ModelGateway CR maps to a Bedrock model; the gateway embeds one input per request, so `embedBatch` sends one request per text. Every call carries an AbortSignal timeout (`EMBED_REQUEST_TIMEOUT_MS`, default 30s) and is wrapped in a circuit breaker, and a vector that is not 1024 wide fails the call. A 429, the route's rate limit, is sent again after the wait its `Retry-After` header asks for, or a jittered backoff when it gives none, up to `MAX_ATTEMPTS` sends while the wait ends inside the timeout. The circuit breaker counts a 5xx, a network error and a timeout; a 4xx, the last 429 included, answers for the request and fails the call without counting against it, so one caller's burst over the route's limit leaves the breaker closed for the rest. `EMBED_REQUEST_TIMEOUT_MS`, read by every embedder, is a whole number of milliseconds from 1 to 2147483647, and any other value fails the import.
 
 ```typescript
 const cache = await createSemanticCache({
-  embeddingProvider: "bedrock", // the default — can be omitted
+  embeddingProvider: "gateway", // the default — can be omitted
+  vectorBackend: "memory",
+});
+```
+
+### Bedrock
+
+Uses Amazon Titan Text Embeddings v2 (`amazon.titan-embed-text-v2:0`, 1024 dimensions) over the AWS credential chain, no API keys, for a cache that runs off the substrate: an ECS task role, or a local AWS profile in dev. Every call carries an AbortSignal timeout (`EMBED_REQUEST_TIMEOUT_MS`, default 30s) and is wrapped in a circuit breaker; the Titan response is Zod-validated before use. Override the model with `BEDROCK_EMBEDDING_MODEL`.
+
+```typescript
+const cache = await createSemanticCache({
+  embeddingProvider: "bedrock",
   vectorBackend: "memory",
 });
 ```
@@ -50,7 +62,7 @@ Bedrock needs model access to Titan Embed v2 in the deployment region (set `AWS_
 
 ### OpenAI
 
-Requires `OPENAI_API_KEY` in the environment. Uses text-embedding-3-small (1536 dimensions). The SDK client carries a request timeout (`EMBED_REQUEST_TIMEOUT_MS`, default 30s) and bounded retries, and calls are wrapped in a circuit breaker that opens after 3 failures in 60 seconds.
+Part of a project scaffolded with `IncludeKeyProviders`. Requires `OPENAI_API_KEY` in the environment, which the LLM policy permits only off the substrate, for a provider the intake brief names, read from the environment or the OS keychain and never committed. Uses text-embedding-3-small (1536 dimensions). The SDK client carries a request timeout (`EMBED_REQUEST_TIMEOUT_MS`, default 30s) and bounded retries, and calls are wrapped in a circuit breaker that opens after 3 failures in 60 seconds.
 
 ```typescript
 const cache = await createSemanticCache({
@@ -110,7 +122,7 @@ import { createSemanticCache } from "./semantic-cache/index.js";
 import { createSemanticCacheStrategy } from "./semantic-cache/gateway-adapter.js";
 
 const cache = await createSemanticCache({
-  embeddingProvider: "openai",
+  embeddingProvider: "gateway",
   vectorBackend: "memory",
 });
 
@@ -186,17 +198,17 @@ registerVectorStore(
 ## Architecture
 
 - **Semantic cache facade** -- `createSemanticCache()` returns a high-level `SemanticCache` object that wraps an embedding provider and a vector store behind a `lookup` / `store` / `invalidate` / `close` API. Application code never touches embeddings or vector math directly.
-- **Embedding provider registry with factory self-registration** -- each provider module (bedrock, openai, mock) calls `registerEmbeddingProvider(name, factory)` at import time. The factory runs on each `createSemanticCache()`, so every cache gets a fresh provider with its own SDK client and circuit breaker. Adding a custom provider is one function call.
+- **Embedding provider registry with factory self-registration** -- each provider module (gateway, bedrock, openai, mock) calls `registerEmbeddingProvider(name, factory)` at import time. The factory runs on each `createSemanticCache()`, so every cache gets a fresh provider with its own SDK client and circuit breaker. Adding a custom provider is one function call.
 - **Vector store registry with factory self-registration** -- each store module (memory) calls `registerVectorStore(name, factory)` at import time. Each `createSemanticCache()` gets its own isolated backend. Adding a custom backend (pgvector, Pinecone, Qdrant) follows the same pattern.
 - **Cosine similarity search** -- the memory store computes cosine similarity between the query embedding and all stored vectors, returning the best match above the threshold. Expired entries are skipped and lazily pruned; the store is bounded by `maxEntries` with LRU-style eviction.
-- **Circuit breaker + timeouts on embedding calls** -- the Bedrock provider sends Titan calls with an AbortSignal timeout and Zod-validates the response; the OpenAI provider sets an SDK request timeout with bounded retries. Both wrap calls in a circuit breaker that opens after repeated failures, preventing cascades when the embedding API is down.
+- **Circuit breaker + timeouts on embedding calls** -- the gateway and Bedrock providers send each call with an AbortSignal timeout and Zod-validate the response; the OpenAI provider sets an SDK request timeout with bounded retries. All three wrap calls in a circuit breaker that opens after repeated failures, preventing cascades when the embedding API is down.
 - **Gateway adapter via structural typing** -- `createSemanticCacheStrategy()` wraps a `SemanticCache` in the `GatewayCachingStrategy` interface without importing the gateway module, keeping the semantic cache standalone.
 - **Zod input validation** -- `createSemanticCache()` validates its configuration against a Zod schema before initializing providers, catching configuration errors at construction time.
 - **Bootstrap guard** -- detects unresolved scaffolding placeholders and halts with a diagnostic message before any initialization.
 
 ## Production Readiness
 
-- [ ] Grant Bedrock model access to Titan Embed v2 in the deployment region and set `AWS_REGION` (or set `OPENAI_API_KEY` when using the OpenAI provider)
+- [ ] Confirm the Platform's ModelGateway serves the `EMBEDDING_ROUTE` route at 1024 dimensions; off the substrate, grant Bedrock model access to Titan Embed v2 and set `AWS_REGION`, or read the `OPENAI_API_KEY` the intake brief names from the environment or the OS keychain
 - [ ] Choose an appropriate similarity threshold (0.85--0.95) balancing hit rate vs precision
 - [ ] Set TTL values that balance cache freshness with API cost savings
 - [ ] Implement a persistent vector store backend (pgvector, Pinecone, Qdrant) for production -- the memory store loses data on restart

@@ -22,8 +22,24 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for eval targets'
-    default: 'anthropic'
+    description: 'LLM provider for eval targets: bedrock on a CI runner or a workstation, under an IAM role the run assumes (GitHub OIDC federation on a runner, an AWS profile on a workstation); gateway for a run inside the cluster; anthropic or openai with IncludeKeyProviders'
+    default: 'bedrock'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key, for a provider the intake brief names'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders, and takes no value of its own. It fails the scaffold when LlmProvider names a key provider the stack leaves out, before any package renders'
+    derived: true
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):false$).*'
+      message: 'LlmProvider anthropic and openai authenticate with a provider API key, and the stack carries them only with IncludeKeyProviders=true; LlmProvider is bedrock on a CI runner'
 
   - name: IncludeGuardrails
     type: bool
@@ -42,7 +58,9 @@ templates:
     path: packages/evals
     variables:
       ProjectName: '${ProjectName}-evals'
+      PlatformName: '${ProjectName}'
       LlmProvider: '${LlmProvider}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       IncludeCi: true
 
   - template: prompt-library

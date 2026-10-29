@@ -5,11 +5,15 @@ import type { AiProvider, ChatMessage } from "./types.js";
 class OpenAIProvider implements AiProvider {
   readonly defaultModel = "gpt-4o";
 
+  resolveModel(model?: string): string {
+    return model ?? this.defaultModel;
+  }
+
   async sendMessage(messages: ChatMessage[], model?: string): Promise<string> {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const response = await client.chat.completions.create({
-      model: model ?? this.defaultModel,
+      model: this.resolveModel(model),
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -23,7 +27,7 @@ class OpenAIProvider implements AiProvider {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const stream = await client.chat.completions.create({
-      model: model ?? this.defaultModel,
+      model: this.resolveModel(model),
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,

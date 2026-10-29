@@ -1,13 +1,16 @@
 import OpenAI from "openai";
+import { readRequestTimeoutMs } from "../config.js";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerProvider } from "./registry.js";
 import type { ChatMessage, LlmProvider } from "./types.js";
 
-// Direct OpenAI API — an alternate to the Bedrock default
-// (set LLM_PROVIDER=openai). Requires OPENAI_API_KEY. Explicit per-request
-// timeout so a hung socket trips the breaker; model id injectable via OPENAI_MODEL.
+// Direct OpenAI API, for the bot off the nanohype substrate (set
+// LLM_PROVIDER=openai). Requires OPENAI_API_KEY, which the LLM policy
+// permits only when the intake brief names OpenAI. The SDK client is given
+// an explicit per-request timeout so a hung socket trips the breaker; the
+// model id is injectable via OPENAI_MODEL.
 
-const REQUEST_TIMEOUT_MS = Number(process.env.LLM_REQUEST_TIMEOUT_MS ?? 30_000);
+const REQUEST_TIMEOUT_MS = readRequestTimeoutMs();
 const MODEL = process.env.OPENAI_MODEL ?? "gpt-4o";
 
 const client = new OpenAI({ timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });

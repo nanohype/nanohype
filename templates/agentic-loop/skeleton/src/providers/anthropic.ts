@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import type { Tool } from "../tools/registry.js";
+import { formatTools } from "./messages-tools.js";
 import { registerProvider } from "./registry.js";
 import type {
   ContentBlock,
@@ -11,39 +11,6 @@ import type {
   StreamChat,
   ToolCall,
 } from "./types.js";
-
-function zodTypeToJsonType(zodType: z.ZodTypeAny): string {
-  if (zodType instanceof z.ZodNumber) return "number";
-  if (zodType instanceof z.ZodBoolean) return "boolean";
-  if (zodType instanceof z.ZodArray) return "array";
-  if (zodType instanceof z.ZodObject) return "object";
-  return "string";
-}
-
-function formatTools(tools: Tool[]): Anthropic.Messages.Tool[] {
-  return tools.map((tool) => ({
-    name: tool.name,
-    description: tool.description,
-    input_schema: {
-      type: "object" as const,
-      properties: Object.fromEntries(
-        Object.entries(tool.inputSchema.shape).map(([key, raw]) => {
-          // zod 4's .shape yields the core $ZodType, which exposes neither the
-          // description getter nor the public surface — one cast up front rather
-          // than one per read.
-          const zodType = raw as z.ZodType;
-          return [
-            key,
-            {
-              type: zodTypeToJsonType(zodType),
-              description: String(zodType.description ?? key),
-            },
-          ];
-        }),
-      ),
-    },
-  }));
-}
 
 class AnthropicProvider implements LlmProvider {
   private readonly client = new Anthropic();

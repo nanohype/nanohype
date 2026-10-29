@@ -212,6 +212,39 @@ describe("renderComposite", () => {
     expect(result.files[0].content).toBe("# my-project");
   });
 
+  it("rejects a value supplied for a derived composite variable", async () => {
+    const source = mockSource({ tmpl: mockTemplate("tmpl") });
+    const manifest: CompositeManifest = {
+      apiVersion: "nanohype/v1",
+      kind: "composite",
+      name: "test",
+      displayName: "Test",
+      description: "Test",
+      version: "0.1.0",
+      tags: ["test"],
+      variables: [
+        { name: "Provider", type: "string", placeholder: "__PROVIDER__", description: "P" },
+        {
+          name: "Check",
+          type: "string",
+          placeholder: "__CHECK__",
+          description: "C",
+          derived: true,
+          default: "${Provider}",
+          validation: { pattern: "(?!anthropic$).*" },
+        },
+      ],
+      templates: [{ template: "tmpl", root: true }],
+    };
+
+    await expect(
+      renderComposite(manifest, { Provider: "anthropic", Check: "gateway" }, source),
+    ).rejects.toThrow(/Variable 'Check' is derived/);
+    await expect(renderComposite(manifest, { Provider: "anthropic" }, source)).rejects.toThrow(
+      /Variable 'Check' value 'anthropic'/,
+    );
+  });
+
   it("rejects a condition naming a variable the composite does not declare", async () => {
     // Excluding the entry instead would be indistinguishable from a condition
     // that is deliberately false, so a typo would silently drop a member.

@@ -5,7 +5,7 @@ displayName: 'Platform Tenant'
 description: >
   One-shot scaffolder for a k8s-native nanohype Platform tenant: the
   k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values,
-  an ArgoCD ApplicationSet entry, and the Platform + BudgetPolicy CRs) plus the
+  an ArgoCD ApplicationSet entry, and the Platform, BudgetPolicy and ModelGateway CRs) plus the
   optional AI building blocks as local packages — the LLM gateway and the vector
   store. The output satisfies the platform-tenant-contract: a chart with the
   required templates, the gitops entry, and the Platform CR, with the OTel
@@ -27,7 +27,7 @@ variables:
   - name: Tenant
     type: string
     placeholder: '__TENANT__'
-    description: 'Owning team — drives the namespace prefix, ArgoCD AppProject, and quotas.'
+    description: 'Owning team: the tenants-<team> namespace the Platform, BudgetPolicy and ModelGateway CRs are applied in, the Platform''s spec.tenant, and the team label on the chart''s resources and telemetry.'
     required: true
     validation:
       pattern: '^[a-z][a-z0-9-]*$'
@@ -38,6 +38,15 @@ variables:
     placeholder: '__IMAGE__'
     description: 'Container image base (no tag — pinned per-env in values-{env}.yaml).'
     required: true
+
+  - name: AppMetric
+    type: string
+    placeholder: '__APP_METRIC__'
+    description: 'Prefix of the RED series the tenant chart''s Grafana dashboard reads: <prefix>_requests_total, <prefix>_errors_total and <prefix>_request_duration_seconds. AppName with each dash as an underscore, the prefix the chart''s PrometheusRule derives from the chart name; a single-word AppName needs nothing'
+    default: '${AppName}'
+    validation:
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case: set AppMetric to AppName with each dash as an underscore'
 
   - name: Description
     type: string
@@ -54,14 +63,30 @@ variables:
   - name: IncludeLlmGateway
     type: bool
     placeholder: '__INCLUDE_LLM_GATEWAY__'
-    description: 'Include the LLM gateway package (Bedrock-first, routing + caching + cost tracking).'
+    description: 'Include the LLM gateway package (routing + caching + cost tracking, over the Platform ModelGateway by default).'
     default: true
 
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider for the gateway.'
-    default: 'bedrock'
+    description: 'LLM provider: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders, and takes no value of its own. It fails the scaffold when LlmProvider names a key provider the stack leaves out, before any package renders'
+    derived: true
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai|groq):false$).*'
+      message: 'LlmProvider anthropic, openai and groq authenticate with a provider API key, and the stack carries them only with IncludeKeyProviders=true; on the nanohype substrate LlmProvider is gateway'
 
   - name: IncludeVectorStore
     type: bool
@@ -92,6 +117,7 @@ templates:
     root: true
     variables:
       AppName: '${AppName}'
+      AppMetric: '${AppMetric}'
       Tenant: '${Tenant}'
       Image: '${Image}'
       Description: '${Description}'
@@ -102,6 +128,8 @@ templates:
     condition: IncludeLlmGateway
     variables:
       ProjectName: '${AppName}-gateway'
+      PlatformName: '${AppName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       DefaultProvider: '${LlmProvider}'
 
   - template: module-vector-store

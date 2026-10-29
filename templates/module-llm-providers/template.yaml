@@ -4,15 +4,17 @@ name: module-llm-providers
 displayName: 'Module: LLM Providers'
 description: >
   Shared LLM provider pack — the canonical interface for all AI templates.
-  Ships with Anthropic, OpenAI, and Groq providers out of the box, plus
-  optional Bedrock, Vertex AI, Hugging Face, and Ollama providers.
-  Factory-based registry, streaming, token counting via
+  Defaults to the gateway provider, which calls the Platform's ModelGateway
+  and holds no model credential: the gateway holds the Bedrock role on the
+  nanohype substrate. The Anthropic, OpenAI, and Groq key providers are an
+  off-substrate opt-in, beside optional Bedrock, Vertex AI, Hugging Face, and
+  Ollama providers. Factory-based registry, streaming, token counting via
   js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: composable-modules
-tags: [llm, providers, anthropic, openai, groq, streaming, typescript]
+tags: [llm, providers, model-gateway, anthropic, openai, groq, streaming, typescript]
 
 variables:
   - name: ProjectName
@@ -30,14 +32,29 @@ variables:
     placeholder: '__DESCRIPTION__'
     description: 'Short project description for package.json and README'
     prompt: 'Project description'
-    default: 'LLM provider pack for Anthropic, OpenAI, Bedrock, and more'
+    default: 'LLM provider pack for the Platform ModelGateway, Bedrock, and more'
 
   - name: DefaultProvider
     type: string
     placeholder: '__DEFAULT_PROVIDER__'
-    description: 'Default LLM provider (anthropic, openai, groq, or a custom name)'
+    description: 'Default LLM provider: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic, openai or groq (with IncludeKeyProviders), an optional provider, or a custom name'
     prompt: 'Default LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic, openai and groq providers, which authenticate with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
 
   - name: IncludeBedrock
     type: bool
@@ -59,7 +76,29 @@ variables:
     placeholder: '__INCLUDE_OLLAMA__'
     description: 'Include Ollama local inference provider'
 
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from DefaultProvider, IncludeKeyProviders, IncludeBedrock, IncludeVertex, IncludeHuggingFace and IncludeOllama, and takes no value of its own. It fails the scaffold when DefaultProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    derived: true
+    default: '${DefaultProvider}:${IncludeKeyProviders}:${IncludeBedrock}:${IncludeVertex}:${IncludeHuggingFace}:${IncludeOllama}'
+    validation:
+      pattern: '(?!(?:anthropic|openai|groq):false:)(?!bedrock:[^:]*:false:)(?!vertex:(?:[^:]*:){2}false:)(?!huggingface:(?:[^:]*:){3}false:)(?!ollama:(?:[^:]*:){4}false$).*'
+      message: 'DefaultProvider names a provider the project leaves out: anthropic, openai and groq need IncludeKeyProviders=true, bedrock IncludeBedrock, vertex IncludeVertex, huggingface IncludeHuggingFace and ollama IncludeOllama; on the nanohype substrate DefaultProvider is gateway'
+
 conditionals:
+  - path: 'src/llm-providers/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/llm-providers/providers/openai.ts'
+    when: IncludeKeyProviders
+  - path: 'src/llm-providers/providers/groq.ts'
+    when: IncludeKeyProviders
+  - path: 'src/llm-providers/__tests__/anthropic-request.test.ts'
+    when: IncludeKeyProviders
+  - path: 'src/llm-providers/__tests__/chat-completions-request.test.ts'
+    when: IncludeKeyProviders
+  - path: 'src/llm-providers/__tests__/provider-streams.test.ts'
+    when: IncludeKeyProviders
   - path: 'src/llm-providers/providers/bedrock.ts'
     when: IncludeBedrock
   - path: 'src/llm-providers/__tests__/bedrock-request.test.ts'

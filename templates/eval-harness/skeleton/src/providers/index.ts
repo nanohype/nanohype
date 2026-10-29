@@ -6,9 +6,19 @@
  * registerProvider() and import it here.
  */
 
-// Side-effect imports — each module registers itself on load
+// Side-effect imports — each module registers itself on load. The bedrock
+// provider calls Bedrock under the IAM role the run assumes, for a run on a
+// CI runner or a workstation. The gateway provider calls the Platform's
+// ModelGateway and holds no credential, for a run inside the cluster. The
+// API-key providers are part of a project scaffolded with
+// IncludeKeyProviders, for a provider the intake brief names.
+// Scaffolded with LlmProvider:IncludeKeyProviders = __PROVIDER_CHECK__.
+import "./bedrock.js";
+import "./gateway.js";
+// #if IncludeKeyProviders
 import "./anthropic.js";
 import "./openai.js";
+// #endif
 import "./mock.js";
 
 // Re-export the registry API and shared types

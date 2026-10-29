@@ -7,12 +7,14 @@ description: >
   and a pluggable provider registry. Includes Tailwind CSS styling, a
   chat UI with message streaming, server-side AI calls via route handlers,
   structured JSON logging, and optional auth, database (Drizzle + Postgres),
-  and Docker configurations.
+  and Docker configurations. The chat route calls the Platform's
+  ModelGateway by default, so the server holds no model credential;
+  Anthropic and OpenAI key providers are an off-substrate opt-in.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: applications
-tags: [typescript, nextjs, react, ai, chat, tailwind]
+tags: [typescript, nextjs, react, ai, chat, tailwind, model-gateway]
 
 variables:
   - name: ProjectName
@@ -35,9 +37,36 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider for AI features (anthropic, openai, or custom)'
+    description: 'Default LLM provider for the chat route: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders, or a custom name'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key. Off the substrate only (a desktop or browser app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders, and takes no value of its own. It fails the scaffold when LlmProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    derived: true
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):false$).*'
+      message: 'LlmProvider anthropic and openai authenticate with a provider API key, and the project carries them only with IncludeKeyProviders=true; on the nanohype substrate LlmProvider is gateway'
 
   - name: IncludeAuth
     type: bool
@@ -68,6 +97,10 @@ variables:
     default: true
 
 conditionals:
+  - path: 'src/lib/ai/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/lib/ai/providers/openai.ts'
+    when: IncludeKeyProviders
   - path: 'src/lib/auth'
     when: IncludeAuth
   - path: 'src/lib/db'

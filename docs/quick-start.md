@@ -63,21 +63,21 @@ Composites combine multiple templates into a single project. They handle nesting
 npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
 ```
 
-This scaffolds the `ai-chatbot` composite, which assembles an `agentic-loop`, `ts-service`, `module-auth-ts`, `module-database-ts`, and `k8s-deploy` into a ready-to-run stack.
+This scaffolds the `ai-chatbot` composite, which assembles a `monorepo` holding an `agentic-loop`, `ts-service`, `module-auth-ts`, `eval-harness`, and `k8s-app-tenant` into a ready-to-run stack. `k8s-app-tenant` is the Platform tenant chart: its ModelGateway is the agent's model path.
 
 Available composites:
 
 | Composite               | What it assembles                                                         |
 | ----------------------- | ------------------------------------------------------------------------- |
-| `proof-of-concept`      | Agent + evals — fastest path to a working prototype                       |
-| `ai-chatbot`            | Agent + service + auth + deployment                                       |
-| `ai-web-app`            | Next.js + RAG + auth + database + observability                           |
-| `document-intelligence` | RAG + storage + database                                                  |
+| `proof-of-concept`      | Agent + evals + tenant chart — fastest path to a working prototype        |
+| `ai-chatbot`            | Agent + service + auth + evals + tenant chart                             |
+| `ai-web-app`            | Next.js + RAG + auth + database + observability + tenant chart            |
+| `document-intelligence` | RAG + storage + database + tenant chart                                   |
 | `production-api`        | Service + auth + database + cache + rate limiting + queue + observability |
-| `enterprise-ai`         | Agents + RAG + guardrails + evals + K8s                                   |
-| `cost-optimized-ai`     | LLM gateway + semantic cache + cost monitoring                            |
-| `ai-platform`           | Service + gateway + vectors + auth + billing + monitoring                 |
-| `agent-team`            | Orchestrator + specialized agents + MCP tools + evals                     |
+| `enterprise-ai`         | Agents + RAG + guardrails + evals + tenant chart                          |
+| `cost-optimized-ai`     | LLM gateway + semantic cache + cost monitoring + tenant chart             |
+| `ai-platform`           | Service + gateway + vectors + auth + billing + monitoring + tenant chart  |
+| `agent-team`            | Orchestrator + specialized agents + MCP tools + evals + tenant chart      |
 
 See the full list in `composites/` or run `npx nanohype list --composites`.
 

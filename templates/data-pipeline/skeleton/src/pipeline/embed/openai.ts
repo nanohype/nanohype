@@ -1,5 +1,8 @@
 /**
- * OpenAI embedding provider.
+ * OpenAI embedding provider, for a pipeline that runs off the nanohype
+ * substrate. It authenticates with OPENAI_API_KEY, which the LLM policy
+ * permits only off the substrate, for a provider the intake brief names, read
+ * from the environment or the OS keychain and never committed.
  *
  * Uses the text-embedding-3-small model via the OpenAI SDK. The SDK
  * client is lazily initialized on first use. Wraps all API calls in
@@ -10,9 +13,8 @@
 
 import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerEmbeddingProvider } from "./registry.js";
+import { EMBED_REQUEST_TIMEOUT_MS } from "./request-timeout.js";
 import type { EmbeddingProvider } from "./types.js";
-
-const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
 
 class OpenAIEmbedder implements EmbeddingProvider {
   readonly name = "openai";
@@ -42,7 +44,11 @@ class OpenAIEmbedder implements EmbeddingProvider {
   private async getClient(): Promise<InstanceType<typeof import("openai").default>> {
     if (!this.client) {
       const OpenAI = (await import("openai")).default;
-      this.client = new OpenAI({ apiKey: this.apiKey, timeout: REQUEST_TIMEOUT_MS, maxRetries: 1 });
+      this.client = new OpenAI({
+        apiKey: this.apiKey,
+        timeout: EMBED_REQUEST_TIMEOUT_MS,
+        maxRetries: 1,
+      });
     }
     return this.client;
   }

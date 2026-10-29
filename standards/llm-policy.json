@@ -4,7 +4,7 @@
   "version": "1",
   "title": "LLM policy",
   "summary": "Claude is the primary LLM for every build on the nanohype stack. Preferred delivery is AWS Bedrock — it keeps data inside the client's AWS trust boundary and simplifies enterprise compliance posture. This policy names the SDK per language, the model tiers, the preferred regions, and the requirements around prompt caching and provider escapes.",
-  "applies_to": "Any build that calls an LLM. region-single, and the intake-brief clause of no-default-non-anthropic, apply only to deliverables deployed on the nanohype substrate and are N/A for any other.",
+  "applies_to": "Any build that calls an LLM. region-single applies only to deliverables deployed on the nanohype substrate and is N/A for any other.",
   "grades": ["ai_systems"],
   "content": {
     "primary_provider": "AWS Bedrock",
@@ -25,7 +25,7 @@
     "requirements": [
       {
         "id": "iam-role-auth",
-        "summary": "Authenticate via IAM role assumption (EKS Pod Identity on EKS, ECS task role, Lambda execution role). No API keys in code, env vars, or secrets.",
+        "summary": "On the nanohype substrate the application holds no model credential: it calls its Platform's ModelGateway, whose Envoy runs under the tenant's EKS Pod Identity and holds the Bedrock role, and it sends the gateway no key, token or signature. Off the substrate (CI runners, CLIs, desktop and browser apps, local tools) the application reaches Bedrock under an IAM role it assumes: GitHub OIDC federation on a CI runner, an AWS profile on a workstation. A provider API key is permitted only off the substrate, and only when the intake brief names that provider; the key is never committed, and the application reads it from the environment or the OS keychain.",
         "severity": "reject"
       },
       {
@@ -55,7 +55,7 @@
       },
       {
         "id": "no-default-non-anthropic",
-        "summary": "Direct Anthropic SDK is permitted only if the intake brief requires it or Bedrock lacks the needed model variant. OpenAI and other providers require explicit brief requirement — never default to GPT.",
+        "summary": "Claude through Bedrock is the default on the substrate and off it. A direct provider is used only when the intake brief names it: the Anthropic API, for a model variant Bedrock lacks, OpenAI, or any other. Never default to GPT. iam-role-auth governs the key a direct provider authenticates with.",
         "severity": "warn"
       }
     ]

@@ -9,7 +9,7 @@ version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [knowledge-base, llm, wiki, multi-tenant, rag-alternative]
+tags: [knowledge-base, llm, wiki, multi-tenant, rag-alternative, model-gateway]
 variables:
   - name: ProjectName
     type: string
@@ -32,8 +32,17 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: __LLM_PROVIDER__
-    description: 'Default LLM provider for wiki operations'
-    default: 'anthropic'
+    description: 'Default LLM provider for wiki operations: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: __PLATFORM_NAME__
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
   - name: SourceProvider
     type: string
     placeholder: __SOURCE_PROVIDER__
@@ -54,7 +63,27 @@ variables:
     placeholder: __INCLUDE_TESTS__
     description: 'Include test suite'
     default: true
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: __INCLUDE_KEY_PROVIDERS__
+    description: 'Include the anthropic provider, which authenticates with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), when the intake brief names Anthropic, with the key read from the environment or the OS keychain'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders, and takes no value of its own. It fails the scaffold when LlmProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    derived: true
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!anthropic:false$).*'
+      message: 'LlmProvider anthropic authenticates with a provider API key, and the project carries it only with IncludeKeyProviders=true; on the nanohype substrate LlmProvider is gateway'
 conditionals:
+  - path: 'src/llm/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/__tests__/anthropic-request.test.ts'
+    when: IncludeKeyProviders
   - path: 'src/api'
     when: IncludeApi
   # The API's own suite. `src/__tests__` is gated on IncludeTests, which drops

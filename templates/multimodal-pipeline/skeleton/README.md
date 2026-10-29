@@ -5,7 +5,7 @@ __DESCRIPTION__
 ## Quick start
 
 ```bash
-# Copy .env.example and configure your API keys
+# Copy .env.example and point it at your Platform's ModelGateway
 cp .env.example .env
 
 # Install dependencies
@@ -41,7 +41,13 @@ The pipeline follows a modular design with pluggable processors and providers:
 Processors and providers are registered via self-registering registry patterns:
 
 - **Processors**: Image (sharp resize + base64), Audio (Whisper transcription), Video (ffmpeg frame extraction)
-- **LLM Providers**: Anthropic (Claude vision), OpenAI (GPT-4o vision)
+- **LLM Providers**: Gateway (Claude vision through the Platform's ModelGateway, the default), with Anthropic (Claude vision) and OpenAI (GPT-4o vision) in a project scaffolded with `IncludeKeyProviders`
+
+### Model access
+
+The `gateway` provider calls the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the pipeline holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time; `MODEL_ROUTE` (`default`) names the route the ModelGateway maps to a Bedrock model.
+
+The anthropic and openai providers, and the whisper transcription the audio processor runs, authenticate with a provider API key. The LLM policy permits one only off the substrate, for a provider the intake brief names, with the key read from the environment or the OS keychain and never committed. The ModelGateway serves no transcription route, so audio processing is an off-substrate feature.
 
 ### Design Decisions
 
@@ -63,14 +69,14 @@ transcription or frame-extraction round trip.
 The corpus loader refuses an empty corpus, and refuses a case file it cannot
 parse or cannot recognise rather than skipping it — a runner that finds nothing
 and exits 0 reports what a passing eval reports. Those refusals are covered by
-`npm test`. The eval itself calls a live provider and needs credentials, so it
-is a command you run against real credentials rather than one that runs
-unattended on every commit.
+`npm test`. The eval itself calls a live provider, so it is a command you run
+against a reachable ModelGateway, or a key provider off the substrate, rather
+than one that runs unattended on every commit.
 
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production API keys for your LLM provider
+- [ ] Point `MODEL_GATEWAY_ENDPOINT` and `MODEL_ROUTE` at the Platform's ModelGateway and the route it maps to a vision-capable model
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Tune `IMAGE_MAX_DIMENSION` for your quality vs. cost tradeoff
 - [ ] Set `VIDEO_FRAME_INTERVAL_SECONDS` and `VIDEO_MAX_FRAMES` based on your video lengths
