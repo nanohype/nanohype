@@ -37,10 +37,16 @@ npm run build
 
 ### Configure
 
+The extension calls a Platform's ModelGateway and holds no model credential; the gateway holds the Bedrock role. It sends the gateway no credential either, so point it at an endpoint the network restricts. For development, forward the gateway Service to this machine:
+
+```bash
+kubectl -n tenants-<platform> port-forward svc/<platform>-gateway 8080:8080
+```
+
 1. Right-click the extension icon and select "Options" (or navigate to the options page)
-2. Enter your API key for the selected LLM provider
-3. Choose your preferred model
-4. Save settings
+2. Set the model gateway endpoint to the gateway root — `http://localhost:8080` for the port-forward above, or an https address
+3. Set the route the ModelGateway declares for the extension (`default` when left empty)
+4. Save settings, and grant the host permission Chrome asks for on that origin
 
 ## Architecture
 
@@ -51,9 +57,9 @@ sidepanel (React UI)
     v
 background (service worker)
     |
-    | HTTP API calls
+    | HTTP, no credential
     v
-LLM provider (Anthropic / OpenAI)
+Platform ModelGateway (holds the Bedrock role)
 
 content script (page injection)
     |
@@ -65,9 +71,9 @@ background (service worker)
 ### Key directories
 
 - `src/sidepanel/` — React app rendered in Chrome's side panel. Chat interface with message history and input.
-- `src/background/` — Service worker that routes messages between UI and AI provider. Manages API calls and sidepanel lifecycle.
+- `src/background/` — Service worker that routes messages between UI and AI provider. Calls the model gateway and manages the sidepanel lifecycle.
 - `src/content/` — Content script injected into web pages. Handles text selection and shows an overlay with AI responses.
-- `src/options/` — Options page for API key and provider configuration. Settings stored via `chrome.storage.local`.
+- `src/options/` — Options page for the gateway endpoint and route. Settings stored via `chrome.storage.local`.
 - `src/lib/` — Shared utilities: AI provider abstraction, storage helpers, message type definitions.
 
 ## Adding features
@@ -80,9 +86,9 @@ background (service worker)
 
 ### New AI providers
 
-1. Add the provider to the `LlmProvider` type in `src/lib/storage.ts`
-2. Implement the provider function in `src/lib/ai.ts`
-3. Update the options page model list in `src/options/App.tsx`
+1. Implement `AiProvider` from `src/lib/providers/types.ts` in a file under `src/lib/providers/`, calling `registerProvider()` as `gateway.ts` does
+2. Import it from `src/lib/providers/index.ts`
+3. Pass its name to `sendMessage()` in `src/lib/ai.ts`
 
 ### New permissions
 

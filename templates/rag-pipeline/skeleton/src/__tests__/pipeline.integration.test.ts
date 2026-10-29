@@ -160,8 +160,6 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
     },
     generation: {
       provider: "test-integration-llm",
-      anthropicApiKey: "",
-      openaiApiKey: "",
       model: "test-model",
       temperature: 0,
       maxTokens: 256,
@@ -401,20 +399,16 @@ describe("RAG pipeline provider construction", () => {
       generation: {
         ...base.generation,
         provider: "test-settings-llm",
-        anthropicApiKey: "anthropic-key",
-        openaiApiKey: "openai-key",
         bedrockSamplingParameters: "send",
       },
     };
   }
 
-  it("hands the LLM it builds the configured settings, each key under its own name", async () => {
+  it("hands the LLM it builds the configured settings", async () => {
     await generate("What is TypeScript?", [], settingsConfig());
 
     expect(answered).toEqual([
       {
-        anthropicApiKey: "anthropic-key",
-        openaiApiKey: "openai-key",
         samplingParameters: "send",
         requestTimeoutMs: 5_000,
       },

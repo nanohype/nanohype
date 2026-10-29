@@ -14,7 +14,7 @@ import type { ChatMessage, ChatOptions, LlmResponse, Pricing, StreamResponse } f
 export type LlmProviderFactory = () => LlmProvider;
 
 export interface LlmProvider {
-  /** Unique provider name (e.g. "anthropic", "openai", "groq"). */
+  /** Unique provider name (e.g. "gateway", "bedrock", "mock"). */
   readonly name: string;
 
   /** Send a chat request and return a unified response. */

@@ -9,7 +9,7 @@
 - `module-auth-go` — Composable Go HTTP auth middleware with pluggable providers (JWT/JWKS, Auth0, Clerk, Supabase, API key).
 - `module-analytics-ts` — Product analytics with pluggable backends (Segment, PostHog, Mixpanel, Amplitude).
 - `module-knowledge-base-ts` — Knowledge base providers (Notion, Confluence, Google Docs, Coda) normalized to markdown.
-- `module-llm-providers` — Shared LLM provider pack covering Anthropic, OpenAI, Groq, plus optional Bedrock / Vertex / HuggingFace / Ollama.
+- `module-llm-providers` — Shared LLM provider pack: the Platform ModelGateway by default, Bedrock under an assumed IAM role as an option, and a mock.
 - `module-media-ts` — Media processing and delivery (Cloudinary, Uploadcare, imgix).
 - `module-oauth-delegation-ts` — Outbound OAuth 2.0 Authorization Code + PKCE with HMAC-signed state cookies and refresh-before-expiry token storage.
 - `module-project-mgmt-ts` — Project management providers (Linear, Jira, Asana, Shortcut).
@@ -20,7 +20,7 @@
 ### Removed
 
 - `infra-gcp` template removed — the catalog's cloud deploy targets are now `infra-aws`, `infra-fly`, `infra-vercel`, `infra-cloudflare`, and `k8s-deploy`.
-- `module-llm-providers` — removed the `azure-openai` provider (`IncludeAzure` variable dropped). Bedrock, Vertex AI, Hugging Face, and Ollama remain the optional providers.
+- Model-provider API keys, from every template and composite. On the nanohype substrate a template reaches a model through its Platform's ModelGateway, which holds the Bedrock role, and off it through Bedrock under an IAM role it assumes (GitHub OIDC federation on CI, an AWS profile on a workstation). The Anthropic, OpenAI, Groq, Cohere, Vertex AI, Hugging Face, Ollama and Whisper providers go, with their SDK dependencies and key variables; `module-llm-providers` also drops `azure-openai` and its `IncludeAzure` variable. `multimodal-pipeline` transcribes audio through Amazon Transcribe.
 - `module-storage-ts` — removed the `gcs` provider and the `@google-cloud/storage` dependency. Backends are now local, S3, and R2.
 - `resource-tagging` standard — tag surfaces are now `aws`, `k8s`, and `otel`; the `azure` and `gcp` renderings were removed from the dimensions, `required_by_surface`, the standards schema, and the SDK types.
 
@@ -39,6 +39,7 @@
 ### CI / tooling
 
 - All CI install steps use `npm ci` instead of `npm install` (avoids lockfile drift in CI).
+- `npm run validate:no-model-keys` fails on a model-provider key environment variable, a key-provider SDK dependency or a direct-API host anywhere under `templates/` or `composites/`.
 - `mikefarah/yq` action pinned to `v4.53.2` (was tracking `master`).
 - SDK CI gains `npm audit --audit-level=high --omit=dev` so production advisories fail PRs.
 - `scripts/local-cluster/lib/defaults.sh` and `scripts/template-doctor/lib/report.sh` now set `-euo pipefail` for consistency with the rest of the script set.

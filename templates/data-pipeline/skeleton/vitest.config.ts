@@ -31,7 +31,6 @@ export default defineConfig({
         "src/pipeline/ingest/web.ts",
         "src/pipeline/ingest/url-guard.ts",
         "src/pipeline/embed/bedrock.ts",
-        "src/pipeline/embed/openai.ts",
         "src/pipeline/output/console.ts",
         "src/pipeline/output/json-file.ts",
         "src/pipeline/eval/runner.ts",

@@ -25,8 +25,9 @@ const chunkingSchema = z.object({
 
 const embeddingSchema = z.object({
   provider: z.string().default("__EMBEDDING_PROVIDER__"),
-  // Defaults target Bedrock Titan Text v2 (1024-dim). For OpenAI, set
-  // EMBEDDING_MODEL=text-embedding-3-small and EMBEDDING_DIMENSIONS=1536.
+  // Defaults target Bedrock Titan Text v2 (1024-dim). The gateway provider
+  // names EMBEDDING_ROUTE instead of a model and asks the route for these
+  // dimensions.
   model: z.string().default("amazon.titan-embed-text-v2:0"),
   dimensions: z.coerce.number().int().positive().default(1024),
   batchSize: z.coerce.number().int().positive().default(128),
@@ -45,17 +46,14 @@ const vectorstoreSchema = z.object({
 
 const generationSchema = z.object({
   provider: z.string().default("__LLM_PROVIDER__"),
-  anthropicApiKey: z.string().default(""),
-  openaiApiKey: z.string().default(""),
-  // Bedrock model id (the org default). For the direct Anthropic API use
-  // "claude-sonnet-5"; for OpenAI use e.g. "gpt-4o".
+  // Bedrock model id for the bedrock provider, as an inference-profile ID.
+  // The gateway provider names MODEL_ROUTE instead.
   model: z.string().default("us.anthropic.claude-sonnet-5"),
   // Optional, so a provider can tell a configured temperature from none; an
-  // empty LLM_TEMPERATURE is unset. The openai provider sends it, and 0.1
-  // when it is unset. The anthropic provider never sends one: the Messages
-  // API rejects sampling parameters. The bedrock provider sends it under
-  // the rule bedrockSamplingParameters names, and none to any model when it
-  // is unset.
+  // empty LLM_TEMPERATURE is unset. The gateway provider never sends one:
+  // the Messages API rejects sampling parameters. The bedrock provider sends
+  // it under the rule bedrockSamplingParameters names, and none to any model
+  // when it is unset.
   temperature: z.preprocess(unsetWhenEmpty, z.coerce.number().min(0).max(2).optional()),
   maxTokens: z.coerce.number().int().positive().default(1024),
   // Which bedrock requests carry the configured temperature: `auto` sends it
@@ -149,8 +147,6 @@ export function loadConfig(): Config {
     },
     generation: {
       provider: env.LLM_PROVIDER,
-      anthropicApiKey: env.ANTHROPIC_API_KEY,
-      openaiApiKey: env.OPENAI_API_KEY,
       model: env.LLM_MODEL,
       temperature: env.LLM_TEMPERATURE,
       maxTokens: env.LLM_MAX_TOKENS,

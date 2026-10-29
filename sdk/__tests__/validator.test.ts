@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { CompositeManifest, TemplateManifest } from "../src/types.js";
 import { isCatalogName, validateCompositeManifest, validateManifest } from "../src/validator.js";
 
+// `noTemplateCurlyInString` is off for this file in biome.json: a derived
+// variable's default carries `${VarName}` references as data, the syntax the
+// resolver expands, so a JS template literal would interpolate them at parse
+// time and test nothing.
+
 function minimalManifest(overrides?: Partial<TemplateManifest>): TemplateManifest {
   return {
     apiVersion: "nanohype/v1",
@@ -260,6 +265,70 @@ describe("validateManifest", () => {
         }),
       ),
     ).not.toThrow();
+  });
+});
+
+describe("derived variables", () => {
+  const derived = (extra: Record<string, unknown>) =>
+    minimalManifest({
+      variables: [
+        { name: "A", type: "string", placeholder: "__A__", description: "A", default: "a" },
+        {
+          name: "Check",
+          type: "string",
+          placeholder: "__CHECK__",
+          description: "Check",
+          derived: true,
+          ...extra,
+        },
+      ],
+    });
+
+  it("accepts one that declares a default", () => {
+    expect(() => validateManifest(derived({ default: "${A}" }))).not.toThrow();
+  });
+
+  it("rejects one with no default to derive from", () => {
+    expect(() => validateManifest(derived({}))).toThrow(
+      "Derived variable 'Check' declares no default",
+    );
+  });
+
+  it("rejects one marked required", () => {
+    expect(() => validateManifest(derived({ default: "${A}", required: true }))).toThrow(
+      "Derived variable 'Check' is required",
+    );
+  });
+
+  it("rejects one that declares a prompt", () => {
+    expect(() => validateManifest(derived({ default: "${A}", prompt: "Check?" }))).toThrow(
+      "Derived variable 'Check' declares a prompt",
+    );
+  });
+
+  it("holds a composite's variables to the same rules", () => {
+    const composite: CompositeManifest = {
+      apiVersion: "nanohype/v1",
+      kind: "composite",
+      name: "test-composite",
+      displayName: "Test Composite",
+      description: "A test composite",
+      version: "0.1.0",
+      tags: ["test"],
+      variables: [
+        {
+          name: "Check",
+          type: "string",
+          placeholder: "__CHECK__",
+          description: "C",
+          derived: true,
+        },
+      ],
+      templates: [],
+    };
+    expect(() => validateCompositeManifest(composite)).toThrow(
+      "Derived variable 'Check' declares no default",
+    );
   });
 });
 

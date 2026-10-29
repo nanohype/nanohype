@@ -6,8 +6,7 @@ const envSchema = z.object({
   WIKI_STORAGE_PROVIDER: z.string().default("__STORAGE_PROVIDER__"),
   WIKI_LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
   WIKI_SOURCE_PROVIDER: z.string().default("__SOURCE_PROVIDER__"),
-  ANTHROPIC_API_KEY: z.string().optional(),
-  // How long the LLM provider waits on each attempt at a model call, in
+  // How long the LLM provider waits on a model call, in
   // milliseconds, read by parseTimeoutMs(): DEFAULT_REQUEST_TIMEOUT_MS when
   // unset or empty. resilience/request-timeout.ts gives the bound it puts on
   // an operation.

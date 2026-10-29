@@ -4,9 +4,9 @@ import { getProvider } from "./providers/index.js";
 /**
  * IPC handler for AI calls.
  *
- * Receives chat messages from the renderer via the preload bridge,
- * resolves the API key from environment variables, and calls the
- * configured LLM provider. API keys stay in the main process.
+ * Receives chat messages from the renderer via the preload bridge and calls
+ * the provider the payload names, or LLM_PROVIDER. The provider signs its
+ * calls in the main process, so the renderer never holds a credential.
  */
 
 interface SendMessagePayload {
@@ -17,19 +17,11 @@ interface SendMessagePayload {
 
 export function registerIpcHandlers(ipcMain: IpcMain): void {
   ipcMain.handle("ai:send-message", async (_event, payload: SendMessagePayload) => {
-    const providerName = payload.provider ?? process.env.LLM_PROVIDER ?? "__LLM_PROVIDER__";
-
-    const apiKey = resolveApiKey(providerName);
-    if (!apiKey) {
-      return {
-        content: "",
-        error: `No API key found for provider "${providerName}". Set the corresponding environment variable.`,
-      };
-    }
+    const providerName = payload.provider || process.env.LLM_PROVIDER || "__LLM_PROVIDER__";
 
     try {
       const provider = getProvider(providerName);
-      const content = await provider.sendMessage(payload.messages, apiKey, payload.model);
+      const content = await provider.sendMessage(payload.messages, payload.model);
       return { content };
     } catch (err) {
       return {
@@ -38,17 +30,4 @@ export function registerIpcHandlers(ipcMain: IpcMain): void {
       };
     }
   });
-}
-
-/**
- * Resolves an API key from environment variables based on provider name.
- */
-function resolveApiKey(provider: string): string | undefined {
-  const envMap: Record<string, string> = {
-    anthropic: "ANTHROPIC_API_KEY",
-    openai: "OPENAI_API_KEY",
-  };
-
-  const envVar = envMap[provider];
-  return envVar ? process.env[envVar] : undefined;
 }

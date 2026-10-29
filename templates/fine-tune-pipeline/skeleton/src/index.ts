@@ -66,7 +66,7 @@ async function main(): Promise<void> {
       validationFile: valFile,
       baseModel: config.training.baseModel,
       epochs: config.training.epochs,
-      learningRateMultiplier: config.training.learningRateMultiplier,
+      learningRate: config.training.learningRate,
       batchSize: config.training.batchSize,
       suffix: config.training.suffix,
     });
@@ -128,11 +128,11 @@ async function main(): Promise<void> {
 
     // The provider goes in as a factory, so no client is constructed until
     // the corpus has been read. A run with nothing to run reports an empty
-    // corpus rather than a missing credential.
+    // corpus rather than a provider failure.
     const report = await runEvalComparison(
       {
         casesDir: join(import.meta.dirname, "eval", "cases"),
-        baseModel: config.training.baseModel,
+        baseModel: config.eval.baseModel,
         fineTunedModel: config.eval.fineTunedModel,
       },
       () => getProvider(config.training.provider ?? DEFAULT_PROVIDER),

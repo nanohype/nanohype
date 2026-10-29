@@ -8,15 +8,17 @@ description: >
   strategies (recursive, fixed-size, semantic), embedding generation,
   and output adapters for indexing. No LangChain — all components are
   built from first principles using provider SDKs directly. Defaults to
-  AWS Bedrock Titan v2 embeddings (on IRSA — no keys), with OpenAI as an
-  alternate. Supports multiple ingest sources (PDF, Markdown, plain text,
-  JSON, CSV, web — SSRF-guarded) and output formats (JSONL, console).
+  embeddings through the Platform's ModelGateway (Titan v2), so the
+  pipeline holds no model credential, with Bedrock called directly under
+  an assumed IAM role as the off-substrate alternate. Supports multiple
+  ingest sources (PDF, Markdown, plain text, JSON, CSV, web —
+  SSRF-guarded) and output formats (JSONL, console).
   Output is compatible with module-vector-store's VectorDocument shape.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, etl, embeddings, pipeline, data, chunking, ai]
+tags: [typescript, etl, embeddings, pipeline, data, chunking, ai, model-gateway]
 
 variables:
   - name: ProjectName
@@ -39,9 +41,19 @@ variables:
   - name: EmbeddingProvider
     type: string
     placeholder: '__EMBEDDING_PROVIDER__'
-    description: 'Provider for text embeddings — bedrock (Titan v2, default) or openai'
+    description: 'Provider for text embeddings: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or bedrock (Titan v2, called directly under the AWS credential chain, off the substrate)'
     prompt: 'Embedding provider'
-    default: 'bedrock'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: ChunkStrategy
     type: string
@@ -53,7 +65,7 @@ variables:
   - name: IncludeTests
     type: bool
     placeholder: '__INCLUDE_TESTS__'
-    description: 'Include vitest test suite with orchestrator, chunking, and registry tests'
+    description: 'Include vitest test suite with orchestrator, chunking, registry and gateway request tests'
     prompt: 'Include tests?'
     default: true
 
@@ -67,6 +79,8 @@ conditionals:
   - path: 'src/pipeline/__tests__/fixed-size.test.ts'
     when: IncludeTests
   - path: 'src/pipeline/__tests__/registry.test.ts'
+    when: IncludeTests
+  - path: 'src/pipeline/__tests__/gateway.test.ts'
     when: IncludeTests
   - path: 'src/pipeline/__tests__/semantic.test.ts'
     when: IncludeTests

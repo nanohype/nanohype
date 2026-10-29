@@ -5,7 +5,7 @@ __DESCRIPTION__
 ## Quick start
 
 ```bash
-# Copy .env.example and configure your API keys
+# Copy .env.example and point it at your Platform's ModelGateway
 cp .env.example .env
 
 # Install dependencies
@@ -45,9 +45,15 @@ The pipeline follows a modular design with pluggable providers:
 
 Providers are registered via a triple registry pattern (`src/providers/registry.ts`):
 
-- **LLM**: Bedrock (default), Anthropic (Claude), OpenAI (GPT)
-- **Embedding**: Bedrock Titan (default), OpenAI, Cohere
+- **LLM**: Gateway (default) and Bedrock
+- **Embedding**: Gateway (default) and Bedrock Titan
 - **Vector store**: Chroma, pgvector, Qdrant, Pinecone
+
+### Model access
+
+The `gateway` LLM and embedding providers call the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the pipeline holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time. Generation names the `MODEL_ROUTE` route (`default`) and embeddings the `EMBEDDING_ROUTE` route (`embeddings`); the ModelGateway CR maps each to a Bedrock model. The gateway's embeddings translation embeds one input per request, so the gateway embedder sends one request per chunk. A 429, the route's rate limit, is sent again after the wait its `Retry-After` header asks for, or a jittered backoff when it gives none, up to `MAX_ATTEMPTS` sends while the wait ends inside the timeout. Each provider's circuit breaker counts a 5xx, a network error and a timeout; a 4xx, the last 429 included, answers for the request and fails the call without counting against it, so one caller's burst over the route's limit leaves the breaker closed for the rest.
+
+The `bedrock` providers call Bedrock directly under the IAM role the AWS credential chain resolves (a task or execution role in AWS, an AWS profile on a workstation), for a pipeline that runs off the substrate. No provider holds a provider key: a model of another family is a Bedrock model id under `bedrock`, or a ModelGateway route under `gateway`.
 
 ### Design Decisions
 
@@ -57,7 +63,7 @@ Providers are registered via a triple registry pattern (`src/providers/registry.
 - **Content-hash deduplication** -- each chunk gets a deterministic ID from a SHA-256 hash of the source path plus chunk index, preventing duplicate entries on re-ingestion.
 - **Score-threshold filtering** -- retrieval results below a configurable similarity threshold are discarded before reranking, reducing noise in the generation context.
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema with sensible defaults. Missing or invalid values throw immediately, not at query time.
-- **Request timeouts** -- `LLM_REQUEST_TIMEOUT_MS` (120s by default) bounds every model call the bedrock, anthropic and openai providers make, so a hung connection fails into the provider's circuit breaker instead of holding the pipeline. A call has to finish its whole reply within the timeout, and the default covers 4096 tokens at about 34 tokens a second, four times the 1024-token `LLM_MAX_TOKENS` default, so a deployment that raises `LLM_MAX_TOKENS` past that raises the timeout with it. The bedrock providers give up on the whole call at it; the anthropic and openai clients give each attempt the full timeout and retry a timed-out attempt once, so an endpoint that never answers holds the pipeline for two timeouts plus the SDK's backoff. `loadConfig()` refuses a value that is not a whole number of milliseconds from 1 to 2147483647.
+- **Request timeouts** -- `LLM_REQUEST_TIMEOUT_MS` (120s by default) bounds every model call the gateway and bedrock providers make, so a hung connection fails into the provider's circuit breaker instead of holding the pipeline. A call has to finish its whole reply within the timeout, and the default covers 4096 tokens at about 34 tokens a second, four times the 1024-token `LLM_MAX_TOKENS` default, so a deployment that raises `LLM_MAX_TOKENS` past that raises the timeout with it. Both give up on the whole call at it, the gateway provider's resends and the AWS SDK's retries included. `loadConfig()` refuses a value that is not a whole number of milliseconds from 1 to 2147483647.
 - **One LLM per configuration** -- generation builds the configured LLM once for each loaded configuration and reuses it for every query, so the provider's circuit breaker sees all of them.
 - **Provider isolation** -- embedding and vector store providers expose narrow interfaces (`embed`/`embedBatch`, `addDocuments`/`search`). LLM providers handle only generation. No provider knows about another.
 
@@ -102,7 +108,7 @@ refusing.
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production API keys for your LLM and embedding providers
+- [ ] Point `MODEL_GATEWAY_ENDPOINT`, `MODEL_ROUTE` and `EMBEDDING_ROUTE` at the Platform's ModelGateway and the routes it maps to a chat and an embeddings model, with `EMBEDDING_DIMENSIONS` matching the embeddings route
 - [ ] Choose a persistent vector store backend (pgvector, Qdrant, or Pinecone)
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Tune `CHUNK_SIZE` and `CHUNK_OVERLAP` for your document corpus

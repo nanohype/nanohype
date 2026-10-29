@@ -78,9 +78,10 @@ async function main(): Promise<void> {
   // ran everything and passed.
   const fixtures = await loadCases(casesDir);
 
-  // The agent module builds a provider client at import, which needs a key.
-  // Importing it after the corpus is read means a run with nothing to run says
-  // so, instead of failing earlier with a vendor SDK error about credentials.
+  // Importing the agent module registers its providers, and the gateway
+  // provider reads MODEL_GATEWAY_ENDPOINT as it loads, failing on a malformed
+  // value. Importing it after the corpus is read means a run with nothing to
+  // run says so, instead of failing first on the provider's configuration.
   const { runAgent } = await import("../agent.js");
 
   if (!coversBothKinds(fixtures)) {

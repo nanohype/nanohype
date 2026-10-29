@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { detectAnomalies } from "../cost/anomaly.js";
-import { calculateCost, getModelPricing } from "../cost/pricing.js";
+import {
+  calculateCost,
+  DEFAULT_PRICING,
+  findModelPricing,
+  getModelPricing,
+  pricingKey,
+} from "../cost/pricing.js";
 import type { CostEntry } from "../cost/tracker.js";
 import { createCostTracker } from "../cost/tracker.js";
 import type { GatewayResponse } from "../types.js";
@@ -9,10 +15,10 @@ import type { GatewayResponse } from "../types.js";
 
 describe("pricing", () => {
   it("calculates cost for known model", () => {
-    const cost = calculateCost("gpt-4o", 1000, 500);
-    // gpt-4o: input $2.50/1M, output $10/1M
-    // (1000 * 2.5 / 1_000_000) + (500 * 10 / 1_000_000) = 0.0025 + 0.005 = 0.0075
-    expect(cost).toBeCloseTo(0.0075, 6);
+    const cost = calculateCost("claude-haiku-4-5", 1000, 500);
+    // claude-haiku-4-5 costs $1/1M input tokens and $5/1M output tokens
+    // (1000 * 1 / 1_000_000) + (500 * 5 / 1_000_000) = 0.001 + 0.0025 = 0.0035
+    expect(cost).toBeCloseTo(0.0035, 6);
   });
 
   it("returns zero cost for unknown model", () => {
@@ -24,6 +30,30 @@ describe("pricing", () => {
     const pricing = getModelPricing("claude-sonnet-5");
     expect(pricing.input).toBe(3);
     expect(pricing.output).toBe(15);
+  });
+
+  // A reply names its model as the provider reports it: a Bedrock
+  // inference-profile ID or foundation-model ID, with geo and provider
+  // prefixes, a snapshot date and a version suffix. The table lists each
+  // model once, by its alias, and a form that misses it prices the call at
+  // zero, which reads as a free model to anything routing by cost.
+  it.each([
+    ["us.anthropic.claude-haiku-4-5-20251001-v1:0", "claude-haiku-4-5"],
+    ["us.anthropic.claude-sonnet-5", "claude-sonnet-5"],
+    ["us.anthropic.claude-opus-5", "claude-opus-5"],
+    ["anthropic.claude-haiku-4-5-20251001-v1:0", "claude-haiku-4-5"],
+    ["claude-sonnet-5", "claude-sonnet-5"],
+    ["us.meta.llama3-3-70b-instruct-v1:0", "llama3-3-70b-instruct"],
+  ])("keys %s as %s", (model, key) => {
+    expect(pricingKey(model)).toBe(key);
+  });
+
+  it("prices an inference-profile ID at its model's rate, and an unlisted one not at all", () => {
+    expect(getModelPricing("us.anthropic.claude-haiku-4-5-20251001-v1:0")).toEqual(
+      DEFAULT_PRICING["claude-haiku-4-5"],
+    );
+    expect(findModelPricing("us.example.unlisted-model-v1:0")).toBeUndefined();
+    expect(getModelPricing("us.example.unlisted-model-v1:0")).toEqual({ input: 0, output: 0 });
   });
 });
 
@@ -44,15 +74,15 @@ describe("cost tracker", () => {
   it("records and queries cost entries", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01), {
       user: "alice",
       project: "alpha",
     });
-    tracker.record(makeResponse("openai", "gpt-4o", 0.005), {
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.005), {
       user: "bob",
       project: "alpha",
     });
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.02), {
       user: "alice",
       project: "beta",
     });
@@ -65,10 +95,10 @@ describe("cost tracker", () => {
   it("filters by provider", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01));
-    tracker.record(makeResponse("openai", "gpt-4o", 0.005));
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01));
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.005));
 
-    const summary = tracker.query({ provider: "anthropic" });
+    const summary = tracker.query({ provider: "gateway" });
     expect(summary.totalRequests).toBe(1);
     expect(summary.totalCost).toBeCloseTo(0.01, 6);
   });
@@ -76,13 +106,13 @@ describe("cost tracker", () => {
   it("breaks down cost by user", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01), {
       user: "alice",
     });
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.02), {
       user: "alice",
     });
-    tracker.record(makeResponse("openai", "gpt-4o", 0.005), { user: "bob" });
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.005), { user: "bob" });
 
     const summary = tracker.query();
     expect(summary.byUser["alice"]).toBeCloseTo(0.03, 6);
@@ -92,10 +122,10 @@ describe("cost tracker", () => {
   it("breaks down cost by project", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01), {
       project: "alpha",
     });
-    tracker.record(makeResponse("openai", "gpt-4o", 0.02), { project: "beta" });
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.02), { project: "beta" });
 
     const summary = tracker.query();
     expect(summary.byProject["alpha"]).toBeCloseTo(0.01, 6);
@@ -105,23 +135,23 @@ describe("cost tracker", () => {
   it("breaks down cost by model", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01));
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.02));
-    tracker.record(makeResponse("openai", "gpt-4o", 0.005));
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01));
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.02));
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.005));
 
     const summary = tracker.query();
     expect(summary.byModel["claude-sonnet-5"]).toBeCloseTo(0.03, 6);
-    expect(summary.byModel["gpt-4o"]).toBeCloseTo(0.005, 6);
+    expect(summary.byModel["claude-haiku-4-5"]).toBeCloseTo(0.005, 6);
   });
 
   it("filters by tags", () => {
     const tracker = createCostTracker();
 
-    tracker.record(makeResponse("anthropic", "claude-sonnet-5", 0.01), {
+    tracker.record(makeResponse("gateway", "claude-sonnet-5", 0.01), {
       user: "alice",
       project: "alpha",
     });
-    tracker.record(makeResponse("openai", "gpt-4o", 0.005), {
+    tracker.record(makeResponse("bedrock", "claude-haiku-4-5", 0.005), {
       user: "bob",
       project: "alpha",
     });
@@ -141,7 +171,7 @@ describe("anomaly detection", () => {
     for (let i = 0; i < 25; i++) {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
-        provider: "anthropic",
+        provider: "gateway",
         model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
@@ -154,7 +184,7 @@ describe("anomaly detection", () => {
     // Spike entry at $0.50 (50x normal)
     entries.push({
       timestamp: new Date(baseTimestamp.getTime() + 25000).toISOString(),
-      provider: "anthropic",
+      provider: "gateway",
       model: "claude-sonnet-5",
       inputTokens: 10000,
       outputTokens: 5000,
@@ -182,7 +212,7 @@ describe("anomaly detection", () => {
     for (let i = 0; i < 30; i++) {
       entries.push({
         timestamp: new Date(baseTimestamp.getTime() + i * 1000).toISOString(),
-        provider: "anthropic",
+        provider: "gateway",
         model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,
@@ -200,7 +230,7 @@ describe("anomaly detection", () => {
     const entries: CostEntry[] = [
       {
         timestamp: new Date().toISOString(),
-        provider: "anthropic",
+        provider: "gateway",
         model: "claude-sonnet-5",
         inputTokens: 100,
         outputTokens: 50,

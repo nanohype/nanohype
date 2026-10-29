@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
-import type { LlmProvider, Settings } from "@/lib/storage";
-import { getSettings, saveSettings } from "@/lib/storage";
-
-const MODELS: Record<LlmProvider, string[]> = {
-  anthropic: ["claude-sonnet-5", "claude-haiku-4-5"],
-  openai: ["gpt-4o", "gpt-4o-mini"],
-};
+import { parseGatewayEndpoint } from "@/lib/providers/gateway";
+import type { Settings } from "@/lib/storage";
+import { DEFAULT_SETTINGS, getSettings, saveSettings } from "@/lib/storage";
 
 export function App() {
-  const [settings, setSettings] = useState<Settings>({
-    apiKey: "",
-    provider: "__LLM_PROVIDER__" as LlmProvider,
-    model: "",
-  });
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [problem, setProblem] = useState("");
 
   useEffect(() => {
     getSettings()
@@ -28,17 +21,27 @@ export function App() {
   }, []);
 
   const handleSave = async () => {
-    await saveSettings(settings);
+    setProblem("");
+    let endpoint: string;
+    try {
+      endpoint = parseGatewayEndpoint(settings.endpoint);
+    } catch (err) {
+      setProblem(err instanceof Error ? err.message : String(err));
+      return;
+    }
+    // The service worker reaches the gateway only with a host permission for
+    // its origin. The manifest declares the origins as optional, so the
+    // extension asks for exactly the one set here, from this click.
+    const granted = await chrome.permissions.request({
+      origins: [`${new URL(endpoint).origin}/*`],
+    });
+    if (!granted) {
+      setProblem("The extension needs access to the gateway endpoint to call it.");
+      return;
+    }
+    await saveSettings({ endpoint, route: settings.route.trim() || DEFAULT_SETTINGS.route });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleProviderChange = (provider: LlmProvider) => {
-    setSettings((prev) => ({
-      ...prev,
-      provider,
-      model: MODELS[provider][0],
-    }));
   };
 
   const fieldStyle: React.CSSProperties = {
@@ -76,42 +79,32 @@ export function App() {
       </h1>
 
       <label style={labelStyle}>
-        LLM Provider
-        <select
-          value={settings.provider}
-          onChange={(e) => handleProviderChange(e.target.value as LlmProvider)}
-          style={fieldStyle}
-        >
-          <option value="anthropic">Anthropic</option>
-          <option value="openai">OpenAI</option>
-        </select>
-      </label>
-
-      <label style={labelStyle}>
-        API Key
+        Model gateway endpoint
         <input
-          type="password"
-          value={settings.apiKey}
-          onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
-          placeholder={settings.provider === "anthropic" ? "sk-ant-..." : "sk-..."}
+          type="url"
+          value={settings.endpoint}
+          onChange={(e) => setSettings((prev) => ({ ...prev, endpoint: e.target.value }))}
+          placeholder="http://localhost:8080"
           style={fieldStyle}
         />
       </label>
 
       <label style={labelStyle}>
-        Model
-        <select
-          value={settings.model}
-          onChange={(e) => setSettings((prev) => ({ ...prev, model: e.target.value }))}
+        Route
+        <input
+          type="text"
+          value={settings.route}
+          onChange={(e) => setSettings((prev) => ({ ...prev, route: e.target.value }))}
+          placeholder={DEFAULT_SETTINGS.route}
           style={fieldStyle}
-        >
-          {MODELS[settings.provider].map((model) => (
-            <option key={model} value={model}>
-              {model}
-            </option>
-          ))}
-        </select>
+        />
       </label>
+
+      {problem ? (
+        <p role="alert" style={{ ...labelStyle, color: "var(--danger)" }}>
+          {problem}
+        </p>
+      ) : null}
 
       <button
         type="button"

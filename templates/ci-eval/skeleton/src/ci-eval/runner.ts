@@ -116,9 +116,10 @@ export function createEvalRunner(config: Config, logger: Logger): EvalRunner {
 
   return {
     async run(): Promise<SuiteScore[]> {
-      // The corpus is read first. Provider modules build a client that needs
-      // a key, so a run with nothing to run says that, rather than failing
-      // earlier with a vendor SDK error about credentials.
+      // The corpus is read first. The provider modules load after it, and the
+      // gateway provider parses MODEL_GATEWAY_ENDPOINT as it loads and throws
+      // on a malformed one, so a run with nothing to run says that, rather
+      // than failing earlier on that setting.
       const suites = await loadSuites(config.evalPath);
 
       if (!coversBothKinds(suites)) {

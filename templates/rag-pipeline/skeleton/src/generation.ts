@@ -47,8 +47,6 @@ function llmFor(config: Config): LlmProvider {
   let llm = llms.get(config);
   if (!llm) {
     llm = getLlmProvider(config.generation.provider, {
-      anthropicApiKey: config.generation.anthropicApiKey,
-      openaiApiKey: config.generation.openaiApiKey,
       samplingParameters: config.generation.bedrockSamplingParameters,
       requestTimeoutMs: config.requestTimeoutMs,
     });

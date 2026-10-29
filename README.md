@@ -77,7 +77,7 @@ Templates span four engineering categories plus composable modules. Beyond engin
 | [module-analytics-ts](templates/module-analytics-ts/)               | Product analytics with pluggable backends (Segment, PostHog, Mixpanel, Amplitude)                       | `analytics` `events` `posthog`            |
 | [module-media-ts](templates/module-media-ts/)                       | Media processing and delivery (Cloudinary, Uploadcare, imgix)                                           | `media` `images` `cdn`                    |
 | [module-llm-gateway](templates/module-llm-gateway/)                 | LLM provider gateway with routing and fallback                                                          | `llm` `gateway` `ai`                      |
-| [module-llm-providers](templates/module-llm-providers/)             | Shared LLM provider pack (Anthropic, OpenAI, Groq core; Bedrock/Vertex/HF/Ollama optional)              | `llm` `providers` `ai`                    |
+| [module-llm-providers](templates/module-llm-providers/)             | Shared LLM provider pack (Platform ModelGateway core; Bedrock optional)                                 | `llm` `providers` `ai`                    |
 | [module-vector-store](templates/module-vector-store/)               | Vector store abstraction with pluggable backends                                                        | `vectors` `embeddings` `ai`               |
 | [module-semantic-cache](templates/module-semantic-cache/)           | Semantic caching for LLM responses using embeddings                                                     | `cache` `semantic` `ai`                   |
 | [module-llm-observability](templates/module-llm-observability/)     | LLM-specific observability with cost and latency tracking                                               | `observability` `llm` `cost`              |
@@ -105,32 +105,33 @@ Scaffolding tools read `template.yaml`, collect variable values from the user, a
 
 Pre-configured multi-template stacks in `composites/`:
 
-| Composite                                                            | Use case                                                                                                    |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| [proof-of-concept](composites/proof-of-concept.yaml)                 | Minimal AI agent + evals — fastest path to a working prototype                                              |
-| [ai-chatbot](composites/ai-chatbot.yaml)                             | Customer-facing chatbot with agent, service, auth, and deployment                                           |
-| [document-intelligence](composites/document-intelligence.yaml)       | Document search and Q&A with RAG, storage, and database                                                     |
-| [rag-agent](composites/rag-agent.yaml)                               | AI agent using RAG as a knowledge tool                                                                      |
-| [safe-ai-agent](composites/safe-ai-agent.yaml)                       | Agent with guardrails, evals, and prompt management                                                         |
-| [multi-agent](composites/multi-agent.yaml)                           | A2A protocol peers with MCP tools, guardrails, and orchestration                                            |
-| [ai-web-app](composites/ai-web-app.yaml)                             | Full-stack Next.js app with RAG, auth, database, and observability                                          |
-| [mcp-toolkit](composites/mcp-toolkit.yaml)                           | MCP server with prompts and evals                                                                           |
-| [chrome-ai-extension](composites/chrome-ai-extension.yaml)           | Chrome extension backed by MCP tools                                                                        |
-| [vscode-ai-extension](composites/vscode-ai-extension.yaml)           | VS Code extension with AI, MCP, and prompts                                                                 |
-| [production-api](composites/production-api.yaml)                     | Full-stack API with auth, database, cache, rate limiting, queue, observability                              |
-| [go-microservice](composites/go-microservice.yaml)                   | Go service with evals and Fly.io deployment                                                                 |
-| [background-processor](composites/background-processor.yaml)         | Async job processing with queue, storage, and database                                                      |
-| [internal-tool](composites/internal-tool.yaml)                       | CLI or browser extension with MCP tools                                                                     |
-| [enterprise-ai](composites/enterprise-ai.yaml)                       | Full enterprise stack — agents, RAG, guardrails, evals, K8s                                                 |
-| [eval-suite](composites/eval-suite.yaml)                             | Standalone eval infrastructure with prompts and safety testing                                              |
-| [cost-optimized-ai](composites/cost-optimized-ai.yaml)               | LLM gateway with cost-aware routing, semantic caching, and cost tracking                                    |
-| [ai-platform](composites/ai-platform.yaml)                           | Full AI platform with service, gateway, vectors, pipeline, auth, billing, monitoring                        |
-| [agent-team](composites/agent-team.yaml)                             | Multi-agent system with orchestrator, specialized agents, evals, and MCP tools                              |
-| [spring-boot-microservice](composites/spring-boot-microservice.yaml) | Spring Boot 4 service on JDK 25 with K8s deploy and optional Grafana + Prometheus + Loki                    |
-| [identity-aware-service](composites/identity-aware-service.yaml)     | Spring Boot 4 service with Istio mesh-edge auth plus Spring Security resource server (defense in depth)     |
-| [client-engagement](composites/client-engagement.yaml)               | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook (non-engineering)             |
-| [product-launch](composites/product-launch.yaml)                     | Cross-functional launch spanning eng through marketing — Next.js app, design system, PRD, campaign, runbook |
-| [research-to-prototype](composites/research-to-prototype.yaml)       | PRD + agentic-loop prototype + optional test plan — idea to validated POC                                   |
+| Composite                                                            | Use case                                                                                                                           |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| [proof-of-concept](composites/proof-of-concept.yaml)                 | Minimal AI agent + evals + Platform tenant chart — fastest path to a working prototype                                             |
+| [ai-chatbot](composites/ai-chatbot.yaml)                             | Customer-facing chatbot with agent, service, auth, and Platform tenant chart                                                       |
+| [document-intelligence](composites/document-intelligence.yaml)       | Document search and Q&A with RAG, storage, database, and Platform tenant chart                                                     |
+| [rag-agent](composites/rag-agent.yaml)                               | AI agent using RAG as a knowledge tool, with storage, evals, and Platform tenant chart                                             |
+| [safe-ai-agent](composites/safe-ai-agent.yaml)                       | Agent with guardrails, evals, prompt management, and Platform tenant chart                                                         |
+| [multi-agent](composites/multi-agent.yaml)                           | A2A protocol peers with MCP tools, guardrails, orchestration, and Platform tenant chart                                            |
+| [ai-web-app](composites/ai-web-app.yaml)                             | Full-stack Next.js app with RAG, auth, database, observability, and Platform tenant chart                                          |
+| [mcp-toolkit](composites/mcp-toolkit.yaml)                           | MCP server with prompts and evals                                                                                                  |
+| [chrome-ai-extension](composites/chrome-ai-extension.yaml)           | Chrome extension backed by MCP tools                                                                                               |
+| [vscode-ai-extension](composites/vscode-ai-extension.yaml)           | VS Code extension with AI, MCP, and prompts                                                                                        |
+| [production-api](composites/production-api.yaml)                     | Full-stack API with auth, database, cache, rate limiting, queue, observability                                                     |
+| [go-microservice](composites/go-microservice.yaml)                   | Go service with evals and Fly.io deployment                                                                                        |
+| [background-processor](composites/background-processor.yaml)         | Async job processing with queue, storage, and database                                                                             |
+| [internal-tool](composites/internal-tool.yaml)                       | CLI or browser extension with MCP tools                                                                                            |
+| [enterprise-ai](composites/enterprise-ai.yaml)                       | Full enterprise stack — agents, RAG, guardrails, evals, Platform tenant chart                                                      |
+| [eval-suite](composites/eval-suite.yaml)                             | Standalone eval infrastructure with prompts and safety testing                                                                     |
+| [cost-optimized-ai](composites/cost-optimized-ai.yaml)               | LLM gateway with cost-aware routing, semantic caching, cost tracking, and Platform tenant chart                                    |
+| [ai-platform](composites/ai-platform.yaml)                           | Full AI platform with service, gateway, vectors, pipeline, auth, billing, monitoring, Platform tenant chart                        |
+| [agent-team](composites/agent-team.yaml)                             | Multi-agent system with orchestrator, specialized agents, evals, MCP tools, and Platform tenant chart                              |
+| [spring-boot-microservice](composites/spring-boot-microservice.yaml) | Spring Boot 4 service on JDK 25 with K8s deploy and optional Grafana + Prometheus + Loki                                           |
+| [identity-aware-service](composites/identity-aware-service.yaml)     | Spring Boot 4 service with Istio mesh-edge auth plus Spring Security resource server (defense in depth)                            |
+| [client-engagement](composites/client-engagement.yaml)               | Proposal, battle cards, brand guidelines, campaign brief, onboarding playbook (non-engineering)                                    |
+| [product-launch](composites/product-launch.yaml)                     | Cross-functional launch spanning eng through marketing — Next.js app, Platform tenant chart, design system, PRD, campaign, runbook |
+| [research-to-prototype](composites/research-to-prototype.yaml)       | PRD + agentic-loop prototype + Platform tenant chart + optional test plan — idea to validated POC                                  |
+| [platform-tenant](composites/platform-tenant.yaml)                   | Platform tenant chart with optional LLM gateway, vector store, and audit ledger packages                                           |
 
 Composites define which templates to scaffold, where to nest them, and how variables flow across templates. See the [composite contract](docs/spec/composite-contract.md) for the specification.
 

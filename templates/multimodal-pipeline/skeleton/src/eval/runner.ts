@@ -7,8 +7,9 @@
  * stores. This runner drives the analysis stage over a corpus of extracted
  * content and checks what comes back.
  *
- * It calls a live provider, so it is a command a consumer runs against real
- * credentials rather than something that runs unattended on every commit.
+ * It calls a live provider, so it is a command a consumer runs against a
+ * reachable ModelGateway, or Bedrock under an AWS role, rather than something
+ * that runs unattended on every commit.
  */
 
 import { extname, resolve } from "node:path";
@@ -144,9 +145,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // The corpus is read before the pipeline is imported and before a provider
-  // client is built. Building one needs a key, so a run with nothing to run
-  // reports an empty corpus rather than a missing credential.
+  // The corpus is read before the pipeline is imported. The provider modules
+  // parse MODEL_GATEWAY_ENDPOINT and LLM_REQUEST_TIMEOUT_MS as they load and
+  // throw on a malformed value, so a run with nothing to run reports an empty
+  // corpus rather than a setting.
   const { loadConfig } = await import("../config.js");
   const { analyzeProcessed, detectModality } = await import("../pipeline.js");
 

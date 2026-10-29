@@ -27,8 +27,8 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider'
-    default: 'anthropic'
+    description: 'LLM provider for the sidepanel: gateway (a Platform ModelGateway at the endpoint the options page sets, with no credential), or a custom provider registered in the extension'
+    default: 'gateway'
 
   - name: IncludePrompts
     type: bool

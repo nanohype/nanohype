@@ -126,7 +126,7 @@ export async function runAgent(userInput: string, options?: AgentRunOptions): Pr
     recordLlmMetrics(llmResponse, performance.now() - llmStart);
 
     // Append the raw assistant message to preserve provider-specific fields
-    // (e.g. OpenAI's tool_calls array, which is required for tool result messages)
+    // (e.g. a thinking block's signature, which the next turn sends back)
     messages.push(llmResponse.rawAssistantMessage);
 
     // If no tool calls, we're done -- extract the final text

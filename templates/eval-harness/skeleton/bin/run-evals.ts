@@ -78,9 +78,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // The runner pulls in the provider registry, whose modules construct a vendor
-  // client. Importing it after the corpus is read means a run with nothing to
-  // run says so, instead of failing first on missing credentials.
+  // The runner pulls in the provider registry, whose gateway provider parses
+  // MODEL_GATEWAY_ENDPOINT as it loads and throws on a malformed one.
+  // Importing it after the corpus is read means a run with nothing to run says
+  // so, instead of failing first on that setting.
   const { runEvals } = await import("../src/runner.js");
 
   const results = await runEvals({

@@ -8,10 +8,12 @@
  */
 
 // Side-effect imports: each module calls registerProvider() at load time.
-// Bedrock is the org-default LLM path; anthropic/openai are alternates.
+// The gateway provider is the path to a model on the nanohype substrate, and
+// bedrock calls Bedrock directly under the AWS credential chain, for an
+// application that runs off it. Neither holds a provider key.
+// Scaffolded with LlmProvider = __LLM_PROVIDER__.
+import "./gateway.js";
 import "./bedrock.js";
-import "./anthropic.js";
-import "./openai.js";
 import "./mock.js";
 
 // Re-export the public API

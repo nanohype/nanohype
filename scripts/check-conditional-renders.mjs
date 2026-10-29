@@ -82,8 +82,6 @@ const KNOWN_BROKEN = new Set([
   "module-observability-ts src/telemetry/index.ts ./tracer.js",
   "monorepo packages/shared-ui/src/index.test.ts ./index.js",
   "monorepo packages/shared-utils/src/index.test.ts ./index.js",
-  "multimodal-pipeline src/processors/index.ts ./audio.js",
-  "multimodal-pipeline src/processors/index.ts ./video.js",
   "prompt-library sdk/src/__tests__/loader.test.ts ../index.js",
   "prompt-library sdk/src/__tests__/loader.test.ts ../types.js",
   "slack-bot src/index.ts ./commands/ask.js",
@@ -254,7 +252,8 @@ if (invokedDirectly) {
     const base = {};
     let skip = false;
     for (const v of manifest.variables ?? []) {
-      if (switched.some((s) => s.name === v.name)) continue;
+      // A derived variable takes no value: the resolver derives it from the rest.
+      if (v.derived || switched.some((s) => s.name === v.name)) continue;
       const probed = probeValue(v);
       if (probed === null) {
         unsatisfiable.push(`${name}: no candidate satisfies ${v.name}`);

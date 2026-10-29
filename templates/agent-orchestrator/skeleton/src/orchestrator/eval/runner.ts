@@ -2,12 +2,12 @@
 //
 // Sends each case in the corpus through the orchestrator and checks the
 // plan that comes back. This is a live run against whichever provider is
-// configured, so it costs tokens and needs a key — a command to run
-// on purpose. The unit suite covers the corpus loader and the plan checks
-// without reaching a provider.
+// configured, so it costs tokens and needs the Platform's ModelGateway
+// within reach — a command to run on purpose. The unit suite covers the
+// corpus loader and the plan checks without reaching a provider.
 //
 //   npm run eval                     # the configured provider
-//   EVAL_PROVIDER=mock npm run eval  # exercises the runner without a key
+//   EVAL_PROVIDER=mock npm run eval  # exercises the runner without a model
 //
 // The mock provider answers with a fixed plan, so a green run under it says
 // the runner works rather than that the orchestrator does.
@@ -44,9 +44,9 @@ async function main(): Promise<void> {
   const casesDir = resolve(import.meta.dirname, "cases");
 
   // `loadCases` throws on an empty corpus rather than returning one, and it
-  // runs before anything that reaches a provider: an SDK client built first
-  // would fail on credentials, which reads as a broken key rather than as an
-  // eval with nothing to run.
+  // runs before anything that reaches a provider: a model call made first
+  // would fail on a gateway it cannot reach, which reads as a broken
+  // deployment rather than as an eval with nothing to run.
   const corpus = await loadCases(casesDir);
 
   if (!coversBothKinds(corpus)) {

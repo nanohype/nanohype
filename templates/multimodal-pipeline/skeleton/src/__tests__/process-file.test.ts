@@ -54,7 +54,7 @@ afterAll(async () => {
  *
  * The configured default is `__LLM_PROVIDER__` — so a test must name a provider
  * explicitly rather than rely on a default that can change under it, and `mock`
- * is the one that reaches no network and needs no API key.
+ * is the one that reaches no network and needs no credential.
  */
 function config() {
   process.env.LLM_PROVIDER = "mock";
