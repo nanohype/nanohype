@@ -14,8 +14,8 @@ export interface TrainingJobConfig {
   baseModel: string;
   /** Number of training epochs */
   epochs?: number;
-  /** Learning rate multiplier */
-  learningRateMultiplier?: number;
+  /** Learning rate */
+  learningRate?: number;
   /** Training batch size */
   batchSize?: number;
   /** Suffix appended to the fine-tuned model name */

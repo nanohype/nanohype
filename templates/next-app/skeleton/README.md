@@ -8,7 +8,7 @@ A Next.js application with streaming AI chat, built with [Tailwind CSS](https://
 
 ```bash
 cp .env.example .env.local
-# Add your API keys to .env.local
+# Point MODEL_GATEWAY_ENDPOINT at the Platform's ModelGateway (a port-forward, locally)
 npm install
 npm run dev
 ```
@@ -42,8 +42,7 @@ src/
       providers/
         types.ts              # AiProvider interface
         registry.ts           # Provider registry
-        anthropic.ts          # Anthropic provider
-        openai.ts             # OpenAI provider
+        gateway.ts            # Platform ModelGateway provider (the default)
         index.ts              # Barrel (triggers registration)
       stream.ts               # Streaming response helpers
     db/                       # (optional) Database
@@ -59,6 +58,10 @@ src/
 
 The provider registry follows a plug-in pattern. Each provider self-registers at import time.
 
+### Model access
+
+The `gateway` provider calls the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the server holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time. Every request names the `MODEL_ROUTE` route (`default`), which the ModelGateway CR maps to a Bedrock model, and never the `model` a chat request body names, so the server decides which route a browser reaches. A call fails when the gateway takes longer than `LLM_REQUEST_TIMEOUT_MS` (120s by default) to answer, or a stream when no event arrives for that long, and the request is aborted. A 429, the route's rate limit, is sent again after the wait its `Retry-After` header asks for, or a jittered backoff when it gives none, up to `MAX_ATTEMPTS` sends while the wait ends inside the timeout. A reply and every stream event are validated with zod before the provider reads them, so a malformed one fails the call. Running locally, point `MODEL_GATEWAY_ENDPOINT` at a port-forward of the gateway Service; the app holds no provider key in any environment.
+
 ### Adding a Provider
 
 1. Create a new file in `src/lib/ai/providers/` implementing the `AiProvider` interface
@@ -67,10 +70,10 @@ The provider registry follows a plug-in pattern. Each provider self-registers at
 
 ### Switching Providers
 
-Set `LLM_PROVIDER` in your `.env.local`, or pass `provider` in the chat request body:
+Set `LLM_PROVIDER` in your `.env.local` to a provider you registered, or pass `provider` in the chat request body:
 
 ```bash
-LLM_PROVIDER=openai
+LLM_PROVIDER=my-provider
 ```
 
 ## Database Setup

@@ -11,13 +11,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockRegisterCommand = vi.fn();
 const mockCreateWebviewPanel = vi.fn();
-const mockShowInputBox = vi.fn();
 const mockGetConfiguration = vi.fn();
 
 vi.mock("vscode", () => ({
   window: {
     createWebviewPanel: (...args: unknown[]) => mockCreateWebviewPanel(...args),
-    showInputBox: (...args: unknown[]) => mockShowInputBox(...args),
     showInformationMessage: vi.fn(),
     showErrorMessage: vi.fn(),
     activeTextEditor: undefined,
@@ -33,7 +31,6 @@ vi.mock("vscode", () => ({
 }));
 
 const { registerWebviewCommand } = await import("../commands/webview");
-const { API_KEY_SECRET } = await import("../ai/chat-session");
 const { WebviewPanel } = await import("../webview/panel");
 const { activate } = await import("../extension");
 
@@ -46,10 +43,6 @@ function fakeContext() {
   return {
     subscriptions: [] as { dispose(): void }[],
     extensionUri: { fsPath: EXTENSION_ROOT },
-    secrets: {
-      get: vi.fn(async (): Promise<string | undefined> => "stored-key"),
-      store: vi.fn(async () => {}),
-    },
   };
 }
 
@@ -81,7 +74,7 @@ describe("registerWebviewCommand", () => {
     WebviewPanel.currentPanel = undefined;
     mockRegisterCommand.mockReturnValue({ dispose: vi.fn() });
     mockGetConfiguration.mockReturnValue({
-      get: (key: string) => (key === "provider" ? "anthropic" : ""),
+      get: (key: string) => (key === "provider" ? "bedrock" : ""),
     });
   });
 
@@ -116,8 +109,8 @@ describe("registerWebviewCommand", () => {
 
   it("carries a webview chat turn through to the configured provider", async () => {
     // End to end across the process boundary: the command opens the panel, the
-    // panel routes the message, and the handler resolves the key and the
-    // provider. Only `vscode` is faked.
+    // panel routes the message, and the handler reads the settings and
+    // resolves the provider. Only `vscode` is faked.
     const context = fakeContext();
     const fake = fakePanel();
     mockCreateWebviewPanel.mockReturnValue(fake.panel);
@@ -132,7 +125,6 @@ describe("registerWebviewCommand", () => {
     fake.listeners[0]({ type: "chat", payload: "hello" });
     await vi.waitFor(() => expect(fake.panel.webview.postMessage).toHaveBeenCalled());
 
-    expect(context.secrets.get).toHaveBeenCalledWith(API_KEY_SECRET);
     expect(mockGetConfiguration).toHaveBeenCalledWith("__PROJECT_NAME__");
     // The provider name is one the registry does not hold, so the turn fails
     // there rather than sending a live request.
@@ -141,14 +133,16 @@ describe("registerWebviewCommand", () => {
     );
   });
 
-  it("asks for a key when SecretStorage holds none, and stores what is typed", async () => {
-    const context = fakeContext();
-    context.secrets.get = vi.fn(async () => undefined);
-    mockShowInputBox.mockResolvedValue("typed-key");
+  it("reads the provider, model and AWS settings for a turn, and nothing from SecretStorage", async () => {
+    const context = { ...fakeContext(), secrets: { get: vi.fn(), store: vi.fn() } };
     const fake = fakePanel();
     mockCreateWebviewPanel.mockReturnValue(fake.panel);
+    const reads: string[] = [];
     mockGetConfiguration.mockReturnValue({
-      get: (key: string) => (key === "provider" ? "no-such-provider" : ""),
+      get: (key: string) => {
+        reads.push(key);
+        return key === "provider" ? "no-such-provider" : "";
+      },
     });
 
     registerWebviewCommand(context as never);
@@ -156,12 +150,45 @@ describe("registerWebviewCommand", () => {
     fake.listeners[0]({ type: "chat", payload: "hello" });
     await vi.waitFor(() => expect(fake.panel.webview.postMessage).toHaveBeenCalled());
 
-    expect(mockShowInputBox).toHaveBeenCalledWith(expect.objectContaining({ password: true }));
-    expect(context.secrets.store).toHaveBeenCalledWith(API_KEY_SECRET, "typed-key");
+    expect(reads.sort()).toEqual(["awsProfile", "awsRegion", "model", "provider"]);
+    expect(context.secrets.get).not.toHaveBeenCalled();
+    expect(context.secrets.store).not.toHaveBeenCalled();
   });
 
-  it("names its secret under the extension's own key", () => {
-    expect(API_KEY_SECRET).toContain("apiKey");
+  it("reads only settings a workspace cannot set for a turn", async () => {
+    // Observed rather than listed: whatever a turn reads decides which
+    // credentials sign the call, what it reaches or where it is served, so
+    // each key it reads is held to a scope VS Code never fills from a
+    // workspace and to the untrusted-workspace restriction. A setting a turn
+    // starts reading fails here until the manifest scopes it.
+    const fake = fakePanel();
+    mockCreateWebviewPanel.mockReturnValue(fake.panel);
+    const reads: string[] = [];
+    mockGetConfiguration.mockImplementation((section: string) => ({
+      get: (key: string) => {
+        reads.push(`${section}.${key}`);
+        return key === "provider" ? "no-such-provider" : "";
+      },
+    }));
+    const pkg = JSON.parse(readFileSync(join(EXTENSION_ROOT, "package.json"), "utf-8")) as {
+      capabilities?: { untrustedWorkspaces?: { restrictedConfigurations?: string[] } };
+      contributes: { configuration: { properties: Record<string, { scope?: string }> } };
+    };
+
+    registerWebviewCommand(fakeContext() as never);
+    (mockRegisterCommand.mock.calls[0][1] as () => void)();
+    fake.listeners[0]({ type: "chat", payload: "hello" });
+    await vi.waitFor(() => expect(fake.panel.webview.postMessage).toHaveBeenCalled());
+
+    expect(reads.length).toBeGreaterThan(0);
+    for (const key of reads) {
+      expect(["application", "machine"], key).toContain(
+        pkg.contributes.configuration.properties[key]?.scope,
+      );
+      expect(pkg.capabilities?.untrustedWorkspaces?.restrictedConfigurations ?? [], key).toContain(
+        key,
+      );
+    }
   });
 
   it("activate registers every command package.json contributes", () => {

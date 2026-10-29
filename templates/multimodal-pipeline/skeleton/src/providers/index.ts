@@ -10,18 +10,27 @@ export {
   listProviders,
   registerProvider,
 } from "./registry.js";
-export type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
+// #if IncludeAudio
 export type {
   TranscriptionProvider,
   TranscriptionResult,
-} from "./whisper.js";
+  TranscriptionSettings,
+} from "./transcribe.js";
 export {
   getTranscriptionProvider,
   registerTranscriptionProvider,
-} from "./whisper.js";
+} from "./transcribe.js";
+// #endif
+export type { AnalysisResult, MultimodalLlmProvider } from "./types.js";
 
-// Import provider modules to trigger registration
-import "./anthropic.js";
-import "./openai.js";
+// Import provider modules to trigger registration. The gateway provider is
+// the path to a model on the nanohype substrate, and the bedrock provider
+// calls Bedrock directly under the AWS credential chain, for a pipeline that
+// runs off it. Neither holds a provider key.
+// Scaffolded with LlmProvider = __LLM_PROVIDER__.
+import "./gateway.js";
+import "./bedrock.js";
 import "./mock.js";
-import "./whisper.js";
+// #if IncludeAudio
+import "./transcribe.js";
+// #endif

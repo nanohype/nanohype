@@ -7,7 +7,7 @@ VS Code extension with optional React webview panel and AI provider integration.
 - Extension activation with command registration
 - esbuild dual-entry build (Node CJS for host, browser IIFE for webview)
 - Optional React webview panel with VS Code theme integration
-- Optional AI provider registry (Anthropic, OpenAI) with same pattern as other templates
+- Optional AI provider registry with same pattern as other templates, holding a Bedrock provider that signs with the AWS profile a setting names and holds no provider key
 - GitHub Actions CI with VSIX packaging
 
 ## Variables
@@ -35,7 +35,7 @@ VS Code extension with optional React webview panel and AI provider integration.
       app/
         App.tsx
     ai/                   # (optional) AI providers
-      providers/          # Registry pattern
+      providers/          # Registry pattern, Bedrock provider
       client.ts
 ```
 

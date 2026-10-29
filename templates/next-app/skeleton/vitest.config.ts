@@ -21,11 +21,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the chat API route, streaming helpers, and provider registry.
-      // Out of the denominator: the React components and pages, which need a
-      // DOM and a Next runtime; the SDK providers, which need a vendor key;
-      // the Drizzle schema and client, which describe a database rather than
-      // behaving; and the layout and wiring modules.
+      // Gate the chat API route, streaming helpers, the provider registry, and
+      // the gateway provider, which its request tests drive against an
+      // in-process HTTP server. Out of the denominator: the React components
+      // and pages, which need a DOM and a Next runtime; the Drizzle schema and
+      // client, which describe a database rather than behaving; and the
+      // layout and wiring modules.
       //
       // Nothing under `lib/auth/` is among them. `options.ts` holds the
       // `authorized` callback every protected route rests on, and `config.ts`
@@ -37,8 +38,6 @@ export default defineConfig({
         "src/bootstrap.ts",
         "src/logger.ts",
         "src/app/api/readyz/**",
-        "src/lib/ai/providers/anthropic.ts",
-        "src/lib/ai/providers/openai.ts",
         "src/lib/db/**",
         "src/**/index.ts",
         "src/**/types.ts",

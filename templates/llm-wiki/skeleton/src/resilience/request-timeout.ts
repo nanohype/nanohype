@@ -1,19 +1,14 @@
 /**
- * How long the LLM provider waits on each attempt at a model call before it
- * gives up on the attempt, so a hung connection fails into its circuit
- * breaker instead of holding the operation. config.ts reads
- * LLM_REQUEST_TIMEOUT_MS with parseTimeoutMs() when the first operation
- * loads the configuration, so a value the parse refuses fails that operation
- * before any request.
+ * How long an LLM provider waits on a model call before it gives up on the
+ * call, so a hung connection fails into its circuit breaker instead of
+ * holding the operation. config.ts reads LLM_REQUEST_TIMEOUT_MS with
+ * parseTimeoutMs() when the first operation loads the configuration, so a
+ * value the parse refuses fails that operation before any request.
  *
- * An attempt has to finish its whole reply inside the timeout, so the
- * timeout caps the reply's length: the 120000 ms default covers the anthropic
+ * A call has to finish its whole reply inside the timeout, so the timeout
+ * caps the reply's length: the 120000 ms default covers the gateway
  * provider's 4096-token default at about 34 tokens a second. A caller that
  * raises maxTokens raises the timeout with it.
- *
- * The anthropic SDK client retries an attempt that times out
- * REQUEST_MAX_RETRIES times, so an endpoint that never answers holds the
- * operation for two timeouts plus the SDK's backoff between the attempts.
  */
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */
@@ -40,9 +35,3 @@ export function parseTimeoutMs(
   }
   return ms;
 }
-
-/**
- * How many more attempts the anthropic SDK client makes after an attempt that
- * times out or fails with an error the SDK retries.
- */
-export const REQUEST_MAX_RETRIES = 1;

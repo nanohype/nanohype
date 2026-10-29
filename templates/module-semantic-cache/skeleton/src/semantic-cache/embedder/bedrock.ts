@@ -2,21 +2,23 @@ import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedroc
 import { z } from "zod";
 import { createCircuitBreaker } from "../circuit-breaker.js";
 import { registerEmbeddingProvider } from "./registry.js";
+import { EMBED_REQUEST_TIMEOUT_MS } from "./request-timeout.js";
 import type { EmbeddingProvider } from "./types.js";
 
 // ── AWS Bedrock Embedding Provider (Titan Text v2) ──────────────────
 //
-// The org-default embedding path. Auth is the AWS credential chain
-// (IRSA on-cluster), never API keys. Every call carries an AbortSignal
-// timeout so a hung Bedrock socket trips the circuit breaker instead of
-// hanging, and the Titan response is schema-validated before use rather
-// than trusting raw model output.
+// Bedrock called directly. Auth is the AWS credential chain, never API
+// keys, so it serves a cache off the nanohype substrate: an ECS task
+// role, or a local AWS profile in dev. On the substrate the gateway
+// provider is the path to a model: a direct call skips the route's
+// guardrail and rate limit. Every call carries an AbortSignal timeout so
+// a hung Bedrock socket trips the circuit breaker instead of hanging, and
+// the Titan response is schema-validated before use rather than trusting
+// raw model output.
 //
-// Registers itself as the "bedrock" embedding provider — the documented
-// default for createSemanticCache().
+// Registers itself as the "bedrock" embedding provider.
 //
 
-const REQUEST_TIMEOUT_MS = Number(process.env.EMBED_REQUEST_TIMEOUT_MS ?? 30_000);
 const titanResponseSchema = z.object({ embedding: z.array(z.number()) });
 
 class BedrockEmbedder implements EmbeddingProvider {
@@ -47,7 +49,7 @@ class BedrockEmbedder implements EmbeddingProvider {
           accept: "application/json",
           body: JSON.stringify({ inputText: text, dimensions: this.dims, normalize: true }),
         }),
-        { abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+        { abortSignal: AbortSignal.timeout(EMBED_REQUEST_TIMEOUT_MS) },
       ),
     );
     const parsed = titanResponseSchema.parse(JSON.parse(new TextDecoder().decode(response.body)));

@@ -73,21 +73,16 @@ chrome.runtime.onMessage.addListener(
 async function handleChat(request: ChatRequest): Promise<ChatResponse> {
   const settings = await getSettings();
 
-  if (!settings.apiKey) {
+  if (!settings.endpoint) {
     return {
       content: "",
-      error: "No API key configured. Open the extension options to add one.",
+      error: "No model gateway endpoint is set. Open the extension options to set one.",
     };
   }
 
   try {
-    logger.info("background.chat", { provider: settings.provider });
-    const content = await sendMessage(
-      request.messages,
-      settings.apiKey,
-      settings.provider,
-      settings.model,
-    );
+    logger.info("background.chat", { route: settings.route });
+    const content = await sendMessage(request.messages, settings);
     return { content };
   } catch (err) {
     logger.error("background.error", {

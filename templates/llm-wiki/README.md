@@ -6,7 +6,7 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
 
 - Three-layer architecture: immutable raw sources, LLM-maintained wiki pages, configurable wiki schema
 - Three core operations: ingest (source → wiki pages), query (search → synthesize → cite), lint (consistency health checks)
-- Pluggable provider registries for storage (git, mock), source ingestion (local filesystem, mock), and LLM (Anthropic, mock)
+- Pluggable provider registries for storage (git, mock), source ingestion (local filesystem, mock), and LLM (`gateway`, which calls the Platform's ModelGateway and holds no model credential; mock)
 - Multi-tenancy with tenant-isolated wikis, schemas, and role-based access control
 - Git-backed wiki storage with commit-per-operation audit trail
 - Wiki schema system defining page types, required sections, contradiction policy, and LLM configuration
@@ -20,16 +20,17 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
 
 ## Variables
 
-| Variable          | Type   | Default                                        | Description                       |
-| ----------------- | ------ | ---------------------------------------------- | --------------------------------- |
-| `ProjectName`     | string | _(required)_                                   | Kebab-case project name           |
-| `Description`     | string | `"Multi-tenant LLM-maintained knowledge base"` | Short description                 |
-| `StorageProvider` | string | `"git"`                                        | Default wiki storage backend      |
-| `LlmProvider`     | string | `"anthropic"`                                  | Default LLM provider              |
-| `SourceProvider`  | string | `"local"`                                      | Default source ingestion provider |
-| `IncludeApi`      | bool   | `true`                                         | Include HTTP API server           |
-| `IncludeCli`      | bool   | `true`                                         | Include CLI interface             |
-| `IncludeTests`    | bool   | `true`                                         | Include test suite                |
+| Variable          | Type   | Default                                        | Description                                                             |
+| ----------------- | ------ | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `ProjectName`     | string | _(required)_                                   | Kebab-case project name                                                 |
+| `Description`     | string | `"Multi-tenant LLM-maintained knowledge base"` | Short description                                                       |
+| `StorageProvider` | string | `"git"`                                        | Default wiki storage backend                                            |
+| `LlmProvider`     | string | `"gateway"`                                    | Default LLM provider                                                    |
+| `PlatformName`    | string | `${ProjectName}`                               | Platform CR the wiki deploys under; sets the gateway's default endpoint |
+| `SourceProvider`  | string | `"local"`                                      | Default source ingestion provider                                       |
+| `IncludeApi`      | bool   | `true`                                         | Include HTTP API server                                                 |
+| `IncludeCli`      | bool   | `true`                                         | Include CLI interface                                                   |
+| `IncludeTests`    | bool   | `true`                                         | Include test suite                                                      |
 
 ## Project layout
 
@@ -65,7 +66,7 @@ Multi-tenant LLM-maintained knowledge base. Agents incrementally build structure
     llm/
       types.ts                  # LlmMessage, LlmProvider interface
       registry.ts               # factory-based provider registry
-      anthropic.ts              # Claude API via @anthropic-ai/sdk
+      gateway.ts                # Platform ModelGateway, no credential
       mock.ts                   # deterministic responses for testing
     operations/
       types.ts                  # IngestResult, QueryResult, LintResult
@@ -104,8 +105,9 @@ The project reads these settings from the process environment and loads no `.env
 - `WIKI_STORAGE_PROVIDER` -- storage provider ingest, query and lint use. Defaults to the `StorageProvider` value.
 - `WIKI_SOURCE_PROVIDER` -- source provider ingest reads from. Defaults to the `SourceProvider` value.
 - `WIKI_LLM_PROVIDER` -- LLM provider ingest and query call. Defaults to the `LlmProvider` value.
-- `ANTHROPIC_API_KEY` -- key the `anthropic` LLM provider authenticates with, required by its first request.
-- `LLM_REQUEST_TIMEOUT_MS` -- how long the `anthropic` provider waits on each attempt at a model call, in milliseconds: a whole number from 1 to 2147483647, and 120000 when unset or empty. An attempt has to finish its whole reply within it, and the default covers the provider's 4096-token reply at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The provider retries a timed-out attempt once, so an endpoint that never answers holds an operation for two timeouts plus the SDK's backoff. Any other value fails the first operation that loads the configuration.
+- `MODEL_GATEWAY_ENDPOINT` -- root of the Platform's ModelGateway, as ModelGateway `status.endpoint` publishes it, which the `gateway` provider calls. Defaults to the Service the eks-agent-platform operator creates for the Platform named by `PlatformName`. A value with a path, query or fragment fails the gateway provider's import. The gateway runs under the tenant's EKS Pod Identity and holds the Bedrock role, so the wiki holds no model credential and sends none.
+- `MODEL_ROUTE` -- ModelGateway route the `gateway` provider names when a call sets no model. Defaults to `default`.
+- `LLM_REQUEST_TIMEOUT_MS` -- how long an LLM provider waits on a model call, in milliseconds: a whole number from 1 to 2147483647, and 120000 when unset or empty. A call has to finish its whole reply within it, and the default covers the gateway provider's 4096-token reply at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The `gateway` provider gives up on the call at one timeout. Any other value fails the first operation that loads the configuration.
 - `WIKI_API_KEY` -- bearer token the HTTP API requires. When it is unset, the API serves every request unauthenticated and warns that it does.
 
 ## After scaffolding

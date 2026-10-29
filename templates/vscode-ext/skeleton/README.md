@@ -48,15 +48,31 @@ npm run typecheck
 there is sent to the extension host, answered by the configured AI provider,
 and rendered back in the panel.
 
-Two settings choose the provider:
+Four settings choose the provider and how it reaches a model:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `__PROJECT_NAME__.provider` | `anthropic` | Any name registered in `src/ai/providers` |
-| `__PROJECT_NAME__.model` | *(empty)* | Model id; empty uses the provider's default |
+| `__PROJECT_NAME__.provider` | `bedrock` | Any name registered in `src/ai/providers` |
+| `__PROJECT_NAME__.model` | *(empty)* | Bedrock inference-profile ID; empty uses `us.anthropic.claude-sonnet-5` |
+| `__PROJECT_NAME__.awsProfile` | *(empty)* | AWS profile to sign with; empty uses the AWS SDK's default credential chain |
+| `__PROJECT_NAME__.awsRegion` | *(empty)* | Region Bedrock is called in; empty uses `AWS_REGION`, then `us-east-1` |
 
-The API key is held in VS Code's SecretStorage, not in settings or the
-environment. The first message prompts for it and stores it.
+All four are `machine`-scoped: they take their values from user or remote
+settings, and VS Code ignores a value a workspace's `.vscode/settings.json`
+sets for them. A cloned repository therefore cannot choose which of your AWS
+profiles signs a call, which model it reaches or which region serves it. The
+manifest also lists them under
+`capabilities.untrustedWorkspaces.restrictedConfigurations`, which keeps an
+untrusted workspace's value out in Restricted Mode.
+
+The bedrock provider calls Bedrock's Converse API under the IAM role the AWS
+SDK's credential chain resolves for that profile, such as an IAM Identity
+Center sign-in (`aws sso login --profile <profile>`). The chain hands the
+extension temporary credentials, so it holds no provider key in settings,
+SecretStorage or the environment. The profile's role needs
+`bedrock:InvokeModel` on the inference profile the model setting names and
+on the foundation model it routes to, in every one of the profile's
+destination regions.
 # #endif
 
 ## Packaging and Publishing
@@ -78,5 +94,5 @@ npm run publish
 - Communication between extension host and webview via `postMessage`, typed in `src/webview/protocol.ts`
 # #endif
 # #if IncludeAi
-- AI providers use a self-registering registry pattern (add new providers by implementing `AiProvider` and calling `registerProvider`)
+- AI providers use a self-registering registry pattern (add new providers by implementing `AiProvider` and calling `registerProvider`); a provider authenticates through an IAM role it assumes, as the bedrock one does, never a key
 # #endif

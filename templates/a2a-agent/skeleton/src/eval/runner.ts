@@ -79,10 +79,10 @@ async function main(): Promise<void> {
   // ran everything and passed.
   const cases = await loadCases(casesDir);
 
-  // Routing reaches a provider SDK, whose client constructs at import and
-  // needs a key. Importing it after the corpus is read means a run with
-  // nothing to run says so, instead of failing earlier with a vendor SDK
-  // error about credentials.
+  // Routing reaches the gateway provider, which parses MODEL_GATEWAY_ENDPOINT
+  // as it loads and throws on a malformed one. Importing it after the corpus
+  // is read means a run with nothing to run says so, instead of failing
+  // earlier on that setting.
   const { routeTask, RoutingFormatError } = await import("../routing.js");
 
   if (!coversBothKinds(cases)) {

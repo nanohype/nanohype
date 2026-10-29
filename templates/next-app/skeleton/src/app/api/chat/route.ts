@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     logger.info("Chat request received", {
       provider: selectedProvider,
-      model: model ?? aiProvider.defaultModel,
+      model: aiProvider.resolveModel(model),
       messageCount: messages.length,
     });
 

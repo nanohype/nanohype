@@ -85,7 +85,7 @@ const { manifest, files } = await source.fetchTemplate('agentic-loop');
 const result = renderTemplate(manifest, files, {
   ProjectName: 'my-agent',
   IncludeDocker: true,
-  LlmProvider: 'anthropic',
+  LlmProvider: 'gateway',
 });
 
 // result.files     — SkeletonFile[] with rendered paths and content
@@ -109,7 +109,7 @@ const result = await renderComposite(
   composite,
   {
     ProjectName: 'my-bot',
-    IncludeAuth: true,
+    IncludeEvals: true,
   },
   source,
 );

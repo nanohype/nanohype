@@ -25,8 +25,11 @@ import type { LlmProvider } from "./types.js";
 
 // ── AWS Bedrock Provider ───────────────────────────────────────────
 //
-// Bedrock via the Converse API — the org-default LLM path. Auth is the
-// AWS credential chain (IRSA on the cluster), never API keys. A
+// Bedrock via the Converse API, called directly. Auth is the AWS
+// credential chain, never API keys, so it serves an application off the
+// nanohype substrate: an ECS task role, or a local AWS profile. On the
+// substrate the gateway provider is the path to a model: a direct call
+// skips the route's guardrail and rate limit. A
 // cachePoint after the (stable) system prompt amortizes the large prefix
 // across turns — the mandated prompt-caching pattern; cache_read /
 // cache_write tokens flow through to TokenUsage so the hit ratio is
@@ -279,7 +282,7 @@ export function createBedrockProvider(options: BedrockProviderOptions = {}): Llm
         .join("")
         .trim();
 
-      const modelPricing = getPricing(model.replace(/:.*$/, "").replace(/^.*\./, ""));
+      const modelPricing = getPricing(model);
       const cost = estimateCost(usage, modelPricing);
 
       logger.debug("bedrock chat complete", { model, ...usage, latencyMs, cost });
@@ -327,7 +330,7 @@ export function createBedrockProvider(options: BedrockProviderOptions = {}): Llm
               outputTokens: countTokens(text),
             };
           }
-          const modelPricing = getPricing(model.replace(/:.*$/, "").replace(/^.*\./, ""));
+          const modelPricing = getPricing(model);
           const cost = estimateCost(usage, modelPricing);
           return { text, model, provider: "bedrock", usage, latencyMs, cost };
         },

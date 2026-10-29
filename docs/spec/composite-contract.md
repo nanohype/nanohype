@@ -154,7 +154,8 @@ name: ai-chatbot
 displayName: 'AI Chatbot'
 description: >
   Full-stack AI chatbot with agentic loop, HTTP service,
-  authentication, evaluation harness, and deployment.
+  authentication, evaluation harness, and a Platform tenant chart whose
+  ModelGateway is the agent's model path.
 version: '0.1.0'
 tags: [ai, chatbot, fullstack, typescript]
 
@@ -171,8 +172,8 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for AI features'
-    default: 'anthropic'
+    description: 'LLM provider the packages deployed on the substrate call: gateway, the Platform ModelGateway, which holds the Bedrock role there, so none of them holds a model credential. The eval harness runs on a CI runner and keeps its own bedrock default'
+    default: 'gateway'
 
   - name: IncludeEvals
     type: bool
@@ -180,11 +181,29 @@ variables:
     description: 'Include evaluation harness'
     default: true
 
-  - name: DeployTarget
+  - name: Tenant
     type: string
-    placeholder: '__DEPLOY_TARGET__'
-    description: 'Deployment target template'
-    default: 'k8s-deploy'
+    placeholder: '__TENANT__'
+    description: 'Owning team: the tenants-<team> namespace the Platform, BudgetPolicy and ModelGateway CRs are applied in, the Platform''s spec.tenant, and the team label on the tenant chart''s resources and telemetry'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
+
+  - name: Image
+    type: string
+    placeholder: '__IMAGE__'
+    description: 'Container image repository the tenant chart deploys, without a tag; each values-<env>.yaml pins one'
+    default: '${ProjectName}'
+
+  - name: AppMetric
+    type: string
+    placeholder: '__APP_METRIC__'
+    description: 'Prefix of the RED series the tenant chart''s Grafana dashboard reads: <prefix>_requests_total, <prefix>_errors_total and <prefix>_request_duration_seconds. The default, http, is the prefix apps/api (a ts-service) emits them under'
+    default: 'http'
+    validation:
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case: it prefixes Prometheus metric names'
 
 templates:
   - template: monorepo
@@ -198,6 +217,7 @@ templates:
     path: packages/ai
     variables:
       ProjectName: '${ProjectName}-ai'
+      PlatformName: '${ProjectName}'
       LlmProvider: '${LlmProvider}'
       IncludeMemory: true
       IncludeEval: false
@@ -206,7 +226,6 @@ templates:
     path: apps/api
     variables:
       ProjectName: '${ProjectName}-api'
-      IncludeAuth: true
       IncludeDocker: true
 
   - template: module-auth-ts
@@ -220,14 +239,24 @@ templates:
     condition: IncludeEvals
     variables:
       ProjectName: '${ProjectName}-evals'
-      LlmProvider: '${LlmProvider}'
+      PlatformName: '${ProjectName}'
+      # Evals run on a CI runner, off the substrate, so the harness keeps its
+      # own provider default: bedrock, under the IAM role the eval workflow
+      # assumes through GitHub OIDC federation.
 
-  - template: k8s-deploy
+  # The deploy unit: the Helm chart with its per-env values and ApplicationSet
+  # entry, and the Platform, BudgetPolicy and ModelGateway CRs. The
+  # ModelGateway is the model path every gateway provider above calls: the
+  # operator runs it as the Service <ProjectName>-gateway, which the chart
+  # hands the app as MODEL_GATEWAY_ENDPOINT.
+  - template: k8s-app-tenant
     path: infra
     variables:
-      ProjectName: '${ProjectName}'
       AppName: '${ProjectName}'
-      IncludeCi: true
+      AppMetric: '${AppMetric}'
+      Tenant: '${Tenant}'
+      Image: '${Image}'
+      Port: '3000'
 ```
 
 ---

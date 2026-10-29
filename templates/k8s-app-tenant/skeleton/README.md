@@ -16,7 +16,7 @@ chart/
   templates/                     # deployment, service, serviceaccount, networkpolicy
 gitops/
   applicationset-entry.yaml      # register with __GITOPS_REPO__
-platform.yaml                    # Platform CR — apply once
+platform.yaml                    # Platform, BudgetPolicy and ModelGateway CRs — apply once
 ```
 
 ## Initial setup (per cluster, one-time)
@@ -36,7 +36,8 @@ platform.yaml                    # Platform CR — apply once
 
 - **Code change** → bump image tag in `values-<env>.yaml` → commit → ArgoCD reconciles.
 - **Chart change** → edit `chart/templates/*.yaml` → render locally with `helm template chart/ -f chart/values-development.yaml` → commit.
-- **New egress** → add entry to `chart/values.yaml` `networkPolicy.egress` → render → commit.
+- **New egress** → add entry to `chart/values.yaml` `networkPolicy.egress` → render → commit. A third-party API on `:443` goes in a CiliumNetworkPolicy `toFQDNs` rule by hostname rather than a CIDR: a CIDR rule on `:443` also reaches Bedrock directly under the tenant's Pod Identity role, past the ModelGateway's guardrail and rate limit.
+- **New model route** → add a route to the `ModelGateway` in `platform.yaml` → reapply → the app names it; it never holds a model key, and model calls need no `:443` egress.
 - **New IRSA policy** → edit `platform.yaml` `spec.irsa.policies` → reapply → operator reconciles the role.
 
 ## What lives where (don't put it in the wrong place)

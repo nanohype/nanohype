@@ -1,10 +1,9 @@
-import type { ChatMessage } from "./providers";
+import type { ChatMessage, ProviderSettings } from "./providers";
 import { getProvider, listProviders } from "./providers";
 
-export interface AiClientOptions {
+export interface AiClientOptions extends ProviderSettings {
+  /** The registered provider a chat is sent to. */
   provider: string;
-  apiKey: string;
-  model?: string;
 }
 
 export class AiClient {
@@ -15,12 +14,12 @@ export class AiClient {
   }
 
   async chat(messages: ChatMessage[]): Promise<string> {
-    const provider = getProvider(this.options.provider);
-    return provider.sendMessage(
-      messages,
-      this.options.apiKey,
-      this.options.model ?? provider.defaultModel,
-    );
+    const { provider: name, ...settings } = this.options;
+    const provider = getProvider(name);
+    return provider.sendMessage(messages, {
+      ...settings,
+      model: settings.model ?? provider.defaultModel,
+    });
   }
 
   static availableProviders(): string[] {

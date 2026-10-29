@@ -12,4 +12,11 @@ export interface AiProvider {
 
   /** The default model identifier for this provider. */
   defaultModel: string;
+
+  /**
+   * The model a request calls when its body names `model`: that model or
+   * the default, for a provider that takes the caller's choice, and the
+   * provider's own for one that decides the model server-side.
+   */
+  resolveModel(model?: string): string;
 }

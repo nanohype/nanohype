@@ -16,9 +16,18 @@ npm run train
 # 3. Check job status
 npx tsx src/index.ts train:status <job-id>
 
-# 4. Run the eval corpus against the fine-tuned model
-FINE_TUNED_MODEL=ft:gpt-4o-mini:org::id npm run eval
+# 4. Run the eval corpus against the deployment serving the fine-tuned model
+FINE_TUNED_MODEL=arn:aws:bedrock:us-east-1:123456789012:custom-model-deployment/abc npm run eval
 ```
+
+The bedrock provider runs every command under the IAM role the AWS SDK's
+default credential chain resolves: the AWS profile on a workstation, the
+role a CI job federates its OIDC token into. No provider key is set
+anywhere. `train` uploads the prepared splits to `TRAINING_S3_URI` and
+submits a Bedrock model customization job that runs as the service role
+`TRAINING_ROLE_ARN` names. A finished job produces a custom model; serve it
+through a custom model deployment or Provisioned Throughput, and give the
+eval that ARN as `FINE_TUNED_MODEL`.
 
 ## Dataset Format
 
@@ -29,7 +38,7 @@ Place your training data in JSONL format. Each line must be a JSON object with a
 {"messages":[{"role":"user","content":"Translate hello to Spanish"},{"role":"assistant","content":"hola"}]}
 ```
 
-The pipeline validates each example, reports errors with line numbers, and splits the valid examples into train/validation/test sets.
+The pipeline validates each example, reports errors with line numbers, and splits the valid examples into train/validation/test sets. The bedrock provider converts each split to the `bedrock-conversation-2024` schema as it uploads it: a `system` message becomes the record's system block, and the turns that follow must start with `user` and end with `assistant`.
 
 ## Commands
 
@@ -71,10 +80,21 @@ All configuration is via environment variables (see `.env.example`):
 | `SPLIT_TRAIN_RATIO` | `0.8` | Training set ratio |
 | `SPLIT_VAL_RATIO` | `0.1` | Validation set ratio |
 | `SPLIT_TEST_RATIO` | `0.1` | Test set ratio |
-| `BASE_MODEL` | `gpt-4o-mini-2024-07-18` | Model to fine-tune |
-| `TRAINING_SUFFIX` | project name | Suffix for fine-tuned model |
-| `FINE_TUNED_MODEL` | (none) | Fine-tuned model ID for eval |
-| `OPENAI_API_KEY` | (required) | OpenAI API key |
+| `TRAINING_PROVIDER` | `__PROVIDER__` | Registered training provider |
+| `AWS_REGION` | `us-east-1` | Region Bedrock and S3 are called in |
+| `TRAINING_ROLE_ARN` | (required to train) | Service role Bedrock assumes to read the splits and write output |
+| `TRAINING_S3_URI` | (required to train) | S3 prefix the splits upload to and output lands under |
+| `BASE_MODEL` | `amazon.nova-micro-v1:0:128k` | Bedrock customization identifier of the model to fine-tune |
+| `TRAINING_EPOCHS` | (base model default) | Sent as `epochCount` |
+| `LEARNING_RATE` | (base model default) | Sent as `learningRate` |
+| `BATCH_SIZE` | (base model default) | Sent as `batchSize`, for a base model that takes one |
+| `TRAINING_SUFFIX` | project name | Job and custom model name, before a timestamp |
+| `EVAL_BASE_MODEL` | `us.amazon.nova-micro-v1:0` | Inference profile the eval invokes the base model through |
+| `FINE_TUNED_MODEL` | (none) | Deployment or Provisioned Throughput ARN serving the fine-tuned model, for eval |
+
+The caller's role needs `s3:PutObject` under `TRAINING_S3_URI`, the Bedrock model customization job actions, `iam:PassRole` on `TRAINING_ROLE_ARN`, and, for the eval, `bedrock:InvokeModel` on the `EVAL_BASE_MODEL` inference profile, on the foundation model it routes to in every one of the profile's destination regions, and on the deployment or Provisioned Throughput `FINE_TUNED_MODEL` names. Which hyperparameters a base model accepts, and over what range, is the base model's own; Bedrock refuses a job that names one it does not.
+
+Every request the bedrock provider sends to AWS fails with `AwsRequestTimeoutError` when it gets no answer within its timeout, so a hung connection fails the command instead of holding it: a split upload, a job call and an eval completion each have their own, the `DEFAULT_*_TIMEOUT_MS` constants in `src/training/bedrock.ts`.
 
 ## Adding Custom Providers
 
@@ -104,13 +124,15 @@ registerProvider("my-provider", () => new MyProvider());
 import "./my-provider.js";
 ```
 
+A provider authenticates the way the bedrock one does, through an IAM role the pipeline assumes; the LLM policy allows no provider key in code, the environment or a secret.
+
 ## Architecture
 
 The pipeline is organized around three CLI commands that form an end-to-end fine-tuning workflow:
 
 - **Dataset pipeline** (`prepare`) -- Loads raw JSONL from `DATA_INPUT_PATH`, validates each example against the chat-completion message schema (system/user/assistant roles, non-empty content), reports per-line errors, shuffles valid examples, and splits them into train/validation/test sets at configurable ratios. Output files land in `DATA_OUTPUT_DIR`.
-- **Training provider registry** (`train`, `train:status`, `train:list`) -- A self-registering registry pattern where each provider (e.g., OpenAI) implements `TrainingProvider` (upload, create job, status, cancel, list, complete). The CLI resolves the active provider from `TRAINING_PROVIDER`, uploads the prepared dataset, and submits a fine-tuning job. Status and listing commands poll the provider API.
-- **Eval corpus** (`eval`) -- Loads the cases in `src/eval/cases/`, sends each one to both the base model and the fine-tuned model, checks the case's assertions against the fine-tuned output, and computes side-by-side metrics: exact match rate, token overlap score, and length ratio. Results print per case, then as an aggregate summary, with the outputs themselves at `LOG_LEVEL=debug`. The command exits non-zero when a case fails.
+- **Training provider registry** (`train`, `train:status`, `train:list`) -- A self-registering registry pattern where each provider (Bedrock, the mock) implements `TrainingProvider` (upload, create job, status, cancel, list, complete). The CLI resolves the active provider from `TRAINING_PROVIDER`, uploads the prepared dataset, and submits a fine-tuning job. Status and listing commands poll the provider API.
+- **Eval corpus** (`eval`) -- Loads the cases in `src/eval/cases/`, sends each one to both the base model (`EVAL_BASE_MODEL`) and the fine-tuned model, checks the case's assertions against the fine-tuned output, and computes side-by-side metrics: exact match rate, token overlap score, and length ratio. Results print per case, then as an aggregate summary, with the outputs themselves at `LOG_LEVEL=debug`. The command exits non-zero when a case fails.
 
 ### Design Decisions
 
@@ -118,15 +140,15 @@ The pipeline is organized around three CLI commands that form an end-to-end fine
 - **Registry pattern** -- adding a new training provider is a single file that self-registers on import. No central switch statement to maintain.
 - **Zod config validation** -- `loadConfig()` parses all environment variables against a typed schema at startup. Missing or invalid values halt immediately with specific error messages.
 - **Graceful shutdown** -- SIGTERM/SIGINT handlers log and exit cleanly, preventing orphaned processes in containerized environments.
-- **The eval refuses an empty corpus** -- `loadCases` throws rather than returning an empty list, and the corpus is read before any provider client is built. A run that found nothing to run would otherwise report exactly what a run of the full corpus that passed reports, and would report it as a missing credential rather than as an empty corpus.
+- **The eval refuses an empty corpus** -- `loadCases` throws rather than returning an empty list, and the corpus is read before any provider client is built. A run that found nothing to run would otherwise report exactly what a run of the full corpus that passed reports, and would report it as a provider failure rather than as an empty corpus.
 
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production `OPENAI_API_KEY` (or your provider's key)
+- [ ] Scope the caller's role to the actions and resources listed under Configuration, and the `TRAINING_ROLE_ARN` service role to the training bucket prefix, and nothing wider
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Validate dataset quality before submitting training jobs
-- [ ] Monitor fine-tuning job costs in the provider dashboard
+- [ ] Monitor fine-tuning job and custom model hosting costs in AWS Cost Explorer
 - [ ] Store training data and model IDs in version control or a metadata store
 - [ ] Set up alerting on training job failures
 - [ ] Pin `BASE_MODEL` to a specific version to ensure reproducibility
@@ -147,7 +169,8 @@ src/
   training/
     types.ts             # TrainingProvider interface
     registry.ts          # Registry -- registerProvider / getProvider / listProviders
-    openai.ts            # OpenAI fine-tuning provider (self-registers)
+    bedrock.ts           # Bedrock model customization provider (self-registers)
+    mock.ts              # Deterministic provider for local runs
     index.ts             # Barrel -- triggers registration, re-exports API
   eval/
     cases.ts             # Corpus loader -- refuses an empty or malformed corpus

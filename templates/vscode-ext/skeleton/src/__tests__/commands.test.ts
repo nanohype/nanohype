@@ -123,7 +123,7 @@ describe("contributed commands", () => {
     const contributed = pkg.contributes.commands.map((c) => c.command).sort();
 
     const { activate } = await import("../extension.js");
-    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" }, secrets: {} } as never);
+    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" } } as never);
 
     const registered = [
       ...new Set(mockRegisterCommand.mock.calls.map((c) => c[0] as string)),
@@ -148,7 +148,7 @@ describe("contributed commands", () => {
     const contributed = pkg.contributes.commands.map((c) => c.command);
 
     const { activate } = await import("../extension.js");
-    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" }, secrets: {} } as never);
+    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" } } as never);
 
     const registered = mockRegisterCommand.mock.calls.map((call) => call[0] as string);
     expect(registered.length).toBeGreaterThan(0);
@@ -180,7 +180,6 @@ describe("contributed settings", () => {
     await activate({
       subscriptions: [],
       extensionUri: { fsPath: "/ext" },
-      secrets: {},
     } as never);
 
     for (const call of mockRegisterCommand.mock.calls) {
@@ -209,5 +208,71 @@ describe("contributed settings", () => {
     vscode.workspace.getConfiguration("__PROJECT_NAME__").get("provider");
 
     expect(mockConfigReads).toContain("__PROJECT_NAME__.provider");
+  });
+});
+
+describe("settings a workspace cannot set", () => {
+  // The provider, the model, the AWS profile and the region decide which
+  // credentials sign a model call, what it reaches and which region serves
+  // it. A workspace's .vscode/settings.json arrives with every repository a
+  // user clones, so none of the four may take a value from one. VS Code reads
+  // a `machine` or `application` setting from user and remote settings only,
+  // and a key listed in `untrustedWorkspaces.restrictedConfigurations` keeps
+  // its workspace value out in Restricted Mode, which VS Code honours only
+  // when `supported` is "limited".
+  const MODEL_CALL_SETTINGS = ["provider", "model", "awsProfile", "awsRegion"].map(
+    (key) => `__PROJECT_NAME__.${key}`,
+  );
+  const WORKSPACE_PROOF_SCOPES = ["application", "machine"];
+
+  interface Manifest {
+    capabilities?: {
+      untrustedWorkspaces?: {
+        supported?: boolean | string;
+        description?: string;
+        restrictedConfigurations?: string[];
+      };
+    };
+    contributes: { configuration?: { properties?: Record<string, { scope?: string }> } };
+  }
+
+  function manifest(): Manifest {
+    return JSON.parse(
+      readFileSync(join(import.meta.dirname, "..", "..", "package.json"), "utf-8"),
+    ) as Manifest;
+  }
+
+  it("declares each setting a model call reads with a scope no workspace can set", () => {
+    const properties = manifest().contributes.configuration?.properties ?? {};
+
+    for (const key of MODEL_CALL_SETTINGS) {
+      expect(properties[key], key).toBeDefined();
+      expect(WORKSPACE_PROOF_SCOPES, key).toContain(properties[key]?.scope);
+    }
+  });
+
+  it("restricts each of them in an untrusted workspace", () => {
+    const untrusted = manifest().capabilities?.untrustedWorkspaces;
+
+    expect(untrusted?.supported).toBe("limited");
+    // VS Code shows the description to a user deciding whether to trust a
+    // workspace.
+    expect(untrusted?.description).toBeTruthy();
+    for (const key of MODEL_CALL_SETTINGS) {
+      expect(untrusted?.restrictedConfigurations ?? [], key).toContain(key);
+    }
+  });
+
+  it("restricts only settings it declares", () => {
+    // A restricted key the manifest does not declare is a misspelling that
+    // restricts nothing.
+    const { capabilities, contributes } = manifest();
+    const declared = Object.keys(contributes.configuration?.properties ?? {});
+    const restricted = capabilities?.untrustedWorkspaces?.restrictedConfigurations ?? [];
+
+    expect(restricted.length).toBeGreaterThan(0);
+    for (const key of restricted) {
+      expect(declared).toContain(key);
+    }
   });
 });

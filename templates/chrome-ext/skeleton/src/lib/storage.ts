@@ -1,21 +1,22 @@
 /**
  * Type-safe wrappers around chrome.storage.local for extension settings.
+ *
+ * The settings name where the extension's model calls go and hold no
+ * credential: the gateway it calls holds the model access.
  */
 
-export type LlmProvider = string;
-
 export interface Settings {
-  apiKey: string;
-  provider: LlmProvider;
-  model: string;
+  /** The ModelGateway root the extension calls. Empty until the options page sets it. */
+  endpoint: string;
+  /** The ModelGateway route a request names as its model. */
+  route: string;
 }
 
 const STORAGE_KEY = "__PROJECT_NAME__:settings";
 
-const DEFAULT_SETTINGS: Settings = {
-  apiKey: "",
-  provider: "__LLM_PROVIDER__" as LlmProvider,
-  model: "",
+export const DEFAULT_SETTINGS: Settings = {
+  endpoint: "",
+  route: "default",
 };
 
 /**
@@ -26,8 +27,8 @@ export async function getSettings(): Promise<Settings> {
   const result = await chrome.storage.local.get(STORAGE_KEY);
   const stored = result[STORAGE_KEY] as Partial<Settings> | undefined;
   return {
-    ...DEFAULT_SETTINGS,
-    ...stored,
+    endpoint: stored?.endpoint ?? DEFAULT_SETTINGS.endpoint,
+    route: stored?.route ?? DEFAULT_SETTINGS.route,
   };
 }
 
@@ -36,12 +37,4 @@ export async function getSettings(): Promise<Settings> {
  */
 export async function saveSettings(settings: Settings): Promise<void> {
   await chrome.storage.local.set({ [STORAGE_KEY]: settings });
-}
-
-/**
- * Get just the API key. Convenience wrapper for background script.
- */
-export async function getApiKey(): Promise<string> {
-  const settings = await getSettings();
-  return settings.apiKey;
 }

@@ -131,11 +131,11 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **mcp-server-python** — Reach for this when the client's team is Python-native and needs an MCP server. Same architecture as mcp-server-ts but idiomatic Python with Pydantic validation, structlog logging, and FastAPI for the HTTP transport. Decorator-based tool registration.
 
-**multimodal-pipeline** — Reach for this when the client needs to process images, audio, or video with AI. Detects modality, preprocesses (resize, transcode, frame extract), sends to vision/audio LLMs, returns structured output. Processor registry pattern — add custom modality handlers.
+**multimodal-pipeline** — Reach for this when the client needs to process images, audio, or video with AI. Detects modality, preprocesses (resize, frame extract, Amazon Transcribe for audio), sends to a vision-capable LLM, returns structured output. Processor registry pattern — add custom modality handlers.
 
 **data-pipeline** — Reach for this when you need ETL for AI workloads. Ingests documents from files or web pages, chunks with pluggable strategies (recursive, fixed-size, semantic), embeds via provider registry, and indexes to pluggable output adapters. Separates ingestion from query in RAG architectures. Output is compatible with module-vector-store.
 
-**fine-tune-pipeline** — Reach for this when RAG and prompting aren't enough. Dataset preparation (JSONL formatting, validation, train/val/test splitting), training job submission via provider registry (OpenAI fine-tuning API), post-training eval comparing fine-tuned vs base model.
+**fine-tune-pipeline** — Reach for this when RAG and prompting aren't enough. Dataset preparation (JSONL formatting, validation, train/val/test splitting), training job submission via provider registry (Bedrock model customization jobs under an assumed IAM role), post-training eval comparing fine-tuned vs base model.
 
 **agent-orchestrator** — Reach for this when one agent isn't enough. Coordinates multiple specialized agents with LLM-powered task decomposition, capability-based routing, shared context accumulation, and handoff audit trails. Sits above agentic-loop and a2a-agent.
 
@@ -157,7 +157,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **discord-bot** — Reach for this when the client wants AI in Discord. discord.js v14 with slash commands, message handlers, and embed-formatted responses. Per-channel conversation context with typing indicators.
 
-**electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — API keys stay in the main process. React UI with CSS-variable design tokens. esbuild for main, Vite for renderer.
+**electron-app** — Reach for this when the client needs a desktop app with AI. Electron main/renderer architecture with IPC bridge — the main process calls Bedrock under the AWS credential chain, so no model credential reaches the renderer. React UI with CSS-variable design tokens. esbuild for main, Vite for renderer.
 
 **api-gateway** — Reach for this when you need an edge layer in front of multiple backend services. Reverse proxy with per-route rate limiting, JWT/API key auth, request/response transformation, canary traffic splitting, and upstream health checking. Per-upstream circuit breakers.
 
@@ -203,7 +203,7 @@ A decision guide for selecting and composing templates. Read this to understand 
 
 **module-feature-flags-ts** — Add this when the service needs to toggle AI behavior per user or cohort. Evaluate flags with percentage rollout (deterministic FNV-1a hashing), user allowlists, and property-based rules. Pluggable flag stores (memory, Redis, JSON file). Variant tracker for pairing with observability.
 
-**module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface across Anthropic, OpenAI, Groq (always included), plus Bedrock, Vertex AI, Hugging Face, and Ollama (conditional). Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
+**module-llm-providers** — Add this as the canonical LLM integration layer. Unified interface over the Platform's ModelGateway (the default, holding no model credential), plus Bedrock under an assumed IAM role (conditional) for an application off the substrate. Token counting, pricing table, streaming normalization. Gateway adapter bridges to module-llm-gateway's interface.
 
 **module-project-mgmt-ts** — Add this when AI agents need to create and manage work items. Unified interface across Linear (GraphQL), Jira (REST), Asana, and Shortcut. Priority mapping, pagination abstraction, comment threading.
 

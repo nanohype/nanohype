@@ -11,10 +11,9 @@ export default defineConfig({
       include: ["src/**/*.ts", "src/**/*.tsx"],
       // Out of the denominator: bootstrap.ts and extension.ts, which run at
       // activation and exit the process; client.ts, a pass-through to whichever
-      // provider the registry returns; the anthropic and openai providers,
-      // which need a vendor key; the React app, whose entry mounts into a DOM
-      // the extension host owns; panel.ts, which builds its HTML from VS Code
-      // webview URIs; and the barrels and type-only modules.
+      // provider the registry returns; the React app's entry, which mounts
+      // into a DOM the extension host owns; panel.ts, which builds its HTML
+      // from VS Code webview URIs; and the barrels and type-only modules.
       //
       // The message protocol and the React app stay in. The first is the
       // routing between the two processes, where a message with no case is
@@ -26,8 +25,6 @@ export default defineConfig({
         "src/bootstrap.ts",
         "src/extension.ts",
         "src/ai/client.ts",
-        "src/ai/providers/anthropic.ts",
-        "src/ai/providers/openai.ts",
         "src/webview/app/index.tsx",
         "src/webview/panel.ts",
         "src/**/index.ts",

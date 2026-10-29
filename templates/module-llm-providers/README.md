@@ -4,12 +4,10 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 
 ## What you get
 
-- Factory-based provider registry; each built-in provider is one module-level instance that lives as long as the process, so its SDK client, circuit breaker and log-once state hold across lookups
-- Anthropic provider (Claude Sonnet, Opus, Haiku) with streaming and circuit breaker
-- OpenAI provider (GPT-4o, GPT-4o-mini, o1) with streaming and circuit breaker
-- Groq provider (Llama, Mixtral) with streaming and circuit breaker
+- Factory-based provider registry; each built-in provider is one module-level instance that lives as long as the process, so its client, circuit breaker and log-once state hold across lookups
+- Gateway provider, the default: calls the Platform's `ModelGateway` over native Anthropic Messages and sends no credential, since on the nanohype substrate the gateway holds the Bedrock role and applies the route's guardrail and rate limit. Endpoint from `MODEL_GATEWAY_ENDPOINT`, defaulting to the Service the eks-agent-platform operator creates for the Platform; route from `MODEL_ROUTE`
 - Mock provider with deterministic keyword-matched responses (always included)
-- Optional: AWS Bedrock, Google Vertex AI, Hugging Face, Ollama
+- Optional, with `IncludeBedrock`: AWS Bedrock over the Converse API, called directly under the AWS credential chain (an ECS task role, a local AWS profile), for an application off the substrate. A non-Claude model is a Bedrock model id or a `ModelGateway` route, so no provider holds a provider key
 - Unified streaming via `AsyncIterable<StreamChunk>` normalization
 - Token counting via js-tiktoken with cached encoders
 - Gateway adapter for bridging to the module-llm-gateway interface
@@ -19,15 +17,14 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
 
 ## Variables
 
-| Variable             | Type   | Default                                                      | Description                             |
-| -------------------- | ------ | ------------------------------------------------------------ | --------------------------------------- |
-| `ProjectName`        | string | --                                                           | Kebab-case project name                 |
-| `Description`        | string | `LLM provider pack for Anthropic, OpenAI, Bedrock, and more` | Project description                     |
-| `DefaultProvider`    | string | `anthropic`                                                  | Default LLM provider                    |
-| `IncludeBedrock`     | bool   | `false`                                                      | Include AWS Bedrock provider            |
-| `IncludeVertex`      | bool   | `false`                                                      | Include Google Vertex AI provider       |
-| `IncludeHuggingFace` | bool   | `false`                                                      | Include Hugging Face Inference provider |
-| `IncludeOllama`      | bool   | `false`                                                      | Include Ollama local inference provider |
+| Variable          | Type   | Default                                                       | Description                                                                                                                                                                        |
+| ----------------- | ------ | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ProjectName`     | string | --                                                            | Kebab-case project name                                                                                                                                                            |
+| `Description`     | string | `LLM provider pack for the Platform ModelGateway and Bedrock` | Project description                                                                                                                                                                |
+| `DefaultProvider` | string | `gateway`                                                     | Default LLM provider                                                                                                                                                               |
+| `PlatformName`    | string | `${ProjectName}`                                              | Platform CR the project deploys under; names the default gateway Service `<PlatformName>-gateway`                                                                                  |
+| `IncludeBedrock`  | bool   | `false`                                                       | Include the AWS Bedrock provider, which calls Bedrock under the AWS credential chain, for an application off the substrate                                                         |
+| `ProviderCheck`   | string | derived                                                       | Derived from `DefaultProvider` and `IncludeBedrock`; fails the scaffold when `DefaultProvider` is `bedrock` and the project leaves it out. The scaffold rejects a value set for it |
 
 ## Project layout
 
@@ -44,13 +41,8 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
       providers/
         types.ts                # LlmProvider interface (canonical)
         registry.ts             # Factory-based registry
-        anthropic.ts            # Claude via @anthropic-ai/sdk
-        openai.ts               # GPT-4o via openai SDK
-        groq.ts                 # Llama via groq-sdk
-        bedrock.ts              # (conditional) AWS Bedrock
-        vertex.ts               # (conditional) Google Vertex AI
-        huggingface.ts          # (conditional) Hugging Face Inference
-        ollama.ts               # (conditional) Ollama local inference
+        gateway.ts              # The Platform ModelGateway, no credential
+        bedrock.ts              # (conditional) AWS Bedrock, under the AWS credential chain
         mock.ts                 # Deterministic test provider
         index.ts                # Barrel with self-registration
       adapters/
@@ -60,7 +52,7 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
         counter.ts              # js-tiktoken token counting
       resilience/
         circuit-breaker.ts      # Sliding-window circuit breaker
-        request-timeout.ts      # LLM_REQUEST_TIMEOUT_MS, its parse, and the SDK retry count
+        request-timeout.ts      # LLM_REQUEST_TIMEOUT_MS, its parse, and withRequestTimeout()
         stream-guard.ts         # A stream as one breaker call, bounded per event
         __tests__/
           circuit-breaker.test.ts
@@ -72,13 +64,9 @@ Shared LLM provider pack -- the canonical interface for all AI templates.
         adapters.test.ts
         tokens.test.ts
         provider-contract.ts              # Breaker and timeout contract each provider runs
-        provider-streams.test.ts          # The contract for anthropic, openai and groq
-        anthropic-request.test.ts         # Anthropic SDK over an in-process fetch
-        chat-completions-request.test.ts  # openai and groq SDKs over an in-process fetch
-        bedrock-request.test.ts           # (conditional) AWS Bedrock
-        vertex-request.test.ts            # (conditional) Google Vertex AI
-        huggingface-request.test.ts       # (conditional) Hugging Face Inference
-        ollama-request.test.ts            # (conditional) Ollama local inference
+        pricing.test.ts                   # Pricing table lookups
+        gateway-request.test.ts           # gateway against an in-process HTTP server
+        bedrock-request.test.ts           # (conditional) AWS Bedrock SDK over an in-process handler
   package.json
   tsconfig.json
 ```

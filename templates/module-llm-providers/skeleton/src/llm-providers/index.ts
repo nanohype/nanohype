@@ -33,7 +33,7 @@ export type {
   StreamResponse,
   TokenUsage,
 } from "./types.js";
-export { DEFAULT_PRICING, estimateCost, getPricing } from "./types.js";
+export { DEFAULT_PRICING, estimateCost, findPricing, getPricing } from "./types.js";
 
 // ── Provider Registry Facade ───────────────────────────────────────
 
@@ -62,7 +62,7 @@ export interface ProviderRegistry {
  * OTel metrics, and provides a convenient chat/streamChat interface.
  *
  * ```typescript
- * const registry = createProviderRegistry({ defaultProvider: "anthropic" });
+ * const registry = createProviderRegistry({ defaultProvider: "gateway" });
  * const response = await registry.chat([{ role: "user", content: "Hello" }]);
  * ```
  */

@@ -14,9 +14,10 @@ export default defineConfig({
       // types (pricing/cost), token counting, circuit breaker, request
       // timeout and stream guard, adapters, and the deterministic mock
       // provider, along with every provider that calls a model, each with
-      // a request suite that runs its SDK client, or ollama's own `fetch`
-      // call, over an in-process transport. Bootstrap, the index barrels,
-      // logger, metrics (OTel no-ops), and config are not unit-covered.
+      // a request suite that runs its SDK client, or the gateway's own
+      // `fetch` call, over an in-process transport. Bootstrap, the index
+      // barrels, logger, metrics (OTel no-ops), and config are not
+      // unit-covered.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",

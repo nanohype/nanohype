@@ -12,8 +12,8 @@ import "../store/memory.js";
 function fakeResponse(text: string) {
   return {
     text,
-    model: "gpt-4",
-    provider: "openai",
+    model: "claude-sonnet-5",
+    provider: "gateway",
     inputTokens: 0,
     outputTokens: 0,
     latencyMs: 0,
@@ -23,7 +23,7 @@ function fakeResponse(text: string) {
 }
 
 function fakeContext(prompt: string) {
-  return { prompt, model: "gpt-4", params: {} };
+  return { prompt, model: "claude-sonnet-5", params: {} };
 }
 
 describe("gateway adapter", () => {

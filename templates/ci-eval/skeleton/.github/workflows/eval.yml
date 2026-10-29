@@ -4,13 +4,19 @@ on:
   pull_request:
     branches: [main]
 
+# id-token: write lets the job request its GitHub OIDC token, which the
+# bedrock provider's role assumption federates. GitHub issues none to a pull
+# request from a fork, so a fork's run reaches no model.
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   eval-gate:
     runs-on: ubuntu-latest
+    env:
+      LLM_PROVIDER: __LLM_PROVIDER__
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -22,12 +28,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The bedrock provider calls Bedrock under the role the repository
+      # variable EVAL_ROLE_ARN names. The role trusts the GitHub OIDC
+      # provider for this repository's pull_request subject and grants
+      # bedrock:InvokeModel on the inference profiles the suites grade and on
+      # the foundation model each routes to, in every one of the profile's
+      # destination regions. The job holds the role's session credentials
+      # only, never a long-lived key.
+      - name: Assume the eval role
+        if: env.LLM_PROVIDER == 'bedrock'
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.EVAL_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
       - name: Run eval suites
         id: eval
         run: npx tsx src/ci-eval/index.ts run --json > eval-output.json
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Compare against baseline
         id: compare

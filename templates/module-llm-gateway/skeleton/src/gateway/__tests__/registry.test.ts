@@ -14,9 +14,8 @@ describe("provider registry", () => {
     const { listProviders } = await import("../providers/registry.js");
     const providers = listProviders();
 
-    expect(providers).toContain("anthropic");
-    expect(providers).toContain("openai");
-    expect(providers).toContain("groq");
+    expect(providers).toContain("gateway");
+    expect(providers).toContain("bedrock");
     expect(providers).toContain("mock");
   });
 
@@ -36,7 +35,7 @@ describe("provider registry", () => {
   it("returns one instance of each built-in provider for every lookup", async () => {
     await import("../providers/index.js");
     const { getProvider, listProviders } = await import("../providers/registry.js");
-    const builtIn = ["bedrock", "anthropic", "openai", "groq", "mock"];
+    const builtIn = ["gateway", "bedrock", "mock"];
 
     expect(listProviders()).toEqual(expect.arrayContaining(builtIn));
     for (const name of builtIn) {

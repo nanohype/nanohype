@@ -4,9 +4,11 @@ name: tenant-chart-base
 displayName: 'Tenant Chart Base (Helm library)'
 description: >
   A Helm library chart (type: library) that defines the named templates every
-  nanohype Platform-tenant chart shares — the ServiceAccount (IRSA), NetworkPolicy
-  (egress baseline + values-driven ingress), PrometheusRule, Grafana dashboard
-  ConfigMap, and the name/label/selector helpers. Consumer charts vendor it under
+  nanohype Platform-tenant chart shares — the ServiceAccount (inert by default:
+  pods run as the operator's tenant-runtime ServiceAccount, which EKS Pod
+  Identity binds to the Platform's IAM role), NetworkPolicy (values-driven
+  ingress and egress), PrometheusRule, ServiceMonitor, GrafanaDashboard CR,
+  and the name/label/selector helpers. Consumer charts vendor it under
   chart/charts/tenant-chart-base, declare it as a file:// dependency, and replace
   their copy-pasted templates with one-line `{{ include "tenant-chart-base.*" . }}`
   wrappers. The named templates run in the consumer's context, so `.Chart`, `.Values`,
