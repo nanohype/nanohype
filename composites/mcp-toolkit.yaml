@@ -59,3 +59,4 @@ templates:
     condition: IncludeEvals
     variables:
       ProjectName: '${ProjectName}-evals'
+      PlatformName: '${ProjectName}'

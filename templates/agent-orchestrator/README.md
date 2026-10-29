@@ -9,18 +9,19 @@ Multi-agent orchestrator with task decomposition, capability-based routing, and 
 - **Capability-based routing**: routes subtasks to agents based on capability matching with keyword and capability-match strategies.
 - **Shared context**: key-value store with namespacing that accumulates between subtask executions. Agents read what previous agents wrote.
 - **Handoff protocol**: records agent-to-agent transitions with metadata (fromAgent, toAgent, reason) creating an audit trail.
-- **LLM provider abstraction**: swap between Anthropic and OpenAI with a single config value.
+- **LLM provider abstraction**: the `gateway` provider (the default) calls the Platform's ModelGateway and holds no model credential.
 - **Circuit breaker**: resilient external API access with sliding-window failure detection.
 - **Eval suite** (`npm run eval`): golden and adversarial cases over the planner's decomposition, with a corpus loader that fails rather than reporting a pass over nothing.
 
 ## Variables
 
-| Variable       | Type   | Default                    | Description               |
-| -------------- | ------ | -------------------------- | ------------------------- |
-| `ProjectName`  | string | _(required)_               | Kebab-case project name   |
-| `Description`  | string | `Multi-agent orchestrator` | Short project description |
-| `LlmProvider`  | string | `anthropic`                | `anthropic` or `openai`   |
-| `IncludeTests` | bool   | `true`                     | Include test suite        |
+| Variable       | Type   | Default                    | Description                                                                     |
+| -------------- | ------ | -------------------------- | ------------------------------------------------------------------------------- |
+| `ProjectName`  | string | _(required)_               | Kebab-case project name                                                         |
+| `Description`  | string | `Multi-agent orchestrator` | Short project description                                                       |
+| `LlmProvider`  | string | `gateway`                  | `gateway`, or a custom provider registered in `src/orchestrator/providers/`     |
+| `PlatformName` | string | `ProjectName`              | Platform CR the orchestrator deploys under; sets the gateway's default endpoint |
+| `IncludeTests` | bool   | `true`                     | Include test suite                                                              |
 
 ## Project layout
 
@@ -51,8 +52,7 @@ Multi-agent orchestrator with task decomposition, capability-based routing, and 
       providers/
         types.ts              # LLM provider interface
         registry.ts           # Factory-based provider registry
-        anthropic.ts          # Anthropic client wrapper
-        openai.ts             # OpenAI client wrapper
+        gateway.ts            # Platform ModelGateway provider, no credential
         mock.ts               # Deterministic mock provider
         index.ts              # Barrel import
       resilience/

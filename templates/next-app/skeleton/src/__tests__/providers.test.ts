@@ -2,25 +2,20 @@ import { describe, expect, it } from "vitest";
 import { getProvider, listProviders } from "@/lib/ai/providers";
 
 describe("AI Provider Registry", () => {
-  it("registers anthropic provider", () => {
-    const provider = getProvider("anthropic");
+  it("registers gateway provider", () => {
+    const provider = getProvider("gateway");
     expect(provider).toBeDefined();
-    expect(provider.defaultModel).toBe("claude-sonnet-5");
-  });
-
-  it("registers openai provider", () => {
-    const provider = getProvider("openai");
-    expect(provider).toBeDefined();
-    expect(provider.defaultModel).toBe("gpt-4o");
+    expect(provider.defaultModel).toBe("default");
+    expect(provider.resolveModel("gpt-4o")).toBe("default");
+    expect(provider.resolveModel()).toBe("default");
   });
 
   it("throws for unknown provider", () => {
     expect(() => getProvider("nonexistent")).toThrow('Unknown AI provider: "nonexistent"');
   });
 
-  it("lists all registered providers", () => {
+  it("lists the gateway as the one built-in provider", () => {
     const providers = listProviders();
-    expect(providers).toContain("anthropic");
-    expect(providers).toContain("openai");
+    expect(providers).toEqual(["gateway"]);
   });
 });

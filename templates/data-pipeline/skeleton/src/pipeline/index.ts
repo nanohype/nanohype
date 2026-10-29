@@ -27,8 +27,11 @@ export const configSchema = z.object({
   chunkSize: z.number().int().positive().default(512),
   chunkOverlap: z.number().int().min(0).default(64),
   embeddingProvider: z.string().default("__EMBEDDING_PROVIDER__"),
-  embeddingModel: z.string().default("text-embedding-3-small"),
-  embeddingDimensions: z.number().int().positive().default(1536),
+  // Titan Text v2 at its default width, the model the gateway's embeddings
+  // route and the bedrock provider serve. The gateway provider names
+  // EMBEDDING_ROUTE instead of the model.
+  embeddingModel: z.string().default("amazon.titan-embed-text-v2:0"),
+  embeddingDimensions: z.number().int().positive().default(1024),
   embeddingBatchSize: z.number().int().positive().default(128),
   outputAdapter: z.string().default("json-file"),
   outputFile: z.string().default("./output/embeddings.jsonl"),

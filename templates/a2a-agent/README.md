@@ -9,20 +9,21 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
 - **Protocol layer** (`src/protocol/`): A2A message types (Task, Artifact, Message), a client for calling remote agents, and a server for handling incoming requests.
 - **Transport registry** (`src/protocol/transport/`): pluggable transports (HTTP, WebSocket) with a registry for runtime selection.
 - **Agent discovery** (`src/discovery/`, optional): agent directory for discovering peers and an Agent Card served at `/.well-known/agent.json`.
-- **Provider abstraction** (`src/providers/`): swap between Anthropic and OpenAI with a single config value.
+- **Provider abstraction** (`src/providers/`): the `gateway` provider calls the Platform's ModelGateway and holds no model credential; a custom provider registers beside it.
 - **Routing** (`src/routing.ts`): turns a task into a decision — a registered skill name or none — validating the model's reply so a name the registry cannot run never becomes a route.
 - **Eval suite** (`src/eval/`): golden and adversarial cases for the routing decision, and a runner that refuses an empty corpus rather than reporting a pass over one.
 
 ## Variables
 
-| Variable           | Type   | Default                   | Description                            |
-| ------------------ | ------ | ------------------------- | -------------------------------------- |
-| `ProjectName`      | string | _(required)_              | Kebab-case project name                |
-| `Description`      | string | `"An A2A protocol agent"` | Short project description              |
-| `LlmProvider`      | string | `"anthropic"`             | LLM provider for agent reasoning       |
-| `Transport`        | string | `"http"`                  | A2A transport (`http` or `websocket`)  |
-| `IncludeDiscovery` | bool   | `true`                    | Include agent discovery and Agent Card |
-| `IncludeTests`     | bool   | `true`                    | Include test suite                     |
+| Variable           | Type   | Default                   | Description                                                              |
+| ------------------ | ------ | ------------------------- | ------------------------------------------------------------------------ |
+| `ProjectName`      | string | _(required)_              | Kebab-case project name                                                  |
+| `Description`      | string | `"An A2A protocol agent"` | Short project description                                                |
+| `LlmProvider`      | string | `"gateway"`               | LLM provider for agent reasoning                                         |
+| `PlatformName`     | string | `ProjectName`             | Platform CR the agent deploys under; sets the gateway's default endpoint |
+| `Transport`        | string | `"http"`                  | A2A transport (`http` or `websocket`)                                    |
+| `IncludeDiscovery` | bool   | `true`                    | Include agent discovery and Agent Card                                   |
+| `IncludeTests`     | bool   | `true`                    | Include test suite                                                       |
 
 ## Project layout
 
@@ -34,7 +35,7 @@ Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript.
     protocol/                    # A2A protocol types, client, server
       transport/                 # Pluggable transports (HTTP, WebSocket)
     discovery/                   # Agent directory and Agent Card (conditional)
-    providers/                   # LLM provider abstraction (Anthropic / OpenAI)
+    providers/                   # LLM provider abstraction (Platform ModelGateway)
     routing.ts                   # Task -> skill decision, validated before it is one
     eval/                        # Eval runner, assertion helpers, and the case corpus
     logger.ts                    # Structured JSON logger

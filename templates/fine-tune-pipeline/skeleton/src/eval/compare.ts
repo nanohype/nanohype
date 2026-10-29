@@ -7,9 +7,9 @@
  * and the one a project is deciding whether to ship — and the base output
  * stands beside it as the measure of what tuning changed.
  *
- * The corpus is read before the provider is built. A provider client is
- * constructed with credentials, so a run with nothing to run has to fail
- * saying the corpus is empty rather than failing about a missing key.
+ * The corpus is read before the provider is built, so a run with nothing to
+ * run fails saying the corpus is empty, before any provider reads its
+ * settings or calls a model.
  */
 
 import { logger } from "../logger.js";

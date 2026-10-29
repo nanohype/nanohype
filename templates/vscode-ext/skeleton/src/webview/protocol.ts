@@ -21,7 +21,7 @@ export type OutboundMessage =
   | { type: "reply"; payload: string }
   | { type: "chatError"; payload: string };
 
-/** Answers a chat turn. Injected so the panel does not resolve credentials. */
+/** Answers a chat turn. Injected so the panel reads no settings and calls no provider. */
 export type ChatHandler = (text: string) => Promise<string>;
 
 /** What routing needs from the extension host, named so a test can supply it. */

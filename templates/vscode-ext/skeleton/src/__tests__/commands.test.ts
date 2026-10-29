@@ -123,7 +123,7 @@ describe("contributed commands", () => {
     const contributed = pkg.contributes.commands.map((c) => c.command).sort();
 
     const { activate } = await import("../extension.js");
-    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" }, secrets: {} } as never);
+    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" } } as never);
 
     const registered = [
       ...new Set(mockRegisterCommand.mock.calls.map((c) => c[0] as string)),
@@ -148,7 +148,7 @@ describe("contributed commands", () => {
     const contributed = pkg.contributes.commands.map((c) => c.command);
 
     const { activate } = await import("../extension.js");
-    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" }, secrets: {} } as never);
+    activate({ subscriptions: [], extensionUri: { fsPath: "/ext" } } as never);
 
     const registered = mockRegisterCommand.mock.calls.map((call) => call[0] as string);
     expect(registered.length).toBeGreaterThan(0);
@@ -180,7 +180,6 @@ describe("contributed settings", () => {
     await activate({
       subscriptions: [],
       extensionUri: { fsPath: "/ext" },
-      secrets: {},
     } as never);
 
     for (const call of mockRegisterCommand.mock.calls) {

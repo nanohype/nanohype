@@ -52,10 +52,10 @@ async function main(): Promise<void> {
   // ran everything and passed.
   const cases = await loadCases(casesDir);
 
-  // Both barrels pull in provider SDKs, and building an embedding provider
-  // needs credentials. Reading the corpus before importing them means a run
-  // with nothing to run says so, instead of failing first on a vendor error
-  // about a missing key.
+  // The embedding barrel loads the gateway embedder, which parses
+  // MODEL_GATEWAY_ENDPOINT and EMBED_REQUEST_TIMEOUT_MS as it loads and throws
+  // on a malformed value. Reading the corpus before importing it means a run
+  // with nothing to run says so, instead of failing first on a setting.
   const { getStrategy } = await import("../transform/index.js");
   const { getEmbeddingProvider } = await import("../embed/index.js");
 

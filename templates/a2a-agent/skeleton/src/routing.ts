@@ -106,8 +106,10 @@ export function parseRoutingDecision(reply: string, registered: string[]): Routi
 
 /** Ask the model which registered skill should run this task. */
 export async function routeTask(input: string): Promise<RoutingDecision> {
-  // Provider SDK clients construct at import and need a key. Reaching the
-  // barrel here keeps this module loadable — and unit-testable — without one.
+  // The provider barrel loads the gateway provider, which parses
+  // MODEL_GATEWAY_ENDPOINT as it loads and throws on a malformed one.
+  // Reaching it here keeps this module loadable, and its parsing
+  // unit-testable, whatever that setting holds.
   const { getProvider } = await import("./providers/index.js");
   const provider = getProvider(PROVIDER_NAME);
 

@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
-import type { LlmProvider, Settings } from "@/lib/storage";
-import { getSettings, saveSettings } from "@/lib/storage";
-
-const MODELS: Record<LlmProvider, string[]> = {
-  anthropic: ["claude-sonnet-5", "claude-haiku-4-5"],
-  openai: ["gpt-4o", "gpt-4o-mini"],
-};
+import type { Settings } from "@/lib/storage";
+import { DEFAULT_SETTINGS, getSettings, saveSettings } from "@/lib/storage";
+import { saveGatewaySettings } from "./save";
 
 export function App() {
-  const [settings, setSettings] = useState<Settings>({
-    apiKey: "",
-    provider: "__LLM_PROVIDER__" as LlmProvider,
-    model: "",
-  });
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
+  const [problem, setProblem] = useState("");
 
   useEffect(() => {
     getSettings()
@@ -24,21 +17,24 @@ export function App() {
         // the defaults on screen and says why, rather than rejecting into
         // nowhere and leaving a page that never populates.
         console.error("Could not load settings", err);
+        setProblem(
+          `The saved settings could not be loaded: ${err instanceof Error ? err.message : String(err)}`,
+        );
       });
   }, []);
 
   const handleSave = async () => {
-    await saveSettings(settings);
+    setProblem("");
+    const outcome = await saveGatewaySettings(settings, {
+      requestOrigin: (origin) => chrome.permissions.request({ origins: [origin] }),
+      saveSettings,
+    });
+    if ("problem" in outcome) {
+      setProblem(outcome.problem);
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
-
-  const handleProviderChange = (provider: LlmProvider) => {
-    setSettings((prev) => ({
-      ...prev,
-      provider,
-      model: MODELS[provider][0],
-    }));
   };
 
   const fieldStyle: React.CSSProperties = {
@@ -76,42 +72,32 @@ export function App() {
       </h1>
 
       <label style={labelStyle}>
-        LLM Provider
-        <select
-          value={settings.provider}
-          onChange={(e) => handleProviderChange(e.target.value as LlmProvider)}
-          style={fieldStyle}
-        >
-          <option value="anthropic">Anthropic</option>
-          <option value="openai">OpenAI</option>
-        </select>
-      </label>
-
-      <label style={labelStyle}>
-        API Key
+        Model gateway endpoint
         <input
-          type="password"
-          value={settings.apiKey}
-          onChange={(e) => setSettings((prev) => ({ ...prev, apiKey: e.target.value }))}
-          placeholder={settings.provider === "anthropic" ? "sk-ant-..." : "sk-..."}
+          type="url"
+          value={settings.endpoint}
+          onChange={(e) => setSettings((prev) => ({ ...prev, endpoint: e.target.value }))}
+          placeholder="http://localhost:8080"
           style={fieldStyle}
         />
       </label>
 
       <label style={labelStyle}>
-        Model
-        <select
-          value={settings.model}
-          onChange={(e) => setSettings((prev) => ({ ...prev, model: e.target.value }))}
+        Route
+        <input
+          type="text"
+          value={settings.route}
+          onChange={(e) => setSettings((prev) => ({ ...prev, route: e.target.value }))}
+          placeholder={DEFAULT_SETTINGS.route}
           style={fieldStyle}
-        >
-          {MODELS[settings.provider].map((model) => (
-            <option key={model} value={model}>
-              {model}
-            </option>
-          ))}
-        </select>
+        />
       </label>
+
+      {problem ? (
+        <p role="alert" style={{ ...labelStyle, color: "var(--danger)" }}>
+          {problem}
+        </p>
+      ) : null}
 
       <button
         type="button"

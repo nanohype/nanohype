@@ -1,27 +1,28 @@
 # multimodal-pipeline
 
-Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, routes each through modality-specific processors, sends processed content to vision/audio-capable LLMs, and returns Zod-validated structured output. All components built from first principles using provider SDKs directly.
+Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, routes each through modality-specific processors, sends processed content to a vision-capable LLM through the Platform's ModelGateway, and returns Zod-validated structured output. The pipeline holds no model credential: the gateway does. Off the substrate, a Bedrock provider and Amazon Transcribe run under the AWS credential chain, so no component holds a provider key. All components built from first principles using provider SDKs directly.
 
 ## What you get
 
 - **Automatic modality detection** — MIME type and extension-based routing to the correct processor
 - **Image processing** — base64 encoding for vision LLM analysis with configurable detail levels
-- **Audio processing** — Whisper transcription followed by LLM analysis (conditional)
+- **Audio processing** — Amazon Transcribe transcription under the AWS credential chain, staged through S3, followed by LLM analysis (conditional; the ModelGateway serves no transcription route, so it runs off the substrate)
 - **Video processing** — frame extraction at configurable intervals for sequential vision analysis (conditional)
-- **LLM provider registry** — Anthropic Claude vision, OpenAI GPT-4o vision with self-registration
+- **LLM provider registry** — the `gateway` provider (Claude vision through the Platform's ModelGateway, no credential) and the `bedrock` provider (Converse under the AWS credential chain, off the substrate), self-registering
 - **Structured output** — Zod schema validation on LLM responses with typed result objects
 - **Processor registry** — pluggable processor pattern for adding new modalities
 
 ## Variables
 
-| Variable       | Type   | Default                            | Description                      |
-| -------------- | ------ | ---------------------------------- | -------------------------------- |
-| `ProjectName`  | string | _(required)_                       | Kebab-case project name          |
-| `Description`  | string | "A multimodal processing pipeline" | Project description              |
-| `LlmProvider`  | string | `anthropic`                        | anthropic or openai              |
-| `IncludeAudio` | bool   | `true`                             | Include audio processing support |
-| `IncludeVideo` | bool   | `false`                            | Include video processing support |
-| `IncludeTests` | bool   | `true`                             | Include vitest test suite        |
+| Variable       | Type   | Default                            | Description                                                                   |
+| -------------- | ------ | ---------------------------------- | ----------------------------------------------------------------------------- |
+| `ProjectName`  | string | _(required)_                       | Kebab-case project name                                                       |
+| `Description`  | string | "A multimodal processing pipeline" | Project description                                                           |
+| `LlmProvider`  | string | `gateway`                          | gateway on the substrate, bedrock off it, mock, or a custom name              |
+| `PlatformName` | string | `ProjectName`                      | Platform CR the pipeline deploys under; sets the gateway's endpoint           |
+| `IncludeAudio` | bool   | `false`                            | Include audio processing support, through Amazon Transcribe off the substrate |
+| `IncludeVideo` | bool   | `false`                            | Include video processing support                                              |
+| `IncludeTests` | bool   | `true`                             | Include vitest test suite                                                     |
 
 ## Project layout
 
@@ -43,8 +44,10 @@ Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, 
     providers/
       types.ts                     # LLM provider interface
       registry.ts                  # LLM provider registry
-      anthropic.ts                 # Anthropic Claude vision provider
-      openai.ts                    # OpenAI GPT-4o vision provider
+      gateway.ts                   # Platform ModelGateway provider, no credential
+      bedrock.ts                   # Bedrock Converse provider, AWS credential chain
+      mock.ts                      # Deterministic provider for tests
+      transcribe.ts                # Amazon Transcribe transcription (conditional)
       index.ts                     # Barrel import + re-exports
     output/
       types.ts                     # Structured output Zod schemas
@@ -52,6 +55,11 @@ Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, 
     __tests__/
       pipeline.test.ts             # Pipeline orchestration tests (conditional)
       image.test.ts                # Image processor tests (conditional)
+      gateway.test.ts              # gateway against an in-process HTTP server (conditional)
+      bedrock.test.ts              # bedrock against an in-process HTTP/2 server (conditional)
+      transcribe.test.ts           # Transcribe and S3 clients in-process (conditional)
+      config.test.ts               # AUDIO_TRANSCRIPTION_TIMEOUT_MS parse
+      cli.test.ts                  # How a failed run exits
   package.json
   tsconfig.json
   biome.json

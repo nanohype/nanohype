@@ -1,6 +1,6 @@
 import { conditionVariables } from "./conditions.js";
 import { ManifestValidationError } from "./errors.js";
-import type { CompositeManifest, TemplateManifest } from "./types.js";
+import type { CompositeManifest, TemplateManifest, TemplateVariable } from "./types.js";
 
 /**
  * The kebab-case shape every catalog entry name (template or composite)
@@ -17,6 +17,29 @@ export function isCatalogName(value: unknown): value is string {
 }
 
 /**
+ * A derived variable's value is its default, so it declares one, and it takes
+ * no input: it is neither required nor prompted for.
+ */
+function validateDerivedVariables(variables: TemplateVariable[]): void {
+  for (const v of variables) {
+    if (!v.derived) continue;
+    if (v.default === undefined) {
+      throw new ManifestValidationError(`Derived variable '${v.name}' declares no default`);
+    }
+    if (v.required) {
+      throw new ManifestValidationError(
+        `Derived variable '${v.name}' is required, and takes no value to require`,
+      );
+    }
+    if (v.prompt !== undefined) {
+      throw new ManifestValidationError(
+        `Derived variable '${v.name}' declares a prompt, and takes no value to prompt for`,
+      );
+    }
+  }
+}
+
+/**
  * Validate a template manifest's structural invariants.
  * Throws ManifestValidationError on the first violation found.
  */
@@ -24,6 +47,8 @@ export function validateManifest(manifest: TemplateManifest): void {
   if (manifest.apiVersion !== "nanohype/v1") {
     throw new ManifestValidationError(`Unsupported apiVersion: ${manifest.apiVersion}`);
   }
+
+  validateDerivedVariables(manifest.variables);
 
   // Enum variables must have options
   for (const v of manifest.variables) {
@@ -110,4 +135,5 @@ export function validateCompositeManifest(manifest: CompositeManifest): void {
   if (manifest.kind !== "composite") {
     throw new ManifestValidationError(`Expected kind 'composite', got '${manifest.kind}'`);
   }
+  validateDerivedVariables(manifest.variables);
 }

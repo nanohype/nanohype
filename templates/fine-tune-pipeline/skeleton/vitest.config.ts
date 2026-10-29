@@ -9,10 +9,12 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // The denominator is the dataset split/validate logic. Out: bootstrap,
-      // config and logger, which read the environment at process start; prepare,
-      // eval and training, built around disk IO and a fine-tuning API; the
-      // timer-driven circuit breaker; barrels and type declarations.
+      // The denominator is the dataset split/validate logic and the bedrock
+      // training provider, which runs against fake AWS clients. Out:
+      // bootstrap, config and logger, which read the environment at process
+      // start; prepare and eval, built around disk IO and a model; the mock
+      // provider; the timer-driven circuit breaker; barrels and type
+      // declarations.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -21,7 +23,7 @@ export default defineConfig({
         "src/logger.ts",
         "src/dataset/prepare.ts",
         "src/eval/**",
-        "src/training/**",
+        "src/training/mock.ts",
         "src/resilience/**",
         "src/**/index.ts",
         "src/**/types.ts",

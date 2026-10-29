@@ -8,13 +8,13 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the orchestrator core, agents, context, routing, the mock
-      // provider, the circuit breaker, and the eval corpus loader and its plan
-      // checks. Out of the denominator: bootstrap.ts exits the process; the
-      // anthropic/openai providers need vendor credentials; the eval runner is
-      // a live command against a provider; metrics.ts declares OTel instruments
-      // that no-op without an SDK; and the Zod config schema, the logger, the
-      // barrels and the type-only modules are wiring.
+      // Gate the orchestrator core, agents, context, routing, the mock and
+      // gateway providers, the circuit breaker, and the eval corpus loader and
+      // its plan checks. Out of the denominator: bootstrap.ts exits the
+      // process; the eval runner is a live command against a provider;
+      // metrics.ts declares OTel instruments that no-op without an SDK; and
+      // the Zod config schema, the logger, the barrels and the type-only
+      // modules are wiring.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -23,8 +23,6 @@ export default defineConfig({
         "src/orchestrator/logger.ts",
         "src/orchestrator/metrics.ts",
         "src/orchestrator/eval/runner.ts",
-        "src/orchestrator/providers/anthropic.ts",
-        "src/orchestrator/providers/openai.ts",
         "src/**/index.ts",
         "src/**/types.ts",
       ],

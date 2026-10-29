@@ -112,7 +112,8 @@ function boolCombinations(manifest) {
 function otherValues(manifest) {
   const values = {};
   for (const variable of manifest.variables ?? []) {
-    if (variable.type === "bool") continue;
+    // A derived variable takes no value: the resolver derives it from the rest.
+    if (variable.type === "bool" || variable.derived) continue;
     values[variable.name] = variable.default ?? defaultFor(variable);
   }
   return values;

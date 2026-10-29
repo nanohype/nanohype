@@ -9,10 +9,13 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the pipeline, processors, mock provider, registries, the eval
-      // corpus loader, circuit breaker and request timeout, and the anthropic
-      // and openai providers, whose request suites run the real SDK clients
-      // over an in-process transport. The whisper provider needs an API key
-      // and a hosted endpoint; bootstrap exits on an unresolved placeholder;
+      // corpus loader, circuit breaker and request timeout, the gateway
+      // provider, whose request suite runs its `fetch` call against an
+      // in-process HTTP server, the bedrock provider, whose suite runs the
+      // real SDK client against an in-process HTTP/2 server, and the
+      // transcribe provider, whose suite runs the real Transcribe and S3
+      // clients against an in-process server. Bootstrap exits on an
+      // unresolved placeholder;
       // config and logger read the environment; the formatter runs under
       // processFile; and the eval runner calls a live provider, so it is a
       // command a consumer runs rather than a CI step — the loader it depends
@@ -25,7 +28,6 @@ export default defineConfig({
         "src/config.ts",
         "src/logger.ts",
         "src/output/formatter.ts",
-        "src/providers/whisper.ts",
         "src/**/index.ts",
         "src/**/types.ts",
       ],

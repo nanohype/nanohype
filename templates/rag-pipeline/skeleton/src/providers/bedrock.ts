@@ -1,10 +1,13 @@
 /**
- * AWS Bedrock providers — the org-default LLM (Converse + prompt caching) and
- * embedding (Titan Text v2) path. Auth is the AWS credential chain (IRSA
- * on-cluster), never API keys. Every call carries an abort signal that fires at
- * the request timeout, the SDK's retries included, so a hung Bedrock socket
- * trips the circuit breaker instead of hanging, and the Titan response is
- * schema-validated before use (never trust raw model output).
+ * AWS Bedrock providers, called directly: LLM (Converse + prompt caching) and
+ * embedding (Titan Text v2). Auth is the AWS credential chain, never API keys,
+ * so they serve a pipeline off the nanohype substrate: an ECS task role, or a
+ * local AWS profile. On the substrate the gateway providers are the path to a
+ * model: a direct call skips the route's guardrail and rate limit. Every call
+ * carries an abort signal that fires at the request timeout, the SDK's retries
+ * included, so a hung Bedrock socket trips the circuit breaker instead of
+ * hanging, and the Titan response is schema-validated before use (never trust
+ * raw model output).
  *
  * Sampling parameters. Bedrock documents `temperature`, `top_p` and `top_k`
  * per Claude model: Claude Opus 4.7 and later do not support them, Claude

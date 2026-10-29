@@ -22,8 +22,8 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for eval targets'
-    default: 'anthropic'
+    description: 'LLM provider for eval targets: bedrock on a CI runner or a workstation, under an IAM role the run assumes (GitHub OIDC federation on a runner, an AWS profile on a workstation); gateway for a run inside the cluster. Neither holds a provider key'
+    default: 'bedrock'
 
   - name: IncludeGuardrails
     type: bool
@@ -42,6 +42,7 @@ templates:
     path: packages/evals
     variables:
       ProjectName: '${ProjectName}-evals'
+      PlatformName: '${ProjectName}'
       LlmProvider: '${LlmProvider}'
       IncludeCi: true
 

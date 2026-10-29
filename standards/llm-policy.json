@@ -3,8 +3,8 @@
   "kind": "nanohype/standards/llm-policy",
   "version": "1",
   "title": "LLM policy",
-  "summary": "Claude is the primary LLM for every build on the nanohype stack. Preferred delivery is AWS Bedrock — it keeps data inside the client's AWS trust boundary and simplifies enterprise compliance posture. This policy names the SDK per language, the model tiers, the preferred regions, and the requirements around prompt caching and provider escapes.",
-  "applies_to": "Any build that calls an LLM. region-single, and the intake-brief clause of no-default-non-anthropic, apply only to deliverables deployed on the nanohype substrate and are N/A for any other.",
+  "summary": "Claude is the primary LLM for every build on the nanohype stack. Preferred delivery is AWS Bedrock — it keeps data inside the client's AWS trust boundary and simplifies enterprise compliance posture. This policy names the SDK per language, the model tiers, the preferred regions, and the requirements around authentication, prompt caching and models of other families.",
+  "applies_to": "Any build that calls an LLM. region-single applies only to deliverables deployed on the nanohype substrate and is N/A for any other.",
   "grades": ["ai_systems"],
   "content": {
     "primary_provider": "AWS Bedrock",
@@ -25,7 +25,7 @@
     "requirements": [
       {
         "id": "iam-role-auth",
-        "summary": "Authenticate via IAM role assumption (EKS Pod Identity on EKS, ECS task role, Lambda execution role). No API keys in code, env vars, or secrets.",
+        "summary": "Authenticate via IAM role assumption. On the nanohype substrate the application holds no model credential: it calls its Platform's ModelGateway, whose Envoy runs under the tenant's EKS Pod Identity and holds the Bedrock role, and it sends the gateway no key, token or signature. Off the substrate (CI runners, CLIs, desktop apps, local tools) the application reaches Bedrock under an IAM role it assumes: an ECS task role or Lambda execution role in AWS, GitHub OIDC federation on a CI runner, an AWS profile on a workstation. A browser app, which cannot assume a role, calls a ModelGateway endpoint and sends no credential; the gateway authenticates no caller, so a browser app reaches it only through a port-forward its user opens, which the cluster authorizes as that user. No provider API key is permitted in code, env vars or secrets, on the substrate or off it, and no intake brief makes an exception.",
         "severity": "reject"
       },
       {
@@ -55,7 +55,7 @@
       },
       {
         "id": "no-default-non-anthropic",
-        "summary": "Direct Anthropic SDK is permitted only if the intake brief requires it or Bedrock lacks the needed model variant. OpenAI and other providers require explicit brief requirement — never default to GPT.",
+        "summary": "Claude through Bedrock is the default on the substrate and off it. A model of another family is used only when the intake brief names it, and is reached through a ModelGateway route or through Bedrock, never with a provider key. Never default to GPT.",
         "severity": "warn"
       }
     ]

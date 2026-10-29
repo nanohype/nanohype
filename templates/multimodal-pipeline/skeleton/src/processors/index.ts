@@ -16,5 +16,9 @@ export type { Modality, ProcessedInput, Processor } from "./types.js";
 
 // Import processor modules to trigger registration
 import "./image.js";
+// #if IncludeAudio
 import "./audio.js";
+// #endif
+// #if IncludeVideo
 import "./video.js";
+// #endif

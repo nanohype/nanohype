@@ -30,12 +30,6 @@ variables:
     description: 'VS Code marketplace publisher ID'
     required: true
 
-  - name: LlmProvider
-    type: string
-    placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider'
-    default: 'anthropic'
-
   - name: IncludePrompts
     type: bool
     placeholder: '__INCLUDE_PROMPTS__'

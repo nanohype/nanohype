@@ -2,20 +2,27 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, it } from "node:test";
-import { dependsOnProvider } from "../check-eval-suites.mjs";
+import * as yaml from "js-yaml";
+import { callsGateway, dependsOnProvider, inEvalScope } from "../check-eval-suites.mjs";
 
-// Scope for the eval requirement is decided by the dependencies a skeleton
-// declares. That is a claim about the packages the catalog uses to reach a
-// model, so it is pinned against them: a provider package present in the tree
-// and absent from the classifier fails here rather than narrowing scope in
-// silence.
+// Scope for the eval requirement is decided by what a template declares: the
+// SDK dependencies in its skeleton's package.json, and the `model-gateway` tag
+// in its manifest for a skeleton that reaches a model through the Platform's
+// ModelGateway with a plain fetch. Both are claims about how the catalog
+// reaches a model, so each is pinned against the tree: a model-invoking
+// package present in the tree and absent from the classifier fails here, and
+// so does a skeleton that registers a gateway provider under a manifest that
+// does not carry the tag. Either would narrow scope in silence.
 //
 // The regression this exists for: scope was decided by matching five SDK call
-// spellings. The same Anthropic SDK's `messages.stream` was not among them, so
-// switching a template to it and deleting its eval tree left the gate green.
+// spellings. A streaming call was not among them, so switching a template to
+// it and deleting its eval tree left the gate green.
 
 const ROOT = new URL("../..", import.meta.url).pathname;
 const TEMPLATES = join(ROOT, "templates");
+const SOURCE_FILE = /\.(?:[cm]?[jt]sx?)$/;
+const SKIP_DIRS = new Set(["node_modules", "dist", "coverage", "__tests__"]);
+const REGISTERS_GATEWAY = /\bregister\w*\(\s*"gateway"/;
 
 /** Every dependency any skeleton in the catalog declares, with its template. */
 function declaredDependencies() {
@@ -36,15 +43,42 @@ function declaredDependencies() {
   return out;
 }
 
-// Packages that reach a model, spelled as the registry spells them. A package
-// matching this and absent from the classifier is a scope hole.
+/** Whether any non-test source file under `dir` registers a provider named "gateway". */
+function registersGateway(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name)) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (registersGateway(full)) return true;
+    } else if (SOURCE_FILE.test(entry.name) && !/\.test\./.test(entry.name)) {
+      if (REGISTERS_GATEWAY.test(readFileSync(full, "utf-8"))) return true;
+    }
+  }
+  return false;
+}
+
+/** The templates whose skeleton registers a gateway provider, with their manifests. */
+function gatewayTemplates() {
+  const out = [];
+  for (const name of readdirSync(TEMPLATES).sort()) {
+    const skeleton = join(TEMPLATES, name, "skeleton");
+    if (!existsSync(join(TEMPLATES, name, "template.yaml")) || !existsSync(skeleton)) continue;
+    if (!registersGateway(skeleton)) continue;
+    const manifest = yaml.load(readFileSync(join(TEMPLATES, name, "template.yaml"), "utf-8"));
+    out.push({ name, manifest });
+  }
+  return out;
+}
+
+// Packages that invoke a model, spelled as the registry spells them: Bedrock's
+// runtime clients, and the provider SDKs. A package matching this and absent
+// from the classifier is a scope hole. Bedrock's control-plane client, which
+// manages jobs and lists models without invoking one, is not among them.
 const LOOKS_LIKE_A_PROVIDER =
-  /^(@anthropic-ai\/|openai$|@aws-sdk\/client-bedrock|@google\/gen|@google\/generative-ai|@mistralai\/|cohere-ai$|@azure\/openai|replicate$|groq-sdk$)/;
+  /^(@anthropic-ai\/|openai$|@aws-sdk\/client-bedrock(?:-[a-z-]+)?-runtime$|@google\/gen|@google\/generative-ai|@mistralai\/|cohere-ai$|@azure\/openai|replicate$|groq-sdk$)/;
 
 describe("dependsOnProvider", () => {
-  it("holds for a skeleton declaring a provider SDK", () => {
-    assert.equal(dependsOnProvider({ dependencies: { "@anthropic-ai/sdk": "^1" } }), true);
-    assert.equal(dependsOnProvider({ dependencies: { openai: "^1" } }), true);
+  it("holds for a skeleton declaring the Bedrock runtime SDK", () => {
     assert.equal(
       dependsOnProvider({ dependencies: { "@aws-sdk/client-bedrock-runtime": "^3" } }),
       true,
@@ -53,8 +87,11 @@ describe("dependsOnProvider", () => {
 
   it("holds wherever the dependency is declared", () => {
     // A provider reached only from a dev-time script is still reached.
-    assert.equal(dependsOnProvider({ devDependencies: { openai: "^1" } }), true);
-    assert.equal(dependsOnProvider({ peerDependencies: { openai: "^1" } }), true);
+    for (const field of ["devDependencies", "peerDependencies"])
+      assert.equal(
+        dependsOnProvider({ [field]: { "@aws-sdk/client-bedrock-runtime": "^3" } }),
+        true,
+      );
   });
 
   it("does not hold for a skeleton declaring none", () => {
@@ -86,5 +123,36 @@ describe("dependsOnProvider", () => {
       LOOKS_LIKE_A_PROVIDER.test(d),
     );
     assert.ok(providers.length > 0, "no provider package in the catalog to prove against");
+  });
+});
+
+describe("inEvalScope", () => {
+  it("holds for a manifest tagged model-gateway whose skeleton depends on no SDK", () => {
+    const manifest = { tags: ["typescript", "model-gateway"] };
+    assert.equal(callsGateway(manifest), true);
+    assert.equal(inEvalScope(manifest, { dependencies: { zod: "^4" } }), true);
+  });
+
+  it("holds for a skeleton depending on the Bedrock runtime SDK under an untagged manifest", () => {
+    assert.equal(
+      inEvalScope({ tags: [] }, { dependencies: { "@aws-sdk/client-bedrock-runtime": "^3" } }),
+      true,
+    );
+  });
+
+  it("does not hold for neither", () => {
+    assert.equal(inEvalScope({ tags: ["typescript"] }, { dependencies: { zod: "^4" } }), false);
+    assert.equal(inEvalScope({}, {}), false);
+  });
+
+  it("is declared by every template whose skeleton registers a gateway provider", () => {
+    const untagged = gatewayTemplates()
+      .filter(({ manifest }) => !callsGateway(manifest))
+      .map(({ name }) => name);
+    assert.deepEqual(untagged, []);
+  });
+
+  it("finds templates that register a gateway provider to prove against", () => {
+    assert.ok(gatewayTemplates().length > 0, "no skeleton registers a gateway provider");
   });
 });

@@ -34,16 +34,19 @@ console.log(`\nTotal tokens: ${final.usage.outputTokens}`);
 
 ## Providers
 
-| Provider | SDK | Default Model | Auth | Always Included |
-|----------|-----|---------------|------|-----------------|
-| `anthropic` | @anthropic-ai/sdk | claude-sonnet-5 | `ANTHROPIC_API_KEY` | Yes |
-| `openai` | openai | gpt-4o | `OPENAI_API_KEY` | Yes |
-| `groq` | groq-sdk | llama-3.3-70b-versatile | `GROQ_API_KEY` | Yes |
-| `mock` | none | mock-model | none | Yes |
-| `bedrock` | @aws-sdk/client-bedrock-runtime | us.anthropic.claude-sonnet-5 | IAM / AWS credentials | Conditional |
-| `vertex` | @google/genai (Vertex AI backend) | gemini-2.0-flash | Google ADC | Conditional |
-| `huggingface` | @huggingface/inference | meta-llama/Llama-3.3-70B-Instruct | `HF_TOKEN` | Conditional |
-| `ollama` | native fetch | llama3.2 | none (local) | Conditional |
+| Provider | SDK | Default Model | Auth | Included |
+|----------|-----|---------------|------|----------|
+| `gateway` | native fetch | route `default` (`MODEL_ROUTE`) | none: the Platform's ModelGateway holds the Bedrock role | Always |
+| `mock` | none | mock-model | none | Always |
+| `bedrock` | @aws-sdk/client-bedrock-runtime | us.anthropic.claude-sonnet-5 | AWS credential chain: an IAM role | `IncludeBedrock` |
+
+### Where each provider runs
+
+On the nanohype substrate an application holds no model credential. The `gateway` provider calls the Platform's `ModelGateway`, the Envoy AI Gateway the eks-agent-platform operator runs in the tenant's namespace under the tenant's EKS Pod Identity. The gateway holds the Bedrock role, attaches the route's guardrail and rate limit, and signs the call. So `gateway` is the provider a tenant runs on, and it sends no key, token or signature.
+
+It speaks native Anthropic Messages at `<MODEL_GATEWAY_ENDPOINT>/anthropic/v1/messages`, the wire format the gateway serves for every anthropic-family route that does not pin another. `MODEL_GATEWAY_ENDPOINT` is the gateway root as `ModelGateway` `status.endpoint` publishes it, and takes no path; unset, it is `http://__PLATFORM_NAME__-gateway.tenants-__PLATFORM_NAME__.svc.cluster.local:8080`, the Service the operator creates for this project's Platform. A request's `model` is a route name on the `ModelGateway` CR: `opts.model`, or `MODEL_ROUTE` (`default`) when that is unset. The CR maps the route to a Bedrock model, so changing models is a CR edit and this code is untouched. A non-2xx answer, an `error` event, and a stream that ends before `message_stop` all fail with `ModelGatewayError`, which carries the gateway's status. A 429, the route's rate limit, is sent again after the wait its `Retry-After` header asks for, or a jittered backoff when it gives none, up to `MAX_ATTEMPTS` sends while the wait ends inside the timeout. The circuit breaker counts a 5xx, a network error and a timeout; a 4xx, the last 429 included, answers for the request and fails the call without counting against it, so one caller's burst over the route's limit leaves the breaker closed for the rest. A reply is billed at the rate of the model it names, and at the provider's declared `pricing` when the pricing table does not list that model: the rate of `DEFAULT_ROUTE_MODEL` (`claude-sonnet-5`), or the `pricing` option for a route the `ModelGateway` CR maps to another model. `createGatewayProvider({ endpoint, route, requestTimeoutMs, pricing, fetch })`, from `./llm-providers/providers/gateway.js`, builds an instance with its own settings.
+
+`bedrock`, with `IncludeBedrock`, runs off the substrate. It calls Bedrock's Converse API directly under the IAM role the AWS credential chain resolves: an ECS task role, a Lambda execution role, or a local AWS profile such as an IAM Identity Center sign-in. On the substrate a direct call skips the route's guardrail and rate limit, so a tenant stays on `gateway`. Neither provider holds a provider key, and none ships: a model from another family is a Bedrock model id under `bedrock`, or a `ModelGateway` route under `gateway`.
 
 ### Sampling parameters
 
@@ -51,8 +54,7 @@ Each provider decides which of the caller's `temperature` and `topP` its request
 
 | Provider | `temperature` | `topP` |
 |----------|---------------|--------|
-| `openai`, `groq`, `vertex`, `huggingface`, `ollama` | The caller's value, and 1 when the caller sets none | The caller's value, when set |
-| `anthropic` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value | Never |
+| `gateway` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value, and every route `gateway` reaches serves Claude | Never |
 | `bedrock` | Per model id, under `samplingParameters` | As `temperature` |
 | `mock` | Not read | Not read |
 
@@ -60,7 +62,7 @@ The `bedrock` provider's `samplingParameters` takes one of three values. `auto`,
 
 `auto` sends no `temperature` to Claude Haiku 4.5 or Claude Sonnet 4.5, though Bedrock accepts one from either. A classification or routing call that wants temperature 0 from one of them runs under `send` and leaves `topP` unset, because those models reject `temperature` and `top_p` together.
 
-The `anthropic` and `bedrock` providers log the first request whose caller-set values they drop, once per instance, at debug level. The registered instance lives as long as the process, so that is once per process.
+The `gateway` and `bedrock` providers log the first request whose caller-set values they drop, once per instance, at debug level. The registered instance lives as long as the process, so that is once per process.
 
 ## Streaming
 
@@ -69,7 +71,7 @@ Every provider supports streaming via `streamChat()`. The returned `StreamRespon
 ```typescript
 import { getProvider } from "./llm-providers/providers/index.js";
 
-const provider = getProvider("anthropic");
+const provider = getProvider("gateway");
 const stream = provider.streamChat([
   { role: "user", content: "Count to 10" },
 ]);
@@ -106,7 +108,7 @@ Bridge any `LlmProvider` into the `GatewayProvider` shape expected by `module-ll
 import { getProvider } from "./llm-providers/providers/index.js";
 import { createGatewayAdapter } from "./llm-providers/adapters/gateway.js";
 
-const provider = getProvider("anthropic");
+const provider = getProvider("gateway");
 const gatewayProvider = createGatewayAdapter(provider);
 
 // Now usable with module-llm-gateway's registerProvider()
@@ -156,10 +158,10 @@ registerProvider("my-provider", createMyProvider);
 
 ## Architecture
 
-- **Factory-based registry** -- `registerProvider(name, factory)` stores a factory function, and `getProvider(name)` calls it on every lookup. Each built-in provider registers a factory that returns one instance for the life of the process, so its SDK client is built once and its circuit breaker and log-once state see every request. Every provider module except `mock` also exports a factory that builds an independent instance to register under another name with its own options: `createAnthropicProvider()` from `./llm-providers/providers/anthropic.js`, and `createOpenAIProvider()`, `createGroqProvider()`, `createBedrockProvider()`, `createVertexProvider()`, `createHuggingFaceProvider()` and `createOllamaProvider()` from the matching `providers/<name>.js` module.
-- **Lazy SDK initialization** -- an SDK client is built on the instance's first request, not at import time. Importing a provider module registers its instance and reads its environment settings (`LLM_REQUEST_TIMEOUT_MS`, or `OLLAMA_REQUEST_TIMEOUT_MS` for `ollama`, and `BEDROCK_SAMPLING_PARAMETERS` for `bedrock`), so an invalid value fails the import rather than the first request.
+- **Factory-based registry** -- `registerProvider(name, factory)` stores a factory function, and `getProvider(name)` calls it on every lookup. Each built-in provider registers a factory that returns one instance for the life of the process, so its client is built once and its circuit breaker and log-once state see every request. Every provider module except `mock` also exports a factory that builds an independent instance to register under another name with its own options: `createGatewayProvider()` from `./llm-providers/providers/gateway.js`, and `createBedrockProvider()` from `./llm-providers/providers/bedrock.js`.
+- **Lazy SDK initialization** -- the `bedrock` provider builds its SDK client on the instance's first request, not at import time. Importing a provider module registers its instance and reads its environment settings (`LLM_REQUEST_TIMEOUT_MS`, `MODEL_GATEWAY_ENDPOINT` and `MODEL_ROUTE` for `gateway`, and `BEDROCK_SAMPLING_PARAMETERS` for `bedrock`), so an invalid value fails the import rather than the first request.
 - **Per-instance circuit breakers** -- each provider instance owns its circuit breaker, and runs both request modes through it: a request is one call, and a stream is one call from its opening until it ends, fails, times out or its consumer stops reading. Every caller of a registered provider shares that instance, so its breaker opens on failures from any of them, and an open breaker refuses a stream before it sends a request.
-- **Request timeouts** -- every provider that calls a model bounds its calls by a request timeout, so a hung connection fails into the circuit breaker instead of holding the caller. It is `LLM_REQUEST_TIMEOUT_MS` (120s by default) for every provider but `ollama`, which reads `OLLAMA_REQUEST_TIMEOUT_MS` (600s by default) because local inference runs far slower than a hosted endpoint; each `create*Provider()` takes `requestTimeoutMs` to set it per instance. A request that does not stream has to finish its whole reply within the timeout, and the 120s default covers the 4096-token `maxTokens` default at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it, or streams. A stream fails when no event arrives for one timeout, so a long reply that keeps arriving is never cut off. The `anthropic`, `openai` and `groq` SDK clients give each attempt of a request the timeout and retry a timed-out attempt once, so an endpoint that never answers holds the caller for two timeouts plus the SDK's backoff; a caller's own client options can set `maxRetries`, and `timeout`, which then bounds each wait for a stream's next event too. The `bedrock`, `vertex`, `huggingface` and `ollama` providers give up on a request, retries included, at one timeout. Every provider aborts the request of a call it gives up on, which drops its connection. A value that is not a whole number of milliseconds from 1 to 2147483647 fails the import.
+- **Request timeouts** -- every provider that calls a model bounds its calls by a request timeout, so a hung connection fails into the circuit breaker instead of holding the caller. It is `LLM_REQUEST_TIMEOUT_MS` (120s by default), and each `create*Provider()` takes `requestTimeoutMs` to set it per instance. A request that does not stream has to finish its whole reply within the timeout, and the 120s default covers the 4096-token `maxTokens` default at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it, or streams. A stream fails when no event arrives for one timeout, so a long reply that keeps arriving is never cut off. The `gateway` and `bedrock` providers give up on a request, retries included, at one timeout. Every provider aborts the request of a call it gives up on, which drops its connection. A value that is not a whole number of milliseconds from 1 to 2147483647 fails the import.
 - **Unified streaming** -- all providers implement `streamChat()` returning `StreamResponse`, an `AsyncIterable<StreamChunk>` with a `response` promise. Every provider that calls a model builds it with `guardStream()` from `resilience/stream-guard.ts`, which carries the breaker and timeout rules above. The streaming adapter normalizes raw string iterables into the standard chunk format.
 - **Gateway bridge** -- `createGatewayAdapter()` wraps any `LlmProvider` into the `GatewayProvider` shape using structural typing (no compile-time dependency on module-llm-gateway).
 - **OTel metrics** -- request totals, duration, and token usage are recorded as OTel counters and histograms. No-ops when no SDK is configured.
@@ -168,7 +170,8 @@ registerProvider("my-provider", createMyProvider);
 
 ## Production Readiness
 
-- [ ] Set API keys for all providers you use (see `.env.example`)
+- [ ] On the substrate, deploy with the `gateway` provider and confirm `MODEL_GATEWAY_ENDPOINT` matches the Platform's `ModelGateway` `status.endpoint` (see `.env.example`)
+- [ ] Off the substrate, run `bedrock` under an IAM role: the task or execution role in AWS, a short-lived profile sign-in on a workstation
 - [ ] Choose appropriate default model for your use case and budget
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Wire in OpenTelemetry SDK for metrics collection

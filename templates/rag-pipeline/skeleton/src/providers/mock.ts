@@ -1,5 +1,5 @@
 /**
- * Mock LLM provider for local development without API keys.
+ * Mock LLM provider for local development with no model to call.
  *
  * Returns contextual responses based on keyword matching against the
  * user message. Registers itself as the "mock" LLM provider on import.
