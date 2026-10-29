@@ -79,8 +79,8 @@ export default defineConfig({
         },
         // Config validation is what refuses a malformed config before any
         // provider receives it: config.ts for the service, stripe-config.ts
-        // for the Stripe block's key, timeout, retry count, charge lead and
-        // HTTP client.
+        // for the Stripe block's key, timeout, retry count, charge lead,
+        // look-back and HTTP client.
         "src/billing/config.ts": {
           lines: 100,
           functions: 100,

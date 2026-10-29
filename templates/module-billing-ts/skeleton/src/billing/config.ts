@@ -41,10 +41,20 @@ export const BillingConfigSchema = z
   })
   .passthrough();
 
+/**
+ * Every issue a failed parse found, as `<path>: <message>` joined by commas.
+ * `at` is the path in BillingConfig of the value that was parsed, so a
+ * provider that validates its own block names each field as the service does.
+ */
+export function configIssues(error: z.ZodError, at: readonly string[] = []): string {
+  return error.issues
+    .map((issue) => `${[...at, ...issue.path.map(String)].join(".")}: ${issue.message}`)
+    .join(", ");
+}
+
 export function validateConfig(config: unknown): void {
   const parsed = BillingConfigSchema.safeParse(config);
   if (!parsed.success) {
-    const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
-    throw new Error(`Invalid billing config: ${issues}`);
+    throw new Error(`Invalid billing config: ${configIssues(parsed.error)}`);
   }
 }
