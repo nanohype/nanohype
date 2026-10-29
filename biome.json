@@ -67,7 +67,11 @@
       }
     },
     {
-      "includes": ["sdk/__tests__/resolver.test.ts", "sdk/__tests__/composite.test.ts"],
+      "includes": [
+        "sdk/__tests__/resolver.test.ts",
+        "sdk/__tests__/composite.test.ts",
+        "sdk/__tests__/validator.test.ts"
+      ],
       "linter": {
         "rules": {
           "suspicious": {

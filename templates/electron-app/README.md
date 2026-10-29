@@ -1,26 +1,26 @@
 # electron-app
 
-Electron desktop application with a React 19 renderer for AI-powered chat. Main process handles API keys and AI calls via IPC, keeping secrets out of the renderer.
+Electron desktop application with a React 19 renderer for AI-powered chat. The main process calls Bedrock under the AWS SDK's default credential chain and serves the renderer over IPC, so the renderer never holds a credential.
 
 ## What you get
 
-- Electron 33 with main/renderer process separation
+- Electron 45 with main/renderer process separation
 - React 19 chat UI in the renderer with CSS-variable design tokens
 - IPC bridge via contextBridge + preload for secure AI calls
 - esbuild for main process bundling, Vite for renderer
-- Anthropic and OpenAI provider abstraction with pluggable registry
+- A Bedrock provider (Converse, cross-region inference-profile IDs) in a pluggable registry, signing with the AWS profile the app runs under and holding no provider key
 - Optional auto-update support via electron-updater
 - Optional test setup with Vitest
 
 ## Variables
 
-| Variable            | Type   | Default               | Description                           |
-| ------------------- | ------ | --------------------- | ------------------------------------- |
-| `ProjectName`       | string | `my-electron-app`     | Kebab-case project name               |
-| `Description`       | string | `Desktop app with AI` | App description                       |
-| `LlmProvider`       | string | `anthropic`           | Default provider: anthropic or openai |
-| `IncludeAutoUpdate` | bool   | `false`               | Include auto-update support           |
-| `IncludeTests`      | bool   | `true`                | Include test setup                    |
+| Variable            | Type   | Default               | Description                                |
+| ------------------- | ------ | --------------------- | ------------------------------------------ |
+| `ProjectName`       | string | `my-electron-app`     | Kebab-case project name                    |
+| `Description`       | string | `Desktop app with AI` | App description                            |
+| `LlmProvider`       | string | `bedrock`             | Default provider: bedrock, or a custom one |
+| `IncludeAutoUpdate` | bool   | `false`               | Include auto-update support                |
+| `IncludeTests`      | bool   | `true`                | Include test setup                         |
 
 ## Project layout
 
@@ -34,8 +34,7 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
       providers/
         types.ts             # AiProvider interface
         registry.ts          # Provider registry
-        anthropic.ts         # Anthropic provider
-        openai.ts            # OpenAI provider
+        bedrock.ts           # Bedrock provider (Converse, default credential chain)
         index.ts             # Barrel (triggers registration)
     renderer/
       index.html             # Renderer entry HTML
@@ -48,6 +47,7 @@ Electron desktop application with a React 19 renderer for AI-powered chat. Main 
         globals.css          # Global styles / design tokens
     __tests__/               # (optional) Tests
       ipc.test.ts
+      bedrock.test.ts
   package.json
   tsconfig.json
   vite.config.ts

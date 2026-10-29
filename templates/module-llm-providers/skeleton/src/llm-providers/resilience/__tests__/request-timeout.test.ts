@@ -59,11 +59,11 @@ describe("parseTimeoutMs", () => {
     ).toThrow(REFUSAL(value));
   });
 
-  it("fails the anthropic provider's import on a value it refuses", async () => {
+  it("fails the gateway provider's import on a value it refuses", async () => {
     vi.stubEnv("LLM_REQUEST_TIMEOUT_MS", "30s");
     vi.resetModules();
 
-    await expect(import("../../providers/anthropic.js")).rejects.toThrow(REFUSAL("30s"));
+    await expect(import("../../providers/gateway.js")).rejects.toThrow(REFUSAL("30s"));
   });
 });
 

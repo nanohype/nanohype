@@ -5,8 +5,10 @@ displayName: 'VS Code Extension (TypeScript + esbuild)'
 description: >
   Scaffolds a VS Code extension with TypeScript and esbuild bundling.
   Optionally includes a React-based webview panel that communicates with
-  the extension host via postMessage, and an AI integration layer with
-  Anthropic and OpenAI providers using the shared registry pattern.
+  the extension host via postMessage, and an AI integration layer whose
+  Bedrock provider signs with an AWS profile through the AWS SDK's
+  credential chain and holds no provider key, using the shared registry
+  pattern.
   Uses esbuild for fast builds and supports the standard VS Code
   extension development workflow.
 version: '0.1.0'
@@ -69,7 +71,7 @@ variables:
   - name: IncludeAi
     type: bool
     placeholder: '__INCLUDE_AI__'
-    description: 'Include AI integration with Anthropic and OpenAI providers'
+    description: 'Include AI integration with a Bedrock provider that signs with an AWS profile'
     prompt: 'Include AI integration?'
     default: true
 
@@ -77,9 +79,9 @@ conditionals:
   # The panel is a chat surface and nothing else, so it needs a client to
   # answer a turn. One condition covers the whole webview — the panel, the
   # React app, the message protocol between them, the command that opens it,
-  # the session that resolves the key, and their suites — because a file here
-  # importing one gated on a weaker condition renders a scaffold that cannot
-  # build.
+  # the session that reads the provider settings, and their suites — because a
+  # file here importing one gated on a weaker condition renders a scaffold that
+  # cannot build.
   - path: 'src/webview/panel.ts'
     when: IncludeWebview && IncludeAi
   - path: 'src/webview/protocol.ts'
@@ -104,18 +106,19 @@ conditionals:
     when: IncludeAi
   - path: 'src/ai/providers/registry.ts'
     when: IncludeAi
-  - path: 'src/ai/providers/anthropic.ts'
-    when: IncludeAi
-  - path: 'src/ai/providers/openai.ts'
+  - path: 'src/ai/providers/bedrock.ts'
     when: IncludeAi
   - path: 'src/ai/providers/index.ts'
     when: IncludeAi
   - path: 'src/ai/client.ts'
     when: IncludeAi
-  # The provider suite imports the registry and the provider types, so it
-  # leaves with them. Left behind it is a test file whose imports resolve to
-  # nothing, and the scaffold fails `tsc` on its first commit.
+  # The provider suites import the registry, the provider types and the
+  # bedrock provider, so they leave with them. Left behind they are test files
+  # whose imports resolve to nothing, and the scaffold fails `tsc` on its
+  # first commit.
   - path: 'src/__tests__/providers.test.ts'
+    when: IncludeAi
+  - path: 'src/__tests__/bedrock.test.ts'
     when: IncludeAi
 
 hooks:

@@ -6,13 +6,14 @@ description: >
   GitHub Actions workflow for eval-gated deployments. Runs LLM evaluation
   suites on every pull request, compares scores against a stored baseline,
   posts a markdown report as a PR comment, and fails the check if any
-  suite regresses beyond a configurable threshold. Ships with a CLI for
-  local runs, baseline management, and score comparison.
+  suite regresses beyond a configurable threshold. The job calls Bedrock
+  under an IAM role it assumes through GitHub OIDC federation. Ships with
+  a CLI for local runs, baseline management, and score comparison.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, ci, eval, github-actions, llm, ai]
+tags: [typescript, ci, eval, github-actions, llm, ai, bedrock, model-gateway]
 
 variables:
   - name: ProjectName
@@ -49,9 +50,19 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider name (built-in: anthropic, openai — or any custom registered provider)'
+    description: 'Default LLM provider name: bedrock for a run on a CI runner or a workstation, under an IAM role the run assumes (GitHub OIDC federation on a runner, an AWS profile on a workstation); gateway for a run inside the cluster, through the Platform ModelGateway with no credential; or any custom registered provider'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'bedrock'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR whose ModelGateway routes a run inside the cluster grades. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: IncludeTests
     type: bool
@@ -68,6 +79,12 @@ conditionals:
   - path: 'src/__tests__/reporter.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/runner.test.ts'
+    when: IncludeTests
+  - path: 'src/__tests__/gateway.test.ts'
+    when: IncludeTests
+  - path: 'src/__tests__/bedrock.test.ts'
+    when: IncludeTests
+  - path: 'src/__tests__/config.test.ts'
     when: IncludeTests
 
 hooks:

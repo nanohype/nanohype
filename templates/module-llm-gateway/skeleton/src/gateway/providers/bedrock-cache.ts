@@ -1,14 +1,13 @@
 // ── Bedrock prompt-cache bookkeeping ────────────────────────────────
 //
 // Pure + dependency-free (no AWS SDK import) so it's unit-testable on its own.
-// The Bedrock Converse API reports prompt-cache token counts in `usage`; this
-// turns them into the cache events the gateway counts via bedrock_cache_total.
-//
-// This is the only place the cache is measurable: Converse exposes
-// cacheReadInputTokens / cacheWriteInputTokens, whereas the raw InvokeModel API
-// (system prompt marked `cache_control: ephemeral`) does NOT surface cache
-// tokens in its response body. The gateway standardizes on Converse so the
-// prompt-cache hit ratio is observable.
+// Both paths to Bedrock report a call's prompt-cache tokens on the response
+// (`cacheReadTokens` / `cacheWriteTokens`), and bedrockCacheKinds() turns them
+// into the cache events the gateway counts via bedrock_cache_total. The
+// bedrock provider reads them off the Converse `usage` block with
+// readBedrockCacheTokens(); the gateway provider reads them off the Messages
+// `usage` the ModelGateway returns (`cache_read_input_tokens` /
+// `cache_creation_input_tokens`).
 
 export type BedrockCacheKind = "hit" | "write" | "miss";
 

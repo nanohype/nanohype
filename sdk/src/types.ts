@@ -8,6 +8,13 @@ export interface TemplateVariable {
   prompt?: string;
   default?: string | boolean | number;
   required?: boolean;
+  /**
+   * The value is the default, expanded, and nothing else. A check composed
+   * from other variables (its default) and a validation pattern holds only if
+   * the caller cannot set the value the pattern sees, so the resolver rejects
+   * a value supplied for a derived variable.
+   */
+  derived?: boolean;
   validation?: { pattern?: string; message?: string };
   options?: string[];
 }

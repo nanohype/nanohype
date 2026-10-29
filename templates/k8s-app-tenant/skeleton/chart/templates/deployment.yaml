@@ -49,6 +49,14 @@ spec:
               value: {{ .Values.otel.endpoint | quote }}
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: {{ .Values.otel.protocol | quote }}
+            {{- if .Values.modelGateway.enabled }}
+            - name: MODEL_GATEWAY_ENDPOINT
+              value: {{ .Values.modelGateway.endpoint | quote }}
+            - name: MODEL_ROUTE
+              value: {{ .Values.modelGateway.route | quote }}
+            - name: EMBEDDING_ROUTE
+              value: {{ .Values.modelGateway.embeddingRoute | quote }}
+            {{- end }}
           {{- if .Values.externalSecret.enabled }}
           envFrom:
             - secretRef:

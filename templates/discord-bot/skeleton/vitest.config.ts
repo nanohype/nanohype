@@ -10,9 +10,9 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the provider registry and circuit breaker. Discord handlers
-      // (commands/events), SDK providers, and wiring are exercised against the
-      // live SDK, not unit-covered.
+      // Gate the provider registry, the gateway provider and the circuit
+      // breaker. Discord handlers (commands/events) and wiring are exercised
+      // against the live Discord SDK, not unit-covered.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -21,8 +21,6 @@ export default defineConfig({
         "src/logger.ts",
         "src/commands/**",
         "src/events/**",
-        "src/providers/anthropic.ts",
-        "src/providers/openai.ts",
         "src/providers/mock.ts",
         "src/**/index.ts",
         "src/**/types.ts",

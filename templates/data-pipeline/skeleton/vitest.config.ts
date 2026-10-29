@@ -11,15 +11,16 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the chunk strategies, the eval corpus loader and the checks its
-      // cases are written against, the registries, the orchestrator and the
-      // circuit breaker. Out of the denominator: index.ts calls main() at
-      // import, so loading it starts the CLI and exits the process;
+      // cases are written against, the registries, the orchestrator, the
+      // circuit breaker and the gateway embedder, whose suite runs it against
+      // an in-process HTTP server. Out of the denominator: index.ts calls
+      // main() at import, so loading it starts the CLI and exits the process;
       // bootstrap.ts returns ahead of its checks under VITEST; logger.ts
       // writes JSON lines to the console, and metrics.ts builds OTel
       // instruments that no-op unless a consumer initializes an SDK; the eval
       // runner reaches a provider. Each excluded ingest, embed and output
       // module is the one performing that stage's I/O — filesystem, fetch, DNS
-      // resolution, stdout or a vendor SDK; the registries beside them stay in.
+      // resolution, stdout or the AWS SDK; the registries beside them stay in.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -31,7 +32,6 @@ export default defineConfig({
         "src/pipeline/ingest/web.ts",
         "src/pipeline/ingest/url-guard.ts",
         "src/pipeline/embed/bedrock.ts",
-        "src/pipeline/embed/openai.ts",
         "src/pipeline/output/console.ts",
         "src/pipeline/output/json-file.ts",
         "src/pipeline/eval/runner.ts",

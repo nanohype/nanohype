@@ -8,7 +8,7 @@
 
 /** Provider interface that every LLM backend must implement. */
 export interface LlmProvider {
-  /** Unique provider name (e.g., "anthropic", "openai"). */
+  /** Unique provider name (e.g., "gateway", "mock"). */
   readonly name: string;
 
   /**

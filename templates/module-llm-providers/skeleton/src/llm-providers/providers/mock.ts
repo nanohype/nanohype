@@ -12,9 +12,9 @@ import type { LlmProvider } from "./types.js";
 // ── Mock Provider ──────────────────────────────────────────────────
 //
 // Deterministic provider for testing. Returns keyword-matched
-// responses with fake token counts. No external dependencies or
-// API keys required. Reads no sampling options. Always included in the
-// module.
+// responses with fake token counts. No external dependencies, no
+// network and no credential. Reads no sampling options. Always included
+// in the module.
 //
 
 const RESPONSES: Record<string, string> = {

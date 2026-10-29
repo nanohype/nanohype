@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { API_KEY_SECRET, makeChatHandler } from "../ai/chat-session";
+import { makeChatHandler } from "../ai/chat-session";
 import { WebviewPanel } from "../webview/panel";
 
 /** Wire the Command Palette entry `contributes.commands` declares. */
@@ -8,20 +8,12 @@ export function registerWebviewCommand(context: vscode.ExtensionContext): void {
     getConfiguration: () => {
       const config = vscode.workspace.getConfiguration("__PROJECT_NAME__");
       return {
-        provider: config.get<string>("provider") ?? "anthropic",
+        provider: config.get<string>("provider") || "bedrock",
         model: config.get<string>("model") || undefined,
+        awsProfile: config.get<string>("awsProfile") || undefined,
+        awsRegion: config.get<string>("awsRegion") || undefined,
       };
     },
-    getApiKey: () => Promise.resolve(context.secrets.get(API_KEY_SECRET)),
-    requestApiKey: () =>
-      Promise.resolve(
-        vscode.window.showInputBox({
-          prompt: "__EXTENSION_NAME__: API key for the configured AI provider",
-          password: true,
-          ignoreFocusOut: true,
-        }),
-      ),
-    storeApiKey: (key) => Promise.resolve(context.secrets.store(API_KEY_SECRET, key)),
   });
 
   const disposable = vscode.commands.registerCommand("__PROJECT_NAME__.openWebview", () => {

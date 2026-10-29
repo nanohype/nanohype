@@ -698,7 +698,6 @@ describe("the third-party surface behind the exclusions", () => {
   // DELEGATED_AUTHENTICATION map instead, and the file importing it then
   // cannot be excluded at all.
   const DOES_NOT_AUTHENTICATE = new Set([
-    "@anthropic-ai/sdk",
     "@aws-sdk/client-bedrock-runtime",
     "@aws-sdk/client-sqs",
     "@hono/node-server",
@@ -719,7 +718,6 @@ describe("the third-party surface behind the exclusions", () => {
     "better-sqlite3",
     "bullmq",
     "chromadb",
-    "cohere-ai",
     "commander",
     "crypto",
     "discord.js",
@@ -736,7 +734,6 @@ describe("the third-party surface behind the exclusions", () => {
     // decides nothing about whether a request is authentic.
     "mime-types",
     "next",
-    "openai",
     "path",
     "pg",
     "postgres",

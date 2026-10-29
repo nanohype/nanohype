@@ -13,8 +13,9 @@ import { registerIpcHandlers } from "./ipc-handlers.js";
 
 validateBootstrap();
 
-// Validates env and exits on invalid config. The IPC handlers read their keys
-// from the environment directly, so the returned object isn't needed here.
+// Validates env and exits on invalid config. The IPC handlers and the bedrock
+// provider read the environment directly, so the returned object isn't needed
+// here.
 loadConfig();
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -23,7 +24,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
  * Main process entry point for __PROJECT_NAME__.
  *
  * Creates the BrowserWindow, loads the renderer, and registers
- * IPC handlers for AI calls. API keys live here in the main
+ * IPC handlers for AI calls. AI calls are signed here in the main
  * process — the renderer communicates through the preload bridge.
  */
 

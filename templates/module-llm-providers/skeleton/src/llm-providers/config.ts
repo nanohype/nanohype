@@ -8,7 +8,7 @@ import { z } from "zod";
 
 export const ProviderConfigSchema = z.object({
   /** Default provider name. */
-  defaultProvider: z.string().min(1).default("anthropic"),
+  defaultProvider: z.string().min(1).default("gateway"),
   /** Default model override per provider. */
   models: z.record(z.string(), z.string()).optional(),
   /** Default max tokens. */

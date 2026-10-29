@@ -8,11 +8,8 @@
 
 import type { MultimodalLlmProvider } from "./types.js";
 
-/**
- * Builds a provider. `apiKey` is the key its requests carry; a provider
- * that needs one reads its own environment variable when it is unset.
- */
-export type AnalysisProviderFactory = (apiKey?: string) => MultimodalLlmProvider;
+/** Builds a provider, or returns the one instance a provider module registered. */
+export type AnalysisProviderFactory = () => MultimodalLlmProvider;
 
 const providers = new Map<string, AnalysisProviderFactory>();
 
@@ -20,13 +17,13 @@ export function registerProvider(name: string, factory: AnalysisProviderFactory)
   providers.set(name, factory);
 }
 
-export function getProvider(name: string, apiKey?: string): MultimodalLlmProvider {
+export function getProvider(name: string): MultimodalLlmProvider {
   const factory = providers.get(name);
   if (!factory) {
     const available = [...providers.keys()].join(", ") || "(none)";
     throw new Error(`Unknown LLM provider "${name}". Registered providers: ${available}`);
   }
-  return factory(apiKey);
+  return factory();
 }
 
 export function listProviders(): string[] {

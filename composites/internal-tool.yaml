@@ -51,6 +51,7 @@ templates:
     condition: IncludeEvals
     variables:
       ProjectName: '${ProjectName}-evals'
+      PlatformName: '${ProjectName}'
 
   - template: k8s-deploy
     path: infra

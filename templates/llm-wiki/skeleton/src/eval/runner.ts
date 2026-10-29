@@ -84,10 +84,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // The query pipeline resolves providers from configuration and builds a
-  // client for the configured model. Reaching it only after the corpus is
-  // known to hold something means a run with nothing to run says so, instead
-  // of failing earlier with a vendor SDK error about credentials.
+  // The query pipeline loads the gateway provider, which parses
+  // MODEL_GATEWAY_ENDPOINT as it loads and throws on a malformed one.
+  // Reaching it only after the corpus is known to hold something means a run
+  // with nothing to run says so, instead of failing earlier on that setting.
   const { FIXTURE_PROVIDER, FIXTURE_TENANT, registerFixtureWiki } = await import(
     "./fixture-storage.js"
   );

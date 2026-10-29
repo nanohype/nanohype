@@ -80,7 +80,7 @@ All pluggable seams (LLM providers, embedding providers, database drivers, auth 
 - A barrel file imports all implementations to trigger registration
 - Consumers call `getProvider(name)` to get an instance
 
-Variables for provider selection use `type: string` (not `enum`) so new providers can be added without changing `template.yaml`. The default value names a built-in provider (e.g., `"anthropic"`).
+Variables for provider selection use `type: string` (not `enum`) so new providers can be added without changing `template.yaml`. The default value names a built-in provider (e.g., `"gateway"`, the Platform's ModelGateway).
 
 ### Validating
 

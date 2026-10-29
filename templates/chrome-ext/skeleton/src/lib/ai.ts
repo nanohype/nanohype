@@ -1,5 +1,5 @@
 import { logger } from "./logger.js";
-import type { ChatMessage } from "./providers/index.js";
+import type { ChatMessage, ProviderSettings } from "./providers/index.js";
 import { getProvider } from "./providers/index.js";
 
 const DEFAULT_PROVIDER = "__LLM_PROVIDER__";
@@ -12,12 +12,9 @@ const DEFAULT_PROVIDER = "__LLM_PROVIDER__";
  */
 export async function sendMessage(
   messages: ChatMessage[],
-  apiKey: string,
-  provider?: string,
-  model?: string,
+  settings: ProviderSettings,
+  provider: string = DEFAULT_PROVIDER,
 ): Promise<string> {
-  const resolvedProvider = provider ?? DEFAULT_PROVIDER;
-  const p = getProvider(resolvedProvider);
-  logger.debug("ai.send", { provider: resolvedProvider, model: model ?? p.defaultModel });
-  return p.sendMessage(messages, apiKey, model ?? p.defaultModel);
+  logger.debug("ai.send", { provider, route: settings.route });
+  return getProvider(provider).sendMessage(messages, settings);
 }

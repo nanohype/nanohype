@@ -5,33 +5,35 @@ displayName: 'K8s App as Platform Tenant'
 description: >
   Primary scaffolding for a nanohype-org k8s-native application. Produces
   a Helm chart with per-environment values, an ArgoCD ApplicationSet entry
-  ready to register against nanohype/eks-gitops,
-  and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required
-  BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant
-  boundary for the eks-agent-platform operator to reconcile. Use this for
-  every k8s-native deliverable unless an explicit escape hatch
-  (aws-lambda, fly, vercel, cloudflare) is justified.
+  ready to register against nanohype/eks-gitops, and a Platform CR
+  (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy
+  (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the
+  eks-agent-platform operator to reconcile, with a ModelGateway
+  (agents.nanohype.dev/v1alpha1) the app reaches a model through, so the
+  chart carries no model credential. Use this for every k8s-native
+  deliverable unless an explicit escape hatch (aws-lambda, fly, vercel,
+  cloudflare) is justified.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: infrastructure
-tags: [kubernetes, k8s, helm, argocd, platform, nanohype]
+tags: [kubernetes, k8s, helm, argocd, platform, nanohype, model-gateway]
 
 variables:
   - name: AppName
     type: string
     placeholder: '__APP_NAME__'
-    description: 'Kebab-case app name. Used as chart name, namespace, Platform CR name, and service account name.'
+    description: 'Kebab-case app name of at most 55 characters. Used as chart name, Platform CR name, and the name of the Platform''s namespace tenants-<AppName> and gateway Service <AppName>-gateway.'
     prompt: 'App name'
     required: true
     validation:
-      pattern: '^[a-z][a-z0-9-]*$'
-      message: 'Must be lowercase kebab-case starting with a letter'
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <AppName>-gateway and tenants-<AppName> are DNS labels'
 
   - name: AppMetric
     type: string
     placeholder: '__APP_METRIC__'
-    description: 'Metric-name prefix for the RED/SLO panels and burn-rate rules — the service name with dashes converted to underscores (e.g. competitive_intelligence). The app emits <prefix>_requests_total / _errors_total / _request_duration_seconds. Defaults to AppName, so single-word names need nothing; multi-word names must set the underscored form.'
+    description: 'Metric-name prefix the Grafana dashboard''s RED and SLO panels read — the service name with dashes converted to underscores (e.g. competitive_intelligence). The app emits <prefix>_requests_total / _errors_total / _request_duration_seconds. Defaults to AppName, so single-word names need nothing; multi-word names must set the underscored form. The PrometheusRule derives the same prefix from the chart name.'
     prompt: 'Metric prefix (underscored)'
     default: '${AppName}'
     validation:
@@ -48,7 +50,7 @@ variables:
   - name: Tenant
     type: string
     placeholder: '__TENANT__'
-    description: 'Owning team. Drives the namespace prefix (tenants-<team>), ArgoCD AppProject, and per-tenant resource quotas.'
+    description: 'Owning team: the tenants-<team> namespace the Platform, BudgetPolicy and ModelGateway CRs are applied in, the Platform''s spec.tenant, and the team label on the chart''s resources and telemetry.'
     prompt: 'Owning team'
     required: true
     validation:
@@ -105,6 +107,13 @@ variables:
     description: "ArgoCD sync wave for this app's ApplicationSet entry. Apps typically deploy after addons (wave >= 100)."
     prompt: 'Sync wave'
     default: '100'
+
+  - name: IncludeEmbeddingRoute
+    type: bool
+    placeholder: '__INCLUDE_EMBEDDING_ROUTE__'
+    description: 'Add the embeddings route (Titan Text Embeddings v2) to the ModelGateway, and amazon-titan to the Platform allowed model families, for an app that embeds through the gateway'
+    prompt: 'Add the ModelGateway embeddings route?'
+    default: false
 
 conditionals: []
 

@@ -22,9 +22,9 @@ export default defineConfig({
       //
       // Each kind of file below is measured rather than excluded.
       //
-      // The Anthropic adapter is measured. Its request suite runs the real SDK
-      // client over an in-process `fetch`, so the body it puts on the wire and
-      // the responses it refuses are checked without a live call.
+      // The gateway provider is measured. Its request suite runs it against an
+      // in-process HTTP server, so the body it puts on the wire and the
+      // responses it refuses are checked without a live call.
       //
       // The eval corpus loader is measured. The eval runner and the fixture
       // wiki it seeds reach a live model, so those run on demand; the loader's

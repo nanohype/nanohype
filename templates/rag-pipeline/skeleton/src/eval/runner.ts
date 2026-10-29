@@ -35,10 +35,10 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Config, ingestion and generation reach the provider registry, which builds
-  // clients that want credentials. Importing them after the corpus is read
-  // means a run with nothing to run says so, instead of failing earlier with a
-  // vendor SDK error about a missing key.
+  // Config, ingestion and generation reach the provider registry, whose
+  // gateway provider parses MODEL_GATEWAY_ENDPOINT as it loads and throws on a
+  // malformed one. Importing them after the corpus is read means a run with
+  // nothing to run says so, instead of failing earlier on that setting.
   const { loadConfig } = await import("../config.js");
   const { ingestDirectory } = await import("../ingest.js");
   const { query } = await import("../generation.js");

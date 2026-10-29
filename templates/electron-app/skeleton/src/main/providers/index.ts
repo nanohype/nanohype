@@ -1,5 +1,4 @@
-import "./anthropic.js";
-import "./openai.js";
+import "./bedrock.js";
 
 export { getProvider, listProviders, registerProvider } from "./registry.js";
 export type { AiProvider, ChatMessage } from "./types.js";

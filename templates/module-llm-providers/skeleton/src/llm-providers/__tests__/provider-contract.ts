@@ -30,23 +30,29 @@ export interface Endpoint {
   aborted: boolean;
 }
 
-/** A provider's wire format: a stream's first event, and the body a refusal carries. */
+/**
+ * A provider's wire format: a stream's first event, the body a refusal
+ * carries, and the status it answers with, 400 when unset.
+ */
 export interface Wire {
   firstEvent: string;
   refusal: unknown;
+  refusalStatus?: number;
 }
 
 /**
  * A `fetch` that behaves as `behaviour` says: a streamed request gets
  * `wire.firstEvent` and then nothing until its signal aborts, a request
  * that does not stream gets no answer until then, and a refused request
- * gets a 400 carrying `wire.refusal`.
+ * gets `wire.refusalStatus` carrying `wire.refusal`.
  */
 export function endpointFetch(behaviour: Behaviour, wire: Wire) {
   const endpoint: Endpoint = { requests: 0, aborted: false };
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
     endpoint.requests += 1;
-    if (behaviour === "refuses") return Response.json(wire.refusal, { status: 400 });
+    if (behaviour === "refuses") {
+      return Response.json(wire.refusal, { status: wire.refusalStatus ?? 400 });
+    }
     const streamed =
       String(input).includes(":streamGenerateContent") ||
       JSON.parse(String(init?.body)).stream === true;

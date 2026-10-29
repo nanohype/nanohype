@@ -128,10 +128,14 @@ npx tsx bin/run-evals.ts [options]
 
 ## CI Integration
 
-The included GitHub Actions workflow runs eval suites on every pull request. Set the following secrets in your repository:
+The included GitHub Actions workflow runs eval suites on every pull request. The `bedrock` provider calls Bedrock under an IAM role the job assumes: the workflow federates the job's GitHub OIDC token into the role the repository variable `EVAL_ROLE_ARN` names, so the repository holds no long-lived credential.
 
-- `ANTHROPIC_API_KEY` — for the Anthropic provider
-- `OPENAI_API_KEY` — for the OpenAI provider
+- `EVAL_ROLE_ARN` (repository variable): the role the job assumes. It trusts the GitHub OIDC provider for the subject `repo:<owner>/<repo>:pull_request` and grants `bedrock:InvokeModel` on the inference profiles the suites grade and on the foundation model each routes to, in every one of the profile's destination regions.
+- `AWS_REGION` (repository variable, optional): the region the profiles are invoked in, `us-east-1` when unset.
+
+GitHub issues no OIDC token to a pull request from a fork, so a fork's run reaches no model. On a workstation the same provider reads the AWS profile the environment selects and signs with whatever it resolves, so make that profile an IAM Identity Center sign-in or an assumed role (`role_arn`) rather than one holding an access key of its own; `LLM_MODEL` names a different inference profile.
+
+A run inside the cluster uses `--provider gateway` instead: the `gateway` provider calls the Platform's ModelGateway at `MODEL_GATEWAY_ENDPOINT` (by default the Service the eks-agent-platform operator creates for the Platform named at scaffold time) on the route `MODEL_ROUTE` (`default`), and sends no credential.
 
 Eval results are uploaded as build artifacts for review.
 
@@ -150,8 +154,9 @@ src/
   providers/
     types.ts         # LlmProvider interface and ChatMessage type
     registry.ts      # Registry — registerProvider / getProvider / listProviders
-    anthropic.ts     # Anthropic Claude provider (self-registers)
-    openai.ts        # OpenAI GPT provider (self-registers)
+    bedrock.ts       # Bedrock Converse under an assumed IAM role (self-registers)
+    gateway.ts       # Platform ModelGateway, no credential (self-registers)
+    mock.ts          # Canned responses, no network call
     index.ts         # Barrel — triggers registration, re-exports API
 suites/
   example.yaml       # Golden cases — what the model is expected to deliver

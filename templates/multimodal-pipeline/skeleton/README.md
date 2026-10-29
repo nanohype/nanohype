@@ -5,7 +5,7 @@ __DESCRIPTION__
 ## Quick start
 
 ```bash
-# Copy .env.example and configure your API keys
+# Copy .env.example and point it at your Platform's ModelGateway
 cp .env.example .env
 
 # Install dependencies
@@ -40,8 +40,25 @@ The pipeline follows a modular design with pluggable processors and providers:
 
 Processors and providers are registered via self-registering registry patterns:
 
-- **Processors**: Image (sharp resize + base64), Audio (Whisper transcription), Video (ffmpeg frame extraction)
-- **LLM Providers**: Anthropic (Claude vision), OpenAI (GPT-4o vision)
+- **Processors**: Image (sharp resize + base64), Audio (Amazon Transcribe), Video (ffmpeg frame extraction)
+- **LLM Providers**: Gateway (Claude vision through the Platform's ModelGateway, the default) and Bedrock (Converse under the AWS credential chain, off the substrate)
+
+### Model access
+
+The `gateway` provider calls the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the pipeline holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time; `MODEL_ROUTE` (`default`) names the route the ModelGateway maps to a Bedrock model.
+
+Off the cluster, the default endpoint is a cluster-internal Service address. Forward the gateway Service to this machine, which the Kubernetes API server authorizes as the user who opens the forward (`create` on `pods/portforward` in the Platform's namespace), and point `MODEL_GATEWAY_ENDPOINT` at it:
+
+```bash
+kubectl -n tenants-__PLATFORM_NAME__ port-forward svc/__PLATFORM_NAME__-gateway 8080:8080
+MODEL_GATEWAY_ENDPOINT=http://localhost:8080 npm run process -- ./samples/photo.jpg
+```
+
+The `bedrock` provider calls Bedrock's Converse API directly under the IAM role the AWS SDK's default credential chain resolves: a task or execution role in AWS, or an AWS profile such as an IAM Identity Center sign-in on a workstation. `LLM_MODEL` names its model as an inference-profile ID, and `AWS_REGION` the region. The role needs `bedrock:InvokeModel` on that inference profile and on the foundation model it routes to, in every one of the profile's destination regions. On the substrate a direct call skips the route's guardrail and rate limit, so a tenant stays on `gateway`.
+
+The ModelGateway serves no transcription route, so audio processing runs off the substrate, with `LLM_PROVIDER=bedrock`. The audio processor stages each file under `TRANSCRIBE_S3_URI`, runs an Amazon Transcribe batch job over it under the same credential chain, reads the transcript back, and deletes both objects and the job. The role also needs `s3:PutObject`, `s3:GetObject` and `s3:DeleteObject` under that prefix, and `transcribe:StartTranscriptionJob`, `transcribe:GetTranscriptionJob` and `transcribe:DeleteTranscriptionJob`. No component holds a provider key.
+
+Every request to AWS carries a timeout, and a transcription fails once it has run for `AUDIO_TRANSCRIPTION_TIMEOUT_MS` without its job finishing. Transcribe cannot stop a running job, so a job still running then goes on to write its transcript: the provider deletes the media at once and follows the job for one more `AUDIO_TRANSCRIPTION_TIMEOUT_MS`, deleting the transcript and the job once it settles. The CLI waits for that before it exits. A process stopped sooner leaves the transcript to the bucket's S3 lifecycle rule, so give the staging prefix one that expires its objects.
 
 ### Design Decisions
 
@@ -63,14 +80,15 @@ transcription or frame-extraction round trip.
 The corpus loader refuses an empty corpus, and refuses a case file it cannot
 parse or cannot recognise rather than skipping it — a runner that finds nothing
 and exits 0 reports what a passing eval reports. Those refusals are covered by
-`npm test`. The eval itself calls a live provider and needs credentials, so it
-is a command you run against real credentials rather than one that runs
-unattended on every commit.
+`npm test`. The eval itself calls a live provider, so it is a command you run
+against a reachable ModelGateway, or Bedrock off the substrate, rather
+than one that runs unattended on every commit.
 
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production API keys for your LLM provider
+- [ ] Point `MODEL_GATEWAY_ENDPOINT` and `MODEL_ROUTE` at the Platform's ModelGateway and the route it maps to a vision-capable model; off the substrate, run `bedrock` under an IAM role with `LLM_MODEL` set to a vision-capable inference profile
+- [ ] With audio processing, set `TRANSCRIBE_S3_URI` to a prefix the role can write, read and delete under, with an S3 lifecycle rule that expires its objects, for the transcript of a job a stopped process was still following
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Tune `IMAGE_MAX_DIMENSION` for your quality vs. cost tradeoff
 - [ ] Set `VIDEO_FRAME_INTERVAL_SECONDS` and `VIDEO_MAX_FRAMES` based on your video lengths
