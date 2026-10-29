@@ -52,7 +52,7 @@ async function main(): Promise<void> {
   // ran everything and passed.
   const cases = await loadCases(casesDir);
 
-  // Both barrels pull in provider SDKs, and building an embedding provider
+  // Both barrels pull in provider SDKs, and building some embedding providers
   // needs credentials. Reading the corpus before importing them means a run
   // with nothing to run says so, instead of failing first on a vendor error
   // about a missing key.

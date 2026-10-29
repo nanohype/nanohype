@@ -16,7 +16,7 @@ chart/
   templates/                     # deployment, service, serviceaccount, networkpolicy
 gitops/
   applicationset-entry.yaml      # register with __GITOPS_REPO__
-platform.yaml                    # Platform CR — apply once
+platform.yaml                    # Platform, BudgetPolicy and ModelGateway CRs — apply once
 ```
 
 ## Initial setup (per cluster, one-time)
@@ -37,6 +37,7 @@ platform.yaml                    # Platform CR — apply once
 - **Code change** → bump image tag in `values-<env>.yaml` → commit → ArgoCD reconciles.
 - **Chart change** → edit `chart/templates/*.yaml` → render locally with `helm template chart/ -f chart/values-development.yaml` → commit.
 - **New egress** → add entry to `chart/values.yaml` `networkPolicy.egress` → render → commit.
+- **New model route** → add a route to the `ModelGateway` in `platform.yaml` → reapply → the app names it; it never holds a model key, and model calls never need `:443` egress.
 - **New IRSA policy** → edit `platform.yaml` `spec.irsa.policies` → reapply → operator reconciles the role.
 
 ## What lives where (don't put it in the wrong place)

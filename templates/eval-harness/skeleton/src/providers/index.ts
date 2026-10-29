@@ -6,7 +6,10 @@
  * registerProvider() and import it here.
  */
 
-// Side-effect imports — each module registers itself on load
+// Side-effect imports — each module registers itself on load. The gateway
+// provider calls the Platform's ModelGateway and holds no credential, for a
+// run inside the cluster; the API-key providers serve a run outside it.
+import "./gateway.js";
 import "./anthropic.js";
 import "./openai.js";
 import "./mock.js";

@@ -5,7 +5,7 @@ displayName: 'Platform Tenant'
 description: >
   One-shot scaffolder for a k8s-native nanohype Platform tenant: the
   k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values,
-  an ArgoCD ApplicationSet entry, and the Platform + BudgetPolicy CRs) plus the
+  an ArgoCD ApplicationSet entry, and the Platform, BudgetPolicy and ModelGateway CRs) plus the
   optional AI building blocks as local packages — the LLM gateway and the vector
   store. The output satisfies the platform-tenant-contract: a chart with the
   required templates, the gitops entry, and the Platform CR, with the OTel
@@ -54,14 +54,20 @@ variables:
   - name: IncludeLlmGateway
     type: bool
     placeholder: '__INCLUDE_LLM_GATEWAY__'
-    description: 'Include the LLM gateway package (Bedrock-first, routing + caching + cost tracking).'
+    description: 'Include the LLM gateway package (routing + caching + cost tracking, over the Platform ModelGateway by default).'
     default: true
 
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider for the gateway.'
-    default: 'bedrock'
+    description: 'LLM provider: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
 
   - name: IncludeVectorStore
     type: bool
@@ -102,6 +108,8 @@ templates:
     condition: IncludeLlmGateway
     variables:
       ProjectName: '${AppName}-gateway'
+      PlatformName: '${AppName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       DefaultProvider: '${LlmProvider}'
 
   - template: module-vector-store

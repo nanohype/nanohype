@@ -3,8 +3,9 @@ import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerProvider } from "./registry.js";
 import type { ChatMessage, LlmProvider } from "./types.js";
 
-// Direct Anthropic API — an alternate to the Bedrock default
-// (set LLM_PROVIDER=anthropic). Requires ANTHROPIC_API_KEY. The SDK client is
+// Direct Anthropic API, for the bot off the nanohype substrate (set
+// LLM_PROVIDER=anthropic). Requires ANTHROPIC_API_KEY, which the LLM policy
+// permits only when the intake brief names Anthropic. The SDK client is
 // given an explicit per-request timeout so a hung socket trips the breaker
 // instead of hanging; the model id is injectable via ANTHROPIC_MODEL.
 

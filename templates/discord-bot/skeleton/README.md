@@ -11,7 +11,7 @@ A Discord bot built with [discord.js](https://discord.js.org) v14 and AI-powered
 - **AI message handler** responds to DMs and @mentions
 - **Conversation context** maintains history per channel for multi-turn AI
 - **Embed formatting** rich responses using Discord embeds for long answers
-- **Provider registry** swap between Anthropic and OpenAI with a config value
+- **Provider registry** with `gateway` as the default: it calls the Platform's ModelGateway, the only route to a model on the nanohype substrate, and holds no model credential
 
 ## Variables
 
@@ -19,7 +19,8 @@ A Discord bot built with [discord.js](https://discord.js.org) v14 and AI-powered
 |---|---|---|
 | `ProjectName` | Kebab-case project name | _(required)_ |
 | `Description` | Short project description | A Discord bot with AI |
-| `LlmProvider` | LLM provider | anthropic |
+| `LlmProvider` | LLM provider | gateway |
+| `PlatformName` | Platform CR the bot deploys under | ProjectName |
 | `IncludeTests` | Include test files | true |
 
 ## Getting Started
@@ -38,7 +39,7 @@ A Discord bot built with [discord.js](https://discord.js.org) v14 and AI-powered
 
 ```bash
 cp .env.example .env
-# Fill in DISCORD_TOKEN, DISCORD_CLIENT_ID, and API keys
+# Fill in DISCORD_TOKEN and DISCORD_CLIENT_ID
 ```
 
 ### 3. Register Slash Commands
@@ -71,8 +72,7 @@ src/
   providers/
     types.ts                # LlmProvider interface
     registry.ts             # Provider registry (register/get/list)
-    anthropic.ts            # Anthropic provider, self-registers
-    openai.ts               # OpenAI provider, self-registers
+    gateway.ts              # Platform ModelGateway provider, self-registers
     index.ts                # Barrel — triggers registration
 ```
 

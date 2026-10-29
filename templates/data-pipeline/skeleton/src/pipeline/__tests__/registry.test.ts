@@ -65,7 +65,11 @@ describe("Transform Strategy Registry", () => {
 describe("Embedding Provider Registry", () => {
   it("lists registered providers", () => {
     const providers = listEmbeddingProviders();
+    expect(providers).toContain("gateway");
+    expect(providers).toContain("bedrock");
+    // #if IncludeKeyProviders
     expect(providers).toContain("openai");
+    // #endif
     expect(providers).toContain("mock");
   });
 

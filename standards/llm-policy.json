@@ -25,7 +25,7 @@
     "requirements": [
       {
         "id": "iam-role-auth",
-        "summary": "Authenticate via IAM role assumption (EKS Pod Identity on EKS, ECS task role, Lambda execution role). No API keys in code, env vars, or secrets.",
+        "summary": "On the nanohype substrate the application holds no model credential: it calls its Platform's ModelGateway, whose Envoy runs under the tenant's EKS Pod Identity and holds the Bedrock role, and it sends the gateway no key, token or signature. Off the substrate (CLIs, desktop and browser apps, local tools) a provider API key is permitted only when the intake brief names that provider; the key is never committed, and the application reads it from the environment or the OS keychain.",
         "severity": "reject"
       },
       {

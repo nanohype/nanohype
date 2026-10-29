@@ -2,12 +2,12 @@
   "$schema": "./schemas/catalog.schema.json",
   "kind": "nanohype/catalog",
   "version": "1",
-  "generated_at": "2026-08-13T06:48:55.000Z",
+  "generated_at": "2026-10-29T01:47:11.000Z",
   "templates": [
     {
       "name": "a2a-agent",
       "displayName": "A2A Agent",
-      "description": "Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript. A2A is the open protocol for multi-agent interoperability — the agent-level equivalent of MCP (which operates at the tool level). The generated project can expose skills to other agents via an A2A server, discover and invoke capabilities on remote agents via an A2A client, and use an LLM provider for reasoning about which skill to execute. Supports HTTP and WebSocket transports, optional agent discovery with an Agent Card served at /.well-known/agent.json, and a pluggable provider registry for LLM backends.",
+      "description": "Scaffolds an Agent-to-Agent (A2A) protocol peer in TypeScript. A2A is the open protocol for multi-agent interoperability — the agent-level equivalent of MCP (which operates at the tool level). The generated project can expose skills to other agents via an A2A server, discover and invoke capabilities on remote agents via an A2A client, and use an LLM provider for reasoning about which skill to execute. Supports HTTP and WebSocket transports, optional agent discovery with an Agent Card served at /.well-known/agent.json, and a pluggable provider registry for LLM backends that defaults to the Platform's ModelGateway and holds no model credential.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -19,7 +19,8 @@
         "a2a",
         "multi-agent",
         "protocol",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/a2a-agent"
@@ -66,7 +67,7 @@
     {
       "name": "agent-orchestrator",
       "displayName": "Agent Orchestrator",
-      "description": "Multi-agent orchestrator that decomposes tasks via an LLM-powered planner agent, routes subtasks to specialized agents based on capability matching, and aggregates results. Agents communicate through a shared context with namespacing and a handoff protocol that creates an audit trail of agent-to-agent transitions. Supports Anthropic and OpenAI as LLM providers for orchestration reasoning.",
+      "description": "Multi-agent orchestrator that decomposes tasks via an LLM-powered planner agent, routes subtasks to specialized agents based on capability matching, and aggregates results. Agents communicate through a shared context with namespacing and a handoff protocol that creates an audit trail of agent-to-agent transitions. Reasons through the Platform's ModelGateway and holds no model credential, with Anthropic and OpenAI key providers as an off-substrate opt-in.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -78,7 +79,8 @@
         "orchestrator",
         "multi-agent",
         "llm",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/agent-orchestrator"
@@ -86,7 +88,7 @@
     {
       "name": "agentic-loop",
       "displayName": "Agentic Loop",
-      "description": "Scaffolds a TypeScript agentic loop that sends messages to an LLM, detects tool-call requests in the response, executes them via a typed tool registry, appends results, and repeats until the model stops calling tools or an iteration limit is reached. Supports Anthropic and OpenAI as LLM providers, an optional conversation memory subsystem with token-aware truncation, and an optional eval harness for assertion-based testing against fixture files.",
+      "description": "Scaffolds a TypeScript agentic loop that sends messages to an LLM, detects tool-call requests in the response, executes them via a typed tool registry, appends results, and repeats until the model stops calling tools or an iteration limit is reached. Calls the Platform's ModelGateway with tool use and holds no model credential, with Anthropic and OpenAI key providers as an off-substrate opt-in, an optional conversation memory subsystem with token-aware truncation, and an optional eval harness for assertion-based testing against fixture files.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -98,7 +100,8 @@
         "llm",
         "tools",
         "agentic",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/agentic-loop"
@@ -367,7 +370,8 @@
         "eval",
         "github-actions",
         "llm",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/ci-eval"
@@ -432,7 +436,7 @@
     {
       "name": "data-pipeline",
       "displayName": "Data Pipeline",
-      "description": "Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document ingestion from files and web pages, configurable chunking strategies (recursive, fixed-size, semantic), embedding generation, and output adapters for indexing. No LangChain — all components are built from first principles using provider SDKs directly. Defaults to AWS Bedrock Titan v2 embeddings (on IRSA — no keys), with OpenAI as an alternate. Supports multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web — SSRF-guarded) and output formats (JSONL, console). Output is compatible with module-vector-store's VectorDocument shape.",
+      "description": "Scaffolds an ETL pipeline for AI workloads in TypeScript. Implements document ingestion from files and web pages, configurable chunking strategies (recursive, fixed-size, semantic), embedding generation, and output adapters for indexing. No LangChain — all components are built from first principles using provider SDKs directly. Defaults to embeddings through the Platform's ModelGateway (Titan v2), so the pipeline holds no model credential, with Bedrock called directly and an OpenAI key provider as off-substrate alternates. Supports multiple ingest sources (PDF, Markdown, plain text, JSON, CSV, web — SSRF-guarded) and output formats (JSONL, console). Output is compatible with module-vector-store's VectorDocument shape.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -445,7 +449,8 @@
         "pipeline",
         "data",
         "chunking",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/data-pipeline"
@@ -491,7 +496,7 @@
     {
       "name": "discord-bot",
       "displayName": "Discord Bot",
-      "description": "Scaffolds a TypeScript Discord bot using discord.js v14 with GatewayIntentBits for guilds, messages, and message content. Includes slash command registration and handling, a messageCreate handler with AI-powered responses, a pluggable LLM provider registry (Anthropic and OpenAI), and embed-based rich formatting for structured AI output.",
+      "description": "Scaffolds a TypeScript Discord bot using discord.js v14 with GatewayIntentBits for guilds, messages, and message content. Includes slash command registration and handling, a messageCreate handler with AI-powered responses, a pluggable LLM provider registry that defaults to the Platform's ModelGateway and holds no model credential (Anthropic and OpenAI key providers are an off-substrate opt-in), and embed-based rich formatting for structured AI output.",
       "version": "0.1.0",
       "category": "applications",
       "persona": [
@@ -502,7 +507,8 @@
         "discord",
         "bot",
         "ai",
-        "chatbot"
+        "chatbot",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/discord-bot"
@@ -562,7 +568,8 @@
         "eval",
         "testing",
         "llm",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/eval-harness"
@@ -709,7 +716,7 @@
     {
       "name": "k8s-app-tenant",
       "displayName": "K8s App as Platform Tenant",
-      "description": "Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm chart with per-environment values, an ArgoCD ApplicationSet entry ready to register against nanohype/eks-gitops, and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the eks-agent-platform operator to reconcile. Use this for every k8s-native deliverable unless an explicit escape hatch (aws-lambda, fly, vercel, cloudflare) is justified.",
+      "description": "Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm chart with per-environment values, an ArgoCD ApplicationSet entry ready to register against nanohype/eks-gitops, and a Platform CR (platform.nanohype.dev/v1alpha1) plus its required BudgetPolicy (governance.nanohype.dev/v1alpha1) declaring the tenant boundary for the eks-agent-platform operator to reconcile, with a ModelGateway (agents.nanohype.dev/v1alpha1) the app reaches a model through, so the chart carries no model credential. Use this for every k8s-native deliverable unless an explicit escape hatch (aws-lambda, fly, vercel, cloudflare) is justified.",
       "version": "0.1.0",
       "category": "infrastructure",
       "persona": [
@@ -721,7 +728,8 @@
         "helm",
         "argocd",
         "platform",
-        "nanohype"
+        "nanohype",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/k8s-app-tenant"
@@ -799,7 +807,8 @@
         "llm",
         "wiki",
         "multi-tenant",
-        "rag-alternative"
+        "rag-alternative",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/llm-wiki"
@@ -1022,7 +1031,7 @@
     {
       "name": "module-llm-gateway",
       "displayName": "Module: LLM Gateway",
-      "description": "Unified LLM gateway with pluggable routing strategies, response caching, and cost tracking. Ships with Bedrock (Converse + prompt caching, IRSA auth, the default), Anthropic, OpenAI, and Groq providers, gateway-level provider fallback, six routing strategies (static, round-robin, latency, cost, adaptive, linucb), three caching modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost anomaly detection using z-score analysis.",
+      "description": "Unified LLM gateway with pluggable routing strategies, response caching, and cost tracking. Defaults to the gateway provider, which calls the Platform's ModelGateway and holds no model credential, the one route to a model on the nanohype substrate. Ships a direct Bedrock provider (Converse + prompt caching, AWS credential chain) and an off-substrate opt-in for the Anthropic, OpenAI, and Groq key providers, gateway-level provider fallback, six routing strategies (static, round-robin, latency, cost, adaptive, linucb), three caching modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost anomaly detection using z-score analysis.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1031,6 +1040,7 @@
       "tags": [
         "llm",
         "gateway",
+        "model-gateway",
         "routing",
         "caching",
         "cost-tracking",
@@ -1062,7 +1072,7 @@
     {
       "name": "module-llm-providers",
       "displayName": "Module: LLM Providers",
-      "description": "Shared LLM provider pack — the canonical interface for all AI templates. Ships with Anthropic, OpenAI, and Groq providers out of the box, plus optional Bedrock, Vertex AI, Hugging Face, and Ollama providers. Factory-based registry, streaming, token counting via js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.",
+      "description": "Shared LLM provider pack — the canonical interface for all AI templates. Defaults to the gateway provider, which calls the Platform's ModelGateway and holds no model credential, the one route to a model on the nanohype substrate. The Anthropic, OpenAI, and Groq key providers are an off-substrate opt-in, beside optional Bedrock, Vertex AI, Hugging Face, and Ollama providers. Factory-based registry, streaming, token counting via js-tiktoken, circuit breakers, OTel metrics, and a gateway adapter.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1071,6 +1081,7 @@
       "tags": [
         "llm",
         "providers",
+        "model-gateway",
         "anthropic",
         "openai",
         "groq",
@@ -1241,7 +1252,7 @@
     {
       "name": "module-semantic-cache",
       "displayName": "Module: Semantic Cache",
-      "description": "Embedding-based LLM response caching using vector similarity search. Stores prompt embeddings alongside cached responses and retrieves them by cosine similarity instead of exact key match. Ships with a Bedrock Titan embedding provider (default), an OpenAI alternate, and an in-memory vector store for development. Includes a gateway adapter for drop-in integration with LLM gateway caching strategies.",
+      "description": "Embedding-based LLM response caching using vector similarity search. Stores prompt embeddings alongside cached responses and retrieves them by cosine similarity instead of exact key match. Embeds through the Platform's ModelGateway by default, so the cache holds no model credential, with Bedrock Titan called directly and an OpenAI key provider as off-substrate alternates, and an in-memory vector store for development. Includes a gateway adapter for drop-in integration with LLM gateway caching strategies.",
       "version": "0.1.0",
       "category": "composable-modules",
       "persona": [
@@ -1253,7 +1264,8 @@
         "vector-search",
         "llm",
         "caching",
-        "typescript"
+        "typescript",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/module-semantic-cache"
@@ -1380,7 +1392,7 @@
     {
       "name": "multimodal-pipeline",
       "displayName": "Multimodal Pipeline",
-      "description": "Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, detects modality automatically, routes each input through a modality-specific processor, sends the result to a vision or audio-capable LLM (Anthropic Claude, OpenAI GPT-4o), and returns structured output with Zod-validated schemas. No heavy frameworks — all components are built from first principles using provider SDKs directly. Processors and LLM providers use a self-registering registry pattern for easy extension.",
+      "description": "Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, detects modality automatically, routes each input through a modality-specific processor, sends the result to a vision-capable LLM through the Platform's ModelGateway, which holds the model credential so the pipeline holds none, and returns structured output with Zod-validated schemas. Anthropic and OpenAI key providers are an off-substrate opt-in. No heavy frameworks — all components are built from first principles using provider SDKs directly. Processors and LLM providers use a self-registering registry pattern for easy extension.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -1394,7 +1406,8 @@
         "video",
         "llm",
         "ai",
-        "structured-output"
+        "structured-output",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/multimodal-pipeline"
@@ -1402,7 +1415,7 @@
     {
       "name": "next-app",
       "displayName": "Next.js AI Application",
-      "description": "Scaffolds a Next.js 15 application with App Router, streaming AI chat, and a pluggable provider registry. Includes Tailwind CSS styling, a chat UI with message streaming, server-side AI calls via route handlers, structured JSON logging, and optional auth, database (Drizzle + Postgres), and Docker configurations.",
+      "description": "Scaffolds a Next.js 15 application with App Router, streaming AI chat, and a pluggable provider registry. Includes Tailwind CSS styling, a chat UI with message streaming, server-side AI calls via route handlers, structured JSON logging, and optional auth, database (Drizzle + Postgres), and Docker configurations. The chat route calls the Platform's ModelGateway by default, so the server holds no model credential; Anthropic and OpenAI key providers are an off-substrate opt-in.",
       "version": "0.1.0",
       "category": "applications",
       "persona": [
@@ -1414,7 +1427,8 @@
         "react",
         "ai",
         "chat",
-        "tailwind"
+        "tailwind",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/next-app"
@@ -1537,7 +1551,7 @@
     {
       "name": "rag-pipeline",
       "displayName": "RAG Pipeline",
-      "description": "Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript. Implements document ingestion, configurable chunking strategies, embedding generation, vector storage, similarity retrieval, and LLM-powered answer generation with source citations. No LangChain — all components are built from first principles using the provider SDKs directly. Defaults to AWS Bedrock (Claude via Converse with prompt caching for generation, Titan v2 for embeddings, on IRSA — no keys). Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone), alternate embedding providers (OpenAI, Cohere), and alternate LLM providers (Anthropic, OpenAI).",
+      "description": "Scaffolds a Retrieval-Augmented Generation pipeline in TypeScript. Implements document ingestion, configurable chunking strategies, embedding generation, vector storage, similarity retrieval, and LLM-powered answer generation with source citations. No LangChain — all components are built from first principles using the provider SDKs directly. Defaults to the Platform's ModelGateway for generation (Claude over native Messages, prompt-cached) and embeddings, so the pipeline holds no model credential. Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone), Bedrock called directly, and Anthropic, OpenAI and Cohere key providers as an off-substrate opt-in.",
       "version": "0.1.0",
       "category": "ai-systems",
       "persona": [
@@ -1550,7 +1564,8 @@
         "vector-search",
         "llm",
         "retrieval",
-        "ai"
+        "ai",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/rag-pipeline"
@@ -1626,7 +1641,8 @@
         "slack",
         "bot",
         "ai",
-        "chatbot"
+        "chatbot",
+        "model-gateway"
       ],
       "kind": "template",
       "path": "templates/slack-bot"
@@ -1993,7 +2009,7 @@
     {
       "name": "platform-tenant",
       "displayName": "Platform Tenant",
-      "description": "One-shot scaffolder for a k8s-native nanohype Platform tenant: the k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values, an ArgoCD ApplicationSet entry, and the Platform + BudgetPolicy CRs) plus the optional AI building blocks as local packages — the LLM gateway and the vector store. The output satisfies the platform-tenant-contract: a chart with the required templates, the gitops entry, and the Platform CR, with the OTel agents.tenant / agents.platform attributes set and no inline IAM. Pair the packages with a ts-service or agentic-loop for the app's own logic.",
+      "description": "One-shot scaffolder for a k8s-native nanohype Platform tenant: the k8s-app-tenant chart (which vendors tenant-chart-base and ships per-env values, an ArgoCD ApplicationSet entry, and the Platform, BudgetPolicy and ModelGateway CRs) plus the optional AI building blocks as local packages — the LLM gateway and the vector store. The output satisfies the platform-tenant-contract: a chart with the required templates, the gitops entry, and the Platform CR, with the OTel agents.tenant / agents.platform attributes set and no inline IAM. Pair the packages with a ts-service or agentic-loop for the app's own logic.",
       "version": "0.1.0",
       "tags": [
         "kubernetes",

@@ -15,7 +15,9 @@ export default defineConfig({
       // the logger, which reads LOG_LEVEL at import and writes to stdout;
       // metrics.ts, whose body is OTel instrument declarations with no logic
       // of its own; tokens.ts, which loads a multi-megabyte BPE rank table;
-      // and the anthropic and openai providers, which need a vendor key.
+      // and the anthropic and openai providers, which need a vendor key. The
+      // gateway provider stays in: its suite runs it against an in-process
+      // HTTP server.
       // Swept in by those patterns without needing to be: eval/assertions.ts,
       // src/memory/** and providers/mock.ts, all offline pure code.
       exclude: [

@@ -25,8 +25,11 @@ import type { LlmProvider } from "./types.js";
 
 // ── AWS Bedrock Provider ───────────────────────────────────────────
 //
-// Bedrock via the Converse API — the org-default LLM path. Auth is the
-// AWS credential chain (IRSA on the cluster), never API keys. A
+// Bedrock via the Converse API, called directly. Auth is the AWS
+// credential chain, never API keys, so it serves an application off the
+// nanohype substrate: an ECS task role, or a local AWS profile. On the
+// substrate the operator's egress policy leaves application pods no
+// route to Bedrock, and the gateway provider is the path there. A
 // cachePoint after the (stable) system prompt amortizes the large prefix
 // across turns — the mandated prompt-caching pattern; cache_read /
 // cache_write tokens flow through to TokenUsage so the hit ratio is

@@ -16,7 +16,7 @@ export interface ProviderPricing {
 }
 
 export interface GatewayProvider {
-  /** Unique provider name (e.g. "anthropic", "openai", "groq"). */
+  /** Unique provider name (e.g. "gateway", "bedrock", "anthropic"). */
   readonly name: string;
 
   /** Send a chat request and return a unified response. */

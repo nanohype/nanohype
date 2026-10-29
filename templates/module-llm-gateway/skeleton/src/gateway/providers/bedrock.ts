@@ -13,8 +13,11 @@ import type { GatewayProvider, ProviderPricing } from "./types.js";
 
 // ── Bedrock Provider ────────────────────────────────────────────────
 //
-// The org-default LLM path: Claude Sonnet via the Bedrock Converse API.
-// Auth is the AWS credential chain (IRSA on the cluster), never API keys.
+// Claude Sonnet via the Bedrock Converse API, called directly. Auth is the
+// AWS credential chain, never API keys, so it serves an application off the
+// nanohype substrate: an ECS task role, or a local AWS profile. On the
+// substrate the operator's egress policy leaves application pods no route
+// to Bedrock, and the gateway provider is the path there.
 // A cachePoint after the (stable) system prompt amortizes the prefix
 // across turns — the mandated prompt-caching pattern; cache_read/write
 // tokens are reported in usage so the hit ratio is observable. A call

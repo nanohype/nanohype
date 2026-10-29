@@ -21,8 +21,8 @@
 // attempt of a call that does not stream and retry an attempt that times
 // out REQUEST_MAX_RETRIES times, so an endpoint that never answers holds
 // the caller for two timeouts plus the SDK's backoff between the attempts.
-// The bedrock, vertex, huggingface and ollama providers bound such a call
-// once, any retries the SDK makes included.
+// The gateway, bedrock, vertex, huggingface and ollama providers bound such
+// a call once, any retries the SDK makes included.
 //
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */

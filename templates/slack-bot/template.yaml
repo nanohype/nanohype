@@ -13,7 +13,7 @@ version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: applications
-tags: [typescript, slack, bot, ai, chatbot]
+tags: [typescript, slack, bot, ai, chatbot, model-gateway]
 
 variables:
   - name: ProjectName
@@ -36,9 +36,19 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider — bedrock (AWS Bedrock, IRSA, prompt-cached), anthropic, or openai'
+    description: 'Default LLM provider: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate bedrock, or anthropic or openai with IncludeKeyProviders'
     prompt: 'LLM provider'
-    default: 'bedrock'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: IncludeSlashCommands
     type: bool
@@ -54,12 +64,25 @@ variables:
     prompt: 'Include tests?'
     default: true
 
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
 conditionals:
+  - path: 'src/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/openai.ts'
+    when: IncludeKeyProviders
   - path: 'src/commands/ask.ts'
     when: IncludeSlashCommands
   - path: 'vitest.config.ts'
     when: IncludeTests
   - path: 'src/__tests__/message.test.ts'
+    when: IncludeTests
+  - path: 'src/providers/__tests__/gateway.test.ts'
     when: IncludeTests
 
 hooks:

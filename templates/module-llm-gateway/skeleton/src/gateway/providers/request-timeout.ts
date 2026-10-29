@@ -2,8 +2,8 @@
 //
 // How long a provider waits on a model before it gives up on a call, so a
 // hung connection fails into the provider's circuit breaker instead of
-// holding the caller. The bedrock, anthropic, openai and groq providers
-// read LLM_REQUEST_TIMEOUT_MS as this module loads, so a value the parse
+// holding the caller. The gateway, bedrock, anthropic, openai and groq
+// providers read LLM_REQUEST_TIMEOUT_MS as this module loads, so a value the parse
 // refuses fails the import rather than the first request, and each
 // create*Provider() takes `requestTimeoutMs` to set it per instance.
 //
@@ -15,8 +15,8 @@
 // The anthropic, openai and groq SDK clients apply the timeout to each
 // attempt and retry an attempt that times out REQUEST_MAX_RETRIES times,
 // so an endpoint that never answers holds the caller for two timeouts plus
-// the SDK's backoff between the attempts. The bedrock provider bounds the
-// call once, the SDK's retries included.
+// the SDK's backoff between the attempts. The gateway provider bounds the
+// call once, and the bedrock provider does too, the SDK's retries included.
 //
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */

@@ -62,7 +62,7 @@ export interface ProviderRegistry {
  * OTel metrics, and provides a convenient chat/streamChat interface.
  *
  * ```typescript
- * const registry = createProviderRegistry({ defaultProvider: "anthropic" });
+ * const registry = createProviderRegistry({ defaultProvider: "gateway" });
  * const response = await registry.chat([{ role: "user", content: "Hello" }]);
  * ```
  */

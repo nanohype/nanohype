@@ -1,10 +1,12 @@
 # Platform CR — declares the tenant boundary. Apply this ONCE during initial tenant
-# setup (kubectl apply -f platform.yaml). Two CRs:
+# setup (kubectl apply -f platform.yaml). Three CRs:
 #   - BudgetPolicy (governance.nanohype.dev) — referenced by Platform.spec.budget (required)
 #   - Platform     (platform.nanohype.dev)   — the tenant declaration
+#   - ModelGateway (agents.nanohype.dev)     — the model plane: the routes the app names
 #
 # The eks-agent-platform operator reconciles from the Platform CR:
-#   - Namespace tenants-__TENANT__ (Pod Security Standards baseline label)
+#   - Namespace tenants-__APP_NAME__, where the chart and the gateway run (Pod
+#     Security Standards baseline label)
 #   - ResourceQuota + LimitRange
 #   - Default-deny NetworkPolicy (the chart layers app-specific egress on top)
 #   - ArgoCD AppProject scoped to this Platform
@@ -94,3 +96,39 @@ spec:
       kind: queue
       queue:
         maxReceiveCount: 3
+---
+# The model plane. The app names a route, never a model: this CR maps `default`
+# to a Bedrock inference profile, and the gateway rewrites each request
+# upstream, so changing a model is a CR edit rather than an app redeploy. The
+# operator reconciles it into an Envoy AI Gateway data plane in
+# tenants-__APP_NAME__, the Service __APP_NAME__-gateway on 8080, running under
+# the tenant ServiceAccount: the gateway reaches Bedrock as this tenant and the
+# app holds no model credential. The chart's modelGateway values hand the app
+# that endpoint and the route names. Remove this CR if the app calls no model.
+apiVersion: agents.nanohype.dev/v1alpha1
+kind: ModelGateway
+metadata:
+  name: __APP_NAME__
+  namespace: tenants-__TENANT__
+spec:
+  platformRef:
+    name: __APP_NAME__
+  routes:
+    # Native Anthropic Messages at <endpoint>/anthropic.
+    - name: default
+      modelSource: foundation
+      modelFamily: anthropic
+      # The cross-region inference-profile id: the Claude family reports
+      # inferenceTypesSupported: [INFERENCE_PROFILE], so InvokeModel refuses the
+      # bare foundation-model id. The us. prefix tracks the deploy region.
+      modelId: us.anthropic.claude-sonnet-5
+      # Requests per minute: a runaway guard, not a quota.
+      rateLimit: 60
+    # An app that embeds adds a Titan route, which the gateway serves in the
+    # OpenAI embeddings shape at <endpoint>/v1/embeddings, and adds
+    # amazon-titan to spec.identity.allowedModelFamilies above:
+    # - name: embeddings
+    #   modelSource: foundation
+    #   modelFamily: amazon-titan
+    #   modelId: amazon.titan-embed-text-v2:0
+    #   rateLimit: 600

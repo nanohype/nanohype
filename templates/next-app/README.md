@@ -5,7 +5,7 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 ## What you get
 
 - Next.js 15 App Router with React 19 and server components
-- Streaming AI chat endpoint with pluggable provider registry (Anthropic, OpenAI)
+- Streaming AI chat endpoint with pluggable provider registry: the Platform ModelGateway by default, so the server holds no model credential, and Anthropic and OpenAI key providers off the substrate with `IncludeKeyProviders`
 - Chat UI components with real-time message streaming
 - Tailwind CSS for styling
 - Structured JSON logger
@@ -16,15 +16,17 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
 
 ## Variables
 
-| Variable          | Type   | Default                         | Description                        |
-| ----------------- | ------ | ------------------------------- | ---------------------------------- |
-| `ProjectName`     | string | --                              | Kebab-case project name            |
-| `Description`     | string | `An AI-powered web application` | Project description                |
-| `LlmProvider`     | string | `anthropic`                     | Default LLM provider               |
-| `IncludeAuth`     | bool   | `true`                          | Include NextAuth.js authentication |
-| `IncludeDatabase` | bool   | `true`                          | Include Drizzle ORM + Postgres     |
-| `IncludeDocker`   | bool   | `true`                          | Include Dockerfile and Compose     |
-| `IncludeTests`    | bool   | `true`                          | Include Vitest test suite          |
+| Variable              | Type   | Default                         | Description                                                                              |
+| --------------------- | ------ | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| `ProjectName`         | string | --                              | Kebab-case project name                                                                  |
+| `Description`         | string | `An AI-powered web application` | Project description                                                                      |
+| `LlmProvider`         | string | `gateway`                       | Default LLM provider                                                                     |
+| `PlatformName`        | string | `ProjectName`                   | Platform CR whose ModelGateway Service the gateway provider defaults to                  |
+| `IncludeKeyProviders` | bool   | `false`                         | Include the anthropic and openai providers, which take a provider key, off the substrate |
+| `IncludeAuth`         | bool   | `true`                          | Include NextAuth.js authentication                                                       |
+| `IncludeDatabase`     | bool   | `true`                          | Include Drizzle ORM + Postgres                                                           |
+| `IncludeDocker`       | bool   | `true`                          | Include Dockerfile and Compose                                                           |
+| `IncludeTests`        | bool   | `true`                          | Include Vitest test suite                                                                |
 
 ## Project layout
 
@@ -48,8 +50,9 @@ Next.js 15 application with App Router, streaming AI chat, Tailwind CSS, and a p
         providers/
           types.ts            # AiProvider interface
           registry.ts         # Provider registry
-          anthropic.ts        # Anthropic provider
-          openai.ts           # OpenAI provider
+          gateway.ts          # Platform ModelGateway provider (the default)
+          anthropic.ts        # Anthropic provider (IncludeKeyProviders)
+          openai.ts           # OpenAI provider (IncludeKeyProviders)
           index.ts            # Barrel (triggers self-registration)
         stream.ts             # Streaming response helpers
       db/                     # (optional) Drizzle ORM

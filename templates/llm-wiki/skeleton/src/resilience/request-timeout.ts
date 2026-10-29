@@ -1,6 +1,6 @@
 /**
- * How long the LLM provider waits on each attempt at a model call before it
- * gives up on the attempt, so a hung connection fails into its circuit
+ * How long an LLM provider waits on a model call before it gives up on the
+ * call (gateway) or on the attempt (anthropic), so a hung connection fails into its circuit
  * breaker instead of holding the operation. config.ts reads
  * LLM_REQUEST_TIMEOUT_MS with parseTimeoutMs() when the first operation
  * loads the configuration, so a value the parse refuses fails that operation

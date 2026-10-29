@@ -23,8 +23,14 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for agent reasoning'
-    default: 'anthropic'
+    description: 'LLM provider: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
 
 templates:
   - template: monorepo
@@ -37,12 +43,16 @@ templates:
     path: packages/orchestrator
     variables:
       ProjectName: '${ProjectName}-orchestrator'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
 
   - template: agentic-loop
     path: packages/agents/researcher
     variables:
       ProjectName: '${ProjectName}-researcher'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       IncludeMemory: true
 
@@ -50,6 +60,8 @@ templates:
     path: packages/agents/writer
     variables:
       ProjectName: '${ProjectName}-writer'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       IncludeMemory: true
 
@@ -57,7 +69,9 @@ templates:
     path: packages/evals
     variables:
       ProjectName: '${ProjectName}-evals'
-      LlmProvider: '${LlmProvider}'
+      PlatformName: '${ProjectName}'
+      # Evals run on a CI runner, off the substrate, with the provider key
+      # the intake brief names, so the harness keeps its own provider default.
 
   - template: mcp-server-ts
     path: packages/tools

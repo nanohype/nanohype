@@ -21,8 +21,14 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for AI features'
-    default: 'anthropic'
+    description: 'LLM provider: gateway (the Platform ModelGateway, the only route to a model on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
 
   - name: IncludeRag
     type: bool
@@ -48,6 +54,8 @@ templates:
     path: apps/web
     variables:
       ProjectName: '${ProjectName}-web'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       IncludeAuth: true
       IncludeDatabase: true
@@ -58,6 +66,8 @@ templates:
     condition: IncludeRag
     variables:
       ProjectName: '${ProjectName}-rag'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       VectorStore: 'pgvector'
 
@@ -84,7 +94,9 @@ templates:
     condition: IncludeEvals
     variables:
       ProjectName: '${ProjectName}-evals'
-      LlmProvider: '${LlmProvider}'
+      PlatformName: '${ProjectName}'
+      # Evals run on a CI runner, off the substrate, with the provider key
+      # the intake brief names, so the harness keeps its own provider default.
 
   - template: k8s-deploy
     path: infra

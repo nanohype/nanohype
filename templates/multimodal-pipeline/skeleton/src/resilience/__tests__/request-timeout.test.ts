@@ -55,6 +55,14 @@ describe("parseTimeoutMs", () => {
     ).toThrow(REFUSAL(value));
   });
 
+  it("fails the gateway provider's import on a value it refuses", async () => {
+    vi.stubEnv("LLM_REQUEST_TIMEOUT_MS", "30s");
+    vi.resetModules();
+
+    await expect(import("../../providers/gateway.js")).rejects.toThrow(REFUSAL("30s"));
+  });
+  // #if IncludeKeyProviders
+
   it.each([
     ["anthropic", () => import("../../providers/anthropic.js")],
     ["openai", () => import("../../providers/openai.js")],
@@ -64,4 +72,5 @@ describe("parseTimeoutMs", () => {
 
     await expect(load()).rejects.toThrow(REFUSAL("30s"));
   });
+  // #endif
 });

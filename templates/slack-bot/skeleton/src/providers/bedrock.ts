@@ -4,8 +4,11 @@ import { createCircuitBreaker } from "../resilience/circuit-breaker.js";
 import { registerProvider } from "./registry.js";
 import type { ChatMessage, LlmProvider } from "./types.js";
 
-// Bedrock via the Converse API — the org-default LLM path. Auth is the AWS
-// credential chain (IRSA on the cluster), never API keys. A cachePoint after
+// Bedrock via the Converse API, called directly. Auth is the AWS credential
+// chain, never API keys, so it serves the bot off the nanohype substrate: an
+// ECS task role, or a local AWS profile. On the substrate the operator's
+// egress policy leaves application pods no route to Bedrock, and the
+// gateway provider is the path there. A cachePoint after
 // the system prompt amortizes the (large, stable) prefix across turns — the
 // mandated prompt-caching pattern; cache_read/cache_write tokens are metered so
 // the hit ratio is observable. Every call has an explicit request timeout, so a
