@@ -5,9 +5,10 @@ displayName: 'Fine-Tune Pipeline'
 description: >
   Scaffolds a TypeScript CLI for fine-tuning LLMs. Handles end-to-end
   dataset preparation (JSONL formatting, schema validation, train/val/test
-  splitting), training job submission via a provider registry (OpenAI
-  fine-tuning API included out of the box), and post-training evaluation
-  that compares base model vs fine-tuned model outputs side by side.
+  splitting), training job submission via a provider registry (Bedrock
+  model customization jobs included out of the box, under an assumed IAM
+  role), and post-training evaluation that compares base model vs
+  fine-tuned model outputs side by side.
   The provider registry is pluggable — add new training backends by
   creating a single file that self-registers at import time.
 version: '0.1.0'
@@ -38,9 +39,9 @@ variables:
   - name: Provider
     type: string
     placeholder: '__PROVIDER__'
-    description: 'Default training provider name (built-in: openai — or any custom registered provider)'
+    description: 'Default training provider name (built-in: bedrock, mock — or any custom registered provider)'
     prompt: 'Training provider'
-    default: 'openai'
+    default: 'bedrock'
 
   - name: IncludeEval
     type: bool
@@ -68,6 +69,8 @@ conditionals:
   - path: 'src/__tests__/validate.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/eval-cases.test.ts'
+    when: IncludeTests
+  - path: 'src/__tests__/bedrock-training.test.ts'
     when: IncludeTests
 
 hooks:

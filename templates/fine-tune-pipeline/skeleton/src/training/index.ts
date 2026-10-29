@@ -7,7 +7,7 @@
  */
 
 // Side-effect imports — each module registers itself on load
-import "./openai.js";
+import "./bedrock.js";
 import "./mock.js";
 
 // Re-export the registry API and shared types

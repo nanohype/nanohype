@@ -77,7 +77,13 @@ const shutdown = (signal: string) => {
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
+// A failed run sets the exit code and lets the process end on its own, so
+// work still pending finishes before it exits.
+// #if IncludeAudio
+// The transcribe provider deletes the transcript of a job its call gave up
+// on once the job settles.
+// #endif
 main().catch((err) => {
   logger.error("Fatal error", { error: String(err) });
-  process.exit(1);
+  process.exitCode = 1;
 });

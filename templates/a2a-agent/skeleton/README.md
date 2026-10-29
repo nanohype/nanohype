@@ -27,7 +27,14 @@ A2A response (Artifact)
 
 ### Provider: __LLM_PROVIDER__
 
-The LLM provider is configured in `src/providers/`. The active provider is set to `__LLM_PROVIDER__`. Both Anthropic and OpenAI client wrappers are included — switch by changing the provider configuration in `src/providers/index.ts`.
+The LLM provider is configured in `src/providers/`. The active provider is set to `__LLM_PROVIDER__`. The `gateway` provider calls the Platform's ModelGateway, the path to a model on the nanohype substrate: the eks-agent-platform operator runs it under the tenant's EKS Pod Identity, holding the Bedrock role, so the agent holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time; `MODEL_ROUTE` (`default`) names the route the ModelGateway maps to a Bedrock model.
+
+Off the cluster, the default endpoint is a cluster-internal Service address. Forward the gateway Service to this machine, which the Kubernetes API server authorizes as the user who opens the forward (`create` on `pods/portforward` in the Platform's namespace), and point `MODEL_GATEWAY_ENDPOINT` at it:
+
+```bash
+kubectl -n tenants-__PLATFORM_NAME__ port-forward svc/__PLATFORM_NAME__-gateway 8080:8080
+MODEL_GATEWAY_ENDPOINT=http://localhost:8080 npm run dev
+```
 
 ### Skills
 
@@ -51,9 +58,6 @@ The transport layer is pluggable. The active transport is set to `__TRANSPORT__`
 ## Usage
 
 ```bash
-# Set your API key
-export ANTHROPIC_API_KEY="sk-..."   # or OPENAI_API_KEY for OpenAI provider
-
 # Run the agent
 npm start
 
@@ -100,8 +104,7 @@ src/
   providers/
     types.ts            LLM provider interface
     registry.ts         Provider registry
-    anthropic.ts        Anthropic client wrapper
-    openai.ts           OpenAI client wrapper
+    gateway.ts          Platform ModelGateway provider, no credential
     index.ts            Barrel export
   routing.ts            Task -> skill decision, validated before it is one
   eval/

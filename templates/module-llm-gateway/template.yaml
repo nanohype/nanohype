@@ -4,17 +4,19 @@ name: module-llm-gateway
 displayName: 'Module: LLM Gateway'
 description: >
   Unified LLM gateway with pluggable routing strategies, response caching,
-  and cost tracking. Ships with Bedrock (Converse + prompt caching, IRSA
-  auth, the default), Anthropic, OpenAI, and Groq providers, gateway-level
-  provider fallback, six routing strategies (static, round-robin, latency,
-  cost, adaptive, linucb), three caching modes (hash, sliding-TTL, none),
-  token counting via js-tiktoken, and cost anomaly detection using z-score
-  analysis.
+  and cost tracking. Defaults to the gateway provider, which calls the
+  Platform's ModelGateway and holds no model credential: the gateway holds
+  the Bedrock role on the nanohype substrate. Ships a direct Bedrock
+  provider for use off the substrate (Converse + prompt caching, AWS
+  credential chain), gateway-level provider fallback, six routing strategies
+  (static, round-robin, latency, cost, adaptive, linucb), three caching
+  modes (hash, sliding-TTL, none), token counting via js-tiktoken, and cost
+  anomaly detection using z-score analysis.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: composable-modules
-tags: [llm, gateway, routing, caching, cost-tracking, typescript]
+tags: [llm, gateway, model-gateway, routing, caching, cost-tracking, typescript]
 
 variables:
   - name: ProjectName
@@ -37,9 +39,19 @@ variables:
   - name: DefaultProvider
     type: string
     placeholder: '__DEFAULT_PROVIDER__'
-    description: 'Default LLM provider (bedrock, anthropic, openai, groq, or a custom name)'
+    description: 'Default LLM provider: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), bedrock off the substrate under an assumed IAM role, mock, or a custom name'
     prompt: 'Default LLM provider'
-    default: 'bedrock'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: RoutingStrategy
     type: string

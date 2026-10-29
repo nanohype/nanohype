@@ -85,7 +85,7 @@ const CreateSemanticCacheSchema = z
  * (built-in providers self-register on import via the barrel files).
  *
  *   const cache = await createSemanticCache({
- *     embeddingProvider: "openai",
+ *     embeddingProvider: "gateway",
  *     vectorBackend: "memory",
  *     similarityThreshold: 0.92,
  *   });
@@ -108,7 +108,7 @@ export async function createSemanticCache(
 
   validateBootstrap();
 
-  const embeddingProviderName = config.embeddingProvider ?? "bedrock";
+  const embeddingProviderName = config.embeddingProvider ?? "gateway";
   const vectorBackendName = config.vectorBackend ?? "memory";
   const similarityThreshold = config.similarityThreshold ?? DEFAULT_SIMILARITY_THRESHOLD;
   const defaultTtlMs = config.defaultTtlMs ?? DEFAULT_TTL_MS;

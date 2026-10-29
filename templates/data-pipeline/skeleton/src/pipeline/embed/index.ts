@@ -12,8 +12,11 @@ export {
 } from "./registry.js";
 export type { EmbeddingProvider } from "./types.js";
 
-// Import provider modules to trigger registration. Bedrock (Titan v2) is the
-// org default; openai is an alternate.
+// Import provider modules to trigger registration. The gateway provider is
+// the path to an embedding model on the nanohype substrate. bedrock calls
+// Bedrock directly under the AWS credential chain, for a pipeline that runs
+// off it.
+// Scaffolded with EmbeddingProvider = __EMBEDDING_PROVIDER__.
+import "./gateway.js";
 import "./bedrock.js";
-import "./openai.js";
 import "./mock.js";

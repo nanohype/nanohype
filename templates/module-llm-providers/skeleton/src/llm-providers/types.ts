@@ -87,26 +87,42 @@ export interface StreamResponse extends AsyncIterable<StreamChunk> {
   response: Promise<LlmResponse>;
 }
 
-/** Default pricing per 1M tokens for known models. */
+/**
+ * Default pricing per 1M tokens for known models. Every built-in provider
+ * that calls a model reaches it through Bedrock, directly or through the
+ * Platform's ModelGateway, so a row is the model's Bedrock on-demand list
+ * price.
+ */
 export const DEFAULT_PRICING: Record<string, Pricing> = {
   "claude-sonnet-5": { input: 3, output: 15 },
   "claude-opus-5": { input: 5, output: 25 },
   "claude-haiku-4-5": { input: 1, output: 5 },
-  "gpt-4o": { input: 2.5, output: 10 },
-  "gpt-4o-mini": { input: 0.15, output: 0.6 },
-  "gpt-4.1": { input: 2, output: 8 },
-  "gpt-4.1-mini": { input: 0.4, output: 1.6 },
-  "gpt-4.1-nano": { input: 0.1, output: 0.4 },
-  o3: { input: 2, output: 8 },
-  "o4-mini": { input: 1.1, output: 4.4 },
-  "llama-3.3-70b-versatile": { input: 0.59, output: 0.79 },
-  "gemini-2.0-flash": { input: 0.1, output: 0.4 },
-  "gemini-2.5-pro": { input: 1.25, output: 10 },
 };
 
-/** Look up pricing for a model, falling back to zero. */
+/**
+ * The DEFAULT_PRICING key a model id prices under: the id without its
+ * inference-profile geo and provider prefixes (`us.anthropic.`), its version
+ * suffix (`-v1:0`) and its snapshot date (`-20251001`). A Bedrock
+ * inference-profile ID and the vendor's alias for the same model share one
+ * key: `us.anthropic.claude-haiku-4-5-20251001-v1:0` and `claude-haiku-4-5`
+ * are both `claude-haiku-4-5`.
+ */
+export function pricingKey(model: string): string {
+  return model
+    .replace(/:\d+$/, "")
+    .replace(/^(?:[a-z]+\.)+/, "")
+    .replace(/-v\d+$/, "")
+    .replace(/-\d{8}$/, "");
+}
+
+/** The pricing DEFAULT_PRICING lists for a model id, and undefined for a model it does not list. */
+export function findPricing(model: string): Pricing | undefined {
+  return DEFAULT_PRICING[model] ?? DEFAULT_PRICING[pricingKey(model)];
+}
+
+/** Look up pricing for a model id, falling back to zero for a model the table does not list. */
 export function getPricing(model: string): Pricing {
-  return DEFAULT_PRICING[model] ?? { input: 0, output: 0 };
+  return findPricing(model) ?? { input: 0, output: 0 };
 }
 
 /** Estimate cost in USD from token usage and pricing. */

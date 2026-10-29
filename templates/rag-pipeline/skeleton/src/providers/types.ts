@@ -30,15 +30,10 @@ export interface LlmProvider {
 
 /**
  * What the pipeline hands every LLM factory, from the loaded configuration.
- * Each provider takes the settings that apply to it: anthropic and openai
- * their own API key, bedrock its sampling rule, and all three the request
- * timeout.
+ * Each provider takes the settings that apply to it: bedrock its sampling
+ * rule, and both the request timeout.
  */
 export interface LlmProviderSettings {
-  /** ANTHROPIC_API_KEY. The anthropic provider reads the environment when it is empty. */
-  anthropicApiKey?: string;
-  /** OPENAI_API_KEY. The openai provider reads the environment when it is empty. */
-  openaiApiKey?: string;
   /** Which bedrock requests carry the configured temperature. */
   samplingParameters?: SamplingParameters;
   /** LLM_REQUEST_TIMEOUT_MS, in milliseconds. */

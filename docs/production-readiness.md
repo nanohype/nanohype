@@ -42,9 +42,9 @@ These apply to any HTTP service, worker, or long-running process hitting product
 
 On top of the base service checklist, any service that calls LLM providers needs these items.
 
-### API key and cost management
+### Model credentials and cost management
 
-- [ ] LLM API keys rotated on a schedule -- treat them like database passwords, not permanent credentials
+- [ ] No model credential in the service -- on the substrate it calls its Platform's ModelGateway, which holds the Bedrock role; off it, it reaches Bedrock under an IAM role it assumes. No provider API key appears in code, env vars, or secrets
 - [ ] Cost tracking enabled with budget alerts -- a runaway loop can burn through thousands of dollars in minutes
 - [ ] Token usage monitored and reported -- track input tokens, output tokens, and total cost per request and per user
 
@@ -52,7 +52,7 @@ On top of the base service checklist, any service that calls LLM providers needs
 
 - [ ] Fallback provider configured in the LLM gateway (`module-llm-gateway`) -- if your primary provider is down, traffic routes to the secondary
 - [ ] Circuit breakers on all provider calls -- stop hammering a failing provider and fail fast instead of queueing timeouts
-- [ ] Mock provider available for testing without API keys -- every template's provider registry supports a mock or in-memory backend
+- [ ] Mock provider available for testing without a model to call -- the provider registry takes one beside the real provider; register it where the template ships none
 
 ### Quality and caching
 

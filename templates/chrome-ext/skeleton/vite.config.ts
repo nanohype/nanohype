@@ -71,6 +71,12 @@ function manifestFromBundle(): Plugin {
         version: "0.1.0",
         manifest_version: 3,
         permissions: ["sidePanel", "storage", "activeTab"],
+        // The model gateway's origin is set on the options page, which asks
+        // for a host permission on that one origin when it saves. It is a
+        // kubectl port-forward on this machine, the only route to a gateway
+        // that authenticates no caller, so the loopback hosts are the only
+        // optional origins.
+        optional_host_permissions: ["http://localhost/*", "http://127.0.0.1/*"],
         side_panel: { default_path: "src/sidepanel/index.html" },
         background: { service_worker: entry("background"), type: "module" },
         icons: {

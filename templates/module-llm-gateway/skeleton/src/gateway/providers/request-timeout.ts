@@ -2,9 +2,9 @@
 //
 // How long a provider waits on a model before it gives up on a call, so a
 // hung connection fails into the provider's circuit breaker instead of
-// holding the caller. The bedrock, anthropic, openai and groq providers
-// read LLM_REQUEST_TIMEOUT_MS as this module loads, so a value the parse
-// refuses fails the import rather than the first request, and each
+// holding the caller. The gateway and bedrock providers read
+// LLM_REQUEST_TIMEOUT_MS as this module loads, so a value the parse refuses
+// fails the import rather than the first request, and each
 // create*Provider() takes `requestTimeoutMs` to set it per instance.
 //
 // A call has to finish its whole reply inside the timeout, so the timeout
@@ -12,11 +12,8 @@
 // default at about 34 tokens a second. A caller that raises maxTokens
 // raises the timeout with it.
 //
-// The anthropic, openai and groq SDK clients apply the timeout to each
-// attempt and retry an attempt that times out REQUEST_MAX_RETRIES times,
-// so an endpoint that never answers holds the caller for two timeouts plus
-// the SDK's backoff between the attempts. The bedrock provider bounds the
-// call once, the SDK's retries included.
+// The gateway provider bounds the whole call once, its own resends
+// included, and the bedrock provider does too, the SDK's retries included.
 //
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */
@@ -50,12 +47,6 @@ export const REQUEST_TIMEOUT_MS = parseTimeoutMs(
   process.env.LLM_REQUEST_TIMEOUT_MS,
   DEFAULT_REQUEST_TIMEOUT_MS,
 );
-
-/**
- * How many more attempts the anthropic, openai and groq SDK clients make
- * after an attempt that times out or fails with an error the SDK retries.
- */
-export const REQUEST_MAX_RETRIES = 1;
 
 /** A model call that outlasted its timeout. */
 export class RequestTimeoutError extends Error {

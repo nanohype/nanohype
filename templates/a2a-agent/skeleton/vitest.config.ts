@@ -9,15 +9,13 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
       // Gate the protocol server, transport/skill registries, the example
-      // skill, the circuit breaker, the router's reply parsing, and the eval
-      // corpus loader. Out of the denominator: agent.ts and bootstrap.ts exit
-      // the process; the client, the http/websocket transports and the agent
-      // directory need a reachable remote agent; the eval runner asks a live
-      // model; the logger, the agent-card builder, the barrels and the
-      // type-only modules are wiring; and all of src/providers — anthropic.ts
-      // and openai.ts construct their vendor client at module scope, so
-      // importing either needs a key. The directory glob also takes
-      // registry.ts, a name-to-factory Map that needs none.
+      // skill, the circuit breaker, the router's reply parsing, the eval
+      // corpus loader and the gateway provider, whose suite runs it against
+      // an in-process HTTP server. Out of the denominator: agent.ts and
+      // bootstrap.ts exit the process; the client, the http/websocket
+      // transports and the agent directory need a reachable remote agent;
+      // the eval runner asks a live model; and the logger, the agent-card
+      // builder, the barrels and the type-only modules are wiring.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
@@ -29,7 +27,6 @@ export default defineConfig({
         "src/protocol/client.ts",
         "src/protocol/transport/http.ts",
         "src/protocol/transport/websocket.ts",
-        "src/providers/**",
         "src/**/index.ts",
         "src/**/types.ts",
       ],

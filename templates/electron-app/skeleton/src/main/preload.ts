@@ -4,7 +4,8 @@ import { contextBridge, ipcRenderer } from "electron";
  * Preload script — exposes a minimal API to the renderer via contextBridge.
  *
  * The renderer calls window.electronAPI.sendMessage() which routes through
- * IPC to the main process. API keys never leave the main process.
+ * IPC to the main process, which signs the AI call. No credential crosses
+ * the bridge.
  */
 
 export interface ElectronAPI {

@@ -6,19 +6,19 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
 
 - CLI with `prepare`, `train`, and `eval` commands
 - Dataset preparation: JSONL formatting, schema validation, configurable train/val/test splitting
-- Training provider registry with OpenAI fine-tuning API built in
+- Training provider registry with Bedrock model customization jobs built in, run under an assumed IAM role with no provider key, beside a deterministic `mock`
 - Eval corpus of golden and adversarial cases, run against the fine-tuned model with the base model alongside for comparison
 - Structured JSON logging and Zod-validated configuration
 
 ## Variables
 
-| Variable       | Type   | Default                    | Description                                 |
-| -------------- | ------ | -------------------------- | ------------------------------------------- |
-| `ProjectName`  | string | `my-fine-tune`             | Kebab-case project name                     |
-| `Description`  | string | `LLM fine-tuning pipeline` | Project description                         |
-| `Provider`     | string | `openai`                   | Default training provider: openai or custom |
-| `IncludeEval`  | bool   | `true`                     | Include the eval runner and its metrics     |
-| `IncludeTests` | bool   | `true`                     | Include vitest test suite                   |
+| Variable       | Type   | Default                    | Description                                      |
+| -------------- | ------ | -------------------------- | ------------------------------------------------ |
+| `ProjectName`  | string | `my-fine-tune`             | Kebab-case project name                          |
+| `Description`  | string | `LLM fine-tuning pipeline` | Project description                              |
+| `Provider`     | string | `bedrock`                  | Default training provider: bedrock, mock, custom |
+| `IncludeEval`  | bool   | `true`                     | Include the eval runner and its metrics          |
+| `IncludeTests` | bool   | `true`                     | Include vitest test suite                        |
 
 ## Project layout
 
@@ -37,7 +37,8 @@ TypeScript CLI for end-to-end LLM fine-tuning. Prepare datasets, submit training
     training/
       types.ts             # TrainingProvider interface
       registry.ts          # Provider registry (register/get/list)
-      openai.ts            # OpenAI fine-tuning provider (self-registers)
+      bedrock.ts           # Bedrock model customization provider (self-registers)
+      mock.ts              # Deterministic provider for local runs
       index.ts             # Barrel — triggers registration, re-exports API
     eval/
       cases.ts             # Corpus loader — refuses an empty or malformed corpus

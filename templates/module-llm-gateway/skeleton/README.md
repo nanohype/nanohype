@@ -20,7 +20,7 @@ const response = await gateway.chat([
 ]);
 
 console.log(response.text); // "The capital of France is Paris."
-console.log(response.provider); // "bedrock"
+console.log(response.provider); // "gateway"
 console.log(response.cost); // 0.000135
 console.log(response.cached); // false
 
@@ -42,15 +42,23 @@ gateway.close();
 
 ## Providers
 
-| Provider    | Backend                                          | Default Model                 | Pricing (input/output per 1M) |
-| ----------- | ------------------------------------------------ | ----------------------------- | ----------------------------- |
-| `bedrock`   | Claude Sonnet on Bedrock (Converse + cachePoint) | `us.anthropic.claude-sonnet-5` | $3 / $15                      |
-| `anthropic` | Claude Sonnet                                    | `claude-sonnet-5`           | $3 / $15                      |
-| `openai`    | GPT-4o                                           | `gpt-4o`                      | $2.50 / $10                   |
-| `groq`      | Llama 3 70B                                      | `llama-3.3-70b-versatile`     | $0.59 / $0.79                 |
-| `mock`      | In-memory                                        | `mock-model`                  | $0 / $0                       |
+| Provider  | Backend                                          | Default model                  | Pricing (input/output per 1M) | Included |
+| --------- | ------------------------------------------------ | ------------------------------ | ----------------------------- | -------- |
+| `gateway` | The Platform's ModelGateway (Anthropic Messages) | route `default`                | $3 / $15                      | Always   |
+| `bedrock` | Claude Sonnet on Bedrock (Converse + cachePoint) | `us.anthropic.claude-sonnet-5` | $3 / $15                      | Always   |
+| `mock`    | In-memory                                        | `mock-model`                   | $0 / $0                       | Always   |
 
-`bedrock` is the default provider. It authenticates via the AWS credential chain (IRSA on the cluster) — no API key — and puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage. Every provider that calls a model bounds its calls by `LLM_REQUEST_TIMEOUT_MS` (default 120s), so a hung socket trips the circuit breaker instead of hanging; a value that is not a whole number of milliseconds from 1 to 2147483647 fails the import, and each `create*Provider()` takes `requestTimeoutMs` to set it per instance. A call has to finish its whole reply within the timeout, and the default covers the 4096-token `maxTokens` default at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The `bedrock` provider gives up on the whole call, the SDK's retries included, at one timeout. The `anthropic`, `openai` and `groq` SDK clients apply it to each attempt and retry a timed-out attempt once, so an endpoint that never answers holds the caller for two timeouts plus the SDK's backoff before the gateway falls through; a caller's own client options can set `timeout` and `maxRetries`.
+### Where each provider runs
+
+`gateway` is the default provider, and the one an application on the nanohype substrate uses. The eks-agent-platform operator runs a ModelGateway per Platform: an Envoy AI Gateway in the tenant's namespace that runs under the tenant's EKS Pod Identity, holds the Bedrock role, and applies each route's guardrail and rate limit. The provider holds no model credential and sends none: it POSTs native Anthropic Messages to `<MODEL_GATEWAY_ENDPOINT>/anthropic/v1/messages` with `fetch`, so no SDK resolves a key from the environment and attaches it. `MODEL_GATEWAY_ENDPOINT` is the gateway root as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time (`PlatformName`). A request names a route as its model, `opts.model` or `MODEL_ROUTE` (`default`), and the ModelGateway maps each route to a Bedrock model. The system prompt carries an ephemeral `cache_control` marker, and the cache read and write tokens the reply reports land on the response.
+
+`bedrock` calls Bedrock directly over the AWS credential chain, so it serves an application off the substrate: an ECS task role, or a local AWS profile. It puts a `cachePoint` right after the system prompt so the stable prefix is cached across turns; `cache_read`/`cache_write` tokens flow through to usage.
+
+Neither provider holds a provider API key. A model from another family is reached the same way, through a gateway route or a Bedrock model id.
+
+### Timeouts and circuit breakers
+
+Every provider that calls a model bounds its calls by `LLM_REQUEST_TIMEOUT_MS` (default 120s), so a hung socket trips the circuit breaker instead of hanging; a value that is not a whole number of milliseconds from 1 to 2147483647 fails the import, and each `create*Provider()` takes `requestTimeoutMs` to set it per instance. A call has to finish its whole reply within the timeout, and the default covers the 4096-token `maxTokens` default at about 34 tokens a second, so a caller that raises `maxTokens` raises the timeout with it. The `gateway` provider gives up on the whole call at one timeout, its own resends included, and so does `bedrock`, the SDK's retries included. A request the route's rate limit refuses with a 429 is sent again after the wait its `Retry-After` header asks for, or a jittered backoff when it gives none, up to `MAX_ATTEMPTS` sends while the wait ends inside the timeout. The gateway provider's circuit breaker counts a 5xx, a network error and a timeout; a 4xx, the last 429 included, answers for the request and fails the call without counting against it, so one caller's burst over the route's limit leaves the breaker closed for the rest.
 
 Each provider wraps its API calls in a circuit breaker that opens after 5 failures in 60 seconds and probes again after 30 seconds. If a provider call fails, the gateway falls through to the next configured provider in order before surfacing the error.
 
@@ -58,12 +66,11 @@ Each provider wraps its API calls in a circuit breaker that opens after 5 failur
 
 Each provider decides whether its request carries the caller's `temperature`. A provider that can send something other than the caller's value declares what it sends through its `sampling(opts)` hook, and one without the hook sends the caller's value when it is set and its own default otherwise.
 
-| Provider | `temperature` sent |
-| -------- | ------------------ |
-| `openai`, `groq` | The caller's value, and 1 when the caller sets none |
-| `anthropic` | Never: the Messages API rejects `temperature`, `top_p` and `top_k` at any value |
-| `bedrock` | Per model id, under `samplingParameters` |
-| `mock` | Not read |
+| Provider  | `temperature` sent                                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `gateway` | Never: every gateway route serves Claude, and the Messages API rejects `temperature`, `top_p` and `top_k` at any value |
+| `bedrock` | Per model id, under `samplingParameters`                                                                               |
+| `mock`    | Not read                                                                                                               |
 
 The `bedrock` provider's `samplingParameters` takes one of three values. `auto`, the default, sends the caller's `temperature` only to a model id that names a family other than Claude. A model id names its family through its provider segment — `anthropic.claude-…`, `us.anthropic.claude-…`, or either as the resource of a `foundation-model/` or `inference-profile/` ARN — and every other model id names none and is treated as Claude: an ARN of any other resource type (an application inference profile, provisioned model, imported model, custom model, custom model deployment, prompt or prompt router) or an id with no provider segment. `send` sends the caller's `temperature` to every model id, which is how an ARN serving another family receives it, and `omit` sends it to none. `BEDROCK_SAMPLING_PARAMETERS` sets it for the registered `bedrock` provider and is read when the provider's module loads, so a value other than `auto`, `send` or `omit` fails the import. `createBedrockProvider({ samplingParameters })`, imported from `./gateway/providers/bedrock.js`, sets it on a provider you register yourself.
 
@@ -169,7 +176,7 @@ A provider that leaves `temperature` out of some or all of its requests declares
 ## Architecture
 
 - **Gateway facade** -- `createGateway()` returns a `Gateway` object that orchestrates provider selection, caching, and cost tracking behind a single `chat()` method. Application code never touches provider internals or strategy state.
-- **Provider registry with self-registration** -- each provider module (bedrock, anthropic, openai, groq, mock) calls `registerProvider()` at import time with a factory that returns one instance for the life of the process, so its SDK client is built once and its circuit breaker sees every request. `createBedrockProvider()`, `createAnthropicProvider()`, `createOpenAIProvider()` and `createGroqProvider()`, each imported from its `./gateway/providers/<name>.js` module, build an independent instance to register under another name with its own options. Adding a custom provider is one `registerProvider()` call.
+- **Provider registry with self-registration** -- each provider module (gateway, bedrock, mock) calls `registerProvider()` at import time with a factory that returns one instance for the life of the process, so its client is built once and its circuit breaker sees every request. `createGatewayProvider()` and `createBedrockProvider()`, each imported from its `./gateway/providers/<name>.js` module, build an independent instance to register under another name with its own options. Adding a custom provider is one `registerProvider()` call.
 - **Routing with gateway-level fallback** -- six built-in strategies self-register. The gateway delegates provider selection to the active strategy, then tries the selected provider followed by the remaining configured providers in order, so a single provider failure doesn't fail the request.
 - **Caching strategy registry** -- three built-in strategies self-register. The gateway checks cache before routing and stores responses after successful calls.
 - **Cost tracker** -- records every non-cached request with attribution tags. Supports filtered queries with breakdowns by model, user, and project.
@@ -180,8 +187,8 @@ A provider that leaves `temperature` out of some or all of its requests declares
 
 ## Production Readiness
 
-- [ ] Default `bedrock` provider authenticates via IRSA — grant the pod role `bedrock:InvokeModel` for your model(s); no API key needed
-- [ ] Set API keys only for the key-based providers you enable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`)
+- [ ] On the substrate, declare the routes this project names (`default`, and any `opts.model` route) in the Platform's ModelGateway; the gateway holds the Bedrock role, and the project holds no model credential
+- [ ] Off the substrate, grant `bedrock:InvokeModel` to the role the `bedrock` provider runs as, on the inference profiles it names and on the foundation model each routes to, in every one of the profile's destination regions, and nothing wider
 - [ ] Choose a routing strategy appropriate for your workload (adaptive for multi-provider, static for single)
 - [ ] Configure caching strategy and TTL for your latency/freshness tradeoff
 - [ ] Set up cost alerts using anomaly detection with appropriate thresholds

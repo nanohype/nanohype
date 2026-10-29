@@ -457,18 +457,34 @@ When a template has a pluggable seam (LLM provider, database driver, auth provid
 3. **Self-registering implementations** -- each provider file imports `registerProvider` and calls it at the bottom
 4. **Barrel import** -- `index.ts` imports all provider files to trigger registration, then re-exports the registry API
 
-Use `type: string` (not `enum`) for the variable so users can add custom providers without modifying `template.yaml`. The default value names a built-in provider:
+Use `type: string` (not `enum`) for the variable so users can add custom providers without modifying `template.yaml`. The default value names a built-in provider; for a model provider on the nanohype substrate that is `gateway`, the Platform's ModelGateway, which holds the Bedrock role so the application holds no credential:
 
 ```yaml
 variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider (built-in: anthropic, openai — or any registered custom provider)'
-    default: 'anthropic'
+    description: 'LLM provider (built-in: gateway — or any registered custom provider)'
+    default: 'gateway'
 ```
 
 Adding a new provider to a scaffolded project is then: create a file, implement the interface, self-register, add one import line.
+
+A provider the template carries only behind a bool, such as the Bedrock provider `module-llm-providers` ships with `IncludeBedrock`, splits one choice across two variables, and a scaffold where they disagree renders cleanly and fails at its first model call. Pair them with a `ProviderCheck` variable whose default composes both and whose pattern rejects each pair that names a provider the project leaves out, so the scaffold fails with the message instead. It is `derived: true`, so the resolver rejects a value supplied for it: a check the caller could set would pass whatever value the caller set.
+
+```yaml
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from DefaultProvider and IncludeBedrock, and takes no value of its own'
+    derived: true
+    default: '${DefaultProvider}:${IncludeBedrock}'
+    validation:
+      pattern: '(?!bedrock:false$).*'
+      message: 'DefaultProvider bedrock needs IncludeBedrock=true'
+```
+
+Every non-bool placeholder appears in the skeleton, so the provider barrel records the pair in one comment line: `// Scaffolded with DefaultProvider:IncludeBedrock = __PROVIDER_CHECK__.` `scripts/__tests__/provider-check.test.mjs` requires the derived variable of every template that declares a provider selector and gates a provider behind a bool, and refuses one on a template that gates none.
 
 ### Module templates
 

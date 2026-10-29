@@ -2,18 +2,19 @@ import { z } from "zod";
 
 // ── Config Schema ──────────────────────────────────────────────────
 //
-// Validates environment variables at startup. Electron's main process
-// owns all secrets — the renderer never touches them. If any value is
-// missing or invalid the process logs the specific errors and exits
-// immediately — no silent misconfiguration.
+// Validates environment variables at startup. The settings name a provider
+// and a model, never a credential: the bedrock provider signs with what the
+// AWS SDK's default credential chain resolves. If any value is missing or
+// invalid the process logs the specific errors and exits immediately — no
+// silent misconfiguration.
 //
 
 const configSchema = z.object({
   LLM_PROVIDER: z.string().default("__LLM_PROVIDER__"),
 
-  ANTHROPIC_API_KEY: z.string().optional(),
+  LLM_MODEL: z.string().optional(),
 
-  OPENAI_API_KEY: z.string().optional(),
+  AWS_REGION: z.string().optional(),
 
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 

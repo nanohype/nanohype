@@ -5,17 +5,21 @@ displayName: 'Multimodal Pipeline'
 description: >
   Scaffolds a multimodal processing pipeline in TypeScript. Accepts image,
   audio, and video inputs, detects modality automatically, routes each input
-  through a modality-specific processor, sends the result to a vision or
-  audio-capable LLM (Anthropic Claude, OpenAI GPT-4o), and returns
-  structured output with Zod-validated schemas. No heavy frameworks — all
-  components are built from first principles using provider SDKs directly.
+  through a modality-specific processor, sends the result to a vision-capable
+  LLM through the Platform's ModelGateway, which holds the model credential
+  so the pipeline holds none, and returns structured output with
+  Zod-validated schemas. Off the substrate, a Bedrock provider and Amazon
+  Transcribe run under the AWS credential chain; no component holds a
+  provider key. No heavy frameworks — every component is built from first
+  principles: a model call goes to the ModelGateway over fetch, and
+  Bedrock, Transcribe and S3 are reached through the AWS SDK.
   Processors and LLM providers use a self-registering registry pattern for
   easy extension.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, multimodal, vision, audio, video, llm, ai, structured-output]
+tags: [typescript, multimodal, vision, audio, video, llm, ai, structured-output, model-gateway, bedrock]
 
 variables:
   - name: ProjectName
@@ -38,16 +42,26 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for multimodal analysis (e.g. anthropic, openai)'
+    description: 'LLM provider for multimodal analysis: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), bedrock (Bedrock called directly under the AWS credential chain, off the substrate), mock, or a custom name'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: IncludeAudio
     type: bool
     placeholder: '__INCLUDE_AUDIO__'
-    description: 'Include audio processing support (whisper transcription + LLM analysis)'
-    prompt: 'Include audio processing?'
-    default: true
+    description: 'Include audio processing support (Amazon Transcribe transcription + LLM analysis). Transcription runs under the AWS credential chain, staging audio under TRANSCRIBE_S3_URI, and the ModelGateway serves no transcription route, so this is off the substrate, with LlmProvider bedrock'
+    prompt: 'Include audio processing (off the substrate)?'
+    default: false
 
   - name: IncludeVideo
     type: bool
@@ -59,12 +73,14 @@ variables:
   - name: IncludeTests
     type: bool
     placeholder: '__INCLUDE_TESTS__'
-    description: 'Include the vitest config and the pipeline and image processor suites, with the anthropic and openai request suites'
+    description: 'Include the vitest config and the pipeline and image processor suites, with the gateway and bedrock request suites and, with IncludeAudio, the transcribe suite'
     prompt: 'Include tests?'
     default: true
 
 conditionals:
   - path: 'src/processors/audio.ts'
+    when: IncludeAudio
+  - path: 'src/providers/transcribe.ts'
     when: IncludeAudio
   - path: 'src/processors/video.ts'
     when: IncludeVideo
@@ -74,10 +90,12 @@ conditionals:
     when: IncludeTests
   - path: 'src/__tests__/image.test.ts'
     when: IncludeTests
-  - path: 'src/__tests__/anthropic-request.test.ts'
+  - path: 'src/__tests__/gateway.test.ts'
     when: IncludeTests
-  - path: 'src/__tests__/openai-request.test.ts'
+  - path: 'src/__tests__/bedrock.test.ts'
     when: IncludeTests
+  - path: 'src/__tests__/transcribe.test.ts'
+    when: IncludeTests && IncludeAudio
 
 hooks:
   post:

@@ -15,6 +15,7 @@ vi.mock("@/logger", () => ({
 }));
 
 import { getProvider } from "@/lib/ai/providers";
+import { logger } from "@/logger";
 
 describe("POST /api/chat", () => {
   beforeEach(() => {
@@ -53,6 +54,7 @@ describe("POST /api/chat", () => {
   it("streams response from AI provider", async () => {
     const mockProvider = {
       defaultModel: "test-model",
+      resolveModel: (model?: string) => model ?? "test-model",
       sendMessage: vi.fn(),
       streamMessage: vi.fn(async function* () {
         yield "Hello";
@@ -78,5 +80,34 @@ describe("POST /api/chat", () => {
 
     const text = await response.text();
     expect(text).toBe("Hello world");
+  });
+
+  it("logs the model the provider calls, not the one the request body names", async () => {
+    const mockProvider = {
+      defaultModel: "default",
+      resolveModel: (_model?: string) => "default",
+      sendMessage: vi.fn(),
+      streamMessage: vi.fn(async function* () {
+        yield "Hi";
+      }),
+    };
+    vi.mocked(getProvider).mockReturnValue(mockProvider);
+
+    const { POST } = await import("@/app/api/chat/route");
+
+    const request = new Request("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: "Hi" }], model: "gpt-4o" }),
+    });
+
+    const response = await POST(request as any);
+    await response.text();
+
+    expect(logger.info).toHaveBeenCalledWith(
+      "Chat request received",
+      expect.objectContaining({ model: "default" }),
+    );
+    expect(mockProvider.streamMessage).toHaveBeenCalledWith(expect.anything(), "gpt-4o");
   });
 });

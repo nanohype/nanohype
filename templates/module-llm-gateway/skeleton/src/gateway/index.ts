@@ -88,7 +88,7 @@ const CreateGatewaySchema = z.object({
  * (built-in providers self-register on import via their barrels).
  *
  *   const gateway = createGateway({
- *     providers: ["anthropic", "openai"],
+ *     providers: ["gateway"],
  *     routingStrategy: "adaptive",
  *     cachingStrategy: "hash",
  *   });
@@ -220,8 +220,10 @@ export function createGateway(config: GatewayConfig): Gateway {
       gatewayTokenUsage.add(response.outputTokens, { ...labels, direction: "output" });
       gatewayCostTotal.add(response.cost, labels);
 
-      // Bedrock prompt-cache events (only providers that report cache tokens —
-      // Bedrock via Converse — populate these; distinct from the response cache).
+      // Bedrock prompt-cache events, from the cache tokens a provider reports
+      // on the response: the gateway and bedrock providers set them from the
+      // usage their reply carries, and mock sets none. Distinct from the
+      // response cache.
       if (response.cacheReadTokens !== undefined || response.cacheWriteTokens !== undefined) {
         for (const kind of bedrockCacheKinds(
           response.cacheReadTokens ?? 0,

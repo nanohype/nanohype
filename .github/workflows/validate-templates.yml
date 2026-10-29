@@ -278,16 +278,25 @@ jobs:
       - name: Verify model IDs match the LLM policy
         run: npm run validate:model-ids
 
+      # The LLM policy permits no provider API key, on the substrate or off
+      # it. A key path renders, builds and passes its own tests, so nothing
+      # else here notices one: this refuses a model-provider key env var, a
+      # key-provider SDK dependency or a direct-API host anywhere under
+      # templates/ and composites/.
+      - name: Verify no template reads a model-provider API key
+        run: npm run validate:no-model-keys
+
       # An AI surface with no eval suite is the AI-native form of shipping
       # with no tests: the code around the model is covered and what the model
       # does is not. This also refuses a suite that holds no cases, because a
       # runner that loads nothing and exits 0 reports what a passing run
       # reports.
       # Scope for the eval requirement is decided by the provider SDKs a
-      # skeleton declares. That decision is a claim about the packages this
-      # catalog uses to reach a model, so it is pinned against them here — a
-      # provider package the classifier does not recognise fails this rather
-      # than putting a template quietly outside the rule.
+      # skeleton declares and the model-gateway tag its manifest declares.
+      # Both are claims about how this catalog reaches a model, so they are
+      # pinned against the tree here — a provider package the classifier does
+      # not recognise, or a gateway provider under an untagged manifest, fails
+      # this rather than putting a template quietly outside the rule.
       - name: Test the eval gate's scope against the packages the catalog declares
         run: npm run test:scripts
 

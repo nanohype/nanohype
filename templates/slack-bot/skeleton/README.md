@@ -11,7 +11,7 @@ A Slack bot built with [@slack/bolt](https://slack.dev/bolt-js) and AI-powered r
 - **App mention handler** responds when @mentioned in channels
 - **Thread-aware context** maintains conversation history per thread
 - **/ask slash command** for on-demand AI queries
-- **Provider registry** swap between Anthropic and OpenAI with a config value
+- **Provider registry** with `gateway` as the default: it calls the Platform's ModelGateway, the path to a model on the nanohype substrate, and holds no model credential. `bedrock` calls Bedrock directly for a bot off the substrate
 
 ## Variables
 
@@ -19,7 +19,8 @@ A Slack bot built with [@slack/bolt](https://slack.dev/bolt-js) and AI-powered r
 |---|---|---|
 | `ProjectName` | Kebab-case project name | _(required)_ |
 | `Description` | Short project description | A Slack bot with AI |
-| `LlmProvider` | LLM provider | anthropic |
+| `LlmProvider` | LLM provider | gateway |
+| `PlatformName` | Platform CR the bot deploys under | ProjectName |
 | `IncludeSlashCommands` | Include /ask slash command | true |
 | `IncludeTests` | Include test files | true |
 
@@ -45,7 +46,7 @@ A Slack bot built with [@slack/bolt](https://slack.dev/bolt-js) and AI-powered r
 
 ```bash
 cp .env.example .env
-# Fill in your Slack tokens and API keys
+# Fill in your Slack tokens
 ```
 
 ### 3. Run
@@ -53,6 +54,13 @@ cp .env.example .env
 ```bash
 npm install
 npm run dev
+```
+
+The `gateway` provider calls the Platform's ModelGateway at `MODEL_GATEWAY_ENDPOINT`, by default the Service the eks-agent-platform operator creates for the Platform named at scaffold time, and sends no credential. Off the cluster, the default endpoint is a cluster-internal Service address. Forward the gateway Service to this machine, which the Kubernetes API server authorizes as the user who opens the forward (`create` on `pods/portforward` in the Platform's namespace), and point `MODEL_GATEWAY_ENDPOINT` at it:
+
+```bash
+kubectl -n tenants-__PLATFORM_NAME__ port-forward svc/__PLATFORM_NAME__-gateway 8080:8080
+MODEL_GATEWAY_ENDPOINT=http://localhost:8080 npm run dev
 ```
 
 ## Project Layout
@@ -71,8 +79,8 @@ src/
   providers/
     types.ts                # LlmProvider interface
     registry.ts             # Provider registry (register/get/list)
-    anthropic.ts            # Anthropic provider, self-registers
-    openai.ts               # OpenAI provider, self-registers
+    gateway.ts              # Platform ModelGateway provider, self-registers
+    bedrock.ts              # Bedrock provider, off the substrate
     index.ts                # Barrel — triggers registration
 ```
 

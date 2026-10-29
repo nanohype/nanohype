@@ -6,16 +6,26 @@ __DESCRIPTION__
 
 Electron desktop app with process isolation:
 
-- **Main process** — Node.js runtime, holds API keys, handles AI provider calls
-- **Renderer process** — React 19 chat UI, no access to secrets
+- **Main process** — Node.js runtime, signs and sends AI provider calls
+- **Renderer process** — React 19 chat UI, no access to credentials
 - **IPC bridge** — contextBridge + preload script connects renderer to main
 
-API keys are resolved from environment variables in the main process.
+The bedrock provider calls Bedrock's Converse API under the AWS SDK's
+default credential chain: the AWS profile the main process starts with.
+The provider signs with whatever that profile resolves, so make it an IAM
+Identity Center sign-in (`aws sso login --profile <profile>`) or an
+assumed role (`role_arn`), which hand the app temporary credentials for
+the role; a profile holding an access key of its own signs every call
+with that long-lived key. The app stores no credential and no provider
+key.
 The renderer communicates through `window.electronAPI.sendMessage()`.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 26
+- An AWS profile whose role may call `bedrock:InvokeModel` on the model's
+  inference profile in the region `AWS_REGION` names, and on the foundation
+  model it routes to, in every one of the profile's destination regions
 
 ## Getting Started
 
@@ -23,14 +33,11 @@ The renderer communicates through `window.electronAPI.sendMessage()`.
 # Install dependencies
 npm install
 
-# Copy env file and add your API key
-cp .env.example .env
-
 # Start in development (main + renderer)
 npm run dev
 
-# In another terminal, start Electron
-npm start
+# In another terminal, start Electron under the AWS profile it signs with
+AWS_PROFILE=your-profile AWS_REGION=us-east-1 npm start
 ```
 
 ## Scripts
@@ -56,8 +63,7 @@ src/
     providers/
       types.ts             # AiProvider interface
       registry.ts          # Provider registry
-      anthropic.ts         # Anthropic provider
-      openai.ts            # OpenAI provider
+      bedrock.ts           # Bedrock provider (Converse, default credential chain)
       index.ts             # Barrel (triggers registration)
   renderer/
     index.html             # Renderer entry
@@ -69,13 +75,14 @@ src/
     styles/
       globals.css          # Design tokens
   __tests__/
-    ipc.test.ts            # Registry and IPC tests
+    ipc.test.ts            # Registry and IPC handler tests
+    bedrock.test.ts        # Bedrock provider against a loopback server
 ```
 
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production API keys for your LLM provider
+- [ ] Grant the AWS role the app runs under `bedrock:InvokeModel` on the inference profile it names and on the foundation model it routes to, in every one of the profile's destination regions, and nothing wider
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Set `NODE_ENV=production` for production builds
 - [ ] Code-sign the application for macOS / Windows distribution
@@ -88,6 +95,7 @@ src/
 
 1. Create `src/main/providers/your-provider.ts`
 2. Implement the `AiProvider` interface
-3. Call `registerProvider("name", new YourProvider())` at module level
+3. Call `registerProvider("name", () => yourProvider)` at module level
 4. Import the file in `src/main/providers/index.ts`
-5. Add the env var mapping in `src/main/ipc-handlers.ts`
+5. Authenticate it the way the bedrock provider does, through an IAM role
+   the main process assumes, never a key in the environment or the app

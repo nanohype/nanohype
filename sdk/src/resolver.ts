@@ -9,7 +9,8 @@ const MAX_RESOLVE_PASSES = 10;
  *
  * Returns a flat Record<string, string> of fully resolved values keyed by
  * variable name. Throws VariableResolutionError on missing required values,
- * circular references, invalid enum choices, or pattern mismatches.
+ * a value supplied for a derived variable, circular references, invalid enum
+ * choices, or pattern mismatches.
  */
 export function resolveVariables(
   variables: TemplateVariable[],
@@ -25,6 +26,12 @@ export function resolveVariables(
 
   // Apply provided values, then defaults, then type zero-values
   for (const v of variables) {
+    if (v.derived && v.name in values) {
+      throw new VariableResolutionError(
+        `Variable '${v.name}' is derived from \`${v.default}\` and takes no value; ` +
+          "set the variables it is derived from instead",
+      );
+    }
     if (v.name in values) {
       resolved[v.name] = String(values[v.name]);
     } else if (v.default !== undefined) {

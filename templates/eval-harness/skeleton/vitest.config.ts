@@ -9,20 +9,18 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the assertion library, case helpers, and suite builder. Out of
-      // the denominator: the runner and the reporters, which drive a live
-      // provider and write to stdout and disk; the timer-driven resilience
-      // layer; and all of src/providers — anthropic.ts and openai.ts
-      // instantiate a vendor SDK and need a key. The directory glob also
-      // takes registry.ts, a name-to-factory Map, and mock.ts, a hash-keyed
-      // response table that makes no network call; neither needs a
-      // credential.
+      // Gate the assertion library, case helpers, suite builder, and the
+      // bedrock and gateway providers. Out of the denominator: the runner and
+      // the reporters, which drive a live provider and write to stdout and
+      // disk; the timer-driven resilience layer; and the provider registry and
+      // the mock provider, which the suites reach only through the runner.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/bootstrap.ts",
         "src/runner.ts",
-        "src/providers/**",
+        "src/providers/mock.ts",
+        "src/providers/registry.ts",
         "src/reporters/**",
         "src/resilience/**",
         "src/**/index.ts",

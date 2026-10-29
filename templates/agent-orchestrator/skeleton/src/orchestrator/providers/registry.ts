@@ -2,9 +2,10 @@
 //
 // Factory-based registry for LLM providers. Each provider module
 // self-registers by calling registerProvider() at import time with a
-// factory function. Consumer code calls getProvider() to obtain a
-// fresh provider instance. Factory pattern ensures no module-level
-// mutable provider instances.
+// factory function, and getProvider() returns what that factory gives.
+// A stateless provider such as mock builds a fresh instance per lookup;
+// the gateway provider's factory returns one instance, because its
+// circuit breaker has to see every call to the gateway to open.
 //
 
 import type { LlmProvider } from "./types.js";

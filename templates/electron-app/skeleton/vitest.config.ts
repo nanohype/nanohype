@@ -16,18 +16,16 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the provider registry — the only pure in-process logic.
-      // Main-process wiring (ipc, preload, config), the renderer UI, and SDK
-      // providers need Electron or live SDKs.
+      // Gate the provider registry, the bedrock provider and the IPC handler,
+      // which run in-process against a loopback server and a fake IpcMain.
+      // The window and preload wiring, startup config and the renderer UI
+      // need a running Electron.
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/main/bootstrap.ts",
         "src/main/config.ts",
-        "src/main/ipc-handlers.ts",
         "src/main/preload.ts",
-        "src/main/providers/anthropic.ts",
-        "src/main/providers/openai.ts",
         "src/renderer/**",
         "src/**/index.ts",
         "src/**/types.ts",

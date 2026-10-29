@@ -10,23 +10,22 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.ts"],
-      // Gate the provider registry — the only pure in-process logic. Everything
-      // else needs a browser runtime (background/content/UI, chrome-API-backed
-      // messaging/storage) or a live SDK.
+      // Gate the provider registry, the gateway provider, whose suite runs it
+      // against an in-process HTTP server, and the options page's save logic,
+      // whose suite hands it the browser calls it makes. Everything else needs
+      // a browser runtime (background/content/UI, chrome-API-backed
+      // messaging/storage).
       exclude: [
         "src/**/*.test.ts",
         "src/**/__tests__/**",
         "src/bootstrap.ts",
         "src/background/**",
         "src/content/**",
-        "src/options/**",
         "src/sidepanel/**",
         "src/lib/ai.ts",
         "src/lib/logger.ts",
         "src/lib/messaging.ts",
         "src/lib/storage.ts",
-        "src/lib/providers/anthropic.ts",
-        "src/lib/providers/openai.ts",
         "src/**/index.ts",
         "src/**/types.ts",
       ],
