@@ -4,9 +4,9 @@
  * breaker instead of holding the pipeline. config.ts reads
  * LLM_REQUEST_TIMEOUT_MS into `requestTimeoutMs` with parseTimeoutMs(), the
  * pipeline hands that to every provider it builds, and a provider built
- * without one takes DEFAULT_REQUEST_TIMEOUT_MS. The bedrock, anthropic and
- * openai providers read it; the cohere embedder runs under its SDK's own
- * timeout.
+ * without one takes DEFAULT_REQUEST_TIMEOUT_MS. The gateway, bedrock,
+ * anthropic and openai providers read it; the cohere embedder runs under its
+ * SDK's own timeout.
  *
  * A call has to finish its whole reply inside the timeout, so the timeout
  * caps LLM_MAX_TOKENS: the 120000 ms default covers 4096 tokens at about 34
@@ -16,8 +16,8 @@
  * The anthropic and openai SDK clients apply it to each attempt and retry an
  * attempt that times out REQUEST_MAX_RETRIES times, so an endpoint that never
  * answers holds the pipeline for two timeouts plus the SDK's backoff between
- * the attempts. The bedrock providers bound each call once, the SDK's
- * retries included.
+ * the attempts. The gateway providers bound each call once, and the bedrock
+ * providers bound each call once, the SDK's retries included.
  */
 
 /** The request timeout when LLM_REQUEST_TIMEOUT_MS is unset or empty, in milliseconds. */

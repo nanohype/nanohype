@@ -5,16 +5,16 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 ## What you get
 
 - **Helm chart** in `chart/` with `Chart.yaml`, `values.yaml`, per-env deltas (`values-development.yaml`, `values-staging.yaml`, `values-production.yaml`), and templates for:
-  - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), `terminationGracePeriodSeconds` headroom
+  - `deployment.yaml` — non-root, read-only rootfs, distinct `/healthz` + `/readyz` probes, OTel resource attrs + OTLP wiring (`:4318`, `http/protobuf`), the Platform ModelGateway's endpoint and route names (`MODEL_GATEWAY_ENDPOINT`, `MODEL_ROUTE`, `EMBEDDING_ROUTE` from the `modelGateway.*` values) and no model key secret, `terminationGracePeriodSeconds` headroom
   - `service.yaml` — ClusterIP
   - `serviceaccount.yaml` — references the operator-owned `tenant-runtime` ServiceAccount (`serviceAccount.create: false`); the operator binds it to the per-Platform IAM role with an EKS Pod Identity association from the Platform CR, so no role-arn annotation and never inline IAM
-  - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS + `:443`, IMDS blocked)
+  - `networkpolicy.yaml` — default-deny + explicit egress allow-list (DNS, the ModelGateway's Envoy pods on `:8080`, OTLP) with no `:443` rule, so the gateway stays the pod's only route to Bedrock; a third-party API goes in a CiliumNetworkPolicy `toFQDNs` rule by hostname
   - `externalsecret.yaml` — _(toggle, off by default)_ AWS Secrets Manager → k8s Secret via External Secrets Operator, mounted `envFrom`
   - `prometheusrule.yaml` — _(on by default)_ SLI recording rules + multi-window multi-burn-rate error-budget alerts (the `observability-slo` standard), driven by the `slo.*` values
   - `grafana-dashboard.yaml` + `dashboards/<app>.json` — _(on by default)_ a `GrafanaDashboard` CR (grafana-operator → external Amazon Managed Grafana): self-contained SRE board — SLO/error-budget row + traffic + errors + latency p50/p95/p99 + saturation
   - `servicemonitor.yaml` — _(toggle, off by default)_ Prometheus scrape for apps that expose `/metrics` instead of pushing via OTLP
 - **ApplicationSet entry** in `gitops/applicationset-entry.yaml` ready to copy into `nanohype/eks-gitops/applicationsets/`
-- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`). The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, the operator-owned `tenant-runtime` ServiceAccount, and the per-Platform IAM role (scoped to `spec.identity.allowedModelFamilies`, plus a datastore-access policy generated from `spec.datastores` and a capability-access policy generated from `spec.identity.capabilities`); the tenant's declared datastores are provisioned by the generic `tenant-substrate` module; the BudgetPolicy drives the spend kill-switch
+- **Platform CR** in `platform.yaml` — a `Platform` (`platform.nanohype.dev/v1alpha1`) plus its required `BudgetPolicy` (`governance.nanohype.dev/v1alpha1`) and a `ModelGateway` (`agents.nanohype.dev/v1alpha1`) mapping the `default` route to Claude Sonnet (and, with `IncludeEmbeddingRoute`, the `embeddings` route to Titan Text Embeddings v2), which the operator runs as an Envoy AI Gateway under the tenant's Pod Identity so the app reaches a model with no credential of its own. The operator reconciles Namespace, ResourceQuota, LimitRange, default-deny NetworkPolicy, ArgoCD AppProject, the operator-owned `tenant-runtime` ServiceAccount, and the per-Platform IAM role (scoped to `spec.identity.allowedModelFamilies`, plus a datastore-access policy generated from `spec.datastores` and a capability-access policy generated from `spec.identity.capabilities`); the tenant's declared datastores are provisioned by the generic `tenant-substrate` module; the BudgetPolicy drives the spend kill-switch
 - **Skeleton README** documenting how to apply the Platform CR, register the ApplicationSet entry, and roll out new versions
 
 ## Variables
@@ -31,6 +31,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
 | `Port`        | string | `8080`                       | Container port                                                                                                                                                                      |
 | `GitopsRepo`  | string | `nanohype/eks-gitops`        | Target gitops repo for the ApplicationSet entry                                                                                                                                     |
 | `SyncWave`    | string | `100`                        | ArgoCD sync wave (apps land after addons which use waves 0–52)                                                                                                                      |
+| `IncludeEmbeddingRoute` | bool | `false` | Add the `embeddings` route (Titan Text Embeddings v2) to the ModelGateway and `amazon-titan` to the Platform's allowed model families, for an app that embeds through the gateway |
 
 ## Project layout
 
@@ -56,7 +57,7 @@ Primary scaffolding for a nanohype-org k8s-native application. Produces a Helm c
       _helpers.tpl
   gitops/
     applicationset-entry.yaml      # copy into nanohype/eks-gitops/applicationsets/
-  platform.yaml                    # Platform + BudgetPolicy CRs (apply once during tenant setup)
+  platform.yaml                    # Platform, BudgetPolicy and ModelGateway CRs (apply once during tenant setup)
   README.md                        # how to deploy + iterate
 ```
 
@@ -90,7 +91,7 @@ If any of these are missing on the target cluster, the rendered app's `platform.
 ## How to roll out
 
 1. Render: `helm template chart/ -f chart/values-development.yaml` (sanity)
-2. Apply the Platform + BudgetPolicy CRs: `kubectl apply -f platform.yaml`
+2. Apply the Platform, BudgetPolicy and ModelGateway CRs: `kubectl apply -f platform.yaml`
 3. Wait for `Platform.status.phase = Ready`
 4. Set any per-env secret paths in `values-{env}.yaml`; the pod's IAM role is bound by the operator's EKS Pod Identity association, created from the Platform CR (no role ARN in the chart)
 5. Copy `gitops/applicationset-entry.yaml` into the gitops repo as a new entry in the appropriate ApplicationSet

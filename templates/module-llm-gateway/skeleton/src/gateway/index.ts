@@ -88,7 +88,7 @@ const CreateGatewaySchema = z.object({
  * (built-in providers self-register on import via their barrels).
  *
  *   const gateway = createGateway({
- *     providers: ["anthropic", "openai"],
+ *     providers: ["gateway"],
  *     routingStrategy: "adaptive",
  *     cachingStrategy: "hash",
  *   });

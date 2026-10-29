@@ -69,6 +69,19 @@ describe("loadStandard", () => {
     // The two requirements whose violation breaks the deployed workload reject.
     const rejects = s.content.requirements.filter((r) => r.severity === "reject").map((r) => r.id);
     expect(rejects).toEqual(["iam-role-auth", "inference-profile-required"]);
+    // iam-role-auth carries one clause per deployment, and a grader reads both
+    // from the summary: on the substrate the application holds no model
+    // credential and calls its Platform's ModelGateway; off it, the application
+    // assumes an IAM role, and a provider key needs the brief to name the
+    // provider and comes from the environment or the OS keychain.
+    const auth = s.content.requirements.find((r) => r.id === "iam-role-auth")?.summary ?? "";
+    expect(auth).toMatch(/holds no model credential/);
+    expect(auth).toMatch(/Platform's ModelGateway/);
+    expect(auth).toMatch(/IAM role it assumes/);
+    expect(auth).toMatch(/GitHub OIDC federation on a CI runner/);
+    expect(auth).toMatch(/intake brief names that provider/);
+    expect(auth).toMatch(/never committed/);
+    expect(auth).toMatch(/environment or the OS keychain/);
   });
 
   it("loads quality-rubric-dimensions with ten named dimensions", async () => {

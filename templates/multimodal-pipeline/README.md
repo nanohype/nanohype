@@ -1,27 +1,30 @@
 # multimodal-pipeline
 
-Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, routes each through modality-specific processors, sends processed content to vision/audio-capable LLMs, and returns Zod-validated structured output. All components built from first principles using provider SDKs directly.
+Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, and video inputs, routes each through modality-specific processors, sends processed content to a vision-capable LLM through the Platform's ModelGateway, and returns Zod-validated structured output. The pipeline holds no model credential: the gateway does. All components built from first principles using provider SDKs directly.
 
 ## What you get
 
 - **Automatic modality detection** — MIME type and extension-based routing to the correct processor
 - **Image processing** — base64 encoding for vision LLM analysis with configurable detail levels
-- **Audio processing** — Whisper transcription followed by LLM analysis (conditional)
+- **Audio processing** — Whisper transcription followed by LLM analysis (conditional; transcription calls OpenAI with a provider key, so it is off the substrate only)
 - **Video processing** — frame extraction at configurable intervals for sequential vision analysis (conditional)
-- **LLM provider registry** — Anthropic Claude vision, OpenAI GPT-4o vision with self-registration
+- **LLM provider registry** — the `gateway` provider (Claude vision through the Platform's ModelGateway, no credential), with Anthropic Claude vision and OpenAI GPT-4o vision behind `IncludeKeyProviders` for use off the substrate, all self-registering
 - **Structured output** — Zod schema validation on LLM responses with typed result objects
 - **Processor registry** — pluggable processor pattern for adding new modalities
 
 ## Variables
 
-| Variable       | Type   | Default                            | Description                      |
-| -------------- | ------ | ---------------------------------- | -------------------------------- |
-| `ProjectName`  | string | _(required)_                       | Kebab-case project name          |
-| `Description`  | string | "A multimodal processing pipeline" | Project description              |
-| `LlmProvider`  | string | `anthropic`                        | anthropic or openai              |
-| `IncludeAudio` | bool   | `true`                             | Include audio processing support |
-| `IncludeVideo` | bool   | `false`                            | Include video processing support |
-| `IncludeTests` | bool   | `true`                             | Include vitest test suite        |
+| Variable              | Type   | Default                            | Description                                                         |
+| --------------------- | ------ | ---------------------------------- | ------------------------------------------------------------------- |
+| `ProjectName`         | string | _(required)_                       | Kebab-case project name                                             |
+| `Description`         | string | "A multimodal processing pipeline" | Project description                                                 |
+| `LlmProvider`         | string | `gateway`                          | gateway, or off the substrate anthropic or openai                   |
+| `PlatformName`        | string | `ProjectName`                      | Platform CR the pipeline deploys under; sets the gateway's endpoint |
+| `IncludeAudio`        | bool   | `false`                            | Include audio processing support (off the substrate only)           |
+| `IncludeVideo`        | bool   | `false`                            | Include video processing support                                    |
+| `IncludeTests`        | bool   | `true`                             | Include vitest test suite                                           |
+| `IncludeKeyProviders` | bool   | `false`                            | Include the API-key providers, for use off the substrate only       |
+| `ProviderCheck` | string | derived | Derived from `LlmProvider` and the Include variables; fails the scaffold when `LlmProvider` names a provider the project leaves out. Leave it unset |
 
 ## Project layout
 
@@ -43,8 +46,10 @@ Scaffolds a multimodal processing pipeline in TypeScript. Accepts image, audio, 
     providers/
       types.ts                     # LLM provider interface
       registry.ts                  # LLM provider registry
-      anthropic.ts                 # Anthropic Claude vision provider
-      openai.ts                    # OpenAI GPT-4o vision provider
+      gateway.ts                   # Platform ModelGateway provider, no credential
+      anthropic.ts                 # Anthropic Claude vision provider (IncludeKeyProviders)
+      openai.ts                    # OpenAI GPT-4o vision provider (IncludeKeyProviders)
+      whisper.ts                   # OpenAI Whisper transcription
       index.ts                     # Barrel import + re-exports
     output/
       types.ts                     # Structured output Zod schemas

@@ -5,11 +5,15 @@ import type { AiProvider, ChatMessage } from "./types.js";
 class AnthropicProvider implements AiProvider {
   readonly defaultModel = "claude-sonnet-5";
 
+  resolveModel(model?: string): string {
+    return model ?? this.defaultModel;
+  }
+
   async sendMessage(messages: ChatMessage[], model?: string): Promise<string> {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const response = await client.messages.create({
-      model: model ?? this.defaultModel,
+      model: this.resolveModel(model),
       max_tokens: 4096,
       messages: messages.map((m) => ({
         role: m.role,
@@ -27,7 +31,7 @@ class AnthropicProvider implements AiProvider {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const stream = client.messages.stream({
-      model: model ?? this.defaultModel,
+      model: this.resolveModel(model),
       max_tokens: 4096,
       messages: messages.map((m) => ({
         role: m.role,

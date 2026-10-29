@@ -11,12 +11,13 @@ description: >
   LLM provider for reasoning about which skill to execute. Supports HTTP
   and WebSocket transports, optional agent discovery with an Agent Card
   served at /.well-known/agent.json, and a pluggable provider registry
-  for LLM backends.
+  for LLM backends that defaults to the Platform's ModelGateway and holds
+  no model credential.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, agent, a2a, multi-agent, protocol, ai]
+tags: [typescript, agent, a2a, multi-agent, protocol, ai, model-gateway]
 
 variables:
   - name: ProjectName
@@ -39,9 +40,19 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for agent reasoning'
+    description: 'LLM provider for agent reasoning: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: Transport
     type: string
@@ -64,7 +75,28 @@ variables:
     prompt: 'Include tests?'
     default: true
 
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders; leave it at its default. It fails the scaffold when LlmProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    prompt: 'Provider check (leave the default)'
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):false$).*'
+      message: 'LlmProvider anthropic and openai authenticate with a provider API key, and the project carries them only with IncludeKeyProviders=true; on the nanohype substrate LlmProvider is gateway'
+
 conditionals:
+  - path: 'src/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/openai.ts'
+    when: IncludeKeyProviders
   - path: 'src/discovery/registry.ts'
     when: IncludeDiscovery
   - path: 'src/discovery/card.ts'
@@ -80,6 +112,8 @@ conditionals:
   - path: 'src/__tests__/eval-cases.test.ts'
     when: IncludeTests
   - path: 'src/__tests__/eval-assertions.test.ts'
+    when: IncludeTests
+  - path: 'src/__tests__/gateway.test.ts'
     when: IncludeTests
 
 hooks:

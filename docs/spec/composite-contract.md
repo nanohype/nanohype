@@ -154,7 +154,8 @@ name: ai-chatbot
 displayName: 'AI Chatbot'
 description: >
   Full-stack AI chatbot with agentic loop, HTTP service,
-  authentication, evaluation harness, and deployment.
+  authentication, evaluation harness, and a Platform tenant chart whose
+  ModelGateway is the agent's model path.
 version: '0.1.0'
 tags: [ai, chatbot, fullstack, typescript]
 
@@ -171,8 +172,23 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for AI features'
-    default: 'anthropic'
+    description: 'LLM provider: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
+    default: 'gateway'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the API-key providers in every package that carries them, for a stack that runs off the substrate with the provider key the intake brief names'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders; leave it at its default. It fails the scaffold when LlmProvider names a key provider the stack leaves out, before any package renders'
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):false$).*'
+      message: 'LlmProvider anthropic and openai authenticate with a provider API key, and the stack carries them only with IncludeKeyProviders=true; on the nanohype substrate LlmProvider is gateway'
 
   - name: IncludeEvals
     type: bool
@@ -180,11 +196,29 @@ variables:
     description: 'Include evaluation harness'
     default: true
 
-  - name: DeployTarget
+  - name: Tenant
     type: string
-    placeholder: '__DEPLOY_TARGET__'
-    description: 'Deployment target template'
-    default: 'k8s-deploy'
+    placeholder: '__TENANT__'
+    description: 'Owning team: the tenants-<team> namespace the Platform, BudgetPolicy and ModelGateway CRs live in, the ArgoCD AppProject, and the quotas'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]*$'
+      message: 'Must be lowercase kebab-case'
+
+  - name: Image
+    type: string
+    placeholder: '__IMAGE__'
+    description: 'Container image repository the tenant chart deploys, without a tag; each values-<env>.yaml pins one'
+    default: '${ProjectName}'
+
+  - name: AppMetric
+    type: string
+    placeholder: '__APP_METRIC__'
+    description: 'Metric-name prefix for the tenant chart''s RED/SLO panels and burn-rate rules: ProjectName with each dash as an underscore. A single-word ProjectName needs nothing'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9_]*$'
+      message: 'Must be lowercase snake_case: set AppMetric to ProjectName with each dash as an underscore'
 
 templates:
   - template: monorepo
@@ -198,6 +232,8 @@ templates:
     path: packages/ai
     variables:
       ProjectName: '${ProjectName}-ai'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
       LlmProvider: '${LlmProvider}'
       IncludeMemory: true
       IncludeEval: false
@@ -206,7 +242,6 @@ templates:
     path: apps/api
     variables:
       ProjectName: '${ProjectName}-api'
-      IncludeAuth: true
       IncludeDocker: true
 
   - template: module-auth-ts
@@ -220,14 +255,25 @@ templates:
     condition: IncludeEvals
     variables:
       ProjectName: '${ProjectName}-evals'
-      LlmProvider: '${LlmProvider}'
+      PlatformName: '${ProjectName}'
+      IncludeKeyProviders: '${IncludeKeyProviders}'
+      # Evals run on a CI runner, off the substrate, so the harness keeps its
+      # own provider default: bedrock, under the IAM role the eval workflow
+      # assumes through GitHub OIDC federation.
 
-  - template: k8s-deploy
+  # The deploy unit: the Helm chart with its per-env values and ApplicationSet
+  # entry, and the Platform, BudgetPolicy and ModelGateway CRs. The
+  # ModelGateway is the model path every gateway provider above calls: the
+  # operator runs it as the Service <ProjectName>-gateway, which the chart
+  # hands the app as MODEL_GATEWAY_ENDPOINT.
+  - template: k8s-app-tenant
     path: infra
     variables:
-      ProjectName: '${ProjectName}'
       AppName: '${ProjectName}'
-      IncludeCi: true
+      AppMetric: '${AppMetric}'
+      Tenant: '${Tenant}'
+      Image: '${Image}'
+      Port: '3000'
 ```
 
 ---

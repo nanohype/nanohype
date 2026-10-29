@@ -7,13 +7,14 @@ description: >
   outputs. Loads eval suites from YAML files, runs each case against an
   LLM provider, applies composable assertions (string matching, regex,
   JSON schema, token limits, custom predicates), and reports results to
-  the console or as structured JSON. Works with any LLM system —
-  Anthropic and OpenAI providers included out of the box.
+  the console or as structured JSON. Works with any LLM system: a
+  bedrock provider calls Bedrock under the IAM role the run assumes, and a
+  gateway provider calls the Platform ModelGateway from inside the cluster.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, eval, testing, llm, ai]
+tags: [typescript, eval, testing, llm, ai, bedrock, model-gateway]
 
 variables:
   - name: ProjectName
@@ -37,9 +38,36 @@ variables:
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'Default LLM provider name (built-in: anthropic, openai — or any custom registered provider)'
+    description: 'Default LLM provider name: bedrock for a run on a CI runner or a workstation, under an IAM role the run assumes (GitHub OIDC federation on a runner, an AWS profile on a workstation); gateway for a run inside the cluster, through the Platform ModelGateway with no credential; anthropic or openai with IncludeKeyProviders, for a provider the intake brief names; or any custom registered provider'
     prompt: 'LLM provider'
-    default: 'anthropic'
+    default: 'bedrock'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR whose ModelGateway routes a run inside the cluster grades. The gateway provider defaults MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
+
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic and openai providers, which authenticate with a provider API key, for a provider the intake brief names. On a CI runner the key is a repository secret; on a workstation it is read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers?'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider and IncludeKeyProviders; leave it at its default. It fails the scaffold when LlmProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    prompt: 'Provider check (leave the default)'
+    default: '${LlmProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):false$).*'
+      message: 'LlmProvider anthropic and openai authenticate with a provider API key, and the project carries them only with IncludeKeyProviders=true; on a CI runner LlmProvider is bedrock'
 
   - name: IncludeCi
     type: bool
@@ -49,6 +77,10 @@ variables:
     default: true
 
 conditionals:
+  - path: 'src/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/openai.ts'
+    when: IncludeKeyProviders
   - path: '.github/workflows/evals.yml'
     when: IncludeCi
 

@@ -5,7 +5,7 @@ __DESCRIPTION__
 ## Quick start
 
 ```bash
-# Copy .env.example and configure your API keys
+# Copy .env.example and set the gateway endpoint and route, if not the defaults
 cp .env.example .env
 
 # Install dependencies
@@ -34,15 +34,21 @@ The pipeline follows a four-stage ETL design with pluggable components at each s
 
 1. **Ingest** (`src/pipeline/ingest/`) -- load documents from files or web pages
 2. **Transform** (`src/pipeline/transform/`) -- chunk documents using recursive, fixed-size, or semantic strategies
-3. **Embed** (`src/pipeline/embed/`) -- generate vector embeddings via OpenAI or mock provider
+3. **Embed** (`src/pipeline/embed/`) -- generate vector embeddings through the Platform ModelGateway, Bedrock, or a mock provider
 4. **Output** (`src/pipeline/output/`) -- write embedded chunks to JSONL file or console
 
 Each stage uses a factory-based registry pattern (`registry.ts`):
 
 - **Ingest sources**: file (PDF, Markdown, text, JSON, CSV), web (HTML extraction)
 - **Chunk strategies**: recursive (separator hierarchy), fixed-size (character count), semantic (Jaccard similarity)
-- **Embedding providers**: OpenAI (text-embedding-3-small), mock (hash-based deterministic)
+- **Embedding providers**: gateway (the Platform ModelGateway, the default), bedrock (Titan v2), mock (hash-based deterministic), and with `IncludeKeyProviders` openai (text-embedding-3-small)
 - **Output adapters**: json-file (JSONL), console (pretty-print)
+
+### Model access
+
+The `gateway` embedding provider calls the Platform's ModelGateway, the path to a model on the nanohype substrate. The eks-agent-platform operator runs the gateway under the tenant's EKS Pod Identity, holding the Bedrock role, so the pipeline holds no model credential and sends none. `MODEL_GATEWAY_ENDPOINT` is the gateway root, as ModelGateway `status.endpoint` publishes it, and defaults to the Service the operator creates for the Platform named at scaffold time. Requests name the `EMBEDDING_ROUTE` route (`embeddings`), which the ModelGateway CR maps to a Bedrock model, and ask it for `EMBEDDING_DIMENSIONS`. The gateway's embeddings translation embeds one input per request, so the gateway embedder sends one request per chunk.
+
+The `bedrock` provider calls Bedrock directly over the AWS credential chain, for a pipeline that runs off the substrate. A project scaffolded with `IncludeKeyProviders` also carries the openai provider, which authenticates with `OPENAI_API_KEY`; the LLM policy permits a provider key only off the substrate, for a provider the intake brief names, with the key read from the environment or the OS keychain and never committed.
 
 ### Design Decisions
 
@@ -61,10 +67,13 @@ All settings are loaded from environment variables. See `.env.example` for the f
 
 | Variable | Default | Description |
 |---|---|---|
-| `EMBEDDING_PROVIDER` | `openai` | Embedding provider name |
-| `EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model identifier |
-| `EMBEDDING_DIMENSIONS` | `1536` | Output embedding dimensions |
-| `EMBEDDING_BATCH_SIZE` | `128` | Texts per embedding API call |
+| `EMBEDDING_PROVIDER` | `__EMBEDDING_PROVIDER__` | Embedding provider name |
+| `MODEL_GATEWAY_ENDPOINT` | the Platform's gateway Service | ModelGateway root the gateway provider calls |
+| `EMBEDDING_ROUTE` | `embeddings` | ModelGateway route the gateway provider names |
+| `EMBEDDING_MODEL` | `amazon.titan-embed-text-v2:0` | Embedding model the bedrock and openai providers call |
+| `EMBEDDING_DIMENSIONS` | `1024` | Output embedding dimensions |
+| `EMBEDDING_BATCH_SIZE` | `128` | Texts per openai embedding request |
+| `EMBED_REQUEST_TIMEOUT_MS` | `30000` | How long an embedding call waits, in ms |
 | `CHUNK_STRATEGY` | `recursive` | Chunking strategy name |
 | `CHUNK_SIZE` | `512` | Target chunk size in tokens |
 | `CHUNK_OVERLAP` | `64` | Overlap between chunks in tokens |
@@ -75,7 +84,7 @@ All settings are loaded from environment variables. See `.env.example` for the f
 ## Production Readiness
 
 - [ ] Set all environment variables (see `.env.example`)
-- [ ] Configure production API key for your embedding provider
+- [ ] Confirm the Platform's ModelGateway serves the `EMBEDDING_ROUTE` route at `EMBEDDING_DIMENSIONS`
 - [ ] Tune `CHUNK_SIZE` and `CHUNK_OVERLAP` for your document corpus
 - [ ] Set `LOG_LEVEL=warn` for production
 - [ ] Monitor embedding API costs -- batch size and document volume directly affect spend

@@ -6,7 +6,7 @@ catalog — scaffold a template or a composite into a new project.
 ```sh
 npx nanohype list
 npx nanohype scaffold agentic-loop --var ProjectName=my-agent
-npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot
+npx nanohype scaffold --composite ai-chatbot --var ProjectName=my-bot --var AppMetric=my_bot
 ```
 
 ## What this package is

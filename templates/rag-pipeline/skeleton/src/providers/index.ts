@@ -27,12 +27,19 @@ export type {
   VectorStoreProvider,
 } from "./types.js";
 
-// Import provider modules to trigger registration. Bedrock is the org-default
-// for both LLM and embeddings; the others are alternates.
+// Import provider modules to trigger registration. The gateway providers are
+// the path to a model on the nanohype substrate, for generation and for
+// embeddings. bedrock calls Bedrock directly, for a pipeline that runs off
+// it, and the API-key providers are part of a project scaffolded with
+// IncludeKeyProviders, for the same.
+// Scaffolded with LlmProvider:EmbeddingProvider:IncludeKeyProviders = __PROVIDER_CHECK__.
+import "./gateway.js";
 import "./bedrock.js";
+// #if IncludeKeyProviders
 import "./anthropic.js";
 import "./openai.js";
 import "./cohere.js";
+// #endif
 import "./chroma.js";
 import "./pgvector.js";
 import "./qdrant.js";

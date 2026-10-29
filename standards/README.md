@@ -50,7 +50,7 @@ A tenant ships three artifacts:
 
 1. A Helm chart in `<app>/chart/` with per-env values files
 2. An ApplicationSet entry referenced by `nanohype/eks-gitops`
-3. A Platform CR (and any required BudgetPolicy CR) declaring the tenant boundary **and** its stateful substrate
+3. A Platform CR (and any required BudgetPolicy CR, plus the ModelGateway CR whose routes an app that calls a model names) declaring the tenant boundary **and** its stateful substrate
 
 The Platform CR is the declaration surface. In particular:
 
@@ -71,7 +71,10 @@ OTel resource attributes every pod must emit: `agents.tenant`, `agents.platform`
 
 ## LLM policy — `llm-policy.json`
 
-Claude via **AWS Bedrock** is the primary LLM. Authentication is IAM-role-based (Pod Identity on EKS, task role on ECS, execution role on Lambda) — never API keys.
+Claude via **AWS Bedrock** is the primary LLM. How an application authenticates depends on where it runs, and `iam-role-auth` carries one clause for each:
+
+- **On the nanohype substrate** the application holds no model credential. It calls its Platform's `ModelGateway` over plain HTTP and sends no key, token or signature; the gateway's Envoy runs under the tenant's EKS Pod Identity, holds the Bedrock role, attaches the route's guardrail and rate limit, and signs the call. The application pods run under that same Pod Identity role, so the network is what keeps a model call on the gateway: the operator's egress policy opens outbound TLS from application pods only to the hostnames of their declared datastores, and opens the Bedrock endpoints to the gateway's Envoy alone. Network policies are additive, so a chart that adds its own rule on `:443` by CIDR hands its pods a direct route to Bedrock, past the guardrail and the rate limit. The `k8s-app-tenant` chart adds none; a tenant that calls a third-party API names it by hostname in a CiliumNetworkPolicy `toFQDNs` rule.
+- **Off the substrate** — a CI runner, a CLI, a desktop or browser app, a local tool — the application reaches Bedrock under an IAM role it assumes: GitHub OIDC federation on a CI runner, an AWS profile on a workstation. A provider API key is permitted only when the intake brief names that provider. The key is never committed, and the application reads it from the environment or the OS keychain.
 
 Every current Claude model is invoked through a **cross-region inference-profile ID**, never the bare foundation-model ID. Bedrock reports `inferenceTypesSupported: [INFERENCE_PROFILE]` for the whole family — there is no on-demand path — so `anthropic.claude-sonnet-5` is refused with a `ValidationException` while `us.anthropic.claude-sonnet-5` works. The geo prefix tracks the deploy region — `us.` for the `us-east-1` deployments this catalog targets; prefer it over `global.` so routing stays inside the intended jurisdiction.
 

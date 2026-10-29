@@ -1,10 +1,13 @@
 /**
- * AWS Bedrock embedding provider (Titan Text v2) — the org default.
+ * AWS Bedrock embedding provider (Titan Text v2), called directly.
  *
- * Auth is the AWS credential chain (IRSA on-cluster), never API keys. Every call
- * carries an AbortSignal timeout so a hung Bedrock socket trips the circuit
- * breaker, and the Titan response is schema-validated before use rather than
- * trusting raw model output.
+ * Auth is the AWS credential chain, never API keys, so it serves a pipeline off
+ * the nanohype substrate: an ECS task role, or a local AWS profile in dev. On
+ * the substrate the gateway provider is the path to a model: a direct call
+ * skips the route's guardrail and rate limit. Every call carries an AbortSignal
+ * timeout so a hung Bedrock socket trips the circuit breaker, and the Titan
+ * response is schema-validated before use rather than trusting raw model
+ * output.
  *
  * Registers itself as the "bedrock" embedding provider on import.
  */

@@ -8,16 +8,16 @@ description: >
   embedding generation, vector storage, similarity retrieval, and
   LLM-powered answer generation with source citations. No LangChain —
   all components are built from first principles using the provider
-  SDKs directly. Defaults to AWS Bedrock (Claude via Converse with prompt
-  caching for generation, Titan v2 for embeddings, on IRSA — no keys).
-  Supports multiple vector stores (pgvector, Chroma, Qdrant, Pinecone),
-  alternate embedding providers (OpenAI, Cohere), and alternate LLM
-  providers (Anthropic, OpenAI).
+  SDKs directly. Defaults to the Platform's ModelGateway for generation
+  (Claude over native Messages, prompt-cached) and embeddings, so the
+  pipeline holds no model credential. Supports multiple vector stores
+  (pgvector, Chroma, Qdrant, Pinecone), Bedrock called directly, and
+  Anthropic, OpenAI and Cohere key providers as an off-substrate opt-in.
 version: '0.1.0'
 license: Apache-2.0
 persona: [engineering]
 category: ai-systems
-tags: [typescript, rag, embeddings, vector-search, llm, retrieval, ai]
+tags: [typescript, rag, embeddings, vector-search, llm, retrieval, ai, model-gateway]
 
 variables:
   - name: ProjectName
@@ -47,16 +47,26 @@ variables:
   - name: EmbeddingProvider
     type: string
     placeholder: '__EMBEDDING_PROVIDER__'
-    description: 'Provider for text embeddings — bedrock (Titan v2, default), openai, or cohere'
+    description: 'Provider for text embeddings: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), bedrock (Titan v2, called directly, off the substrate), or off the substrate openai or cohere with IncludeKeyProviders'
     prompt: 'Embedding provider'
-    default: 'bedrock'
+    default: 'gateway'
 
   - name: LlmProvider
     type: string
     placeholder: '__LLM_PROVIDER__'
-    description: 'LLM provider for answer generation — bedrock (default), anthropic, or openai'
+    description: 'LLM provider for answer generation: gateway (the Platform ModelGateway, which holds the Bedrock role on the nanohype substrate), bedrock (called directly, off the substrate), or off the substrate anthropic or openai with IncludeKeyProviders'
     prompt: 'LLM provider'
-    default: 'bedrock'
+    default: 'gateway'
+
+  - name: PlatformName
+    type: string
+    placeholder: '__PLATFORM_NAME__'
+    description: 'Name of the Platform CR this project deploys under. The gateway providers default MODEL_GATEWAY_ENDPOINT to the Service the eks-agent-platform operator creates for it, <PlatformName>-gateway in namespace tenants-<PlatformName>'
+    prompt: 'Platform name'
+    default: '${ProjectName}'
+    validation:
+      pattern: '^[a-z][a-z0-9-]{0,54}$'
+      message: 'Must be lowercase kebab-case of at most 55 characters, so <PlatformName>-gateway and tenants-<PlatformName> are DNS labels'
 
   - name: ChunkStrategy
     type: string
@@ -68,11 +78,34 @@ variables:
   - name: IncludeTests
     type: bool
     placeholder: '__INCLUDE_TESTS__'
-    description: 'Include the vitest config and the chunking, retrieval and registry suites, with the anthropic, bedrock and openai request suites'
+    description: 'Include the vitest config and the chunking, retrieval and registry suites, with the gateway and bedrock request suites and, with IncludeKeyProviders, the anthropic and openai request suites'
     prompt: 'Include tests?'
     default: true
 
+  - name: IncludeKeyProviders
+    type: bool
+    placeholder: '__INCLUDE_KEY_PROVIDERS__'
+    description: 'Include the anthropic, openai and cohere providers, which authenticate with a provider API key. Off the substrate only (a CLI, a desktop app, a local tool), for a provider the intake brief names, with the key read from the environment or the OS keychain'
+    prompt: 'Include the API-key providers (off the substrate only)?'
+    default: false
+
+  - name: ProviderCheck
+    type: string
+    placeholder: '__PROVIDER_CHECK__'
+    description: 'Derived from LlmProvider, EmbeddingProvider and IncludeKeyProviders; leave it at its default. It fails the scaffold when LlmProvider or EmbeddingProvider names a provider the project leaves out, which would otherwise fail at the first model call'
+    prompt: 'Provider check (leave the default)'
+    default: '${LlmProvider}:${EmbeddingProvider}:${IncludeKeyProviders}'
+    validation:
+      pattern: '(?!(?:anthropic|openai):[^:]*:false$)(?![^:]*:(?:openai|cohere):false$).*'
+      message: 'LlmProvider anthropic and openai, and EmbeddingProvider openai and cohere, authenticate with a provider API key, and the project carries them only with IncludeKeyProviders=true; on the nanohype substrate both providers are gateway'
+
 conditionals:
+  - path: 'src/providers/anthropic.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/openai.ts'
+    when: IncludeKeyProviders
+  - path: 'src/providers/cohere.ts'
+    when: IncludeKeyProviders
   - path: 'vitest.config.ts'
     when: IncludeTests
   - path: 'src/__tests__/chunking.test.ts'
@@ -81,12 +114,14 @@ conditionals:
     when: IncludeTests
   - path: 'src/__tests__/registry.test.ts'
     when: IncludeTests
-  - path: 'src/providers/__tests__/anthropic-request.test.ts'
+  - path: 'src/providers/__tests__/gateway-request.test.ts'
     when: IncludeTests
+  - path: 'src/providers/__tests__/anthropic-request.test.ts'
+    when: IncludeTests && IncludeKeyProviders
   - path: 'src/providers/__tests__/bedrock-request.test.ts'
     when: IncludeTests
   - path: 'src/providers/__tests__/openai-request.test.ts'
-    when: IncludeTests
+    when: IncludeTests && IncludeKeyProviders
 
 hooks:
   post:

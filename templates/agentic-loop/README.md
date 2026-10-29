@@ -5,21 +5,24 @@ Scaffolds a TypeScript agentic loop — the core pattern behind tool-calling AI 
 ## What you get
 
 - **Agent loop** (`src/agent.ts`): send a message to an LLM, detect tool-call requests, execute them through a typed registry, append results, repeat until done or an iteration limit is reached.
-- **Provider abstraction** (`src/providers/`): swap between Anthropic and OpenAI with a single config value.
+- **Provider abstraction** (`src/providers/`): the `gateway` provider (the default) calls the Platform's ModelGateway with tool use and holds no model credential; Anthropic and OpenAI key providers come with `IncludeKeyProviders`, for use off the substrate only.
 - **Tool registry** (`src/tools/`): Zod-validated tool definitions with a registry that handles lookup and execution.
 - **Memory subsystem** (`src/memory/`, optional): conversation message store with token-aware truncation and context window assembly.
 - **Eval harness** (`src/eval/`, optional): fixture-based testing with assertion helpers for validating agent behavior.
 
 ## Variables
 
-| Variable        | Type   | Default                                         | Description                      |
-| --------------- | ------ | ----------------------------------------------- | -------------------------------- |
-| `ProjectName`   | string | _(required)_                                    | Kebab-case project name          |
-| `Description`   | string | `"An agentic loop powered by LLM tool-calling"` | Short project description        |
-| `LlmProvider`   | string | `"anthropic"`                                   | `anthropic` or `openai`          |
-| `IncludeMemory` | bool   | `true`                                          | Include memory subsystem         |
-| `IncludeEval`   | bool   | `true`                                          | Include eval harness             |
-| `MaxIterations` | int    | `10`                                            | Max tool-calling loop iterations |
+| Variable              | Type   | Default                                         | Description                                                              |
+| --------------------- | ------ | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `ProjectName`         | string | _(required)_                                    | Kebab-case project name                                                  |
+| `Description`         | string | `"An agentic loop powered by LLM tool-calling"` | Short project description                                                |
+| `LlmProvider`         | string | `"gateway"`                                     | `gateway`, or `anthropic` / `openai` with `IncludeKeyProviders`          |
+| `PlatformName`        | string | `ProjectName`                                   | Platform CR the agent deploys under; sets the gateway's default endpoint |
+| `IncludeMemory`       | bool   | `true`                                          | Include memory subsystem                                                 |
+| `IncludeEval`         | bool   | `true`                                          | Include eval harness                                                     |
+| `MaxIterations`       | int    | `10`                                            | Max tool-calling loop iterations                                         |
+| `IncludeKeyProviders` | bool   | `false`                                         | Include the API-key providers, for use off the substrate only            |
+| `ProviderCheck` | string | derived | Derived from `LlmProvider` and the Include variables; fails the scaffold when `LlmProvider` names a provider the project leaves out. Leave it unset |
 
 ## Project layout
 
@@ -27,7 +30,7 @@ Scaffolds a TypeScript agentic loop — the core pattern behind tool-calling AI 
 <ProjectName>/
   src/
     agent.ts                     # Core agentic loop
-    providers/                   # LLM provider abstraction (Anthropic / OpenAI)
+    providers/                   # LLM provider abstraction (gateway; Anthropic / OpenAI off the substrate)
     tools/                       # Zod-validated tool definitions and registry
     memory/                      # Conversation store with token-aware truncation (conditional)
     eval/                        # Fixture-based eval harness (conditional)
@@ -39,9 +42,6 @@ Scaffolds a TypeScript agentic loop — the core pattern behind tool-calling AI 
 ## After scaffolding
 
 ```bash
-# Set your API key
-export ANTHROPIC_API_KEY="sk-..."   # or OPENAI_API_KEY for OpenAI
-
 # Run the agent
 npm start
 

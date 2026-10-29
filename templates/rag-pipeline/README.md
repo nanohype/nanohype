@@ -6,22 +6,25 @@ Scaffolds a Retrieval-Augmented Generation (RAG) pipeline in TypeScript. All com
 
 - **Document ingestion** — load plain text and markdown files from a directory
 - **Configurable chunking** — fixed-size (token-estimated), recursive character splitting, or semantic chunking stub
-- **Embedding generation** — OpenAI or Cohere
+- **Embedding generation** — the Platform's ModelGateway (the default, no credential) or Bedrock Titan, with OpenAI and Cohere behind `IncludeKeyProviders` for use off the substrate
 - **Vector storage** — Chroma, pgvector, Qdrant, or Pinecone
 - **Similarity retrieval** — top-k search with score-based reranking and metadata filtering
-- **Answer generation** — LLM-powered responses with source citations via Anthropic or OpenAI
+- **Answer generation** — LLM-powered responses with source citations via the Platform's ModelGateway (the default, no credential) or Bedrock, with Anthropic and OpenAI behind `IncludeKeyProviders` for use off the substrate
 
 ## Variables
 
-| Variable            | Type   | Default                                     | Description                           |
-| ------------------- | ------ | ------------------------------------------- | ------------------------------------- |
-| `ProjectName`       | string | _(required)_                                | Kebab-case project name               |
-| `Description`       | string | "A retrieval-augmented generation pipeline" | Project description                   |
-| `VectorStore`       | string | `chroma`                                    | chroma, pgvector, qdrant, or pinecone |
-| `EmbeddingProvider` | string | `openai`                                    | openai or cohere                      |
-| `LlmProvider`       | string | `anthropic`                                 | anthropic or openai                   |
-| `ChunkStrategy`     | string | `recursive`                                 | fixed, recursive, or semantic         |
-| `IncludeTests`      | bool   | `true`                                      | Include vitest test suite             |
+| Variable              | Type   | Default                                     | Description                                                         |
+| --------------------- | ------ | ------------------------------------------- | ------------------------------------------------------------------- |
+| `ProjectName`         | string | _(required)_                                | Kebab-case project name                                             |
+| `Description`         | string | "A retrieval-augmented generation pipeline" | Project description                                                 |
+| `VectorStore`         | string | `chroma`                                    | chroma, pgvector, qdrant, or pinecone                               |
+| `EmbeddingProvider`   | string | `gateway`                                   | gateway, bedrock, or off the substrate openai or cohere             |
+| `LlmProvider`         | string | `gateway`                                   | gateway, bedrock, or off the substrate anthropic or openai          |
+| `PlatformName`        | string | `ProjectName`                               | Platform CR the pipeline deploys under; sets the gateway's endpoint |
+| `ChunkStrategy`       | string | `recursive`                                 | fixed, recursive, or semantic                                       |
+| `IncludeTests`        | bool   | `true`                                      | Include vitest test suite                                           |
+| `IncludeKeyProviders` | bool   | `false`                                     | Include the API-key providers, for use off the substrate only       |
+| `ProviderCheck` | string | derived | Derived from `LlmProvider`, `EmbeddingProvider` and `IncludeKeyProviders`; fails the scaffold when either provider names one the project leaves out. Leave it unset |
 
 ## Project layout
 
@@ -39,9 +42,11 @@ Scaffolds a Retrieval-Augmented Generation (RAG) pipeline in TypeScript. All com
       types.ts                     # LlmProvider, EmbeddingProvider, VectorStoreProvider
       registry.ts                  # Triple registry: llm, embedding, vectorstore
       index.ts                     # Barrel import + re-exports
-      anthropic.ts                 # Anthropic LLM provider
-      openai.ts                    # OpenAI LLM + embedding provider
-      cohere.ts                    # Cohere embedding provider
+      gateway.ts                   # Platform ModelGateway LLM + embedding provider, no credential
+      bedrock.ts                   # Bedrock LLM + Titan embedding provider
+      anthropic.ts                 # Anthropic LLM provider (IncludeKeyProviders)
+      openai.ts                    # OpenAI LLM + embedding provider (IncludeKeyProviders)
+      cohere.ts                    # Cohere embedding provider (IncludeKeyProviders)
       chroma.ts                    # ChromaDB vector store
       pgvector.ts                  # PostgreSQL + pgvector store
       qdrant.ts                    # Qdrant vector store

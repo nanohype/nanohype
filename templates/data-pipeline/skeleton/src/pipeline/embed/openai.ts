@@ -1,5 +1,8 @@
 /**
- * OpenAI embedding provider.
+ * OpenAI embedding provider, for a pipeline that runs off the nanohype
+ * substrate. It authenticates with OPENAI_API_KEY, which the LLM policy
+ * permits only off the substrate, for a provider the intake brief names, read
+ * from the environment or the OS keychain and never committed.
  *
  * Uses the text-embedding-3-small model via the OpenAI SDK. The SDK
  * client is lazily initialized on first use. Wraps all API calls in
