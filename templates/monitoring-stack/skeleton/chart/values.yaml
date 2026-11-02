@@ -3,7 +3,7 @@ namespace: monitoring
 grafana:
   image:
     repository: grafana/grafana
-    tag: "13.2.4"
+    tag: "13.3.0"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
