@@ -61,7 +61,7 @@
     "validate:sli-metric-names": "node scripts/check-sli-metric-names.mjs"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.3",
+    "@biomejs/biome": "2.6.6",
     "@vitest/coverage-v8": "^5.0.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
@@ -73,7 +73,7 @@
   "overrides": {
     "fast-json-patch": "^3.1.1",
     "fast-uri": "^4.0.0",
-    "katex": "^0.18.2",
+    "katex": "^0.19.0",
     "linkify-it": "^6.0.0",
     "markdownlint-cli2": {
       "js-yaml": "^5.3.0",
