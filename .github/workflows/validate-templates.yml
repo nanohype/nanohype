@@ -69,7 +69,7 @@ jobs:
       # which. The action turns the exit code into an annotation that says
       # NOTHING WAS CHECKED where that is what happened — which a downloading
       # checker cannot report at all, because the download is what failed.
-      - uses: nanohype/.github/actions/editorconfig-gate@b2eada74413fcc9f3042f22126ee5b350a2b846e
+      - uses: nanohype/.github/actions/editorconfig-gate@9911d2952b1f9078816c323baa253a63242c1c31 # v1
 
   validate:
     name: Validate template catalog
@@ -576,7 +576,7 @@ jobs:
     # indefinitely.
     if: always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group')
     steps:
-      - uses: nanohype/.github/actions/merge-gate@6ec6c5b3e6c4a8b15e12da4afd7ac4870a630092 # main
+      - uses: nanohype/.github/actions/merge-gate@9911d2952b1f9078816c323baa253a63242c1c31 # v1
         with:
           needs: ${{ toJSON(needs) }}
           gate-job-id: merge-gate
