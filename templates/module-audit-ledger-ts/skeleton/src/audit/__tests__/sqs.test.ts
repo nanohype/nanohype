@@ -67,7 +67,7 @@ describe("sqs adapter init", () => {
     const adapter = getProvider("sqs");
     await adapter.init({ queueUrl: "https://sqs/queue.fifo", region: "us-east-1" });
 
-    expect(clientOptions).toEqual([{ region: "us-east-1" }]);
+    expect(clientOptions).toEqual([{ region: "us-east-1", useQueueUrlAsEndpoint: false }]);
     await adapter.close();
     // It built the client, so it closes it.
     expect(destroy).toHaveBeenCalledTimes(1);
@@ -78,9 +78,24 @@ describe("sqs adapter init", () => {
     const adapter = getProvider("sqs");
     await adapter.init({ queueUrl: "https://sqs/queue.fifo" });
 
-    expect(clientOptions).toEqual([{ region: "us-east-1" }]);
+    expect(clientOptions).toEqual([{ region: "us-east-1", useQueueUrlAsEndpoint: false }]);
     await adapter.close();
     vi.unstubAllEnvs();
+  });
+
+  it("keeps sends on the configured endpoint, not the queue URL's host", async () => {
+    // With the SDK default, a client whose endpoint comes from
+    // AWS_ENDPOINT_URL_SQS sends each call to the host inside the QueueUrl
+    // instead, so an AWS queue URL would carry audit events to AWS while the
+    // rest of the process talks to the configured endpoint.
+    const adapter = getProvider("sqs");
+    await adapter.init({
+      queueUrl: "https://sqs.us-east-1.amazonaws.com/111111111111/audit.fifo",
+      region: "us-east-1",
+    });
+
+    expect(clientOptions[0]).toMatchObject({ useQueueUrlAsEndpoint: false });
+    await adapter.close();
   });
 
   it("leaves an injected client to its owner", async () => {

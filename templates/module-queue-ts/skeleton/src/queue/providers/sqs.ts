@@ -43,7 +43,13 @@ const sqsProvider: QueueProvider = {
       throw new Error("SQS provider requires a queueUrl in config or SQS_QUEUE_URL env var");
     }
 
-    client = new SQSClient({ region });
+    // useQueueUrlAsEndpoint: false keeps every call on the endpoint this
+    // client resolved. The SDK default sends each call to the host inside the
+    // QueueUrl whenever that differs from the resolved endpoint and no endpoint
+    // was set on the client itself, which includes one supplied through
+    // AWS_ENDPOINT_URL / AWS_ENDPOINT_URL_SQS. With an AWS queue URL that sends
+    // the calls to AWS, not the configured endpoint.
+    client = new SQSClient({ region, useQueueUrlAsEndpoint: false });
     console.log(`[queue] SQS provider initialized for ${queueUrl}`);
   },
 

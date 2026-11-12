@@ -33,7 +33,16 @@ class SQSAuditAdapter implements AuditAdapter {
     if (config.client) {
       this.client = config.client as SQSClient;
     } else {
-      this.client = new SQSClient({ region: (config.region as string) ?? process.env.AWS_REGION });
+      // useQueueUrlAsEndpoint: false keeps every send on the endpoint this
+      // client resolved. The SDK default sends each call to the host inside
+      // the QueueUrl whenever that differs from the resolved endpoint and no
+      // endpoint was set on the client itself, which includes one supplied
+      // through AWS_ENDPOINT_URL / AWS_ENDPOINT_URL_SQS. With an AWS queue URL
+      // that sends the calls to AWS, not the configured endpoint.
+      this.client = new SQSClient({
+        region: (config.region as string) ?? process.env.AWS_REGION,
+        useQueueUrlAsEndpoint: false,
+      });
       this.ownsClient = true;
     }
   }
