@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: audit (osv-scanner)
-        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36 # v2.7.0
         with:
           scan-args: |-
             --no-resolve
@@ -89,7 +89,7 @@ jobs:
         run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@504fc38780cc46be8444ea1b72fb55919fc0bfb0 # v4.54.1
+        uses: mikefarah/yq@a4330671f17776618660a419ab2531e4f4dc48b6 # v4.54.2
 
       # The corpus is asserted against the thing it enumerates rather than
       # against a number. Every directory under templates/ is a template, so
@@ -163,7 +163,7 @@ jobs:
         run: npm ci
 
       - name: Install yq
-        uses: mikefarah/yq@504fc38780cc46be8444ea1b72fb55919fc0bfb0 # v4.54.1
+        uses: mikefarah/yq@a4330671f17776618660a419ab2531e4f4dc48b6 # v4.54.2
 
       # This repository's own source — the SDK, the MCP server, the shared
       # library, and every script under scripts/. `lint:skeletons` below covers
@@ -200,7 +200,7 @@ jobs:
       # cannot pass, which would be a fact about this runner rather than about
       # the command. Pinned to the version the doctor uses.
       - name: Setup JDK
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
           distribution: 'temurin'
           java-version: '25'
