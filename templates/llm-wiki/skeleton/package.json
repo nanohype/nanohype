@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "commander": "^15.0.0",
-    "hono": "^4.7.0",
+    "hono": "^4.13.16",
     "simple-git": "^4.0.1",
     "yaml": "^2.7.0",
     "zod": "^4.0.0"
