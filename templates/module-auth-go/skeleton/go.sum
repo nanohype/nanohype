@@ -1,7 +1,7 @@
 github.com/MicahParks/jwkset v0.11.4 h1:sm6pqlEpa1YDu82Hoxho/O+Y291lPcksNImVIsV74gg=
 github.com/MicahParks/jwkset v0.11.4/go.mod h1:U2oRhRaLgDCLjtpGL2GseNKGmZtLs/3O7p+OZaL5vo0=
-github.com/MicahParks/keyfunc/v3 v3.9.1 h1:10dlh2kS3kRtfj5x2bokCxLhTpmIpf3WtsvBdJ2TfOo=
-github.com/MicahParks/keyfunc/v3 v3.9.1/go.mod h1:h8DMhdulFa3yjG1q74FqaehNDekB18HrVCXPl9Raa4I=
+github.com/MicahParks/keyfunc/v3 v3.9.2 h1:yWvqmCIWMnyp8tJFR3VmNQRBGmNRJ3cMvN9bcG9Bfbc=
+github.com/MicahParks/keyfunc/v3 v3.9.2/go.mod h1:h8DMhdulFa3yjG1q74FqaehNDekB18HrVCXPl9Raa4I=
 github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63YCY=
 github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 golang.org/x/time v0.15.0 h1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=
