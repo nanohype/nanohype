@@ -1,0 +1,22 @@
+# Advisories with no fix reachable through the dependency that pulls them in.
+# osv-scanner reads the config beside each lockfile and does not walk up to
+# the repository root, so this package's lockfile carries its own entry. Each
+# entry names why it does not apply here and expires, so the scan raises it
+# again on its own: by then either a patched release exists or the entry gets
+# re-argued, not silently renewed.
+
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2026-12-08T00:00:00Z
+reason = """
+picomatch 4.0.7 (ReDoS when the glob pattern itself is a single-branch
+repeated extglob such as +(*)) is the newest release and is listed as
+affected: there is no patched version to move to. In
+library/runtime/package-lock.json it is a dev dependency only, through vitest
+(directly and via vite, tinyglobby and fdir); @vitest/coverage-v8 reaches it
+only through vitest, and none of the package's runtime dependencies pulls it
+in. The patterns it compiles are the globs in library/runtime/vitest.config.ts
+and vitest's built-in defaults: written in this repository or fixed by vitest,
+never supplied by a request, a tool argument or a template variable. The
+package is private and never published.
+"""
