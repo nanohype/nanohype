@@ -12,3 +12,20 @@ and is listed as last-affected: there is no patched version to move to. It is a
 dev dependency only, through markdownlint-cli2 -> micromatch 4.0.8, and expands
 the glob patterns this repository's own lint configuration declares.
 """
+
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2026-12-08T00:00:00Z
+reason = """
+picomatch 4.0.7 and 2.3.2 (ReDoS when the glob pattern itself is a
+single-branch repeated extglob such as +(*)) are the newest releases of their
+lines and are listed as affected: there is no patched version to move to. Every
+copy in the scanned lockfiles is a dev dependency, through vitest and
+@vitest/coverage-v8 (vite, tinyglobby, fdir) in each package and through
+markdownlint-cli2 -> micromatch at the root; no published package depends on it
+at runtime. The patterns it compiles are the include/exclude globs in each
+package's vitest.config.ts and the globs in .markdownlint-cli2.jsonc and the
+lint:docs script, all authored in this repository; no request, tool argument or
+template variable reaches it. Template skeletons commit no npm lockfile, so none
+is in this scan, and this file is not copied into a scaffolded project.
+"""
