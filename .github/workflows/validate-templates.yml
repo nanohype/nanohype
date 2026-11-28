@@ -185,7 +185,7 @@ jobs:
       # commands it never ran, which is the behaviour that makes it worth
       # having and the reason this step is not optional.
       - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7
         with:
           # Matches the doctor's pin: go-service's pgx and otel dependencies
           # need 1.25, so the phases are exercised on a toolchain the
@@ -200,7 +200,7 @@ jobs:
       # cannot pass, which would be a fact about this runner rather than about
       # the command. Pinned to the version the doctor uses.
       - name: Setup JDK
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
         with:
           distribution: 'temurin'
           java-version: '25'
