@@ -225,6 +225,25 @@ function statusOf(err: unknown): unknown {
 }
 
 /**
+ * Stripe's own text for a failed call. The SDK prefixes the request id to an
+ * error's `message` (`[req_…] Your card was declined.`) and keeps the API's
+ * text on `raw.message`; a charge reports that text, which is what a caller
+ * shows a customer or matches on. The request id is an operator's handle on
+ * the call in Stripe's dashboard, logged on a field of its own.
+ */
+function messageOf(err: unknown): string {
+  const raw = (err as { raw?: { message?: unknown } } | null | undefined)?.raw?.message;
+  if (typeof raw === "string") return raw;
+  return err instanceof Error ? err.message : String(err);
+}
+
+/** The Stripe request id a failed call was answered under; undefined when none came back. */
+function requestIdOf(err: unknown): string | undefined {
+  const id = (err as { requestId?: unknown } | null | undefined)?.requestId;
+  return typeof id === "string" ? id : undefined;
+}
+
+/**
  * A charge's read of the lines on a Stripe invoice issued under its invoice
  * ID stopped at MAX_LISTED. The lines past the bound could bill anything, so
  * the charge can neither report that invoice as billing this one's content
@@ -888,8 +907,14 @@ function createStripeProvider(): PaymentProvider {
         return await collect(stripe, invoice, finalized, step);
       } catch (err) {
         const code = failureCode(err, signal);
-        const error = err instanceof Error ? err.message : String(err);
-        logger.error("Stripe charge failed", { invoiceId: invoice.id, externalId, code, error });
+        const error = messageOf(err);
+        logger.error("Stripe charge failed", {
+          invoiceId: invoice.id,
+          externalId,
+          code,
+          error,
+          requestId: requestIdOf(err),
+        });
         return { ok: false, code, externalId, error };
       }
     },

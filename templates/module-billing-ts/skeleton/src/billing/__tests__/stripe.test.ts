@@ -299,7 +299,10 @@ describe("stripe provider init", () => {
       const outcome = provider.createCustomer("a@example.com", "A").catch((err: Error) => err);
       await vi.runAllTimersAsync();
 
-      expect(await outcome).toMatchObject({ message: "Stripe is unavailable", statusCode: 503 });
+      expect(await outcome).toMatchObject({
+        statusCode: 503,
+        raw: { message: "Stripe is unavailable" },
+      });
       expect(api.sent).toHaveLength(1 + DEFAULT_STRIPE_MAX_NETWORK_RETRIES);
     });
 
@@ -473,6 +476,24 @@ describe("stripe provider circuit breaker", () => {
     }
 
     expect(account.sent.filter((r) => r.path.endsWith("/pay"))).toHaveLength(10);
+  });
+
+  it("reports Stripe's own text for a decline and logs the request id on its own field", async () => {
+    const error = vi.spyOn(logger, "error");
+    const account = fakeStripeAccount((request, apply) =>
+      request.path.endsWith("/pay")
+        ? stripeRefusal(402, "Your card was declined.", "card_error")
+        : apply(),
+    );
+    const provider = await initialized(account.httpClient);
+
+    const result = await provider.chargeInvoice(invoiceFixture());
+
+    expect(result).toMatchObject({ ok: false, code: "declined", error: "Your card was declined." });
+    expect(error).toHaveBeenCalledWith(
+      "Stripe charge failed",
+      expect.objectContaining({ error: "Your card was declined.", requestId: "req_fake" }),
+    );
   });
 
   it.each([
