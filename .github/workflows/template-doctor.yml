@@ -124,7 +124,7 @@ jobs:
 
       - name: Set up Go
         if: steps.scope.outputs.relevant == 'true'
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7
         with:
           # go-service's pgx/otel deps require go 1.25; keep the doctor on a
           # current toolchain so it validates skeletons against what they build on.
@@ -132,7 +132,7 @@ jobs:
 
       - name: Set up JDK
         if: steps.scope.outputs.relevant == 'true'
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
         with:
           distribution: 'temurin'
           java-version: '25'
