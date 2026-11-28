@@ -1,4 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nanohype/.github"]
+  "extends": ["github>nanohype/.github"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Every biome.json names the Biome release it was written for in its $schema URL, and scripts/check-skeleton-toolchain.mjs holds each skeleton's URL, and each manifest's @biomejs/biome pin, to the release library/config/biome.base.json names. The npm manager moves the pins and nothing moves the URLs, so a Biome update fails that gate until the URLs are edited by hand. Tracked as @biomejs/biome, the URLs move in the same update, and on the same branch, as the pins.",
+      "managerFilePatterns": ["/(^|/)biome(\\.base)?\\.json$/"],
+      "matchStrings": [
+        "\"\\$schema\"\\s*:\\s*\"https://biomejs\\.dev/schemas/(?<currentValue>\\d+\\.\\d+\\.\\d+)/schema\\.json\""
+      ],
+      "depNameTemplate": "@biomejs/biome",
+      "datasourceTemplate": "npm"
+    }
+  ]
 }
